@@ -1,3 +1,4 @@
+"use client";
 import StatsCards from "@/component/AnalysisSection/Analysis";
 import Footer from "@/component/Footer/Footer";
 import Hero from "@/component/HeroSection/Hero";

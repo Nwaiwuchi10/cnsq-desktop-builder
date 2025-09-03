@@ -8,11 +8,11 @@ import Image from "next/image";
 
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Staff", href: "#about" },
-  { name: "Birthday", href: "#features" },
-  { name: "Anniversary", href: "#pricing" },
-  { name: "Organogram", href: "#contact" },
-  { name: "Project", href: "#contact" },
+  { name: "Staff", href: "/staff" },
+  { name: "Birthday", href: "/birthday" },
+  { name: "Anniversary", href: "/anniversary" },
+  { name: "Organogram", href: "/organogram" },
+  { name: "Project", href: "/project" },
 ];
 
 export default function Navbar() {
@@ -31,12 +31,12 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex flex-1 justify-center">
-            <div className="flex space-x-8 justify-end w-full max-w-2xl">
+            <div className="flex space-x-16 justify-end w-full max-w-2xl">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-xl text-black-600 hover:text-blue-600 transition"
+                  className="text-lg text-black-600 hover:text-blue-600 transition"
                 >
                   {link.name}
                 </Link>
