@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
+
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Api from "@/utils/api";

@@ -12,7 +12,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
+
 import Api from "@/utils/api";
 import Image from "next/image";
 
@@ -23,7 +23,7 @@ interface Staff {
   lastName: string;
   email: string;
   phone: string;
-  photoUrl: string | null;
+  photoUrl: any | null;
   address?: {
     city: string;
     state: string;
@@ -138,7 +138,7 @@ export default function HeadsStaffDirectory() {
           {loading ? (
             <p className="text-gray-600">Loading staff...</p>
           ) : filteredStaff.length > 0 ? (
-            filteredStaff.map((person: any) => (
+            filteredStaff.map((person) => (
               <div
                 key={person.id}
                 className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
