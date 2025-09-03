@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+
 import { ArrowLeft, Check, X } from "lucide-react";
 import Api from "@/utils/api";
+import { AxiosError } from "axios";
 
 // Enums
 // === ENUMS ===
@@ -43,7 +44,6 @@ interface DepartmentalRole {
 const STORAGE_KEY = "staff-onboarding-form";
 
 export default function StaffOnboardingForm() {
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
   const router = useRouter();
 
   const [step, setStep] = useState(1);
@@ -300,8 +300,9 @@ export default function StaffOnboardingForm() {
       setSuccess("Staff created successfully.");
       localStorage.removeItem(STORAGE_KEY);
       router.push("/staffs");
-    } catch (e: any) {
-      setError(e?.response?.data?.message || "Failed to create staff.");
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setError(err.response?.data?.message || "Failed to create staff.");
     } finally {
       setSubmitting(false);
     }

@@ -5,9 +5,30 @@ import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react"; // icons
 import Link from "next/link";
 import Api from "@/utils/api";
+interface Staff {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  photoUrl?: string;
+  address?: {
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+  employment?: {
+    departmentalRole?: {
+      title?: string;
+    };
+    department?: {
+      name?: string;
+    };
+  };
+}
 
 export default function TeamProfiles() {
-  const [staffList, setStaffList] = useState<any[]>([]);
+  const [staffList, setStaffList] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
