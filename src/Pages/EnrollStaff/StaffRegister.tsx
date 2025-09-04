@@ -1,13 +1,323 @@
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import { useRouter } from "next/navigation";
+
+// import { ArrowLeft, Check, X } from "lucide-react";
+// import Api from "@/utils/api";
+// import { AxiosError } from "axios";
+// import Image from "next/image";
+
+// // Enums
+// // === ENUMS ===
+// const GENDERS = ["Male", "Female", "Other"] as const;
+// const MARITALS = ["Single", "Married", "Divorced", "Widowed"] as const;
+// const EMPLOYMENT_TYPES = [
+//   "Full-Time",
+//   "Part-Time",
+//   "Contract",
+//   "Intern",
+// ] as const;
+// const WORK_MODES = ["Onsite", "Remote", "Hybrid"] as const;
+// const EMPLOYMENT_STATUS = [
+//   "Active",
+//   "Inactive",
+//   "Suspended",
+//   "Terminated",
+// ] as const;
+
+// type Gender = (typeof GENDERS)[number];
+// type Marital = (typeof MARITALS)[number];
+// type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
+// type WorkMode = (typeof WORK_MODES)[number];
+// type EmpStatus = (typeof EMPLOYMENT_STATUS)[number];
+
+// interface Department {
+//   id: number;
+//   name: string;
+// }
+// interface DepartmentalRole {
+//   id: number;
+//   title: string;
+//   department: Department;
+// }
+
+// const STORAGE_KEY = "staff-onboarding-form";
+
+// export default function StaffOnboardingForm() {
+//   const router = useRouter();
+
+//   const [step, setStep] = useState(1);
+//   const [submitting, setSubmitting] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [success, setSuccess] = useState<string | null>(null);
+
+//   // === STATE ===
+//   const [firstName, setFirstName] = useState("");
+//   const [lastName, setLastName] = useState("");
+//   const [email, setEmail] = useState("");
+//   const [phone, setPhone] = useState("");
+//   const [dateOfBirth, setDob] = useState("");
+//   const [gender, setGender] = useState<Gender>("Male");
+//   const [maritalStatus, setMarital] = useState<Marital | "">("");
+//   const [hobbies, setHobbies] = useState("");
+
+//   const [city, setCity] = useState("");
+//   const [state, setState] = useState("");
+//   const [country, setCountry] = useState("");
+//   const [postalCode, setPostal] = useState("");
+
+//   const [jobTitle, setJobTitle] = useState("");
+//   const [employmentType, setEmploymentType] =
+//     useState<EmploymentType>("Full-Time");
+//   const [workMode, setWorkMode] = useState<WorkMode>("Onsite");
+//   const [hireDate, setHireDate] = useState("");
+//   const [reportingManager, setReportingManager] = useState("");
+//   const [directReport, setDirectReport] = useState("");
+//   const [contractEndDate, setContractEndDate] = useState("");
+//   const [status, setStatus] = useState<EmpStatus>("Active");
+//   const [workLocation, setWorkLocation] = useState("");
+//   const [departmentId, setDepartmentId] = useState<number | "">("");
+//   const [departmentalRoleId, setDepartmentalRoleId] = useState<number | "">("");
+
+//   const [departments, setDepartments] = useState<Department[]>([]);
+//   const [roles, setRoles] = useState<DepartmentalRole[]>([]);
+
+//   // File upload
+//   const [photo, setPhoto] = useState<File | null>(null);
+//   const [preview, setPreview] = useState<string | null>(null);
+
+//   // === Load saved draft from localStorage ===
+//   useEffect(() => {
+//     const saved = localStorage.getItem(STORAGE_KEY);
+//     if (saved) {
+//       const parsed = JSON.parse(saved);
+
+//       const setters: Record<string, (value: any) => void> = {
+//         firstName: setFirstName,
+//         lastName: setLastName,
+//         email: setEmail,
+//         phone: setPhone,
+//         dateOfBirth: setDob,
+//         gender: setGender,
+//         maritalStatus: setMarital,
+//         hobbies: setHobbies,
+
+//         city: setCity,
+//         state: setState,
+//         country: setCountry,
+//         postalCode: setPostal,
+
+//         jobTitle: setJobTitle,
+//         employmentType: setEmploymentType,
+//         workMode: setWorkMode,
+//         hireDate: setHireDate,
+//         reportingManager: setReportingManager,
+//         directReport: setDirectReport,
+//         contractEndDate: setContractEndDate,
+//         status: setStatus,
+//         workLocation: setWorkLocation,
+//         departmentId: setDepartmentId,
+//         departmentalRoleId: setDepartmentalRoleId,
+
+//         departments: setDepartments,
+//         roles: setRoles,
+
+//         photo: setPhoto, // careful: you can only restore this if you saved as base64/string
+//       };
+
+//       Object.entries(parsed).forEach(([key, value]) => {
+//         if (value !== undefined && setters[key]) {
+//           setters[key](value);
+//         }
+//       });
+//     }
+//   }, []);
+
+//   // === Auto-save draft ===
+//   useEffect(() => {
+//     const draft = {
+//       firstName,
+//       lastName,
+//       email,
+//       phone,
+//       dateOfBirth,
+//       gender,
+//       maritalStatus,
+//       hobbies,
+//       city,
+//       state,
+//       country,
+//       postalCode,
+//       jobTitle,
+//       employmentType,
+//       workMode,
+//       hireDate,
+//       reportingManager,
+//       directReport,
+//       contractEndDate,
+//       status,
+//       workLocation,
+//       departmentId,
+//       departmentalRoleId,
+//     };
+//     localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+//   }, [
+//     firstName,
+//     lastName,
+//     email,
+//     phone,
+//     dateOfBirth,
+//     gender,
+//     maritalStatus,
+//     hobbies,
+//     city,
+//     state,
+//     country,
+//     postalCode,
+//     jobTitle,
+//     employmentType,
+//     workMode,
+//     hireDate,
+//     reportingManager,
+//     directReport,
+//     contractEndDate,
+//     status,
+//     workLocation,
+//     departmentId,
+//     departmentalRoleId,
+//   ]);
+
+//   // === Fetch dropdowns ===
+//   // Fetch departments
+//   useEffect(() => {
+//     Api.get("/departments")
+//       .then((res) => {
+//         setDepartments(res.data || []);
+//       })
+//       .catch((err) => {
+//         console.error("Departments fetch failed", err);
+//       });
+//   }, []); // run once on mount
+
+//   // Fetch roles
+//   useEffect(() => {
+//     Api.get("/departmental-role")
+//       .then((res) => {
+//         setRoles(res.data || []);
+//       })
+//       .catch((err) => {
+//         console.error("Roles fetch failed", err);
+//       });
+//   }, []);
+
+//   const totalSteps = 3;
+//   const progressPct = (step / totalSteps) * 100;
+
+//   // === Navigation ===
+//   const next = () => {
+//     if (
+//       step === 1 &&
+//       (!firstName || !lastName || !email || !phone || !dateOfBirth)
+//     ) {
+//       setError("Fill all required personal fields.");
+//       return;
+//     }
+//     if (step === 2 && (!city || !state || !country)) {
+//       setError("Provide city, state, and country.");
+//       return;
+//     }
+//     setError(null);
+//     setStep((s) => Math.min(totalSteps, s + 1));
+//   };
+//   const back = () => setStep((s) => Math.max(1, s - 1));
+
+//   // === Handle file ===
+//   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const f = e.target.files?.[0];
+//     if (f && f.type.startsWith("image/")) {
+//       setPhoto(f);
+//       setPreview(URL.createObjectURL(f));
+//     }
+//   };
+//   const removeFile = () => {
+//     setPhoto(null);
+//     setPreview(null);
+//   };
+
+//   // === Submit ===
+//   const handleSubmit = async () => {
+//     if (
+//       !jobTitle ||
+//       !employmentType ||
+//       !workMode ||
+//       !hireDate ||
+//       !reportingManager ||
+//       !directReport ||
+//       !departmentId ||
+//       !departmentalRoleId
+//     ) {
+//       setError("Please complete required employment fields.");
+//       return;
+//     }
+
+//     setSubmitting(true);
+//     setError(null);
+//     setSuccess(null);
+
+//     const dto = {
+//       firstName,
+//       lastName,
+//       description: hobbies || undefined,
+//       dateOfBirth,
+//       gender,
+//       maritalStatus: maritalStatus || undefined,
+//       email,
+//       phone,
+//       address: { city, state, country, postalCode: postalCode || undefined },
+//       employment: {
+//         jobTitle,
+//         employmentType,
+//         workMode,
+//         hireDate,
+//         reportingManager,
+//         directReport,
+//         contractEndDate: contractEndDate || undefined,
+//         status,
+//         workLocation: workLocation || undefined,
+//         departmentId: Number(departmentId),
+//         departmentalRoleId: Number(departmentalRoleId),
+//       },
+//     };
+
+//     const formData = new FormData();
+//     formData.append("dto", JSON.stringify(dto));
+//     if (photo) formData.append("imgFile", photo);
+
+//     try {
+//       await Api.post("/staff-register", formData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//       });
+//       setSuccess("Staff created successfully.");
+//       localStorage.removeItem(STORAGE_KEY);
+//       router.push("/staffs");
+//     } catch (e: unknown) {
+//       const err = e as AxiosError<{ message: string }>;
+//       setError(err.response?.data?.message || "Failed to create staff.");
+//     } finally {
+//       setSubmitting(false);
+//     }
+//   };
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-
 import { ArrowLeft, Check, X } from "lucide-react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
+import Image from "next/image";
 
-// Enums
 // === ENUMS ===
 const GENDERS = ["Male", "Female", "Other"] as const;
 const MARITALS = ["Single", "Married", "Divorced", "Widowed"] as const;
@@ -46,36 +356,36 @@ const STORAGE_KEY = "staff-onboarding-form";
 export default function StaffOnboardingForm() {
   const router = useRouter();
 
-  const [step, setStep] = useState(1);
-  const [submitting, setSubmitting] = useState(false);
+  const [step, setStep] = useState<number>(1);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   // === STATE ===
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [dateOfBirth, setDob] = useState("");
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [dateOfBirth, setDob] = useState<string>("");
   const [gender, setGender] = useState<Gender>("Male");
   const [maritalStatus, setMarital] = useState<Marital | "">("");
-  const [hobbies, setHobbies] = useState("");
+  const [hobbies, setHobbies] = useState<string>("");
 
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [country, setCountry] = useState("");
-  const [postalCode, setPostal] = useState("");
+  const [city, setCity] = useState<string>("");
+  const [state, setState] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
+  const [postalCode, setPostal] = useState<string>("");
 
-  const [jobTitle, setJobTitle] = useState("");
+  const [jobTitle, setJobTitle] = useState<string>("");
   const [employmentType, setEmploymentType] =
     useState<EmploymentType>("Full-Time");
   const [workMode, setWorkMode] = useState<WorkMode>("Onsite");
-  const [hireDate, setHireDate] = useState("");
-  const [reportingManager, setReportingManager] = useState("");
-  const [directReport, setDirectReport] = useState("");
-  const [contractEndDate, setContractEndDate] = useState("");
+  const [hireDate, setHireDate] = useState<string>("");
+  const [reportingManager, setReportingManager] = useState<string>("");
+  const [directReport, setDirectReport] = useState<string>("");
+  const [contractEndDate, setContractEndDate] = useState<string>("");
   const [status, setStatus] = useState<EmpStatus>("Active");
-  const [workLocation, setWorkLocation] = useState("");
+  const [workLocation, setWorkLocation] = useState<string>("");
   const [departmentId, setDepartmentId] = useState<number | "">("");
   const [departmentalRoleId, setDepartmentalRoleId] = useState<number | "">("");
 
@@ -90,39 +400,35 @@ export default function StaffOnboardingForm() {
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
+      const parsed = JSON.parse(saved) as Record<string, unknown>;
 
-      const setters: Record<string, (value: any) => void> = {
-        firstName: setFirstName,
-        lastName: setLastName,
-        email: setEmail,
-        phone: setPhone,
-        dateOfBirth: setDob,
-        gender: setGender,
-        maritalStatus: setMarital,
-        hobbies: setHobbies,
+      const setters: Record<string, (value: unknown) => void> = {
+        firstName: (v) => setFirstName(String(v)),
+        lastName: (v) => setLastName(String(v)),
+        email: (v) => setEmail(String(v)),
+        phone: (v) => setPhone(String(v)),
+        dateOfBirth: (v) => setDob(String(v)),
+        gender: (v) => setGender(v as Gender),
+        maritalStatus: (v) => setMarital(v as Marital | ""),
+        hobbies: (v) => setHobbies(String(v)),
 
-        city: setCity,
-        state: setState,
-        country: setCountry,
-        postalCode: setPostal,
+        city: (v) => setCity(String(v)),
+        state: (v) => setState(String(v)),
+        country: (v) => setCountry(String(v)),
+        postalCode: (v) => setPostal(String(v)),
 
-        jobTitle: setJobTitle,
-        employmentType: setEmploymentType,
-        workMode: setWorkMode,
-        hireDate: setHireDate,
-        reportingManager: setReportingManager,
-        directReport: setDirectReport,
-        contractEndDate: setContractEndDate,
-        status: setStatus,
-        workLocation: setWorkLocation,
-        departmentId: setDepartmentId,
-        departmentalRoleId: setDepartmentalRoleId,
-
-        departments: setDepartments,
-        roles: setRoles,
-
-        photo: setPhoto, // careful: you can only restore this if you saved as base64/string
+        jobTitle: (v) => setJobTitle(String(v)),
+        employmentType: (v) => setEmploymentType(v as EmploymentType),
+        workMode: (v) => setWorkMode(v as WorkMode),
+        hireDate: (v) => setHireDate(String(v)),
+        reportingManager: (v) => setReportingManager(String(v)),
+        directReport: (v) => setDirectReport(String(v)),
+        contractEndDate: (v) => setContractEndDate(String(v)),
+        status: (v) => setStatus(v as EmpStatus),
+        workLocation: (v) => setWorkLocation(String(v)),
+        departmentId: (v) => setDepartmentId(v !== "" ? Number(v) : ""),
+        departmentalRoleId: (v) =>
+          setDepartmentalRoleId(v !== "" ? Number(v) : ""),
       };
 
       Object.entries(parsed).forEach(([key, value]) => {
@@ -188,26 +494,16 @@ export default function StaffOnboardingForm() {
   ]);
 
   // === Fetch dropdowns ===
-  // Fetch departments
   useEffect(() => {
     Api.get("/departments")
-      .then((res) => {
-        setDepartments(res.data || []);
-      })
-      .catch((err) => {
-        console.error("Departments fetch failed", err);
-      });
-  }, []); // run once on mount
+      .then((res) => setDepartments(res.data || []))
+      .catch((err) => console.error("Departments fetch failed", err));
+  }, []);
 
-  // Fetch roles
   useEffect(() => {
     Api.get("/departmental-role")
-      .then((res) => {
-        setRoles(res.data || []);
-      })
-      .catch((err) => {
-        console.error("Roles fetch failed", err);
-      });
+      .then((res) => setRoles(res.data || []))
+      .catch((err) => console.error("Roles fetch failed", err));
   }, []);
 
   const totalSteps = 3;
@@ -229,16 +525,18 @@ export default function StaffOnboardingForm() {
     setError(null);
     setStep((s) => Math.min(totalSteps, s + 1));
   };
+
   const back = () => setStep((s) => Math.max(1, s - 1));
 
   // === Handle file ===
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f && f.type.startsWith("image/")) {
       setPhoto(f);
       setPreview(URL.createObjectURL(f));
     }
   };
+
   const removeFile = () => {
     setPhoto(null);
     setPreview(null);
@@ -307,6 +605,7 @@ export default function StaffOnboardingForm() {
       setSubmitting(false);
     }
   };
+
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-16">
       {/* Header */}
@@ -449,11 +748,18 @@ export default function StaffOnboardingForm() {
                   </label>
                   {preview ? (
                     <div className="relative inline-block">
-                      <img
+                      <Image
+                        src={preview}
+                        alt="Preview"
+                        width={96} // required
+                        height={96} // required
+                        className="h-24 w-24 rounded-full object-cover"
+                      />
+                      {/* <img
                         src={preview}
                         alt="Preview"
                         className="h-24 w-24 rounded-full object-cover"
-                      />
+                      /> */}
                       <button
                         type="button"
                         onClick={removeFile}
