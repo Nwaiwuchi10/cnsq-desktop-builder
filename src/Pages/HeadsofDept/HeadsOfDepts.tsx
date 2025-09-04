@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 
 import Api from "@/utils/api";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 
 // Define interface for API response
 interface Staff {
@@ -23,7 +23,7 @@ interface Staff {
   lastName: string;
   email: string;
   phone: string;
-  photoUrl: any | null;
+  photoUrl: string | StaticImageData | null;
   address?: {
     city: string;
     state: string;
@@ -146,8 +146,8 @@ export default function HeadsStaffDirectory() {
                 {/* Profile Picture + Name + Role */}
                 <div className="flex items-center gap-4">
                   <Image
-                    src={person?.photoUrl}
-                    alt={person?.firstName}
+                    src={person.photoUrl || "/default-avatar.png"}
+                    alt={`${person.firstName} ${person.lastName}`}
                     width={50}
                     height={50}
                     className="w-14 h-14 rounded-full object-cover"
