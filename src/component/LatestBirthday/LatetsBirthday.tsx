@@ -41,8 +41,8 @@ export default function LatestBirthday() {
             <div
               className="
     relative
-    w-[350px]       /* Mobile width */
-    h-[200px]       /* Mobile height */
+    w-[315px]       /* Mobile width */
+    h-[315px]       /* Mobile height */
     sm:w-[420px] sm:h-[250px]   /* Tablet */
     md:w-[380px] md:h-[260px]   /* Medium screens */
     lg:w-[280px] lg:h-[280px]   /* Desktop (square look) */
@@ -54,8 +54,9 @@ export default function LatestBirthday() {
               <Image
                 src={person.img}
                 alt={person.name}
-                fill
-                className="object-cover"
+                width={280}
+                height={280}
+                className="w-full h-full object-cover bg-gray-100"
               />
             </div>
 

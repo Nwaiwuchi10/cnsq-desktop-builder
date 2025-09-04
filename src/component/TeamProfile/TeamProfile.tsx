@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react"; // icons
 import Link from "next/link";
 import Api from "@/utils/api";
@@ -11,7 +11,7 @@ interface Staff {
   lastName: string;
   email: string;
   phone?: string;
-  photoUrl?: string;
+  photoUrl?: string | StaticImageData | null;
   address?: {
     city?: string;
     state?: string;
@@ -71,7 +71,7 @@ export default function TeamProfiles() {
 
       {/* Card Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
-        {staffList.map((staff) => (
+        {staffList?.map((staff) => (
           <div
             key={staff.id}
             className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
