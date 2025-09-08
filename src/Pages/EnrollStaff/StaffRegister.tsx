@@ -317,8 +317,8 @@ import { ArrowLeft, Check, X } from "lucide-react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import Image from "next/image";
+import CustomModal from "@/component/Message/Message";
 
-// === ENUMS ===
 const GENDERS = ["Male", "Female", "Other"] as const;
 const MARITALS = ["Single", "Married", "Divorced", "Widowed"] as const;
 const EMPLOYMENT_TYPES = [
@@ -358,8 +358,12 @@ export default function StaffOnboardingForm() {
 
   const [step, setStep] = useState<number>(1);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+
+  // ✅ Now using modal messages
+  const [modal, setModal] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // === STATE ===
   const [firstName, setFirstName] = useState<string>("");
@@ -497,13 +501,17 @@ export default function StaffOnboardingForm() {
   useEffect(() => {
     Api.get("/departments")
       .then((res) => setDepartments(res.data || []))
-      .catch((err) => console.error("Departments fetch failed", err));
+      .catch(() =>
+        setModal({ type: "error", message: "Failed to load departments." })
+      );
   }, []);
 
   useEffect(() => {
     Api.get("/departmental-role")
       .then((res) => setRoles(res.data || []))
-      .catch((err) => console.error("Roles fetch failed", err));
+      .catch(() =>
+        setModal({ type: "error", message: "Failed to load roles." })
+      );
   }, []);
 
   const totalSteps = 3;
@@ -515,14 +523,16 @@ export default function StaffOnboardingForm() {
       step === 1 &&
       (!firstName || !lastName || !email || !phone || !dateOfBirth)
     ) {
-      setError("Fill all required personal fields.");
+      setModal({
+        type: "error",
+        message: "Fill all required personal fields.",
+      });
       return;
     }
     if (step === 2 && (!city || !state || !country)) {
-      setError("Provide city, state, and country.");
+      setModal({ type: "error", message: "Provide city, state, and country." });
       return;
     }
-    setError(null);
     setStep((s) => Math.min(totalSteps, s + 1));
   };
 
@@ -554,13 +564,14 @@ export default function StaffOnboardingForm() {
       !departmentId ||
       !departmentalRoleId
     ) {
-      setError("Please complete required employment fields.");
+      setModal({
+        type: "error",
+        message: "Please complete required employment fields.",
+      });
       return;
     }
 
     setSubmitting(true);
-    setError(null);
-    setSuccess(null);
 
     const dto = {
       firstName,
@@ -595,17 +606,19 @@ export default function StaffOnboardingForm() {
       await Api.post("/staff-register", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setSuccess("Staff created successfully.");
+      setModal({ type: "success", message: "Staff created successfully." });
       localStorage.removeItem(STORAGE_KEY);
-      router.push("/staffs");
+      setTimeout(() => router.push("/staffs"), 1200);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
-      setError(err.response?.data?.message || "Failed to create staff.");
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to create staff.",
+      });
     } finally {
       setSubmitting(false);
     }
   };
-
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-16">
       {/* Header */}
@@ -632,11 +645,16 @@ export default function StaffOnboardingForm() {
             <p className="text-sm text-gray-700 font-medium">
               Step {step} of {totalSteps}
             </p>
-            {success && (
+            {modal?.type === "success" && (
+              <span className="inline-flex items-center gap-1 text-green-600 text-sm">
+                <Check size={16} /> {modal.message}
+              </span>
+            )}
+            {/* {success && (
               <span className="inline-flex items-center gap-1 text-green-600 text-sm">
                 <Check size={16} /> {success}
               </span>
-            )}
+            )} */}
           </div>
           <div className="mt-3 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
             <div
@@ -979,11 +997,12 @@ export default function StaffOnboardingForm() {
               </>
             )}
           </div>
-
-          {error && (
-            <div className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </div>
+          {modal && (
+            <CustomModal
+              type={modal.type}
+              message={modal.message}
+              onClose={() => setModal(null)}
+            />
           )}
 
           {/* Only Next/Submit button */}
