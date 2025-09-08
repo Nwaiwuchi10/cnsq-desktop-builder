@@ -2,7 +2,6 @@
 "use client";
 
 import OrgChart from "./OrgaTree";
-import OrgTree from "./OrgaTree";
 
 export default function OrganogramPage() {
   return (
