@@ -16,43 +16,51 @@ import Link from "next/link";
 import Api from "@/utils/api";
 import Image, { StaticImageData } from "next/image";
 
-// Define interface for API response
-interface Staff {
+// 🔹 Interface for HeadOfDepartment API response
+interface HeadOfDepartment {
   id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  photoUrl: string | StaticImageData | null;
-  address?: {
-    city: string;
-    state: string;
-    country: string;
+  name: string;
+  staff: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    photoUrl: string | StaticImageData | null;
+    address?: {
+      city: string;
+      state: string;
+      country: string;
+    };
+    employment?: {
+      jobTitle: string;
+      department?: {
+        name: string;
+      };
+      departmentalRole?: {
+        title: string;
+      };
+    };
   };
-  employment?: {
-    jobTitle: string;
-    department?: {
-      name: string;
-    };
-    departmentalRole?: {
-      title: string;
-    };
+  department: {
+    id: number;
+    name: string;
   };
 }
 
 export default function HeadsStaffDirectory() {
-  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [staffList, setStaffList] = useState<HeadOfDepartment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  // Fetch staff data
+  // Fetch heads of departments
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        const res = await Api.get("/staff-register"); // 🔹 replace with your API endpoint
+        const res = await Api.get("/headofdepartment"); // 🔹 updated endpoint
         setStaffList(res.data);
       } catch (error) {
-        console.error("Error fetching staff:", error);
+        console.error("Error fetching HODs:", error);
       } finally {
         setLoading(false);
       }
@@ -62,8 +70,8 @@ export default function HeadsStaffDirectory() {
   }, []);
 
   // Filter staff by search input
-  const filteredStaff = staffList.filter((person) =>
-    `${person.firstName} ${person.lastName} ${person.employment?.jobTitle} ${person.employment?.department?.name}`
+  const filteredStaff = staffList.filter((hod) =>
+    `${hod.staff.firstName} ${hod.staff.lastName} ${hod.staff.employment?.jobTitle} ${hod.department?.name}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
@@ -138,26 +146,26 @@ export default function HeadsStaffDirectory() {
           {loading ? (
             <p className="text-gray-600">Loading staff...</p>
           ) : filteredStaff.length > 0 ? (
-            filteredStaff.map((person) => (
+            filteredStaff.map((hod) => (
               <div
-                key={person.id}
+                key={hod.id}
                 className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
               >
                 {/* Profile Picture + Name + Role */}
                 <div className="flex items-center gap-4">
                   <Image
-                    src={person.photoUrl || "/default-avatar.png"}
-                    alt={`${person.firstName} ${person.lastName}`}
+                    src={hod.staff.photoUrl || "/default-avatar.png"}
+                    alt={`${hod.staff.firstName} ${hod.staff.lastName}`}
                     width={50}
                     height={50}
                     className="w-14 h-14 rounded-full object-cover"
                   />
                   <div className="flex flex-col">
                     <span className="text-gray-900 font-semibold">
-                      {person.firstName} {person.lastName}
+                      {hod.staff.firstName} {hod.staff.lastName}
                     </span>
                     <span className="text-gray-500 text-sm">
-                      {person?.employment?.jobTitle || "Not Assigned"}
+                      {hod.name || "Not Assigned"}
                     </span>
                   </div>
                 </div>
@@ -165,32 +173,32 @@ export default function HeadsStaffDirectory() {
                 {/* Department */}
                 <div className="mt-4">
                   <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
-                    {person?.employment?.department?.name || "No Department"}
+                    {hod.department?.name || "No Department"}
                   </span>
                 </div>
 
                 {/* Email */}
                 <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
                   <Mail size={16} />
-                  <span>{person?.email}</span>
+                  <span>{hod.staff.email}</span>
                 </div>
 
                 {/* Phone */}
                 <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
                   <Phone size={16} />
-                  <span>{person?.phone}</span>
+                  <span>{hod.staff.phone}</span>
                 </div>
 
                 {/* Location */}
                 <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
                   <MapPin size={16} />
                   <span>
-                    {person.address?.city}, {person.address?.state}
+                    {hod.staff.address?.city}, {hod.staff.address?.state}
                   </span>
                 </div>
 
                 {/* View Profile */}
-                <Link href={`/staff/${person.id}`} className="w-full">
+                <Link href={`/staff/${hod.staff.id}`} className="w-full">
                   <button
                     style={{ cursor: "pointer" }}
                     className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition"
@@ -201,7 +209,7 @@ export default function HeadsStaffDirectory() {
               </div>
             ))
           ) : (
-            <p className="text-gray-600">No staff found.</p>
+            <p className="text-gray-600">No heads of department found.</p>
           )}
         </div>
       </div>

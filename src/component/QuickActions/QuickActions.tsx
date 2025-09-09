@@ -2,7 +2,8 @@
 
 import svgContact from "../../assests/imageIcons/SVG.png";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react"; // arrow icon
+import { ArrowRight } from "lucide-react";
+import Link from "next/link"; // ✅ import Next.js Link
 
 export default function QuickActions() {
   const actions = [
@@ -12,14 +13,16 @@ export default function QuickActions() {
       content:
         "Browse and manage your organization's staff with detailed profiles and hierarchy mapping.",
       buttonText: "View Directory",
-      icon: <Image src={svgContact} alt="svg-icon" />,
+      icon: <Image src={svgContact} alt="staff-directory-icon" />,
+      href: "/staff", // ✅ navigation path
     },
     {
       id: 2,
       label: "Celebrations",
       content: "Browse and manage your staff with detailed updates",
       buttonText: "View Birthdays",
-      icon: <Image src={svgContact} alt="svg-icon" />,
+      icon: <Image src={svgContact} alt="birthdays-icon" />,
+      href: "/birthday", // ✅ navigation path
     },
     {
       id: 3,
@@ -27,7 +30,8 @@ export default function QuickActions() {
       content:
         "Visualize company structure with interactive organogram and reporting lines",
       buttonText: "View Organogram",
-      icon: <Image src={svgContact} alt="svg-icon" />,
+      icon: <Image src={svgContact} alt="organogram-icon" />,
+      href: "/organogram", // ✅ navigation path
     },
   ];
 
@@ -57,11 +61,14 @@ export default function QuickActions() {
               </p>
             </div>
 
-            {/* Button sticks to bottom */}
-            <button className="mt-6 flex items-center justify-center gap-2 bg-[#95D700] text-white font-semibold rounded-lg w-full h-12 hover:bg-green-500 transition">
+            {/* Button as Link */}
+            <Link
+              href={action.href}
+              className="mt-6 flex items-center justify-center gap-2 bg-[#95D700] text-white font-semibold rounded-lg w-full h-12 hover:bg-green-500 transition"
+            >
               {action.buttonText}
               <ArrowRight size={18} />
-            </button>
+            </Link>
           </div>
         ))}
       </div>
