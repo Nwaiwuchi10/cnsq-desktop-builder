@@ -1,4 +1,3 @@
-"use-client";
 import Main from "@/pages/StaffDetailsPage/Main";
 import React from "react";
 

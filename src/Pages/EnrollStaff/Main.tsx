@@ -1,8 +1,9 @@
 "use client";
-import Footer from "@/component/Footer/Footer";
+
 import Navbar from "@/component/Navbar/Navbar";
 import React from "react";
 import StaffOnboardingForm from "./StaffRegister";
+import Footer from "@/component/Footer/Footer";
 
 const Main = () => {
   return (
