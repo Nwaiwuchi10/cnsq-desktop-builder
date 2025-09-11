@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Api from "@/utils/api";
+import ProjectCard from "../Projects/ProjectCrad";
 
 interface Address {
   city: string;
@@ -58,17 +59,52 @@ export default function StaffDetails() {
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
-  const [staff, setStaff] = useState<Staff | null>(null);
 
+  // ✅ Always at top level
+  const [staff, setStaff] = useState<Staff | null>(null);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loadingStaff, setLoadingStaff] = useState(true);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  // ✅ Staff fetch
   useEffect(() => {
-    if (id) {
-      Api.get(`/staff-register/${id}`) // adjust to your backend endpoint
-        .then((res) => setStaff(res.data))
-        .catch((err) => console.error(err));
-    }
+    if (!id) return;
+
+    const fetchStaff = async () => {
+      try {
+        const res = await Api.get(`/staff-register/${id}`);
+        setStaff(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingStaff(false);
+      }
+    };
+
+    fetchStaff();
   }, [id]);
 
-  if (!staff) {
+  // ✅ Projects fetch
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchProjects = async () => {
+      try {
+        const res = await Api.get(`/projects/staff/all/${id}`);
+        setProjects(res.data.data || []); // return empty array if none
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+        setProjects([]); // fallback
+      } finally {
+        setLoadingProjects(false);
+      }
+    };
+
+    fetchProjects();
+  }, [id]);
+
+  // ✅ Handle loading state safely
+  if (loadingStaff) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
         <p className="text-gray-500">Loading staff details...</p>
@@ -76,6 +112,13 @@ export default function StaffDetails() {
     );
   }
 
+  if (!staff) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
+        <p className="text-red-500">Staff not found.</p>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-[#FAFAFA] p-4 sm:p-8">
       {/* Back Button */}
@@ -215,6 +258,25 @@ export default function StaffDetails() {
           </p>
         </div>
       </div>
+
+      {/* projects */}
+
+      <div className="bg-white rounded-2xl shadow-sm mt-6 p-6">
+        <h3 className="text-lg font-semibold mb-4">Projects</h3>
+        <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
+        {projects.length === 0 ? (
+          <p className="text-gray-500 text-sm">
+            No project found for this staff.
+          </p>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+        )}
+      </div>
+      {/* projects */}
     </div>
   );
 }
