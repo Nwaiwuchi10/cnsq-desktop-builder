@@ -9,11 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "cnsquad-staging.s3.eu-west-2.amazonaws.com",
         pathname: "/**",
       },
-      // {
-      //   protocol: "https",
-      //   hostname: "adsng.s3.eu-north-1.amazonaws.com", // ✅ fixed
-      //   pathname: "/**", // allow all paths under this host
-      // },
+      {
+        protocol: "https",
+        hostname: "adsng.s3.eu-north-1.amazonaws.com", // ✅ fixed
+        pathname: "/**", // allow all paths under this host
+      },
     ],
   },
   async rewrites() {
