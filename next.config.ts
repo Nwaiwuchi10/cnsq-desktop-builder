@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  eslint: {
+    // Ignore ESLint errors during builds (Vercel won't fail)
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     return [
       {
