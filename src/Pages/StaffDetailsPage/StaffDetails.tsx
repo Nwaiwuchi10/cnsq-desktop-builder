@@ -7,7 +7,45 @@ import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Api from "@/utils/api";
 import ProjectCard from "../Projects/ProjectCrad";
-
+interface Project {
+  id: number;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: "high" | "medium" | "low";
+  timeLine: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl?: string;
+    };
+  }[];
+  comments: {
+    id: number;
+    content: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+    employment?: {
+      department?: {
+        name?: string;
+      };
+    };
+  };
+}
 interface Address {
   city: string;
   state: string;
@@ -62,7 +100,7 @@ export default function StaffDetails() {
 
   // ✅ Always at top level
   const [staff, setStaff] = useState<Staff | null>(null);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
   // const [loadingProjects, setLoadingProjects] = useState(true);
 

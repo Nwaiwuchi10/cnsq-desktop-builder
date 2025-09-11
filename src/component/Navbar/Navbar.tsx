@@ -6,7 +6,11 @@ import { Menu, X } from "lucide-react";
 import imgHome from "../../assests/images/cnsquadlogo.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
-
+type User = {
+  firstName: string;
+  lastName: string;
+  photoUrl?: string;
+};
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Staff", href: "/staff" },
@@ -19,7 +23,7 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const userId = localStorage.getItem("userId");
@@ -76,8 +80,8 @@ export default function Navbar() {
       );
     }
     const initials =
-      user?.firstName?.charAt(0).toUpperCase() +
-      user?.lastName?.charAt(0).toUpperCase();
+      (user?.firstName?.charAt(0).toUpperCase() || "") +
+      (user?.lastName?.charAt(0).toUpperCase() || "");
     return (
       <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
         {initials || "U"}

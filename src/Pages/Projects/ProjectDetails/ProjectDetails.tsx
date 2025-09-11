@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import Api from "@/utils/api";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 
 interface Project {
   id: number;
@@ -23,6 +23,7 @@ interface Project {
       firstName: string;
       lastName: string;
       email: string;
+      photoUrl: string | StaticImageData | null;
     };
   }[];
   comments: {
@@ -39,7 +40,7 @@ interface Project {
     lastName: string;
   };
 }
-
+type AssignedTo = Project["assignedTo"][number];
 export default function ProjectDetails() {
   const router = useRouter();
   const params = useParams();
@@ -118,27 +119,29 @@ export default function ProjectDetails() {
       <div className="mt-6">
         <h3 className="font-semibold text-gray-700 mb-2">Assigned Staff</h3>
         <div className="flex items-center mt-2">
-          {project.assignedTo?.slice(0, 4).map((assign: any, idx: number) => (
-            <div
-              key={idx}
-              className="w-15 h-15 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
-            >
-              {assign.staff?.photoUrl ? (
-                <Image
-                  src={assign.staff.photoUrl}
-                  alt={`${assign.staff.firstName}`}
-                  width={50}
-                  height={50}
-                  className="object-cover w-full h-full"
-                  unoptimized
-                />
-              ) : (
-                <div className="bg-gray-300 w-full h-full flex items-center justify-center text-xs text-white">
-                  {assign.staff?.firstName?.[0]}
-                </div>
-              )}
-            </div>
-          ))}
+          {project.assignedTo
+            ?.slice(0, 4)
+            .map((assign: AssignedTo, idx: number) => (
+              <div
+                key={idx}
+                className="w-15 h-15 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
+              >
+                {assign.staff?.photoUrl ? (
+                  <Image
+                    src={assign.staff.photoUrl}
+                    alt={`${assign.staff.firstName}`}
+                    width={50}
+                    height={50}
+                    className="object-cover w-full h-full"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="bg-gray-300 w-full h-full flex items-center justify-center text-xs text-white">
+                    {assign.staff?.firstName?.[0]}
+                  </div>
+                )}
+              </div>
+            ))}
           <button className="w-15 h-15 rounded-full bg-gray-100 border flex items-center justify-center">
             +
           </button>
