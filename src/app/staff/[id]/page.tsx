@@ -1,5 +1,5 @@
 "use-client";
-import Main from "@/Pages/StaffDetailsPage/Main";
+import Main from "@/pages/StaffDetailsPage/Main";
 import React from "react";
 
 const page = () => {

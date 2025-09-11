@@ -48,6 +48,13 @@ interface ProjectCardProps {
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
+  if (!project) {
+    return (
+      <div className="p-6 border rounded-lg text-gray-500">
+        No project data available
+      </div>
+    );
+  }
   const progress = 75; // 🔹 Placeholder: you can compute this from your data
   const priorityColors: Record<string, string> = {
     high: "text-red-500 border border-red-500",
