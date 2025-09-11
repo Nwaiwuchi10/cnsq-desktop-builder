@@ -361,6 +361,7 @@ export default function StaffOnboardingForm() {
                     First Name *
                   </label>
                   <input
+                    type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -371,6 +372,7 @@ export default function StaffOnboardingForm() {
                     Last Name *
                   </label>
                   <input
+                    type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -494,6 +496,7 @@ export default function StaffOnboardingForm() {
                     City *
                   </label>
                   <input
+                    type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -514,6 +517,7 @@ export default function StaffOnboardingForm() {
                     Country *
                   </label>
                   <input
+                    type="text"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -539,6 +543,7 @@ export default function StaffOnboardingForm() {
                     Job Title *
                   </label>
                   <input
+                    type="text"
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -590,6 +595,7 @@ export default function StaffOnboardingForm() {
                     Reporting Manager *
                   </label>
                   <input
+                    type="text"
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -600,6 +606,7 @@ export default function StaffOnboardingForm() {
                     Direct Report *
                   </label>
                   <input
+                    type="text"
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -635,6 +642,7 @@ export default function StaffOnboardingForm() {
                     Work Location
                   </label>
                   <input
+                    type="text"
                     value={workLocation}
                     onChange={(e) => setWorkLocation(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"

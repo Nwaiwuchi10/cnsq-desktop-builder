@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Plus } from "lucide-react";
 import Link from "next/link";
 import Api from "@/utils/api";
-import ProjectCard from "./ProjectCrad";
 import ProjectStatsCards from "./ProjectStats/ProjectStats";
+import ProjectCard from "./ProjectCrad";
+
 interface Project {
   id: number;
   projectName: string;

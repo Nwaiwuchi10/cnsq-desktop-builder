@@ -19,11 +19,16 @@ const PROJECT_PRIORITIES = ["low", "medium", "high", "critical"];
 
 export default function ProjectWizardForm() {
   const router = useRouter();
-  const token = localStorage.getItem("user-token");
+  const [token, setToken] = useState<string | null>(null);
+  //   const token = localStorage.getItem("user-token");
   useEffect(() => {
-    const token = localStorage.getItem("user-token"); // check inside effect
-    if (!token) {
-      router.push("/login");
+    if (typeof window !== "undefined") {
+      const t = localStorage.getItem("user-token");
+      if (!t) {
+        router.push("/login");
+      } else {
+        setToken(t);
+      }
     }
   }, [router]);
 
@@ -82,12 +87,10 @@ export default function ProjectWizardForm() {
       });
       return;
     }
-
+    // if (!token) return;
     setSubmitting(true);
+
     try {
-      //   const token =
-      //     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGFmZklkIjoyNiwiZW1haWwiOiJqb3l0ZXN0QGdtYWlsLmNvbSIsImlhdCI6MTc1NzUwMjk0NH0.R6bfyVIzDnYYij-_zXshwic3v6R9bjQtM5s9kgTgYx8";
-      //   const token = localStorage.getItem("token"); // adjust if stored differently
       const res = await Api.post(
         "/projects",
         {
@@ -129,12 +132,9 @@ export default function ProjectWizardForm() {
       });
       return;
     }
-
+    // if (!token) return;
     setSubmitting(true);
     try {
-      //   const token =
-      //     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdGFmZklkIjoyNiwiZW1haWwiOiJqb3l0ZXN0QGdtYWlsLmNvbSIsImlhdCI6MTc1NzUwMjk0NH0.R6bfyVIzDnYYij-_zXshwic3v6R9bjQtM5s9kgTgYx8"; // your JWT
-
       await Api.post(
         `/projects/${createdProjectId}/assign`,
         {

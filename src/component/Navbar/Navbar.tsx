@@ -11,6 +11,7 @@ type User = {
   lastName: string;
   photoUrl?: string;
 };
+
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Staff", href: "/staff" },
@@ -25,10 +26,16 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const userId = localStorage.getItem("userId");
+
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const token = localStorage.getItem("user-token");
+    const storedUserId = localStorage.getItem("userId");
+    setUserId(storedUserId);
+
     if (!token) {
       setLoading(false);
       return;
@@ -60,7 +67,9 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("user-token");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user-token");
+    }
     setUser(null);
     window.location.href = "/login";
   };

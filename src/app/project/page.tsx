@@ -1,4 +1,4 @@
-import Index from "@/Pages/Projects/Index";
+import Index from "@/pages/Projects/Index";
 import React from "react";
 
 const page = () => {
