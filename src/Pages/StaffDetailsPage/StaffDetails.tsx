@@ -64,7 +64,7 @@ export default function StaffDetails() {
   const [staff, setStaff] = useState<Staff | null>(null);
   const [projects, setProjects] = useState<any[]>([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
-  const [loadingProjects, setLoadingProjects] = useState(true);
+  // const [loadingProjects, setLoadingProjects] = useState(true);
 
   // ✅ Staff fetch
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function StaffDetails() {
         console.error("Error fetching projects:", err);
         setProjects([]); // fallback
       } finally {
-        setLoadingProjects(false);
+        // setLoadingProjects(false);
       }
     };
 

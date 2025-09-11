@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Search, Filter, Plus } from "lucide-react";
+import { Search, Filter, Plus } from "lucide-react";
 import Link from "next/link";
 import Api from "@/utils/api";
 import ProjectCard from "./ProjectCrad";
