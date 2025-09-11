@@ -3,9 +3,48 @@
 import Image from "next/image";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+export interface Project {
+  id: number;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: "high" | "medium" | "low";
+  timeLine: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl?: string;
+    };
+  }[];
+  comments: {
+    id: number;
+    content: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+    employment?: {
+      department?: {
+        name?: string;
+      };
+    };
+  };
+}
 
 interface ProjectCardProps {
-  project: any;
+  project: Project;
 }
 
 export default function ProjectCard({ project }: ProjectCardProps) {
@@ -60,7 +99,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
       {/* 🔹 Assigned Staff */}
       <div className="flex items-center mt-2">
-        {project.assignedTo?.slice(0, 4).map((assign: any, idx: number) => (
+        {project.assignedTo?.slice(0, 4).map((assign, idx: number) => (
           <div
             key={idx}
             className="w-8 h-8 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"

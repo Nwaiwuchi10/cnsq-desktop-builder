@@ -6,10 +6,48 @@ import Link from "next/link";
 import Api from "@/utils/api";
 import ProjectCard from "./ProjectCrad";
 import ProjectStatsCards from "./ProjectStats/ProjectStats";
-
+interface Project {
+  id: number;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: "high" | "medium" | "low";
+  timeLine: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl?: string;
+    };
+  }[];
+  comments: {
+    id: number;
+    content: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+    employment?: {
+      department?: {
+        name?: string;
+      };
+    };
+  };
+}
 export default function ViewProjects() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [allProjects, setAllProjects] = useState<any[]>([]); // 🔹 Keep full list for search
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]); // 🔹 Keep full list for search
   const [page, setPage] = useState(1);
   const [limit] = useState(6);
   const [total, setTotal] = useState(0);
