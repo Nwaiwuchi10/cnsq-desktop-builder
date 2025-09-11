@@ -3,11 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      // {
-      //   protocol: "https",
-      //   hostname: "cnsquad-staging.s3.eu-west-2.amazonaws.com",
-      //   pathname: "/**",
-      // },
+      {
+        protocol: "https",
+        hostname: "cnsquad-staging.s3.eu-west-2.amazonaws.com",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "adsng.s3.eu-north-1.amazonaws.com", // ✅ fixed
