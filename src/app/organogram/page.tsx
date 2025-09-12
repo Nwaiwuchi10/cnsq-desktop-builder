@@ -1,4 +1,4 @@
-import Index from "@/pages/Organogram/Index";
+import Index from "@/page/Organogram/Index";
 import React from "react";
 
 const page = () => {
