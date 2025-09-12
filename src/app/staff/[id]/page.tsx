@@ -1,4 +1,4 @@
-import Main from "@/page/StaffDetailsPage/Main";
+import Main from "@/pages/StaffDetailsPage/Main";
 import React from "react";
 
 const page = () => {

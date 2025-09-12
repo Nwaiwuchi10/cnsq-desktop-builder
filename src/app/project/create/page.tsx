@@ -1,4 +1,4 @@
-import CreateProjectIndex from "@/page/Projects/CreateProjectIndex";
+import CreateProjectIndex from "@/pages/Projects/CreateProjectIndex";
 import React from "react";
 
 const page = () => {
