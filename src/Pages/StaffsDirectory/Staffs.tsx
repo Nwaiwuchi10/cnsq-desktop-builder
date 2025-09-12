@@ -99,7 +99,7 @@ export default function StaffDirectory() {
 
         {/* 📄 Subtitle */}
         <p className="mt-6 text-gray-900 text-base sm:text-lg">
-          Browse and connect with your colleagues across the organization
+          Browse and Connect with your colleagues across the organization
         </p>
 
         {/* 🔍 Toolbar */}
