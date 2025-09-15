@@ -12,6 +12,7 @@ interface Staff {
   lastName: string;
   photoUrl?: string;
   dateOfBirth?: string;
+  nextBirthday: string;
   employment?: {
     departmentalRole?: {
       title?: string;
@@ -145,19 +146,9 @@ const Birthday = () => {
 };
 
 // 🔹 Reusable Birthday Card Component
+// 🔹 Reusable Birthday Card Component
 const BirthdayCard = ({ staff }: { staff: Staff }) => {
-  // format DOB nicely (e.g., September 11, 2025)
-  const formatDate = (dob?: string) => {
-    if (!dob) return "N/A";
-    try {
-      return new Date(dob).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-      });
-    } catch {
-      return dob;
-    }
-  };
+  // format DOB nicely (e.g., September 11, 2025) using Nigeria timezone
 
   return (
     <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
@@ -189,7 +180,13 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => {
 
       {/* 🔹 Date of Birth */}
       <div className="mt-3 text-gray-600 text-sm">
-        🎂 {formatDate(staff.dateOfBirth)}
+        🎂
+        {new Date(staff?.nextBirthday).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          timeZone: "Africa/Lagos",
+        })}
       </div>
 
       {/* Action Button */}
