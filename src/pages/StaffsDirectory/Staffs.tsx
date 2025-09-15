@@ -1,11 +1,11 @@
-"use client";
+// "use client";
 
 import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   Search,
-  Filter,
+  ChevronDown, // ⬅️ replaced Filter with dropdown chevron
   Plus,
   Mail,
   Phone,
@@ -39,6 +39,15 @@ interface Staff {
   };
 }
 
+// === Departmental Role Interface ===
+interface DepartmentalRole {
+  id: number;
+  title: string;
+  department: {
+    name: string;
+  };
+}
+
 // === API Response Type ===
 interface StaffResponse {
   data: Staff[];
@@ -50,11 +59,15 @@ interface StaffResponse {
 
 export default function StaffDirectory() {
   const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [roles, setRoles] = useState<DepartmentalRole[]>([]); // ✅ store roles
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+
+  const [selectedRole, setSelectedRole] = useState<string>(""); // ✅ filter state
+  const [showDropdown, setShowDropdown] = useState(false); // ✅ dropdown toggle
 
   // Fetch staff data
   useEffect(() => {
@@ -76,12 +89,32 @@ export default function StaffDirectory() {
     fetchStaff();
   }, [page, limit]);
 
-  // Filter staff by search input
-  const filteredStaff = staffList.filter((person) =>
-    `${person.firstName} ${person.lastName} ${person.employment?.jobTitle} ${person.employment?.department?.name}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  // Fetch departmental roles
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const res = await Api.get<DepartmentalRole[]>(`/departmental-role`);
+        setRoles(res.data);
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  // Filter staff by search + selected role
+  const filteredStaff = staffList.filter((person) => {
+    const matchesSearch =
+      `${person.firstName} ${person.lastName} ${person.employment?.jobTitle} ${person.employment?.department?.name}`
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+    const matchesRole = selectedRole
+      ? person.employment?.departmentalRole?.title === selectedRole
+      : true;
+
+    return matchesSearch && matchesRole;
+  });
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
@@ -103,8 +136,9 @@ export default function StaffDirectory() {
         </p>
 
         {/* 🔍 Toolbar */}
+        {/* 🔍 Toolbar */}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Search Bar */}
+          {/* Search Bar (MOBILE + DESKTOP) */}
           <div className="flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
             <Search className="text-gray-500" size={18} />
             <input
@@ -114,14 +148,95 @@ export default function StaffDirectory() {
               onChange={(e) => setSearch(e.target.value)}
               className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
             />
+
+            {/* 📱 Mobile-only buttons */}
+            <div className="flex sm:hidden gap-2 ml-2">
+              {/* Filter Dropdown (MOBILE) */}
+              <button
+                onClick={() => setShowDropdown((prev) => !prev)}
+                className="flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-gray-600 text-xs hover:bg-gray-100"
+              >
+                <span>{selectedRole || "Filter"}</span>
+                <ChevronDown size={14} />
+              </button>
+
+              {showDropdown && (
+                <div className="absolute top-16 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  <ul className="max-h-60 overflow-y-auto">
+                    <li
+                      onClick={() => {
+                        setSelectedRole("");
+                        setShowDropdown(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      All Roles
+                    </li>
+                    {roles.map((role) => (
+                      <li
+                        key={role.id}
+                        onClick={() => {
+                          setSelectedRole(role.title);
+                          setShowDropdown(false);
+                        }}
+                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        {role.title} ({role.department?.name})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Add Staff (MOBILE) */}
+              <Link href="/add-staff" style={{ cursor: "pointer" }}>
+                <button className="flex items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
+                  <Plus size={14} /> Add New Staff
+                </button>
+              </Link>
+            </div>
           </div>
 
-          {/* Right Side (DESKTOP only) */}
-          <div className="hidden sm:flex items-center gap-3">
-            <button className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100">
-              <Filter size={16} />
-              Filter by
+          {/* 💻 Desktop-only Filter + Add Staff */}
+          <div className="hidden sm:flex items-center gap-3 relative">
+            {/* Filter Dropdown */}
+            <button
+              onClick={() => setShowDropdown((prev) => !prev)}
+              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+            >
+              <span>{selectedRole || "Filter by Dept Unit"}</span>
+              <ChevronDown size={16} />
             </button>
+
+            {showDropdown && (
+              <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg w-56 z-10">
+                <ul className="max-h-60 overflow-y-auto">
+                  <li
+                    onClick={() => {
+                      setSelectedRole("");
+                      setShowDropdown(false);
+                    }}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                  >
+                    All Roles
+                  </li>
+                  {roles.map((role) => (
+                    <li
+                      key={role.id}
+                      onClick={() => {
+                        setSelectedRole(role.title);
+                        setShowDropdown(false);
+                      }}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {role.title} ({role.department?.name})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Add Staff */}
             <Link href="/add-staff" style={{ cursor: "pointer" }}>
               <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
                 Add New Staff <Plus size={18} />

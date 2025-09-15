@@ -101,6 +101,7 @@ export default function LatestBirthday() {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
+                timeZone: "Africa/Lagos",
               })}
             </span>
           </div>
