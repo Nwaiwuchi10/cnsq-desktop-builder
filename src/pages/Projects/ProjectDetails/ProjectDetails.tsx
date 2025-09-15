@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import Api from "@/utils/api";
 import Image, { StaticImageData } from "next/image";
+import DisplayTask from "@/component/DisplayTask/DisplayTask";
 
 interface Project {
   id: number;
@@ -182,6 +183,10 @@ export default function ProjectDetails() {
             Post
           </button>
         </div>
+      </div>
+
+      <div className="mt-24">
+        <DisplayTask projectId={id} />
       </div>
     </div>
   );

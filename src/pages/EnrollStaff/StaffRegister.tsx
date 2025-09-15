@@ -364,6 +364,7 @@ export default function StaffOnboardingForm() {
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    pattern="[A-Za-z]+"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
                 </div>
@@ -373,6 +374,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     type="text"
+                    pattern="[A-Za-z]+"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -497,6 +499,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     type="text"
+                    pattern="[A-Za-z]+"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -508,6 +511,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     value={state}
+                    pattern="[A-Za-z]+"
                     onChange={(e) => setState(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
@@ -519,6 +523,7 @@ export default function StaffOnboardingForm() {
                   <input
                     type="text"
                     value={country}
+                    pattern="[A-Za-z]+"
                     onChange={(e) => setCountry(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
@@ -544,6 +549,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     type="text"
+                    pattern="[A-Za-z]+"
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -596,6 +602,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     type="text"
+                    pattern="[A-Za-z]+"
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -607,6 +614,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     type="text"
+                    pattern="[A-Za-z]+"
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
@@ -643,6 +651,7 @@ export default function StaffOnboardingForm() {
                   </label>
                   <input
                     type="text"
+                    pattern="[A-Za-z]+"
                     value={workLocation}
                     onChange={(e) => setWorkLocation(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
