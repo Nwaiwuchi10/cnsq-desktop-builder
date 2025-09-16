@@ -363,7 +363,14 @@ export default function StaffOnboardingForm() {
                   <input
                     type="text"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => {
+                      const onlyLetters = e.target.value.replace(
+                        /[^A-Za-z\s]/g,
+                        ""
+                      );
+                      setFirstName(onlyLetters);
+                    }}
+                    // onChange={(e) => setFirstName(e.target.value)}
                     pattern="[A-Za-z]+"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
@@ -376,7 +383,14 @@ export default function StaffOnboardingForm() {
                     type="text"
                     pattern="[A-Za-z]+"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(e) => {
+                      const onlyLetters = e.target.value.replace(
+                        /[^A-Za-z\s]/g,
+                        ""
+                      );
+                      setLastName(onlyLetters);
+                    }}
+                    // onChange={(e) => setLastName(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
                 </div>
@@ -722,6 +736,7 @@ export default function StaffOnboardingForm() {
               </button>
             ) : (
               <button
+                style={{ cursor: "pointer" }}
                 onClick={handleSubmit}
                 disabled={submitting}
                 className="w-full py-3 rounded-lg bg-[#95D700] text-white font-semibold text-lg hover:opacity-90 disabled:opacity-60"

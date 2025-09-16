@@ -135,7 +135,7 @@ const Birthday = () => {
           ) : (
             <div className="grid grid-cols-1 pb-24 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
               {filteredUpcoming.map((staff) => (
-                <BirthdayCard key={staff.id} staff={staff} />
+                <BirthdayCard2 key={staff.id} staff={staff} />
               ))}
             </div>
           )}
@@ -148,6 +148,71 @@ const Birthday = () => {
 // 🔹 Reusable Birthday Card Component
 // 🔹 Reusable Birthday Card Component
 const BirthdayCard = ({ staff }: { staff: Staff }) => {
+  // format DOB nicely (e.g., September 11, 2025) using Nigeria timezone
+
+  return (
+    <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
+      {/* Profile Picture */}
+      <Image
+        src={staff.photoUrl || "/default-avatar.png"}
+        alt={`${staff.firstName} ${staff.lastName}`}
+        width={100}
+        height={100}
+        className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
+      />
+
+      {/* Name + Role */}
+      <div className="mt-4">
+        <span className="text-gray-900 font-semibold text-lg block">
+          {staff.firstName} {staff.lastName}
+        </span>
+        <span className="text-gray-500 text-sm">
+          {staff.employment?.departmentalRole?.title || "Staff Member"}
+        </span>
+      </div>
+
+      {/* Department Badge */}
+      <div className="mt-3">
+        <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+          {staff.employment?.department?.name || "Department"}
+        </span>
+      </div>
+
+      {/* 🔹 Date of Birth */}
+      <div className="mt-3 text-gray-600 text-sm">
+        🎂{" "}
+        {staff?.dateOfBirth
+          ? (() => {
+              const dob = new Date(staff.dateOfBirth);
+              const currentYear = new Date().getFullYear();
+
+              // Create a new date with current year but same month/day
+              const birthdayThisYear = new Date(
+                currentYear,
+                dob.getMonth(),
+                dob.getDate()
+              );
+
+              return birthdayThisYear.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+                timeZone: "Africa/Lagos",
+              });
+            })()
+          : "N/A"}
+      </div>
+
+      {/* Action Button */}
+      <Link href={`/staff/${staff.id}`} className="w-full mt-6">
+        <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition">
+          Send Message
+        </button>
+      </Link>
+    </div>
+  );
+};
+const BirthdayCard2 = ({ staff }: { staff: Staff }) => {
   // format DOB nicely (e.g., September 11, 2025) using Nigeria timezone
 
   return (
