@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { ProjectStatus } from "@/dataTypes/Data-Types";
 export interface Project {
   id: number;
   projectName: string;
@@ -55,7 +56,22 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       </div>
     );
   }
-  const progress = 75; // 🔹 Placeholder: you can compute this from your data
+  const progressValue = () => {
+    switch (project.status as ProjectStatus) {
+      case ProjectStatus.NOT_STARTED:
+        return 25;
+      case ProjectStatus.IN_PROGRESS:
+        return 50;
+      case ProjectStatus.TESTING:
+        return 75;
+      case ProjectStatus.COMPLETED:
+        return 100;
+      default:
+        return 0;
+    }
+  };
+  const progress = progressValue();
+  // const progress = 75; // 🔹 Placeholder: you can compute this from your data
   const priorityColors: Record<string, string> = {
     high: "text-red-500 border border-red-500",
     medium: "text-yellow-500 border border-yellow-500",
