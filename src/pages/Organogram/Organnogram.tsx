@@ -3,6 +3,8 @@
 
 import OrgChart from "./OrgaTree";
 
+// import OrgChart from "./OrgaTree";
+
 export default function OrganogramPage() {
   return (
     <main className="min-h-screen bg-gray-50">

@@ -16,6 +16,8 @@
     "react": "19.1.0",
     "react-d3-tree": "^3.6.6",
     "react-dom": "19.1.0",
+    "react-organizational-chart": "^2.2.1",
+    "react-ui-cards": "^3.1.0",
     "reactflow": "^11.11.4",
     "xlsx": "^0.18.5"
   },
