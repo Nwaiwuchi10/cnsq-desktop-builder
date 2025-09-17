@@ -10,6 +10,8 @@ import editIcon from "../../../assests/images/Button.png";
 import UpdateProjectModal from "../UpdateProject/UpdateProjectModal";
 import { ProjectStatus } from "@/dataTypes/Data-Types";
 import AssignedToStaffModal from "../UpdateProject/AssignedToStaffModal";
+import { AxiosError } from "axios";
+import CustomModal from "@/component/Message/Message";
 
 interface Project {
   id: number;
@@ -53,6 +55,18 @@ export default function ProjectDetails() {
   const [project, setProject] = useState<Project | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showEditModals, setShowEditModals] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [loadingComment, setLoadingComment] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [modal, setModal] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  useEffect(() => {
+    const t = localStorage.getItem("user-token");
+    setToken(t);
+  }, []);
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -82,7 +96,38 @@ export default function ProjectDetails() {
   };
   const progress = progressValue();
   // const progress = 25; // replace with actual if available
+  ///// to comment on a project
 
+  const handleAddComment = async () => {
+    if (!commentText.trim()) return; // avoid empty comment
+    try {
+      setLoadingComment(true);
+      await Api.patch(
+        `/projects/${id}/add/comments`,
+        {
+          text: commentText,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setCommentText(""); // clear input after success
+      setModal({ type: "success", message: "Project created successfully!" });
+      // refresh project data to show new comment
+      const res = await Api.get(`/projects/${id}`);
+      setProject(res.data);
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to create project.",
+      });
+    } finally {
+      setLoadingComment(false);
+    }
+  };
   return (
     <>
       <div className="min-h-screen bg-[#FAFAFA] p-6">
@@ -202,7 +247,33 @@ export default function ProjectDetails() {
         </div>
 
         {/* Add Comment */}
+        {/* Add Comment */}
         <div className="mt-6 flex items-center gap-2 w-full max-w-md">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Add a comment"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 pr-20"
+            />
+            <button
+              onClick={handleAddComment}
+              disabled={loadingComment}
+              className="absolute right-1 top-1 bottom-1 px-4 bg-[#78B500] text-white rounded-md hover:opacity-90 disabled:opacity-50"
+            >
+              {loadingComment ? "Posting..." : "Post"}
+            </button>
+          </div>
+        </div>
+        {modal && (
+          <CustomModal
+            type={modal.type}
+            message={modal.message}
+            onClose={() => setModal(null)}
+          />
+        )}
+        {/* <div className="mt-6 flex items-center gap-2 w-full max-w-md">
           <div className="relative flex-1">
             <input
               type="text"
@@ -213,7 +284,7 @@ export default function ProjectDetails() {
               Post
             </button>
           </div>
-        </div>
+        </div> */}
 
         <div className="mt-24">
           <DisplayTask projectId={id} />

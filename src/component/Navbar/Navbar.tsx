@@ -153,6 +153,13 @@ export default function Navbar() {
                       >
                         View Profile
                       </Link>
+                      <Link
+                        href={`/change-password`}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        Change Password
+                      </Link>
                       <button
                         style={{ cursor: "pointer" }}
                         onClick={handleLogout}
@@ -217,6 +224,13 @@ export default function Navbar() {
                     className="block py-2 text-gray-700 hover:text-blue-600"
                   >
                     View Profile
+                  </Link>
+                  <Link
+                    href={`/change-password`}
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    Change Password
                   </Link>
                   <button
                     style={{ cursor: "pointer" }}

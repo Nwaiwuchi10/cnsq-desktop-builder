@@ -62,14 +62,14 @@ export default function StaffOnboardingForm() {
   const [dateOfBirth, setDob] = useState<string>("");
   const [gender, setGender] = useState<Gender>("Male");
   const [maritalStatus, setMarital] = useState<Marital | "">("");
-  const [hobbies, setHobbies] = useState<string>("");
+  const [hobbies, setHobbies] = useState<string[]>([]);
 
   const [city, setCity] = useState<string>("");
   const [state, setState] = useState<string>("");
   const [country, setCountry] = useState<string>("");
   const [postalCode, setPostal] = useState<string>("");
 
-  const [jobTitle, setJobTitle] = useState<string>("");
+  const [jobTitle, setJobTitle] = useState<string[]>([]);
   const [employmentType, setEmploymentType] =
     useState<EmploymentType>("Full-Time");
   const [workMode, setWorkMode] = useState<WorkMode>("Onsite");
@@ -89,6 +89,18 @@ export default function StaffOnboardingForm() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
+  const [jobTitleInput, setJobTitleInput] = useState<string>("");
+  const [hobbiesinput, setHobbiesInput] = useState("");
+  const addJobTitle = () => {
+    if (jobTitleInput.trim() && !jobTitle.includes(jobTitleInput.trim())) {
+      setJobTitle([...jobTitle, jobTitleInput.trim()]);
+      setJobTitleInput("");
+    }
+  };
+
+  const removeJobTitle = (title: string) => {
+    setJobTitle(jobTitle.filter((t) => t !== title));
+  };
   // === Load saved draft from localStorage ===
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -103,14 +115,15 @@ export default function StaffOnboardingForm() {
         dateOfBirth: (v) => setDob(String(v)),
         gender: (v) => setGender(v as Gender),
         maritalStatus: (v) => setMarital(v as Marital | ""),
-        hobbies: (v) => setHobbies(String(v)),
+        // hobbies: (v) => setHobbies(String(v)),
+        hobbies: (v) => setHobbies(Array.isArray(v) ? v : []),
 
         city: (v) => setCity(String(v)),
         state: (v) => setState(String(v)),
         country: (v) => setCountry(String(v)),
         postalCode: (v) => setPostal(String(v)),
 
-        jobTitle: (v) => setJobTitle(String(v)),
+        jobTitle: (v) => setJobTitle(Array.isArray(v) ? v : [String(v)]),
         employmentType: (v) => setEmploymentType(v as EmploymentType),
         workMode: (v) => setWorkMode(v as WorkMode),
         hireDate: (v) => setHireDate(String(v)),
@@ -265,12 +278,13 @@ export default function StaffOnboardingForm() {
     const dto = {
       firstName,
       lastName,
-      description: hobbies || undefined,
+
       dateOfBirth,
       gender,
       maritalStatus: maritalStatus || undefined,
       email,
       phone,
+      hobbies: hobbies.length ? hobbies : undefined,
       address: { city, state, country, postalCode: postalCode || undefined },
       employment: {
         jobTitle,
@@ -455,13 +469,23 @@ export default function StaffOnboardingForm() {
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Hobbies
                   </label>
+
                   <input
-                    value={hobbies}
-                    onChange={(e) => setHobbies(e.target.value)}
+                    value={hobbiesinput}
+                    onChange={(e) => setHobbiesInput(e.target.value)}
+                    onBlur={() => {
+                      setHobbies(
+                        hobbiesinput
+                          .split(",")
+                          .map((h) => h.trim())
+                          .filter((h) => h)
+                      );
+                    }}
                     placeholder="e.g., reading, football"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
@@ -480,11 +504,7 @@ export default function StaffOnboardingForm() {
                         height={96} // required
                         className="h-24 w-24 rounded-full object-cover"
                       />
-                      {/* <img
-                        src={preview}
-                        alt="Preview"
-                        className="h-24 w-24 rounded-full object-cover"
-                      /> */}
+
                       <button
                         type="button"
                         onClick={removeFile}
@@ -559,15 +579,41 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Job Title *
+                    Job Titles *
                   </label>
-                  <input
-                    type="text"
-                    pattern="[A-Za-z]+"
-                    value={jobTitle}
-                    onChange={(e) => setJobTitle(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={jobTitleInput}
+                      onChange={(e) => setJobTitleInput(e.target.value)}
+                      placeholder="e.g., Frontend Developer"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={addJobTitle}
+                      className="px-3 py-2 bg-[#95D700] text-white rounded-lg"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {jobTitle.map((t) => (
+                      <span
+                        key={t}
+                        className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
+                      >
+                        {t}
+                        <button
+                          type="button"
+                          onClick={() => removeJobTitle(t)}
+                          className="text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">

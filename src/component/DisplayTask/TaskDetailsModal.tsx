@@ -1,10 +1,13 @@
 // components/TaskModal.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import imgIcon from "../../assests/images/Icon.png"; // adjust path
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import editIcon from "../../assests/images/Button.png";
 import TaskUpdateModal from "@/pages/Task/UpdateTask/UpdateTaskModel";
+import Api from "@/utils/api";
+import { AxiosError } from "axios";
+import CustomModal from "../Message/Message";
 interface TaskModalProps {
   task: TaskDTO | null;
   onClose: () => void;
@@ -12,8 +15,56 @@ interface TaskModalProps {
 
 export default function TaskModal({ task, onClose }: TaskModalProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [modal, setModal] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  useEffect(() => {
+    const t = localStorage.getItem("user-token");
+    setToken(t);
+  }, []);
   if (!task) return null;
 
+  const handlePostComment = async () => {
+    if (!commentText.trim()) return;
+    setLoading(true);
+
+    try {
+      // Extract mentioned staff id if needed (simple regex for @123)
+      const mentionMatch = commentText.match(/@(\d+)/);
+      const mentionedStaffId = mentionMatch
+        ? Number(mentionMatch[1])
+        : undefined;
+
+      await Api.patch(
+        `/task/${task.id}/comments`,
+        {
+          text: commentText,
+          mentionedStaffId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setCommentText("");
+      setModal({ type: "success", message: "Project created successfully!" });
+      window.location.reload(); // or update state with new comment
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to create project.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -100,28 +151,52 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </p>
 
           {/* Comments section */}
+          {/* Comments section */}
           <h3 className="font-semibold mb-2">Comments</h3>
           <div className="bg-gray-100 rounded-lg p-3 mb-3">
             <p className="text-sm text-gray-700">Most Recent Comment:</p>
-            {/* Example placeholder, you can map actual comments from backend */}
-            <div className="mt-2">
-              {/* <p className="text-sm">
-              <span className="font-semibold">Darlington Quin</span> · 21 Aug
-              2025, 14:33
-            </p> */}
+            {task.comments?.length ? (
+              <div className="mt-2">
+                {task.comments.map((c) => (
+                  <p key={c.id} className="text-sm text-gray-600">
+                    <span className="font-semibold">{c.staff.firstName}</span>{" "}
+                    {c.mentionedStaff && (
+                      <span className="text-blue-500">
+                        → @{c.mentionedStaff.firstName}
+                      </span>
+                    )}
+                    : {c.text}
+                  </p>
+                ))}
+              </div>
+            ) : (
               <p className="text-sm text-gray-600">No Comment</p>
-            </div>
+            )}
           </div>
 
           {/* Comment Input */}
           <textarea
-            placeholder="Add a Comment"
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Add a Comment (use @123 to mention staff by ID)"
             className="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring focus:ring-green-200"
           />
-          <button className="mt-3 px-4 py-2 bg-[#95D700] text-white text-sm rounded-lg">
-            Post Comment
+          <button
+            style={{ cursor: "pointer" }}
+            onClick={handlePostComment}
+            disabled={loading}
+            className="mt-3 px-4 py-2 bg-[#95D700] text-white text-sm rounded-lg disabled:opacity-50"
+          >
+            {loading ? "Posting..." : "Post Comment"}
           </button>
         </div>
+        {modal && (
+          <CustomModal
+            type={modal.type}
+            message={modal.message}
+            onClose={() => setModal(null)}
+          />
+        )}
       </div>
       <div>
         <TaskUpdateModal
