@@ -1,10 +1,13 @@
 // components/TaskModal.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import imgIcon from "../../assests/images/Icon.png"; // adjust path
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import editIcon from "../../assests/images/Button.png";
 import TaskUpdateModal from "@/pages/Task/UpdateTask/UpdateTaskModel";
+import Api from "@/utils/api";
+import { AxiosError } from "axios";
+import CustomModal from "../Message/Message";
 interface TaskModalProps {
   task: TaskDTO | null;
   onClose: () => void;
@@ -12,7 +15,91 @@ interface TaskModalProps {
 
 export default function TaskModal({ task, onClose }: TaskModalProps) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  // const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [mentionedStaff, setMentionedStaff] = useState<any | null>(null);
+  const [modal, setModal] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  useEffect(() => {
+    const t = localStorage.getItem("user-token");
+    setToken(t);
+  }, []);
   if (!task) return null;
+
+  // Fetch staff for mentions
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const res = await Api.get(`/staff-register/`);
+        setStaffList(res.data); // assuming backend returns { data: Staff[] }
+      } catch (err) {
+        console.error("Error fetching staff:", err);
+      }
+    };
+    fetchStaff();
+  }, []);
+
+  // Handle typing for mentions
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setCommentText(value);
+
+    // Detect @ typing
+    const match = value.match(/@(\w*)$/);
+    if (match) {
+      const query = match[1].toLowerCase();
+      const filtered = staffList.filter((s) =>
+        `${s.firstName} ${s.lastName}`.toLowerCase().includes(query)
+      );
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  // Insert selected staff
+  const handleSelectStaff = (staff: any) => {
+    setCommentText((prev) =>
+      prev.replace(/@\w*$/, `@${staff.firstName} ${staff.lastName} `)
+    );
+    setMentionedStaff(staff);
+    setSuggestions([]);
+  };
+
+  // Submit comment
+  const handlePostComment = async () => {
+    try {
+      await Api.patch(
+        `/task/${task.id}/comments`,
+        {
+          text: commentText,
+          mentionedStaffId: mentionedStaff?.id ?? null,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setCommentText("");
+      setMentionedStaff(null);
+      setModal({ type: "success", message: "Comment created successfully!" });
+      window.location.reload(); // or update state with new comment
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to create project.",
+      });
+    }
+  };
+
+  // Insert selected staff
 
   return (
     <>
@@ -100,28 +187,72 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </p>
 
           {/* Comments section */}
+          {/* Comments section */}
           <h3 className="font-semibold mb-2">Comments</h3>
           <div className="bg-gray-100 rounded-lg p-3 mb-3">
             <p className="text-sm text-gray-700">Most Recent Comment:</p>
-            {/* Example placeholder, you can map actual comments from backend */}
-            <div className="mt-2">
-              {/* <p className="text-sm">
-              <span className="font-semibold">Darlington Quin</span> · 21 Aug
-              2025, 14:33
-            </p> */}
+            {task.comments?.length ? (
+              <div className="mt-2">
+                {task?.comments.map((c) => (
+                  <p key={c.id} className="text-sm text-gray-600">
+                    <span className="font-semibold">{c.staff.firstName}</span>{" "}
+                    {c.mentionedStaff && (
+                      <span className="text-blue-500">
+                        → @{c.mentionedStaff.firstName}
+                      </span>
+                    )}
+                    : {c.text}
+                    <span className="ml-4">
+                      {c.createdAt
+                        ? new Date(c.createdAt).toLocaleString()
+                        : "No due date"}{" "}
+                    </span>
+                  </p>
+                ))}
+              </div>
+            ) : (
               <p className="text-sm text-gray-600">No Comment</p>
-            </div>
+            )}
           </div>
 
           {/* Comment Input */}
+
           <textarea
-            placeholder="Add a Comment"
+            value={commentText}
+            onChange={handleChange}
+            placeholder="Add a Comment (use @ to mention)"
             className="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring focus:ring-green-200"
           />
-          <button className="mt-3 px-4 py-2 bg-[#95D700] text-white text-sm rounded-lg">
+
+          {/* Suggestions dropdown */}
+          {suggestions.length > 0 && (
+            <ul className="border rounded-lg bg-white shadow-md mt-1 max-h-40 overflow-y-auto">
+              {suggestions.map((s) => (
+                <li
+                  key={s.id}
+                  onClick={() => handleSelectStaff(s)}
+                  className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                >
+                  {s.firstName} {s.lastName}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <button
+            onClick={handlePostComment}
+            className="mt-3 px-4 py-2 bg-[#95D700] text-white text-sm rounded-lg"
+          >
             Post Comment
           </button>
         </div>
+        {modal && (
+          <CustomModal
+            type={modal.type}
+            message={modal.message}
+            onClose={() => setModal(null)}
+          />
+        )}
       </div>
       <div>
         <TaskUpdateModal

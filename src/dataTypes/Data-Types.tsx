@@ -16,7 +16,15 @@ export interface Project {
   id: number;
   projectName: string;
 }
+export interface TaskComment {
+  id: number;
+  task: TaskDTO;
+  text: string;
+  staff: Staff;
 
+  mentionedStaff: Staff;
+  createdAt: string;
+}
 export interface TaskDTO {
   id: number;
   title: string;
@@ -31,6 +39,7 @@ export interface TaskDTO {
   updatedAt?: string;
   project: Project;
   assignedTo: TaskAssignment[];
+  comments: TaskComment[];
 }
 export enum ProjectStatus {
   NOT_STARTED = "not_started",
@@ -43,6 +52,7 @@ export interface ProjectAssignment {
   role: string;
   staff: Staff;
 }
+
 export interface Projects {
   id: number;
   projectName: string;
