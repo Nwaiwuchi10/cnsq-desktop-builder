@@ -24,7 +24,15 @@ interface Project {
   id: number;
   projectName: string;
 }
+interface TaskComment {
+  id: number;
+  task: TaskDTO;
+  text: string;
+  staff: Staff;
 
+  mentionedStaff: Staff;
+  createdAt: string;
+}
 interface Task {
   id: number;
   title: string;
@@ -37,6 +45,7 @@ interface Task {
   createdAt: string;
   project: Project;
   assignedTo: TaskAssignment[];
+  comments: TaskComment[];
 }
 interface DisplayTaskProps {
   projectId: number | string; // coming from ProjectDetails
