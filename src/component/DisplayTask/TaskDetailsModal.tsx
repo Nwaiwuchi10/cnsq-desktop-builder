@@ -16,8 +16,11 @@ interface TaskModalProps {
 export default function TaskModal({ task, onClose }: TaskModalProps) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [commentText, setCommentText] = useState("");
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [mentionedStaff, setMentionedStaff] = useState<any | null>(null);
   const [modal, setModal] = useState<{
     type: "success" | "error";
     message: string;
@@ -28,22 +31,54 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   }, []);
   if (!task) return null;
 
+  // Fetch staff for mentions
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const res = await Api.get(`/staff-register/`);
+        setStaffList(res.data); // assuming backend returns { data: Staff[] }
+      } catch (err) {
+        console.error("Error fetching staff:", err);
+      }
+    };
+    fetchStaff();
+  }, []);
+
+  // Handle typing for mentions
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setCommentText(value);
+
+    // Detect @ typing
+    const match = value.match(/@(\w*)$/);
+    if (match) {
+      const query = match[1].toLowerCase();
+      const filtered = staffList.filter((s) =>
+        `${s.firstName} ${s.lastName}`.toLowerCase().includes(query)
+      );
+      setSuggestions(filtered);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  // Insert selected staff
+  const handleSelectStaff = (staff: any) => {
+    setCommentText((prev) =>
+      prev.replace(/@\w*$/, `@${staff.firstName} ${staff.lastName} `)
+    );
+    setMentionedStaff(staff);
+    setSuggestions([]);
+  };
+
+  // Submit comment
   const handlePostComment = async () => {
-    if (!commentText.trim()) return;
-    setLoading(true);
-
     try {
-      // Extract mentioned staff id if needed (simple regex for @123)
-      const mentionMatch = commentText.match(/@(\d+)/);
-      const mentionedStaffId = mentionMatch
-        ? Number(mentionMatch[1])
-        : undefined;
-
       await Api.patch(
         `/task/${task.id}/comments`,
         {
           text: commentText,
-          mentionedStaffId,
+          mentionedStaffId: mentionedStaff?.id ?? null,
         },
         {
           headers: {
@@ -51,9 +86,9 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           },
         }
       );
-
       setCommentText("");
-      setModal({ type: "success", message: "Project created successfully!" });
+      setMentionedStaff(null);
+      setModal({ type: "success", message: "Comment created successfully!" });
       window.location.reload(); // or update state with new comment
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
@@ -61,10 +96,11 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
         type: "error",
         message: err.response?.data?.message || "Failed to create project.",
       });
-    } finally {
-      setLoading(false);
     }
   };
+
+  // Insert selected staff
+
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -157,7 +193,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             <p className="text-sm text-gray-700">Most Recent Comment:</p>
             {task.comments?.length ? (
               <div className="mt-2">
-                {task.comments.map((c) => (
+                {task?.comments.map((c) => (
                   <p key={c.id} className="text-sm text-gray-600">
                     <span className="font-semibold">{c.staff.firstName}</span>{" "}
                     {c.mentionedStaff && (
@@ -166,6 +202,11 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                       </span>
                     )}
                     : {c.text}
+                    <span className="ml-4">
+                      {c.createdAt
+                        ? new Date(c.createdAt).toLocaleString()
+                        : "No due date"}{" "}
+                    </span>
                   </p>
                 ))}
               </div>
@@ -175,19 +216,34 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </div>
 
           {/* Comment Input */}
+
           <textarea
             value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Add a Comment (use @123 to mention staff by ID)"
+            onChange={handleChange}
+            placeholder="Add a Comment (use @ to mention)"
             className="w-full border rounded-lg p-2 text-sm focus:outline-none focus:ring focus:ring-green-200"
           />
+
+          {/* Suggestions dropdown */}
+          {suggestions.length > 0 && (
+            <ul className="border rounded-lg bg-white shadow-md mt-1 max-h-40 overflow-y-auto">
+              {suggestions.map((s) => (
+                <li
+                  key={s.id}
+                  onClick={() => handleSelectStaff(s)}
+                  className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                >
+                  {s.firstName} {s.lastName}
+                </li>
+              ))}
+            </ul>
+          )}
+
           <button
-            style={{ cursor: "pointer" }}
             onClick={handlePostComment}
-            disabled={loading}
-            className="mt-3 px-4 py-2 bg-[#95D700] text-white text-sm rounded-lg disabled:opacity-50"
+            className="mt-3 px-4 py-2 bg-[#95D700] text-white text-sm rounded-lg"
           >
-            {loading ? "Posting..." : "Post Comment"}
+            Post Comment
           </button>
         </div>
         {modal && (

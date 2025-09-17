@@ -23,6 +23,7 @@ export interface TaskComment {
   staff: Staff;
 
   mentionedStaff: Staff;
+  createdAt: string;
 }
 export interface TaskDTO {
   id: number;

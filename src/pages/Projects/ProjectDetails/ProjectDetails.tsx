@@ -35,7 +35,7 @@ interface Project {
   }[];
   comments: {
     id: number;
-    content: string;
+    text: string;
     staff: {
       firstName: string;
       lastName: string;
@@ -233,7 +233,7 @@ export default function ProjectDetails() {
             <div className="space-y-3">
               {project.comments.map((c) => (
                 <div key={c.id} className="p-3 bg-white rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-800">{c.content}</p>
+                  <p className="text-sm text-gray-800">{c.text}</p>
                   <span className="text-xs text-gray-500">
                     {c.staff.firstName} {c.staff.lastName} •{" "}
                     {new Date(c.createdAt).toLocaleDateString()}
