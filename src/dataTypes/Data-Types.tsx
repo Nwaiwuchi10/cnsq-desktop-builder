@@ -35,6 +35,7 @@ export interface TaskDTO {
   dueDate?: string;
   timeline?: string;
   createdAt: string;
+  sprint?: number;
   completed_Date?: string;
   updatedAt?: string;
   project: Project;

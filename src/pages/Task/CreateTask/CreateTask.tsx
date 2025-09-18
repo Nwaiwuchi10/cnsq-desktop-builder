@@ -34,6 +34,7 @@ export default function CreateTaskForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [sprint, setSprint] = useState("");
   const [timeline, setTimeline] = useState("");
 
   // === AssignedTo ===
@@ -76,6 +77,7 @@ export default function CreateTaskForm() {
           description,
           dueDate,
           timeline,
+          sprint,
           projectId,
           assignedTo: assignments,
         },
@@ -134,6 +136,16 @@ export default function CreateTaskForm() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter task description"
+            className="w-full rounded-lg border px-3 py-2"
+          />
+          <label className="block text-sm font-medium mb-1">
+            Task Sprint <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            value={sprint}
+            onChange={(e) => setSprint(e.target.value)}
+            placeholder="Sprint 1"
             className="w-full rounded-lg border px-3 py-2"
           />
 

@@ -95,6 +95,9 @@ export default function TaskBoard() {
                       />
                     )}
 
+                    <p className="text-xs font-medium text-gray-600 -mt-2 mb-2">
+                      Sprint: {task?.sprint}{" "}
+                    </p>
                     {/* Status Badge */}
                     <span
                       className={`inline-flex items-center px-3 py-1 text-xs font-medium border rounded-full w-fit
@@ -205,7 +208,9 @@ export default function TaskBoard() {
                   onUpdated={() => window.location.reload()}
                 />
               )}
-
+              <p className="text-xs font-medium text-gray-600 -mt-2 mb-2">
+                Sprint: {task?.sprint}{" "}
+              </p>
               {/* Status Badge */}
               <span
                 className={`inline-flex items-center px-3 py-1 text-xs font-medium border rounded-full w-fit

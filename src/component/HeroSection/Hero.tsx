@@ -123,7 +123,7 @@ export default function Hero() {
       image: todaysBirthdays[0]?.photoUrl || heroimg2,
       text: todaysBirthdays.length
         ? `Happy Birthday ${todaysBirthdays[0].firstName} ${todaysBirthdays[0].lastName}`
-        : "Happy Birthday 🎉",
+        : "Happy Birthday",
     },
     {
       image: monthAnniversaries[0]?.photoUrl || heroimg3,
@@ -133,7 +133,7 @@ export default function Hero() {
           } Anniversary ${monthAnniversaries[0].firstName} ${
             monthAnniversaries[0].lastName
           }`
-        : "Happy Work Anniversary 🎊",
+        : "Happy Work Anniversary",
     },
   ];
 
