@@ -170,6 +170,10 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           {/* Due Date */}
           <div className="text-sm text-gray-600 mb-4">
             {" "}
+            <p>Sprint: {task?.sprint} </p>
+          </div>
+          <div className="text-sm text-gray-600 mb-4">
+            {" "}
             <p>Timeline: {task?.timeline} </p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">

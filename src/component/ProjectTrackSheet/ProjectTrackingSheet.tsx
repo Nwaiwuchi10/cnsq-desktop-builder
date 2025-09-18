@@ -29,7 +29,6 @@ interface TaskComment {
   task: TaskDTO;
   text: string;
   staff: Staff;
-
   mentionedStaff: Staff;
   createdAt: string;
 }
@@ -44,16 +43,21 @@ interface Task {
   timeline?: string;
   createdAt: string;
   project: Project;
+  sprint: number;
   assignedTo: TaskAssignment[];
   comments: TaskComment[];
 }
 interface DisplayTaskProps {
   projectId: number | string; // coming from ProjectDetails
 }
+
 const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [sprintFilter, setSprintFilter] = useState<number | "all">("all");
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     Api.get(`/task/project/${projectId}`)
@@ -67,6 +71,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const exportToCSV = () => {
     const data = tasks.map((t) => ({
       ID: t.id,
+      Sprint: t.sprint,
       Title: t.title,
       Description: t.description || "",
       Status: t.status,
@@ -90,18 +95,52 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   if (loading) return <p>Loading...</p>;
 
+  // Apply filter
+  let displayedTasks = [...tasks];
+  if (sprintFilter !== "all") {
+    displayedTasks = displayedTasks.filter((t) => t.sprint === sprintFilter);
+  }
+
+  // Apply sort
+  displayedTasks.sort((a, b) =>
+    sortAsc ? a.sprint - b.sprint : b.sprint - a.sprint
+  );
+
+  // Collect all sprints for dropdown
+  const uniqueSprints = Array.from(new Set(tasks.map((t) => t.sprint))).sort(
+    (a, b) => a - b
+  );
+
   return (
     <>
       <div className="p-6 w-full overflow-x-auto">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Project Tasks</h2>
-          <div className="space-x-3">
+          <div className="space-x-3 flex items-center">
+            <select
+              className="px-3 py-2 border rounded-lg"
+              value={sprintFilter}
+              onChange={(e) =>
+                setSprintFilter(
+                  e.target.value === "all" ? "all" : Number(e.target.value)
+                )
+              }
+            >
+              <option value="all">All Sprints</option>
+              {uniqueSprints.map((s) => (
+                <option key={s} value={s}>
+                  Sprint {s}
+                </option>
+              ))}
+            </select>
+
             {/* <button
-            onClick={exportToExcel}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:opacity-90"
-          >
-            Export Excel
-          </button> */}
+              onClick={() => setSortAsc(!sortAsc)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90"
+            >
+              Sort: {sortAsc ? "Ascending" : "Descending"}
+            </button> */}
+
             <button
               onClick={exportToCSV}
               className="px-4 py-2 bg-[#95D700] text-white rounded-lg hover:opacity-90"
@@ -114,7 +153,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         <table className="min-w-full border border-gray-200 rounded-lg text-sm">
           <thead className="bg-gray-100 text-left">
             <tr>
-              {/* <th className="p-2 border">ID</th> */}
+              <th className="p-2 border">Sprint</th>
               <th className="p-2 border">Title</th>
               <th className="p-2 border">Status</th>
               <th className="p-2 border">Priority</th>
@@ -127,12 +166,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </tr>
           </thead>
           <tbody>
-            {tasks.map((t) => (
+            {displayedTasks.map((t) => (
               <tr key={t.id} className="odd:bg-white even:bg-gray-50">
-                {/* <td className="p-2 border">{t.id}</td> */}
+                <td className="p-2 border">{t?.sprint}</td>
                 <td
-                  className="p-2 border"
-                  style={{ cursor: "pointer" }}
+                  className="p-2 border cursor-pointer"
                   onClick={() => setSelectedTask(t)}
                 >
                   {t.title}
@@ -169,4 +207,5 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     </>
   );
 };
+
 export default ProjectTasksSheet;

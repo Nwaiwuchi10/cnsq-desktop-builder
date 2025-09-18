@@ -64,6 +64,7 @@ export default function TaskUpdateModal({
   // === Form state ===
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [sprint, setSprint] = useState("");
   const [status, setStatus] = useState("Not_started");
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
@@ -129,6 +130,7 @@ export default function TaskUpdateModal({
         timeline,
         dueDate,
         projectId,
+        sprint,
         assignedTo: assignments,
       });
       setModal({ type: "success", message: "Task updated successfully!" });
@@ -181,6 +183,17 @@ export default function TaskUpdateModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full border rounded-lg px-3 py-2"
+            />
+
+            <label className="block text-sm font-medium mb-1">
+              Task Sprint <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              value={sprint}
+              onChange={(e) => setSprint(e.target.value)}
+              placeholder="Sprint 1"
+              className="w-full rounded-lg border px-3 py-2"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Task Status
