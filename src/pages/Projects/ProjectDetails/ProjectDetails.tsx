@@ -22,6 +22,8 @@ interface Project {
   endDate: string;
   priority: string;
   timeLine: string;
+  prodUrl: string;
+  stagingUrl: string;
   assignedTo: {
     id: number;
     role: string;
@@ -165,6 +167,27 @@ export default function ProjectDetails() {
           <div>
             <span>End Date:</span>{" "}
             {new Date(project.endDate).toLocaleDateString()}
+          </div>
+          <div className="text-gray-600 mt-2">
+            <span>Stagging Link:</span>
+            <a
+              href={project?.stagingUrl}
+              target="_blank"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {" "}
+              {project?.stagingUrl}
+            </a>
+          </div>
+          <div className="text-gray-600 mt-2">
+            <span>Website Link:</span>
+            <a
+              href={project?.prodUrl}
+              target="_blank"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {project?.prodUrl}
+            </a>
           </div>
         </div>
 

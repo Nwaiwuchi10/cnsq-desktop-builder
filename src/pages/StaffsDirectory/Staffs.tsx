@@ -29,7 +29,7 @@ interface Staff {
     country: string;
   };
   employment?: {
-    jobTitle: string;
+    jobTitle: string[];
     department?: {
       name: string;
     };
@@ -268,9 +268,27 @@ export default function StaffDirectory() {
                     <span className="text-gray-900 font-semibold">
                       {person.firstName} {person.lastName}
                     </span>
-                    <span className="text-gray-500 text-sm">
+                    {/* <span className="text-gray-500 text-sm">
                       {person?.employment?.jobTitle || "Not Assigned"}
-                    </span>
+                    </span> */}
+                    <div className="flex flex-wrap gap-2">
+                      {person?.employment?.jobTitle?.length ? (
+                        person.employment.jobTitle.map(
+                          (title: string, i: number) => (
+                            <span
+                              key={i}
+                              className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                            >
+                              {title}
+                            </span>
+                          )
+                        )
+                      ) : (
+                        <span className="text-gray-500 text-sm">
+                          Not Assigned
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
