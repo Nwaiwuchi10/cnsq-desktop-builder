@@ -159,7 +159,10 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                 )}
               </div>
             ))}
-            <button className="w-10 h-10 rounded-full border flex items-center justify-center text-lg text-gray-500">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="w-10 h-10 rounded-full border flex items-center justify-center text-lg text-gray-500"
+            >
               +
             </button>
           </div>
@@ -202,11 +205,11 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                       </span>
                     )}
                     : {c.text}
-                    <span className="ml-4">
+                    <p className="mb-4">
                       {c.createdAt
                         ? new Date(c.createdAt).toLocaleString()
                         : "No due date"}{" "}
-                    </span>
+                    </p>
                   </p>
                 ))}
               </div>

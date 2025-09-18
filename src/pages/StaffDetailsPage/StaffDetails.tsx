@@ -67,7 +67,7 @@ interface DepartmentalRole {
 
 interface Employment {
   employeeCode: string;
-  jobTitle: string;
+  jobTitle: string[];
   employmentType: string;
   workMode: string;
   hireDate: string;
@@ -285,7 +285,21 @@ export default function StaffDetails() {
             </p>
             <p>
               <span className="font-medium">Job Title:</span>{" "}
-              {staff.employment.jobTitle}
+              <div className="flex flex-wrap gap-2">
+                {staff?.employment?.jobTitle?.length ? (
+                  staff.employment.jobTitle.map((title: string, i: number) => (
+                    <span
+                      key={i}
+                      className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                    >
+                      {title}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-sm">Not Assigned</span>
+                )}
+              </div>
+              {/* {staff.employment.jobTitle} */}
             </p>
             <p>
               <span className="font-medium">Employment Type:</span>{" "}

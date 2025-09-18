@@ -48,7 +48,7 @@ export default function HeadOfDeptOnboardingForm() {
   const [step, setStep] = useState<number>(1);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // ✅ Now using modal messages
+  // ✅ Modal messages
   const [modal, setModal] = useState<{
     type: "success" | "error";
     message: string;
@@ -91,6 +91,16 @@ export default function HeadOfDeptOnboardingForm() {
 
   const [jobTitleInput, setJobTitleInput] = useState<string>("");
   const [hobbiesinput, setHobbiesInput] = useState("");
+
+  // === NEW STATE for HOD assignment ===
+  const [createdStaffId, setCreatedStaffId] = useState<number | null>(null);
+  const [hodDepartmentId, setHodDepartmentId] = useState<number | "">("");
+  const [hodName, setHodName] = useState<string>("");
+
+  const totalSteps = 4;
+  const progressPct = (step / totalSteps) * 100;
+
+  // === Add job title ===
   const addJobTitle = () => {
     if (jobTitleInput.trim() && !jobTitle.includes(jobTitleInput.trim())) {
       setJobTitle([...jobTitle, jobTitleInput.trim()]);
@@ -101,12 +111,12 @@ export default function HeadOfDeptOnboardingForm() {
   const removeJobTitle = (title: string) => {
     setJobTitle(jobTitle.filter((t) => t !== title));
   };
-  // === Load saved draft from localStorage ===
+
+  // === Load saved draft ===
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved) as Record<string, unknown>;
-
       const setters: Record<string, (value: unknown) => void> = {
         firstName: (v) => setFirstName(String(v)),
         lastName: (v) => setLastName(String(v)),
@@ -115,14 +125,11 @@ export default function HeadOfDeptOnboardingForm() {
         dateOfBirth: (v) => setDob(String(v)),
         gender: (v) => setGender(v as Gender),
         maritalStatus: (v) => setMarital(v as Marital | ""),
-        // hobbies: (v) => setHobbies(String(v)),
         hobbies: (v) => setHobbies(Array.isArray(v) ? v : []),
-
         city: (v) => setCity(String(v)),
         state: (v) => setState(String(v)),
         country: (v) => setCountry(String(v)),
         postalCode: (v) => setPostal(String(v)),
-
         jobTitle: (v) => setJobTitle(Array.isArray(v) ? v : [String(v)]),
         employmentType: (v) => setEmploymentType(v as EmploymentType),
         workMode: (v) => setWorkMode(v as WorkMode),
@@ -136,11 +143,8 @@ export default function HeadOfDeptOnboardingForm() {
         departmentalRoleId: (v) =>
           setDepartmentalRoleId(v !== "" ? Number(v) : ""),
       };
-
       Object.entries(parsed).forEach(([key, value]) => {
-        if (value !== undefined && setters[key]) {
-          setters[key](value);
-        }
+        if (value !== undefined && setters[key]) setters[key](value);
       });
     }
   }, []);
@@ -216,9 +220,6 @@ export default function HeadOfDeptOnboardingForm() {
       );
   }, []);
 
-  const totalSteps = 3;
-  const progressPct = (step / totalSteps) * 100;
-
   // === Navigation ===
   const next = () => {
     if (
@@ -240,7 +241,7 @@ export default function HeadOfDeptOnboardingForm() {
 
   const back = () => setStep((s) => Math.max(1, s - 1));
 
-  // === Handle file ===
+  // === File ===
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f && f.type.startsWith("image/")) {
@@ -254,7 +255,7 @@ export default function HeadOfDeptOnboardingForm() {
     setPreview(null);
   };
 
-  // === Submit ===
+  // === Submit Staff ===
   const handleSubmit = async () => {
     if (
       !jobTitle ||
@@ -278,7 +279,6 @@ export default function HeadOfDeptOnboardingForm() {
     const dto = {
       firstName,
       lastName,
-
       dateOfBirth,
       gender,
       maritalStatus: maritalStatus || undefined,
@@ -306,12 +306,16 @@ export default function HeadOfDeptOnboardingForm() {
     if (photo) formData.append("imgFile", photo);
 
     try {
-      await Api.post("/staff-register", formData, {
+      const res = await Api.post("/staff-register", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       setModal({ type: "success", message: "Staff created successfully." });
       localStorage.removeItem(STORAGE_KEY);
-      setTimeout(() => router.push("/staff"), 1200);
+
+      // Save created staffId for HOD assignment
+      setCreatedStaffId(res.data?.id);
+      setStep(4);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -322,6 +326,36 @@ export default function HeadOfDeptOnboardingForm() {
       setSubmitting(false);
     }
   };
+
+  // === Assign HOD ===
+  const assignHOD = async () => {
+    if (!createdStaffId || !hodDepartmentId) {
+      setModal({
+        type: "error",
+        message: "Select a department to assign HOD.",
+      });
+      return;
+    }
+    try {
+      await Api.post("/headofdepartment", {
+        staffId: createdStaffId,
+        departmentId: Number(hodDepartmentId),
+        name: hodName,
+      });
+      setModal({
+        type: "success",
+        message: "Head of Department assigned successfully.",
+      });
+      setTimeout(() => router.push("/heads-of-departments"), 1200);
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to assign HOD.",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-16">
       {/* Header */}
@@ -335,7 +369,7 @@ export default function HeadOfDeptOnboardingForm() {
             <span className="font-medium">Back</span>
           </button>
           <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900">
-            Enter New Staff Details
+            {step < 4 ? "Enter New Staff Details" : "Assign Head of Department"}
           </h2>
           <div className="w-[84px]" />
         </div>
@@ -353,11 +387,6 @@ export default function HeadOfDeptOnboardingForm() {
                 <Check size={16} /> {modal.message}
               </span>
             )}
-            {/* {success && (
-              <span className="inline-flex items-center gap-1 text-green-600 text-sm">
-                <Check size={16} /> {success}
-              </span>
-            )} */}
           </div>
           <div className="mt-3 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
             <div
@@ -741,7 +770,7 @@ export default function HeadOfDeptOnboardingForm() {
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Departmental Role *
+                    Departmental Unit *
                   </label>
                   <select
                     value={departmentalRoleId}
@@ -762,7 +791,60 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
               </>
             )}
+            {step === 4 && (
+              <>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Select Department *
+                  </label>
+                  <select
+                    value={hodDepartmentId}
+                    onChange={(e) =>
+                      setHodDepartmentId(
+                        e.target.value ? Number(e.target.value) : ""
+                      )
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                  >
+                    <option value="">-- Select Department --</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    HOD Role Name{" "}
+                  </label>
+                  <input
+                    type="text"
+                    value={hodName}
+                    onChange={(e) => setHodName(e.target.value)}
+                    placeholder="e.g CT0, COO, HR, Technical"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                  />
+                </div>
+
+                <div className="flex justify-between gap-4 mt-6">
+                  <button
+                    onClick={() => router.push("/staff")}
+                    className="w-1/2 py-3 rounded-lg bg-gray-300 text-gray-800 font-semibold hover:opacity-90"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={assignHOD}
+                    className="w-1/2 py-3 rounded-lg bg-[#95D700] text-white font-semibold hover:opacity-90"
+                  >
+                    Assign
+                  </button>
+                </div>
+              </>
+            )}
           </div>
+
           {modal && (
             <CustomModal
               type={modal.type}
@@ -771,16 +853,20 @@ export default function HeadOfDeptOnboardingForm() {
             />
           )}
 
-          {/* Only Next/Submit button */}
-          <div className="mt-8">
-            {step < totalSteps ? (
+          {/* Step navigation */}
+          {step < 3 && (
+            <div className="mt-8">
               <button
                 onClick={next}
                 className="w-full py-3 rounded-lg bg-[#95D700] text-white font-semibold text-lg hover:opacity-90"
               >
                 Next
               </button>
-            ) : (
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="mt-8">
               <button
                 style={{ cursor: "pointer" }}
                 onClick={handleSubmit}
@@ -789,8 +875,8 @@ export default function HeadOfDeptOnboardingForm() {
               >
                 {submitting ? "Submitting..." : "Create Staff"}
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
