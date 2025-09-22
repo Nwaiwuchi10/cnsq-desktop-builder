@@ -1,4 +1,4 @@
-import Main from "@/Pages/Anniversary/Main";
+import Main from '@/pages/Anniversary/Main';
 import React from "react";
 
 const page = () => {

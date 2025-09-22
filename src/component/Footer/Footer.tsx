@@ -26,11 +26,11 @@ export default function Footer() {
       "
         >
           {/* Year */}
-          <span className="text-black text-sm">
+          <span className="text-gray-700 text-sm">
             © {new Date().getFullYear()} CNSquad.
           </span>
           {/* Rights Reserved */}
-          <span className="text-black text-sm">All rights reserved.</span>
+          <span className="text-gray-700 text-sm">All rights reserved.</span>
         </div>
       </div>
     </footer>

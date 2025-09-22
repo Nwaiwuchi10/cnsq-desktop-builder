@@ -1,5 +1,6 @@
 "use client";
-import HomePage from "@/Pages/HomePage/Home";
+
+import HomePage from "@/pages/HomePage/Home";
 
 export default function Home() {
   return (

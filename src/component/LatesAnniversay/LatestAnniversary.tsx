@@ -1,21 +1,48 @@
 "use client";
 
-import Image from "next/image";
-import person1 from "../../assests/images/ezi.png";
-import person2 from "../../assests/images/ezinne.jpg";
-import person3 from "../../assests/images/ezi.png";
-import person4 from "../../assests/images/ezinne.jpg";
+import { useEffect, useState } from "react";
+import Image, { StaticImageData } from "next/image";
+import Api from "@/utils/api";
 
-export default function LatestAniversary() {
-  const birthdays = [
-    { id: 1, name: "John Doe", date: "12-06-2025", img: person1 },
-    { id: 2, name: "Jane Smith", date: "12-06-2025", img: person2 },
-    { id: 3, name: "Chris Evans", date: "12-06-2025", img: person3 },
-    { id: 4, name: "Ezinne Okafor", date: "12-06-2025", img: person4 },
-  ];
+// TS interface matching StaffAnniversaryDto
+interface StaffAnniversary {
+  id: number;
+  firstName: string;
+  lastName: string;
+  photoUrl?: string | StaticImageData | null;
+  nextAnniversary: string;
+  yearsCompleted: number;
+}
+
+export default function LatestAnniversary() {
+  const [anniversaries, setAnniversaries] = useState<StaffAnniversary[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnniversaries = async () => {
+      try {
+        const res = await Api.get("/staff-register/anniversaries/all/upcoming");
+        setAnniversaries(res.data.slice(0, 4)); // limit to 4
+      } catch (error) {
+        console.error("Error fetching anniversaries:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnniversaries();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <p className="text-gray-600">Loading upcoming anniversaries...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-[#FAFAFA] pb-28 min-h-[60vh] flex flex-col items-center px-4 sm:px-6 md:px-12 lg:px-20 pt-12">
+    <div className="bg-[#FAFAFA] pb-24 min-h-[60vh] flex flex-col items-center px-4 sm:px-6 md:px-12 lg:px-20 pt-12">
       {/* Heading */}
       <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
         Latest Anniversary
@@ -32,40 +59,54 @@ export default function LatestAniversary() {
           w-full max-w-7xl
         "
       >
-        {birthdays.map((person) => (
+        {anniversaries.map((person) => (
           <div
             key={person.id}
             className="flex flex-col items-start text-left w-full"
           >
-            {/* Image Container with fixed size */}
+            {/* Image */}
             <div
               className="
-    relative
-    w-[350px]       /* Mobile width */
-    h-[200px]       /* Mobile height */
-    sm:w-[420px] sm:h-[250px]   /* Tablet */
-    md:w-[380px] md:h-[260px]   /* Medium screens */
-    lg:w-[280px] lg:h-[280px]   /* Desktop (square look) */
-    rounded-lg
-    overflow-hidden
-    shadow-sm
-  "
+                relative
+                w-[315px]
+                h-[315px]
+                sm:w-[420px] sm:h-[250px]
+                md:w-[380px] md:h-[260px]
+                lg:w-[280px] lg:h-[280px]
+                rounded-lg
+                overflow-hidden
+                shadow-sm
+                bg-gray-200
+              "
             >
               <Image
-                src={person.img}
-                alt={person.name}
-                fill
-                className="object-cover"
+                src={person.photoUrl || "/default-avatar.png"}
+                alt={`${person.firstName} ${person.lastName}`}
+                width={280}
+                height={280}
+                className="w-full h-full object-cover"
+                unoptimized
               />
             </div>
 
             {/* Name */}
             <p className="mt-3 text-gray-900 font-semibold text-lg">
-              {person.name}
+              {person.firstName} {person.lastName}
             </p>
 
-            {/* Date */}
-            <span className="text-gray-500 text-sm">{person.date}</span>
+            {/* Anniversary Date */}
+            <span className="text-gray-500 text-sm">
+              {new Date(person.nextAnniversary).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+
+            {/* Years Completed */}
+            {/* <span className="text-gray-600 text-xs">
+              {person.yearsCompleted} years completed
+            </span> */}
           </div>
         ))}
       </div>
