@@ -120,7 +120,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-lg text-black-600 hover:text-blue-600 transition"
+                  className="text-lg text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -173,7 +173,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="text-lg text-black-60 hover:text-blue-600 transition"
+                  className="text-lg text-gray-700 hover:text-blue-600 transition"
                 >
                   Login
                 </Link>
@@ -213,7 +213,7 @@ export default function Navbar() {
                 <div className="w-full">
                   <div className="flex items-center gap-3 mb-4">
                     {getAvatar()}
-                    <span className="font-medium">
+                    <span className="font-medium text-gray-700">
                       {user.firstName} {user.lastName}
                     </span>
                   </div>
