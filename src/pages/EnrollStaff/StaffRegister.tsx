@@ -219,6 +219,8 @@ export default function StaffOnboardingForm() {
   const totalSteps = 3;
   const progressPct = (step / totalSteps) * 100;
 
+  const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+
   // === Navigation ===
   const next = () => {
     if (
@@ -228,6 +230,13 @@ export default function StaffOnboardingForm() {
       setModal({
         type: "error",
         message: "Fill all required personal fields.",
+      });
+      return;
+    }
+    if (step === 1 && !isValidEmail(email)) {
+      setModal({
+        type: "error",
+        message: "Please enter a valid email address.",
       });
       return;
     }
