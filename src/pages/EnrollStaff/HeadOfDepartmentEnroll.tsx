@@ -29,7 +29,11 @@ type Marital = (typeof MARITALS)[number];
 type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 type WorkMode = (typeof WORK_MODES)[number];
 type EmpStatus = (typeof EMPLOYMENT_STATUS)[number];
-
+interface Staff {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
 interface Department {
   id: number;
   name: string;
@@ -91,6 +95,7 @@ export default function HeadOfDeptOnboardingForm() {
 
   const [jobTitleInput, setJobTitleInput] = useState<string>("");
   const [hobbiesinput, setHobbiesInput] = useState("");
+  const [staffs, setStaffs] = useState<Staff[]>([]);
 
   // === NEW STATE for HOD assignment ===
   const [createdStaffId, setCreatedStaffId] = useState<number | null>(null);
@@ -202,7 +207,13 @@ export default function HeadOfDeptOnboardingForm() {
     departmentId,
     departmentalRoleId,
   ]);
-
+  useEffect(() => {
+    Api.get("/staff-register")
+      .then((res) => setStaffs(res.data || []))
+      .catch(() =>
+        setModal({ type: "error", message: "Failed to load staff list." })
+      );
+  }, []);
   // === Fetch dropdowns ===
   useEffect(() => {
     Api.get("/departments")
@@ -693,29 +704,47 @@ export default function HeadOfDeptOnboardingForm() {
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
                 </div>
+
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Reporting Manager *
                   </label>
-                  <input
-                    type="text"
-                    pattern="[A-Za-z]+"
+                  <select
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
-                  />
+                  >
+                    <option value="">-- Select Manager --</option>
+                    {staffs.map((staff) => (
+                      <option
+                        key={staff.id}
+                        value={`${staff.firstName} ${staff.lastName}`}
+                      >
+                        {staff.firstName} {staff.lastName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Direct Report *
                   </label>
-                  <input
-                    type="text"
-                    pattern="[A-Za-z]+"
+                  <select
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
-                  />
+                  >
+                    <option value="">-- Select Direct Report --</option>
+                    {staffs.map((staff) => (
+                      <option
+                        key={staff.id}
+                        value={`${staff.firstName} ${staff.lastName}`}
+                      >
+                        {staff.firstName} {staff.lastName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
