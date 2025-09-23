@@ -391,7 +391,7 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    First Name *
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -410,7 +410,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Last Name *
+                    Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -429,7 +429,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Email *
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -440,7 +440,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Phone *
+                    Phone <span className="text-red-500">*</span>
                   </label>
                   <input
                     value={phone}
@@ -450,7 +450,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Date of Birth *
+                    Date of Birth <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -461,7 +461,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Gender *
+                    Gender <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={gender}
@@ -548,7 +548,7 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    City *
+                    City <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -560,7 +560,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    State *
+                    State <span className="text-red-500">*</span>
                   </label>
                   <input
                     value={state}
@@ -571,7 +571,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Country *
+                    Country <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -598,7 +598,7 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Job Titles *
+                    Job Titles <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -636,7 +636,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Employment Type *
+                    Employment Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={employmentType}
@@ -652,7 +652,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Work Mode *
+                    Work Mode <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={workMode}
@@ -666,7 +666,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Hire Date *
+                    Hire Date <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -689,7 +689,7 @@ export default function StaffOnboardingForm() {
                 </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Reporting Manager *
+                    Reporting Manager <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={reportingManager}
@@ -722,7 +722,7 @@ export default function StaffOnboardingForm() {
                 </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Direct Report *
+                    Direct Report <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={directReport}
@@ -753,7 +753,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Employment Status *
+                    Employment Status <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={status}
@@ -779,7 +779,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Department *
+                    Department <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={departmentId}
@@ -801,7 +801,7 @@ export default function StaffOnboardingForm() {
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Departmental Role *
+                    Departmental Unit <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={departmentalRoleId}
