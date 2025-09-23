@@ -130,7 +130,7 @@ export default function TaskUpdateModal({
         timeline,
         dueDate,
         projectId,
-        sprint,
+        sprint: sprint ? Number(sprint) : undefined,
         assignedTo: assignments,
       });
       setModal({ type: "success", message: "Task updated successfully!" });
@@ -186,7 +186,7 @@ export default function TaskUpdateModal({
             />
 
             <label className="block text-sm font-medium mb-1">
-              Task Sprint <span className="text-red-500">*</span>
+              Task Sprint
             </label>
             <input
               type="number"
