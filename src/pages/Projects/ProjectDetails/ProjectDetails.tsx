@@ -85,7 +85,7 @@ export default function ProjectDetails() {
   const progressValue = () => {
     switch (project.status as ProjectStatus) {
       case ProjectStatus.NOT_STARTED:
-        return 25;
+        return 0;
       case ProjectStatus.IN_PROGRESS:
         return 50;
       case ProjectStatus.TESTING:
@@ -116,7 +116,7 @@ export default function ProjectDetails() {
         }
       );
       setCommentText(""); // clear input after success
-      setModal({ type: "success", message: "Project created successfully!" });
+      setModal({ type: "success", message: "Comment added successfully!" });
       // refresh project data to show new comment
       const res = await Api.get(`/projects/${id}`);
       setProject(res.data);

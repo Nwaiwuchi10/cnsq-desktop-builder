@@ -59,7 +59,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const progressValue = () => {
     switch (project.status as ProjectStatus) {
       case ProjectStatus.NOT_STARTED:
-        return 25;
+        return 0;
       case ProjectStatus.IN_PROGRESS:
         return 50;
       case ProjectStatus.TESTING:
