@@ -21,9 +21,9 @@ export default function LatestBirthday() {
   useEffect(() => {
     const fetchBirthdays = async () => {
       try {
-        const res = await Api.get("/staff-register/birthdays/all/upcoming"); // 🔹 replace with your API endpoint
-        // Limit to 3 staff members
-        setBirthdays(res.data.slice(0, 4));
+        // ✅ backend returns { data, total, page, limit }
+        const res = await Api.get("/staff-register/birthdays/all/upcoming");
+        setBirthdays(res.data.data.slice(0, 4)); // ✅ only 4 records
       } catch (error) {
         console.error("Error fetching staff:", error);
       } finally {
@@ -69,11 +69,11 @@ export default function LatestBirthday() {
             <div
               className="
                 relative
-                w-[315px]       /* Mobile width */
-                h-[315px]       /* Mobile height */
-                sm:w-[420px] sm:h-[250px]   /* Tablet */
-                md:w-[380px] md:h-[260px]   /* Medium screens */
-                lg:w-[280px] lg:h-[280px]   /* Desktop */
+                w-[315px]
+                h-[315px]
+                sm:w-[420px] sm:h-[250px]
+                md:w-[380px] md:h-[260px]
+                lg:w-[280px] lg:h-[280px]
                 rounded-lg
                 overflow-hidden
                 shadow-sm
@@ -95,7 +95,7 @@ export default function LatestBirthday() {
               {person.firstName} {person.lastName}
             </p>
 
-            {/* Next Birthday */}
+            {/* Next Birthday (with Lagos timezone) */}
             <span className="text-gray-500 text-sm">
               {new Date(person.nextBirthday).toLocaleDateString("en-US", {
                 month: "long",
