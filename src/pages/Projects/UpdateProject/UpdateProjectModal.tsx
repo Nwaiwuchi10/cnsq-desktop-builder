@@ -169,7 +169,7 @@ export default function UpdateProjectModal({
               placeholder="Project Name"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Decription
@@ -178,13 +178,13 @@ export default function UpdateProjectModal({
               placeholder="Description"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {PROJECT_STATUSES.map((s) => (
                 <option key={s}>{s}</option>
@@ -194,7 +194,7 @@ export default function UpdateProjectModal({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {PROJECT_PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>
@@ -207,7 +207,7 @@ export default function UpdateProjectModal({
               placeholder="Production URL"
               value={prodUrl}
               onChange={(e) => setProdUrl(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Stagging Link
@@ -216,7 +216,7 @@ export default function UpdateProjectModal({
               placeholder="Staging URL"
               value={stagingUrl}
               onChange={(e) => setStagingUrl(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Tiimeline
@@ -225,7 +225,7 @@ export default function UpdateProjectModal({
               placeholder="Timeline"
               value={timeLine}
               onChange={(e) => setTimeLine(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
             <div>
@@ -241,7 +241,7 @@ export default function UpdateProjectModal({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full flex-1 border rounded-lg px-3 py-2"
+                    className="w-full flex-1 border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -258,7 +258,7 @@ export default function UpdateProjectModal({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full flex-1 border rounded-lg px-3 py-2"
+                    className="w-full flex-1 border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
               </div>
@@ -273,7 +273,7 @@ export default function UpdateProjectModal({
                   onChange={(e) =>
                     setStaffId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs.map((s) => (
@@ -289,7 +289,7 @@ export default function UpdateProjectModal({
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
                 <button
                   type="button"

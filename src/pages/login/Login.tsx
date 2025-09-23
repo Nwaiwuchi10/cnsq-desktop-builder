@@ -83,7 +83,7 @@ export default function Login() {
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
               placeholder="e.g. admin@example.com or CN-000123"
             />
           </div>
@@ -97,7 +97,7 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 bg-white text-gray-900 placeholder-gray-400"
                 placeholder="********"
               />
               <button
