@@ -214,7 +214,7 @@ export default function ProjectWizardForm() {
                   placeholder="Enter project name"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
                 <label className="block text-sm font-medium">
@@ -224,14 +224,14 @@ export default function ProjectWizardForm() {
                   placeholder="Enter project description"
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
                 <label className="block text-sm font-medium">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   {PROJECT_STATUSES.map((s) => (
                     <option key={s}>{s}</option>
@@ -242,7 +242,7 @@ export default function ProjectWizardForm() {
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   {PROJECT_PRIORITIES.map((p) => (
                     <option key={p}>{p}</option>
@@ -256,7 +256,7 @@ export default function ProjectWizardForm() {
                   placeholder="https://example.com"
                   value={prodUrl}
                   onChange={(e) => setProdUrl(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
                 <label className="block text-sm font-medium">Staging URL</label>
@@ -264,7 +264,7 @@ export default function ProjectWizardForm() {
                   placeholder="https://staging.example.com"
                   value={stagingUrl}
                   onChange={(e) => setStagingUrl(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
                 <label className="block text-sm font-medium">
                   Timeline <span className="text-red-500">*</span>
@@ -273,7 +273,7 @@ export default function ProjectWizardForm() {
                   placeholder="Enter project Timeline"
                   value={timeLine}
                   onChange={(e) => setTimeLine(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
                 <label className="block text-sm font-medium">
@@ -283,7 +283,7 @@ export default function ProjectWizardForm() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
                 <label className="block text-sm font-medium">
@@ -293,7 +293,7 @@ export default function ProjectWizardForm() {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
               </>
             )}
@@ -315,7 +315,7 @@ export default function ProjectWizardForm() {
                     onChange={(e) =>
                       setStaffId(e.target.value ? Number(e.target.value) : "")
                     }
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Staff --</option>
                     {staffs.map((s) => (
@@ -330,7 +330,7 @@ export default function ProjectWizardForm() {
                     placeholder="e.g. Lead, Contributor"
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full rounded-lg border px-3 py-2"
+                    className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
 
                   <button

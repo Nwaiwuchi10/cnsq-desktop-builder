@@ -128,7 +128,7 @@ export default function CreateTaskForm() {
             onChange={(e) => setTitle(e.target.value)}
             pattern="[A-Za-z]+"
             placeholder="Enter task title"
-            className="w-full rounded-lg border px-3 py-2"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
           />
 
           <label className="block text-sm font-medium">Description</label>
@@ -146,7 +146,7 @@ export default function CreateTaskForm() {
             value={sprint}
             onChange={(e) => setSprint(e.target.value)}
             placeholder="Sprint 1"
-            className="w-full rounded-lg border px-3 py-2"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
           />
 
           <label className="block text-sm font-medium">
@@ -156,7 +156,7 @@ export default function CreateTaskForm() {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
           />
 
           <label className="block text-sm font-medium">
@@ -166,7 +166,7 @@ export default function CreateTaskForm() {
             value={timeline}
             onChange={(e) => setTimeline(e.target.value)}
             placeholder="e.g. 2 weeks"
-            className="w-full rounded-lg border px-3 py-2"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
           />
 
           {/* Staff Assignment */}
@@ -177,7 +177,7 @@ export default function CreateTaskForm() {
               onChange={(e) =>
                 setStaffId(e.target.value ? Number(e.target.value) : "")
               }
-              className="w-full rounded-lg border px-3 py-2 mb-2"
+              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900 placeholder-gray-400"
             >
               <option value="">-- Select Staff --</option>
               {staffs.map((s) => (
@@ -191,7 +191,7 @@ export default function CreateTaskForm() {
               placeholder="Role (e.g. Lead, Contributor)"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 mb-2"
+              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
             <button

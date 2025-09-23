@@ -173,7 +173,7 @@ export default function TaskUpdateModal({
               placeholder="Task Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Description
@@ -182,7 +182,7 @@ export default function TaskUpdateModal({
               placeholder="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
             <label className="block text-sm font-medium mb-1">
@@ -193,7 +193,7 @@ export default function TaskUpdateModal({
               value={sprint}
               onChange={(e) => setSprint(e.target.value)}
               placeholder="Sprint 1"
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Task Status
@@ -201,7 +201,7 @@ export default function TaskUpdateModal({
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {TASK_STATUSES.map((s) => (
                 <option key={s}>{s}</option>
@@ -211,7 +211,7 @@ export default function TaskUpdateModal({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>
@@ -221,7 +221,7 @@ export default function TaskUpdateModal({
             <select
               value={urgency}
               onChange={(e) => setUrgency(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {URGENCIES.map((u) => (
                 <option key={u}>{u}</option>
@@ -232,14 +232,14 @@ export default function TaskUpdateModal({
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">Timeline</label>
             <input
               placeholder="Timeline"
               value={timeline}
               onChange={(e) => setTimeline(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
             {/* Assign Staff */}
@@ -251,7 +251,7 @@ export default function TaskUpdateModal({
                   onChange={(e) =>
                     setStaffId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs.map((s) => (
@@ -267,7 +267,7 @@ export default function TaskUpdateModal({
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
                 <button
                   type="button"

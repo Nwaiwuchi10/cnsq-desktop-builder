@@ -305,7 +305,7 @@ export default function UpdateProfileModal({
                   <input
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* Last Name */}
@@ -314,7 +314,7 @@ export default function UpdateProfileModal({
                   <input
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* Email */}
@@ -324,7 +324,7 @@ export default function UpdateProfileModal({
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* Phone */}
@@ -333,7 +333,7 @@ export default function UpdateProfileModal({
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* DOB */}
@@ -343,7 +343,7 @@ export default function UpdateProfileModal({
                     type="date"
                     value={dateOfBirth}
                     onChange={(e) => setDob(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* Gender */}
@@ -352,7 +352,7 @@ export default function UpdateProfileModal({
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {GENDERS.map((g) => (
                       <option key={g}>{g}</option>
@@ -365,7 +365,7 @@ export default function UpdateProfileModal({
                   <select
                     value={maritalStatus}
                     onChange={(e) => setMarital(e.target.value as Marital)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select --</option>
                     {MARITALS.map((m) => (
@@ -386,7 +386,7 @@ export default function UpdateProfileModal({
                           .filter((h) => h)
                       )
                     }
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* ✅ Description */}
@@ -395,7 +395,7 @@ export default function UpdateProfileModal({
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* Photo */}
@@ -424,7 +424,7 @@ export default function UpdateProfileModal({
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full border rounded-lg px-3 py-2"
+                      className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                     />
                   )}
                 </div>
@@ -445,7 +445,7 @@ export default function UpdateProfileModal({
                     pattern="[A-Za-z]+"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -456,7 +456,7 @@ export default function UpdateProfileModal({
                     value={state}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -468,7 +468,7 @@ export default function UpdateProfileModal({
                     value={country}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -478,7 +478,7 @@ export default function UpdateProfileModal({
                   <input
                     value={postalCode}
                     onChange={(e) => setPostal(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
               </>
@@ -496,7 +496,7 @@ export default function UpdateProfileModal({
                       value={jobTitleInput}
                       onChange={(e) => setJobTitleInput(e.target.value)}
                       placeholder="e.g., Frontend Developer"
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                     />
                     <button
                       type="button"
@@ -533,7 +533,7 @@ export default function UpdateProfileModal({
                     onChange={(e) =>
                       setEmploymentType(e.target.value as EmploymentType)
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {EMPLOYMENT_TYPES.map((t) => (
                       <option key={t}>{t}</option>
@@ -547,7 +547,7 @@ export default function UpdateProfileModal({
                   <select
                     value={workMode}
                     onChange={(e) => setWorkMode(e.target.value as WorkMode)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {WORK_MODES.map((w) => (
                       <option key={w}>{w}</option>
@@ -562,7 +562,7 @@ export default function UpdateProfileModal({
                     type="date"
                     value={hireDate}
                     onChange={(e) => setHireDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
 
@@ -573,7 +573,7 @@ export default function UpdateProfileModal({
                   <select
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Manager --</option>
                     {staffs.map((staff) => (
@@ -594,7 +594,7 @@ export default function UpdateProfileModal({
                   <select
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Direct Report --</option>
                     {staffs.map((staff) => (
@@ -615,7 +615,7 @@ export default function UpdateProfileModal({
                   <select
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Manager --</option>
                     {staffs.map((staff) => (
@@ -636,7 +636,7 @@ export default function UpdateProfileModal({
                   <select
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Direct Report --</option>
                     {staffs.map((staff) => (
@@ -657,7 +657,7 @@ export default function UpdateProfileModal({
                     type="date"
                     value={contractEndDate}
                     onChange={(e) => setContractEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -667,7 +667,7 @@ export default function UpdateProfileModal({
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as EmpStatus)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {EMPLOYMENT_STATUS.map((s) => (
                       <option key={s}>{s}</option>
@@ -683,7 +683,7 @@ export default function UpdateProfileModal({
                     pattern="[A-Za-z]+"
                     value={workLocation}
                     onChange={(e) => setWorkLocation(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -697,7 +697,7 @@ export default function UpdateProfileModal({
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Department --</option>
                     {departments.map((dept) => (
@@ -719,7 +719,7 @@ export default function UpdateProfileModal({
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Role --</option>
                     {roles.map((role) => (
