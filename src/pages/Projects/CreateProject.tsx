@@ -12,6 +12,9 @@ interface Staff {
   firstName: string;
   lastName: string;
   email: string;
+  employment: {
+    jobTitle: string[];
+  };
 }
 
 const PROJECT_STATUSES = ["not_started", "in_progress", "testing", "completed"];
@@ -63,6 +66,21 @@ export default function ProjectWizardForm() {
   const [assignments, setAssignments] = useState<
     { staffId: number; role: string }[]
   >([]);
+  useEffect(() => {
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (end >= start) {
+        const diffTime = Math.abs(end.getTime() - start.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        setTimeLine(`${diffDays} days`);
+      } else {
+        setTimeLine("");
+      }
+    }
+  }, [startDate, endDate]);
   useEffect(() => {
     if (step === 2) {
       Api.get("/staff-register")
@@ -149,7 +167,7 @@ export default function ProjectWizardForm() {
       );
 
       setModal({ type: "success", message: "Staff assigned successfully!" });
-      setTimeout(() => router.push("/project"), 1200);
+      setTimeout(() => router.push(`/project/${createdProjectId}`), 1200);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -161,7 +179,7 @@ export default function ProjectWizardForm() {
     }
   };
   const skipAssign = () => {
-    router.push("/project");
+    router.push(`/project/${createdProjectId}`);
   };
 
   return (
@@ -266,15 +284,6 @@ export default function ProjectWizardForm() {
                   onChange={(e) => setStagingUrl(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
-                <label className="block text-sm font-medium">
-                  Timeline <span className="text-red-500">*</span>
-                </label>
-                <input
-                  placeholder="Enter project Timeline"
-                  value={timeLine}
-                  onChange={(e) => setTimeLine(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                />
 
                 <label className="block text-sm font-medium">
                   Start Date <span className="text-red-500">*</span>
@@ -295,6 +304,21 @@ export default function ProjectWizardForm() {
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
+                <label className="block text-sm font-medium">
+                  Timeline <span className="text-red-500">*</span>
+                </label>
+                <input
+                  placeholder="Auto-calculated from dates"
+                  value={timeLine}
+                  readOnly
+                  className="w-full rounded-lg border px-3 py-2 bg-gray-100 text-gray-900"
+                />
+                {/* <input
+                  placeholder="Enter project Timeline"
+                  value={timeLine}
+                  onChange={(e) => setTimeLine(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                /> */}
               </>
             )}
 
@@ -310,11 +334,42 @@ export default function ProjectWizardForm() {
                   <label className="block text-sm font-medium">
                     Select Staff
                   </label>
-                  <select
+                  {/* <select
                     value={staffId}
                     onChange={(e) =>
                       setStaffId(e.target.value ? Number(e.target.value) : "")
                     }
+                    className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                  >
+                    <option value="">-- Select Staff --</option>
+                    {staffs.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.firstName} {s.lastName} ({s.email})
+                      </option>
+                    ))}
+                  </select> */}
+                  <select
+                    value={staffId}
+                    onChange={(e) => {
+                      const selectedId = e.target.value
+                        ? Number(e.target.value)
+                        : "";
+                      setStaffId(selectedId);
+
+                      if (selectedId) {
+                        const selectedStaff = staffs.find(
+                          (s) => s.id === selectedId
+                        );
+                        if (selectedStaff?.employment?.jobTitle?.length) {
+                          // auto-populate with the first jobTitle
+                          setRole(selectedStaff.employment.jobTitle[0]);
+                        } else {
+                          setRole("");
+                        }
+                      } else {
+                        setRole("");
+                      }
+                    }}
                     className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Staff --</option>
@@ -406,6 +461,7 @@ export default function ProjectWizardForm() {
           <div className="mt-8">
             {step === 1 ? (
               <button
+                style={{ cursor: "pointer" }}
                 onClick={handleCreateProject}
                 disabled={submitting}
                 className="w-full py-3 rounded-lg bg-[#95D700] text-white font-semibold text-lg hover:opacity-90 disabled:opacity-60"

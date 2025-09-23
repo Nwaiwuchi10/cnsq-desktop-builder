@@ -6,6 +6,7 @@ import Link from "next/link";
 import Api from "@/utils/api";
 import ProjectStatsCards from "./ProjectStats/ProjectStats";
 import ProjectCard from "./ProjectCrad";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 interface Project {
   id: number;
@@ -54,7 +55,7 @@ export default function ViewProjects() {
   const [limit] = useState(6);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
-
+  const [loading, setLoading] = useState(true);
   // 🔹 New states for filtering
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -70,6 +71,8 @@ export default function ViewProjects() {
         setTotal(res.data.total);
       } catch (error) {
         console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProjects();
@@ -93,6 +96,15 @@ export default function ViewProjects() {
 
     setProjects(filtered);
   }, [search, selectedStatus, allProjects]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh]">
+        <LoadingSpinner />
+        {/* <p>Loading project stats...</p> */}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">

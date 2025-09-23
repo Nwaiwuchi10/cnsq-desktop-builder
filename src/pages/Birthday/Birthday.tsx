@@ -1,6 +1,7 @@
 "use client";
+
 import Api from "@/utils/api";
-import { Search } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -23,12 +24,26 @@ interface Staff {
   };
 }
 
+interface PaginatedResult {
+  data: Staff[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 const Birthday = () => {
   const [todaysBirthdays, setTodaysBirthdays] = useState<Staff[]>([]);
-  const [upcomingBirthdays, setUpcomingBirthdays] = useState<Staff[]>([]);
   const [loadingToday, setLoadingToday] = useState(true);
+
+  const [upcomingBirthdays, setUpcomingBirthdays] = useState<Staff[]>([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); // 🔹 search state
+
+  // Pagination state for upcoming
+  const [pageUpcoming, setPageUpcoming] = useState(1);
+  const [totalUpcoming, setTotalUpcoming] = useState(0);
+  const limit = 4;
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   // ✅ Fetch today's birthdays
   useEffect(() => {
@@ -42,40 +57,40 @@ const Birthday = () => {
         setLoadingToday(false);
       }
     };
-
     fetchTodaysBirthdays();
   }, []);
 
-  // ✅ Fetch upcoming birthdays
+  // ✅ Fetch upcoming birthdays with pagination
   useEffect(() => {
     const fetchUpcomingBirthdays = async () => {
+      setLoadingUpcoming(true);
       try {
-        const res = await Api.get<Staff[]>(
-          "/staff-register/birthdays/all/upcoming"
+        const res = await Api.get<PaginatedResult>(
+          `/staff-register/birthdays/all/upcoming?page=${pageUpcoming}&limit=${limit}`
         );
-        setUpcomingBirthdays(res.data.slice(0, 4)); // limit to 4
+        setUpcomingBirthdays(res.data.data);
+        setTotalUpcoming(res.data.total);
       } catch (error) {
         console.error("Error fetching upcoming birthdays:", error);
       } finally {
         setLoadingUpcoming(false);
       }
     };
-
     fetchUpcomingBirthdays();
-  }, []);
+  }, [pageUpcoming]);
 
-  // 🔹 Filter both lists by search term
-  const filteredTodays = todaysBirthdays.filter((staff) =>
-    `${staff.firstName} ${staff.lastName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  // 🔹 Filter by search term
+  const filterBySearch = (staff: Staff[]) =>
+    staff.filter((s) =>
+      `${s.firstName} ${s.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
 
-  const filteredUpcoming = upcomingBirthdays.filter((staff) =>
-    `${staff.firstName} ${staff.lastName}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
+  const filteredTodays = filterBySearch(todaysBirthdays);
+  const filteredUpcoming = filterBySearch(upcomingBirthdays);
+
+  const totalPagesUpcoming = Math.ceil(totalUpcoming / limit);
 
   return (
     <div>
@@ -101,7 +116,7 @@ const Birthday = () => {
               type="text"
               placeholder="Search birthdays..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)} // update search state
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
             />
           </div>
@@ -133,11 +148,66 @@ const Birthday = () => {
           ) : filteredUpcoming.length === 0 ? (
             <p className="mt-6 text-gray-500">No upcoming birthdays 🎂</p>
           ) : (
-            <div className="grid grid-cols-1 pb-24 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
-              {filteredUpcoming.map((staff) => (
-                <BirthdayCard2 key={staff.id} staff={staff} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 pb-12 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
+                {filteredUpcoming.map((staff) => (
+                  <BirthdayCard2 key={staff.id} staff={staff} />
+                ))}
+              </div>
+
+              {/* 🔹 Pagination Controls */}
+              {totalPagesUpcoming > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-6 pb-12">
+                  {/* Previous */}
+                  <button
+                    onClick={() => setPageUpcoming((p) => Math.max(p - 1, 1))}
+                    disabled={pageUpcoming === 1}
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                      pageUpcoming === 1
+                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                        : "bg-[#95D700] text-white"
+                    }`}
+                  >
+                    <ArrowLeft size={16} /> Previous
+                  </button>
+
+                  {/* Page Numbers */}
+                  {[...Array(totalPagesUpcoming)].map((_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPageUpcoming(pageNum)}
+                        className={`px-4 py-2 rounded-lg font-medium ${
+                          pageUpcoming === pageNum
+                            ? "bg-[#95D700] text-white"
+                            : "bg-gray-200 text-gray-700"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  {/* Next */}
+                  <button
+                    onClick={() =>
+                      setPageUpcoming((p) =>
+                        Math.min(p + 1, totalPagesUpcoming)
+                      )
+                    }
+                    disabled={pageUpcoming === totalPagesUpcoming}
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                      pageUpcoming === totalPagesUpcoming
+                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                        : "bg-[#95D700] text-white"
+                    }`}
+                  >
+                    Next <ArrowRight size={16} />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -145,123 +215,93 @@ const Birthday = () => {
   );
 };
 
-// 🔹 Reusable Birthday Card Component
-// 🔹 Reusable Birthday Card Component
-const BirthdayCard = ({ staff }: { staff: Staff }) => {
-  // format DOB nicely (e.g., September 11, 2025) using Nigeria timezone
+// 🔹 Reusable Card Components
+const BirthdayCard = ({ staff }: { staff: Staff }) => (
+  <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
+    <Image
+      src={staff.photoUrl || "/default-avatar.png"}
+      alt={`${staff.firstName} ${staff.lastName}`}
+      width={100}
+      height={100}
+      className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
+    />
 
-  return (
-    <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
-      {/* Profile Picture */}
-      <Image
-        src={staff.photoUrl || "/default-avatar.png"}
-        alt={`${staff.firstName} ${staff.lastName}`}
-        width={100}
-        height={100}
-        className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
-      />
-
-      {/* Name + Role */}
-      <div className="mt-4">
-        <span className="text-gray-900 font-semibold text-lg block">
-          {staff.firstName} {staff.lastName}
-        </span>
-        <span className="text-gray-500 text-sm">
-          {staff.employment?.departmentalRole?.title || "Staff Member"}
-        </span>
-      </div>
-
-      {/* Department Badge */}
-      <div className="mt-3">
-        <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
-          {staff.employment?.department?.name || "Department"}
-        </span>
-      </div>
-
-      {/* 🔹 Date of Birth */}
-      <div className="mt-3 text-gray-600 text-sm">
-        🎂{" "}
-        {staff?.dateOfBirth
-          ? (() => {
-              const dob = new Date(staff.dateOfBirth);
-              const currentYear = new Date().getFullYear();
-
-              // Create a new date with current year but same month/day
-              const birthdayThisYear = new Date(
-                currentYear,
-                dob.getMonth(),
-                dob.getDate()
-              );
-
-              return birthdayThisYear.toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                timeZone: "Africa/Lagos",
-              });
-            })()
-          : "N/A"}
-      </div>
-
-      {/* Action Button */}
-      <Link href={`/staff/${staff.id}`} className="w-full mt-6">
-        <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition">
-          Send Message
-        </button>
-      </Link>
+    <div className="mt-4">
+      <span className="text-gray-900 font-semibold text-lg block">
+        {staff.firstName} {staff.lastName}
+      </span>
+      <span className="text-gray-500 text-sm">
+        {staff.employment?.departmentalRole?.title || "Staff Member"}
+      </span>
     </div>
-  );
-};
-const BirthdayCard2 = ({ staff }: { staff: Staff }) => {
-  // format DOB nicely (e.g., September 11, 2025) using Nigeria timezone
 
-  return (
-    <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
-      {/* Profile Picture */}
-      <Image
-        src={staff.photoUrl || "/default-avatar.png"}
-        alt={`${staff.firstName} ${staff.lastName}`}
-        width={100}
-        height={100}
-        className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
-      />
-
-      {/* Name + Role */}
-      <div className="mt-4">
-        <span className="text-gray-900 font-semibold text-lg block">
-          {staff.firstName} {staff.lastName}
-        </span>
-        <span className="text-gray-500 text-sm">
-          {staff.employment?.departmentalRole?.title || "Staff Member"}
-        </span>
-      </div>
-
-      {/* Department Badge */}
-      <div className="mt-3">
-        <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
-          {staff.employment?.department?.name || "Department"}
-        </span>
-      </div>
-
-      {/* 🔹 Date of Birth */}
-      <div className="mt-3 text-gray-600 text-sm">
-        🎂
-        {new Date(staff?.nextBirthday).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          timeZone: "Africa/Lagos",
-        })}
-      </div>
-
-      {/* Action Button */}
-      <Link href={`/staff/${staff.id}`} className="w-full mt-6">
-        <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition">
-          Send Message
-        </button>
-      </Link>
+    <div className="mt-3">
+      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+        {staff.employment?.department?.name || "Department"}
+      </span>
     </div>
-  );
-};
+
+    <div className="mt-3 text-gray-600 text-sm">
+      🎂{" "}
+      {staff?.dateOfBirth
+        ? new Date(staff.dateOfBirth).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+            timeZone: "Africa/Lagos",
+          })
+        : "N/A"}
+    </div>
+
+    <Link href={`/staff/${staff.id}`} className="w-full mt-6">
+      <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition">
+        Send Message
+      </button>
+    </Link>
+  </div>
+);
+
+const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
+  <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
+    <Image
+      src={staff.photoUrl || "/default-avatar.png"}
+      alt={`${staff.firstName} ${staff.lastName}`}
+      width={100}
+      height={100}
+      className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
+    />
+
+    <div className="mt-4">
+      <span className="text-gray-900 font-semibold text-lg block">
+        {staff.firstName} {staff.lastName}
+      </span>
+      <span className="text-gray-500 text-sm">
+        {staff.employment?.departmentalRole?.title || "Staff Member"}
+      </span>
+    </div>
+
+    <div className="mt-3">
+      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+        {staff.employment?.department?.name || "Department"}
+      </span>
+    </div>
+
+    <div className="mt-3 text-gray-600 text-sm">
+      🎂{" "}
+      {new Date(staff?.nextBirthday).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "Africa/Lagos",
+      })}
+    </div>
+
+    <Link href={`/staff/${staff.id}`} className="w-full mt-6">
+      <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition">
+        Send Message
+      </button>
+    </Link>
+  </div>
+);
 
 export default Birthday;

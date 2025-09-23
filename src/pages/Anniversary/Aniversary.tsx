@@ -1,37 +1,66 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, ArrowLeft, ArrowRight } from "lucide-react";
 import Image, { StaticImageData } from "next/image";
 import React, { useEffect, useState } from "react";
-import Api from "@/utils/api"; // ✅ your Axios instance
+import Api from "@/utils/api"; // ✅ Axios instance
 
 interface StaffAnniversary {
   id: number;
   firstName: string;
   lastName: string;
   photoUrl?: string | StaticImageData | null;
-  nextAnniversary: string;
+  nextAnniversary?: string;
+  lastAnniversary?: string;
   yearsCompleted: number;
 }
-const Aniversary = () => {
+
+interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+const Anniversary = () => {
+  // ================= State =================
   const [monthAnniversaries, setMonthAnniversaries] = useState<
+    StaffAnniversary[]
+  >([]);
+  const [upcomingAnniversaries, setUpcomingAnniversaries] = useState<
     StaffAnniversary[]
   >([]);
   const [recentAnniversaries, setRecentAnniversaries] = useState<
     StaffAnniversary[]
   >([]);
+
   const [loadingMonth, setLoadingMonth] = useState(true);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(true);
   const [loadingRecent, setLoadingRecent] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Fetch This Month's Anniversaries
+  // Pagination
+  const [pageMonth, setPageMonth] = useState(1);
+  const [pageUpcoming, setPageUpcoming] = useState(1);
+  const [pageRecent, setPageRecent] = useState(1);
+
+  const limit = 4;
+
+  const [totalMonth, setTotalMonth] = useState(0);
+  const [totalUpcoming, setTotalUpcoming] = useState(0);
+  const [totalRecent, setTotalRecent] = useState(0);
+
+  // ================= Fetch This Month =================
   useEffect(() => {
     const fetchMonthAnniversaries = async () => {
+      setLoadingMonth(true);
       try {
-        const res = await Api.get<StaffAnniversary[]>(
-          "/staff-register/anniversaries/month"
+        const res = await Api.get<PaginatedResult<StaffAnniversary>>(
+          `/staff-register/anniversaries/month?page=${pageMonth}&limit=${limit}`
         );
-        setMonthAnniversaries(res.data);
+        setMonthAnniversaries(res.data.data);
+        setTotalMonth(res.data.total);
       } catch (error) {
         console.error("Error fetching this month anniversaries:", error);
       } finally {
@@ -39,32 +68,57 @@ const Aniversary = () => {
       }
     };
     fetchMonthAnniversaries();
-  }, []);
+  }, [pageMonth]);
 
-  // ✅ Fetch Upcoming (Recent) Anniversaries
+  // ================= Fetch Upcoming =================
   useEffect(() => {
-    const fetchRecentAnniversaries = async () => {
+    const fetchUpcoming = async () => {
+      setLoadingUpcoming(true);
       try {
-        const res = await Api.get<StaffAnniversary[]>(
-          "/staff-register/anniversaries/all/upcoming"
+        const res = await Api.get<PaginatedResult<StaffAnniversary>>(
+          `/staff-register/anniversaries/all/upcoming?page=${pageUpcoming}&limit=${limit}`
         );
-        setRecentAnniversaries(res.data.slice(0, 4)); // only 4
+        setUpcomingAnniversaries(res.data.data);
+        setTotalUpcoming(res.data.total);
+      } catch (error) {
+        console.error("Error fetching upcoming anniversaries:", error);
+      } finally {
+        setLoadingUpcoming(false);
+      }
+    };
+    fetchUpcoming();
+  }, [pageUpcoming]);
+
+  // ================= Fetch Recent =================
+  useEffect(() => {
+    const fetchRecent = async () => {
+      setLoadingRecent(true);
+      try {
+        const res = await Api.get<PaginatedResult<StaffAnniversary>>(
+          `/staff-register/anniversaries/all/recent?page=${pageRecent}&limit=${limit}`
+        );
+        setRecentAnniversaries(res.data.data);
+        setTotalRecent(res.data.total);
       } catch (error) {
         console.error("Error fetching recent anniversaries:", error);
       } finally {
         setLoadingRecent(false);
       }
     };
-    fetchRecentAnniversaries();
-  }, []);
+    fetchRecent();
+  }, [pageRecent]);
 
-  // ✅ Search filter
+  // ================= Helpers =================
   const filterBySearch = (list: StaffAnniversary[]) =>
     list.filter((staff) =>
       `${staff.firstName} ${staff.lastName}`
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
     );
+
+  const totalPagesMonth = Math.ceil(totalMonth / limit);
+  const totalPagesUpcoming = Math.ceil(totalUpcoming / limit);
+  const totalPagesRecent = Math.ceil(totalRecent / limit);
 
   return (
     <div>
@@ -96,50 +150,138 @@ const Aniversary = () => {
           </div>
 
           {/* =================== THIS MONTH =================== */}
-          <div className="mt-12">
-            <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
-              This Month
-            </h1>
+          <Section
+            title="This Month"
+            loading={loadingMonth}
+            data={filterBySearch(monthAnniversaries)}
+            pagination={{
+              page: pageMonth,
+              totalPages: totalPagesMonth,
+              setPage: setPageMonth,
+            }}
+          />
 
-            {loadingMonth ? (
-              <p>Loading this month&apos;s anniversaries...</p>
-            ) : filterBySearch(monthAnniversaries).length === 0 ? (
-              <p className="text-gray-500">No anniversaries this month 🎉</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl">
-                {filterBySearch(monthAnniversaries).map((staff) => (
-                  <AnniversaryCard key={staff.id} staff={staff} />
-                ))}
-              </div>
-            )}
-          </div>
+          {/* =================== UPCOMING ANNIVERSARIES =================== */}
+          <Section
+            title="Upcoming Anniversaries"
+            loading={loadingUpcoming}
+            data={filterBySearch(upcomingAnniversaries)}
+            pagination={{
+              page: pageUpcoming,
+              totalPages: totalPagesUpcoming,
+              setPage: setPageUpcoming,
+            }}
+          />
 
           {/* =================== RECENT ANNIVERSARIES =================== */}
-          <div className="mt-16 pb-16">
-            <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
-              Recent Anniversary
-            </h1>
-
-            {loadingRecent ? (
-              <p>Loading recent anniversaries...</p>
-            ) : filterBySearch(recentAnniversaries).length === 0 ? (
-              <p className="text-gray-500">No recent anniversaries 🎉</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl">
-                {filterBySearch(recentAnniversaries).map((staff) => (
-                  <AnniversaryCard key={staff.id} staff={staff} />
-                ))}
-              </div>
-            )}
-          </div>
+          <Section
+            title="Recent Anniversaries"
+            loading={loadingRecent}
+            data={filterBySearch(recentAnniversaries)}
+            pagination={{
+              page: pageRecent,
+              totalPages: totalPagesRecent,
+              setPage: setPageRecent,
+            }}
+          />
         </div>
       </div>
     </div>
   );
 };
 
-// ✅ Reusable Card
+// ================= Reusable Section =================
+const Section = ({
+  title,
+  loading,
+  data,
+  pagination,
+}: {
+  title: string;
+  loading: boolean;
+  data: StaffAnniversary[];
+  pagination?: {
+    page: number;
+    totalPages: number;
+    setPage: (p: number) => void;
+  };
+}) => {
+  return (
+    <div className="mt-16 pb-16">
+      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
+        {title}
+      </h1>
+
+      {loading ? (
+        <p>Loading {title.toLowerCase()}...</p>
+      ) : data.length === 0 ? (
+        <p className="text-gray-500">No anniversaries 🎉</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl">
+            {data.map((staff) => (
+              <AnniversaryCard key={staff.id} staff={staff} />
+            ))}
+          </div>
+
+          {/* Custom Pagination UI */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              {/* Previous Button */}
+              <button
+                onClick={() => pagination.setPage(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                  pagination.page === 1
+                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    : "bg-[#95D700] text-white"
+                }`}
+              >
+                <ArrowLeft size={16} /> Previous
+              </button>
+
+              {/* Page Numbers */}
+              {[...Array(pagination.totalPages)].map((_, i) => {
+                const pageNum = i + 1;
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => pagination.setPage(pageNum)}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      pagination.page === pageNum
+                        ? "bg-[#95D700] text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              {/* Next Button */}
+              <button
+                onClick={() => pagination.setPage(pagination.page + 1)}
+                disabled={pagination.page === pagination.totalPages}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                  pagination.page === pagination.totalPages
+                    ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    : "bg-[#95D700] text-white"
+                }`}
+              >
+                Next <ArrowRight size={16} />
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ================= Reusable Card =================
 const AnniversaryCard = ({ staff }: { staff: StaffAnniversary }) => {
+  const anniversaryDate = staff.nextAnniversary || staff.lastAnniversary;
+
   return (
     <div className="flex flex-col items-start text-left w-full">
       <div className="relative w-[315px] h-[315px] sm:w-[420px] sm:h-[250px] md:w-[380px] md:h-[260px] lg:w-[280px] lg:h-[280px] rounded-lg overflow-hidden shadow-sm">
@@ -156,15 +298,17 @@ const AnniversaryCard = ({ staff }: { staff: StaffAnniversary }) => {
         {staff.firstName} {staff.lastName}
       </p>
 
-      <span className="text-gray-500 text-sm">
-        {new Date(staff.nextAnniversary).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })}
-      </span>
+      {anniversaryDate && (
+        <span className="text-gray-500 text-sm">
+          {new Date(anniversaryDate).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </span>
+      )}
     </div>
   );
 };
 
-export default Aniversary;
+export default Anniversary;
