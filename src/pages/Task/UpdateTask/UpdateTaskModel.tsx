@@ -5,6 +5,7 @@ import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import { X } from "lucide-react";
 import CustomModal from "@/component/Message/Message";
+import { useRouter } from "next/navigation";
 
 interface Staff {
   id: number;
@@ -60,7 +61,7 @@ export default function TaskUpdateModal({
     type: "success" | "error";
     message: string;
   } | null>(null);
-
+  const router = useRouter();
   // === Form state ===
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -71,13 +72,24 @@ export default function TaskUpdateModal({
   const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
   const [projectId, setProjectId] = useState<number | "">("");
+  const [token, setToken] = useState<string | null>(null);
 
   const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
-
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const t = localStorage.getItem("user-token");
+      if (!t) {
+        router.push("/login");
+      } else {
+        setToken(t);
+      }
+    }
+  }, [router]);
   // === Load task + staff ===
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -121,18 +133,26 @@ export default function TaskUpdateModal({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await Api.patch(`/task/${taskId}`, {
-        title,
-        description,
-        status,
-        priority,
-        urgency,
-        timeline,
-        dueDate,
-        projectId,
-        sprint: sprint ? Number(sprint) : undefined,
-        assignedTo: assignments,
-      });
+      await Api.patch(
+        `/task/${taskId}`,
+        {
+          title,
+          description,
+          status,
+          priority,
+          urgency,
+          timeline,
+          dueDate,
+          projectId,
+          sprint: sprint ? Number(sprint) : undefined,
+          assignedTo: assignments,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setModal({ type: "success", message: "Task updated successfully!" });
       setTimeout(() => {
         onClose();
