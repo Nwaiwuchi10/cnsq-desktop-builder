@@ -15,6 +15,10 @@ interface Project {
   desc?: string;
   status: string;
   startDate: string;
+  department: {
+    id: number;
+    name: string;
+  };
   endDate: string;
   priority: "high" | "medium" | "low";
   timeLine: string;

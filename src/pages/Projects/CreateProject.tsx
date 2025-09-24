@@ -16,7 +16,10 @@ interface Staff {
     jobTitle: string[];
   };
 }
-
+interface Department {
+  id: number;
+  name: string;
+}
 const PROJECT_STATUSES = ["not_started", "in_progress", "testing", "completed"];
 const PROJECT_PRIORITIES = ["low", "medium", "high", "critical"];
 
@@ -54,9 +57,11 @@ export default function ProjectWizardForm() {
   const [stagingUrl, setStagingUrl] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [departmentId, setDepartmentId] = useState<number | "">("");
 
   // === Step 2: Assignment ===
   const [staffs, setStaffs] = useState<Staff[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [staffId, setStaffId] = useState<number | "">("");
 
   const [role, setRole] = useState("");
@@ -81,6 +86,13 @@ export default function ProjectWizardForm() {
       }
     }
   }, [startDate, endDate]);
+  useEffect(() => {
+    Api.get("/departments")
+      .then((res) => setDepartments(res.data || []))
+      .catch(() =>
+        setModal({ type: "error", message: "Failed to load departments." })
+      );
+  }, []);
   useEffect(() => {
     if (step === 2) {
       Api.get("/staff-register")
@@ -121,6 +133,7 @@ export default function ProjectWizardForm() {
           stagingUrl: stagingUrl || undefined,
           startDate,
           endDate,
+          departmentId: Number(departmentId),
         },
         {
           headers: {
@@ -244,7 +257,27 @@ export default function ProjectWizardForm() {
                   onChange={(e) => setDesc(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
-
+                <div>
+                  <label className="block text-sm  mb-1">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={departmentId}
+                    onChange={(e) =>
+                      setDepartmentId(
+                        e.target.value ? Number(e.target.value) : ""
+                      )
+                    }
+                    className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                  >
+                    <option value="">-- Select Department --</option>
+                    {departments.map((dept) => (
+                      <option key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <label className="block text-sm font-medium">Status</label>
                 <select
                   value={status}

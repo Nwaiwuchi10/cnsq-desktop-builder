@@ -9,6 +9,10 @@ export interface Project {
   projectName: string;
   desc?: string;
   status: string;
+  department: {
+    id: number;
+    name: string;
+  };
   startDate: string;
   endDate: string;
   priority: "high" | "medium" | "low";
@@ -159,7 +163,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       {/* 🔹 Footer */}
       <div className="flex justify-between items-center mt-3">
         <span className="text-sm text-lime-600 font-medium">
-          {project.createdBy?.employment?.department?.name || "—"}
+          {project?.department?.name || "—"}
         </span>
 
         <Link href={`/project/${project.id}`}>
