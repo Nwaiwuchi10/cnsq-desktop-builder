@@ -1,11 +1,11 @@
-// "use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   ArrowRight,
   Search,
-  ChevronDown, // ⬅️ replaced Filter with dropdown chevron
+  ChevronDown,
   Plus,
   Mail,
   Phone,
@@ -59,24 +59,29 @@ interface StaffResponse {
 
 export default function StaffDirectory() {
   const [staffList, setStaffList] = useState<Staff[]>([]);
-  const [roles, setRoles] = useState<DepartmentalRole[]>([]); // ✅ store roles
+  const [roles, setRoles] = useState<DepartmentalRole[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [selectedRole, setSelectedRole] = useState<string>(""); // ✅ filter state
-  const [showDropdown, setShowDropdown] = useState(false); // ✅ dropdown toggle
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  // Fetch staff data
+  // Fetch staff data (with search + pagination)
   useEffect(() => {
     const fetchStaff = async () => {
       setLoading(true);
       try {
-        const res = await Api.get<StaffResponse>(
-          `/staff-register/all/staffs/dept?page=${page}&limit=${limit}`
-        );
+        // const res = await Api.get<StaffResponse>(
+        //   `/staff-register/all/staffs/dept?page=${page}&limit=${limit}&search=${search}`
+        // );
+        const query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}${
+          search ? `&search=${encodeURIComponent(search)}` : ""
+        }`;
+        const res = await Api.get<StaffResponse>(query);
         setStaffList(res.data.data);
         setTotalPages(res.data.totalPages);
       } catch (error) {
@@ -87,7 +92,7 @@ export default function StaffDirectory() {
     };
 
     fetchStaff();
-  }, [page, limit]);
+  }, [page, limit, search]);
 
   // Fetch departmental roles
   useEffect(() => {
@@ -102,18 +107,12 @@ export default function StaffDirectory() {
     fetchRoles();
   }, []);
 
-  // Filter staff by search + selected role
+  // Client-side role filter (kept)
   const filteredStaff = staffList.filter((person) => {
-    const matchesSearch =
-      `${person.firstName} ${person.lastName} ${person.employment?.jobTitle} ${person.employment?.department?.name}`
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
     const matchesRole = selectedRole
       ? person.employment?.departmentalRole?.title === selectedRole
       : true;
-
-    return matchesSearch && matchesRole;
+    return matchesRole;
   });
 
   return (
@@ -136,22 +135,24 @@ export default function StaffDirectory() {
         </p>
 
         {/* 🔍 Toolbar */}
-        {/* 🔍 Toolbar */}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Search Bar (MOBILE + DESKTOP) */}
+          {/* Search Bar */}
           <div className="flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
             <Search className="text-gray-500" size={18} />
             <input
               type="text"
               placeholder="Search by staff name, position, role..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1); // reset to first page on search
+              }}
               className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
             />
 
             {/* 📱 Mobile-only buttons */}
             <div className="flex sm:hidden gap-2 ml-2">
-              {/* Filter Dropdown (MOBILE) */}
+              {/* Filter Dropdown */}
               <button
                 onClick={() => setShowDropdown((prev) => !prev)}
                 className="flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-gray-600 text-xs hover:bg-gray-100"
@@ -268,9 +269,6 @@ export default function StaffDirectory() {
                     <span className="text-gray-900 font-semibold">
                       {person.firstName} {person.lastName}
                     </span>
-                    {/* <span className="text-gray-500 text-sm">
-                      {person?.employment?.jobTitle || "Not Assigned"}
-                    </span> */}
                     <div className="flex flex-wrap gap-2">
                       {person?.employment?.jobTitle?.length ? (
                         person.employment.jobTitle.map(
@@ -334,7 +332,7 @@ export default function StaffDirectory() {
 
         {/* 📄 Pagination */}
         <div className="flex justify-center items-center gap-2 mt-34">
-          {/* Previous Button */}
+          {/* Previous */}
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
@@ -366,7 +364,7 @@ export default function StaffDirectory() {
             );
           })}
 
-          {/* Next Button */}
+          {/* Next */}
           <button
             style={{ cursor: "pointer" }}
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}

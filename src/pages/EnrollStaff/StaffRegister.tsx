@@ -280,8 +280,8 @@ export default function StaffOnboardingForm() {
       !employmentType ||
       !workMode ||
       !hireDate ||
-      !reportingManager ||
-      !directReport ||
+      // !reportingManager ||
+      // !directReport ||
       !departmentId ||
       !departmentalRoleId
     ) {

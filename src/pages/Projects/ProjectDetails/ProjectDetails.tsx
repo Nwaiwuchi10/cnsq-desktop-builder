@@ -144,7 +144,9 @@ export default function ProjectDetails() {
 
         {/* Project Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">{project.projectName}</h1>
+          <h1 className="text-2xl text-black font-bold">
+            {project.projectName}
+          </h1>
           <span
             style={{ cursor: "pointer" }}
             onClick={() => setShowEditModal(true)}
