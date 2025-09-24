@@ -321,7 +321,7 @@ export default function StaffDirectory() {
 
                 {/* View Profile */}
                 <Link href={`/staff/${person.id}`} className="w-full">
-                  <button className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition">
+                  <button className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
                     View Profile
                   </button>
                 </Link>

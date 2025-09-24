@@ -66,7 +66,7 @@ export default function QuickActions() {
             {/* Button as Link */}
             <Link
               href={action.href}
-              className="mt-6 flex items-center justify-center gap-2 bg-[#95D700] text-white font-semibold rounded-lg w-full h-12 hover:bg-green-500 transition"
+              className="mt-6 flex items-center justify-center gap-2 bg-[#95D700] text-white font-semibold rounded-lg w-full h-12 hover:bg-[#78B500] transition"
             >
               {action.buttonText}
               <ArrowRight size={18} />
