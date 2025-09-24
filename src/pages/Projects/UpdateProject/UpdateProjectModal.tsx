@@ -32,6 +32,10 @@ interface Project {
   stagingUrl?: string;
   assignedTo: ProjectAssignment[];
 }
+interface Department {
+  id: number;
+  name: string;
+}
 
 const PROJECT_STATUSES = ["not_started", "in_progress", "testing", "completed"];
 const PROJECT_PRIORITIES = ["low", "medium", "high", "critical"];
@@ -67,11 +71,18 @@ export default function UpdateProjectModal({
   const [assignments, setAssignments] = useState<
     { staffId: number; role: string }[]
   >([]);
-
+  const [departmentId, setDepartmentId] = useState<number | "">("");
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
-
+  const [departments, setDepartments] = useState<Department[]>([]);
+  useEffect(() => {
+    Api.get("/departments")
+      .then((res) => setDepartments(res.data || []))
+      .catch(() =>
+        setModal({ type: "error", message: "Failed to load departments." })
+      );
+  }, []);
   // === Fetch project + staff ===
   useEffect(() => {
     if (!isOpen) return;
@@ -128,6 +139,7 @@ export default function UpdateProjectModal({
         startDate,
         endDate,
         assignments,
+        departmentId: Number(departmentId),
       });
       setModal({ type: "success", message: "Project updated successfully!" });
       setTimeout(() => {
@@ -180,6 +192,26 @@ export default function UpdateProjectModal({
               onChange={(e) => setDesc(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
+
+            <div>
+              <label className="block text-sm  mb-1">
+                Department <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={departmentId}
+                onChange={(e) =>
+                  setDepartmentId(e.target.value ? Number(e.target.value) : "")
+                }
+                className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              >
+                <option value="">-- Select Department --</option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <label className="block text-sm text-gray-700 mb-1">Status</label>
             <select
               value={status}
