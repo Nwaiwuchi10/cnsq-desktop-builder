@@ -26,6 +26,7 @@ interface Task {
   status: string;
   priority: string;
   urgency: string;
+  sprint: number;
   dueDate?: string;
   timeline?: string;
   project: { id: number; projectName: string };
@@ -65,7 +66,7 @@ export default function TaskUpdateModal({
   // === Form state ===
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [sprint, setSprint] = useState("");
+  const [sprint, setSprint] = useState<number | "">("");
   const [status, setStatus] = useState("Not_started");
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
@@ -108,6 +109,7 @@ export default function TaskUpdateModal({
         setPriority(t.priority);
         setUrgency(t.urgency);
         setTimeline(t.timeline || "");
+        setSprint(t.sprint || "");
         setProjectId(t.project.id);
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
 
@@ -211,7 +213,7 @@ export default function TaskUpdateModal({
             <input
               type="number"
               value={sprint}
-              onChange={(e) => setSprint(e.target.value)}
+              onChange={(e) => setSprint(Number(e.target.value))}
               placeholder="Sprint 1"
               className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />

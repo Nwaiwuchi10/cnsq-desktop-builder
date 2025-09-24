@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
-import { useParams } from "next/navigation";
 
 interface Staff {
   id: number;
@@ -14,16 +13,27 @@ interface Staff {
   lastName: string;
   email: string;
 }
+interface ProjectStaff {
+  staff: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    employment: {
+      jobTitle: string[];
+    };
+  };
+  role: string; // role from project assignment
+}
 
 export default function CreateTaskForm() {
   const router = useRouter();
   const params = useParams();
-
   const projectId = Number(params?.id);
 
-  console.log("projectId", projectId);
   const [token, setToken] = useState<string | null>(null);
-  const [staffs, setStaffs] = useState<Staff[]>([]);
+  // const [staffs, setStaffs] = useState<Staff[]>([]);
+  const [staffs, setStaffs] = useState<ProjectStaff[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [modal, setModal] = useState<{
     type: "success" | "error";
@@ -33,8 +43,9 @@ export default function CreateTaskForm() {
   // === Task State ===
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
   const [sprint, setSprint] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
 
   // === AssignedTo ===
@@ -44,6 +55,7 @@ export default function CreateTaskForm() {
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
 
+  // Load token
   useEffect(() => {
     if (typeof window !== "undefined") {
       const t = localStorage.getItem("user-token");
@@ -55,16 +67,37 @@ export default function CreateTaskForm() {
     }
   }, [router]);
 
+  // Load staffs assigned to this project
   useEffect(() => {
-    Api.get("/staff-register")
+    if (!projectId) return;
+    Api.get(`/projects/${projectId}/staffs`)
       .then((res) => setStaffs(res.data || []))
       .catch(() =>
-        setModal({ type: "error", message: "Failed to load staff list." })
+        setModal({
+          type: "error",
+          message: "Failed to load project staff list.",
+        })
       );
-  }, []);
+  }, [projectId]);
+
+  // Auto-calc timeline (days) when startDate & dueDate are set
+  useEffect(() => {
+    if (startDate && dueDate) {
+      const start = new Date(startDate);
+      const end = new Date(dueDate);
+      if (end >= start) {
+        const diffDays = Math.ceil(
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        setTimeline(`${diffDays} days`);
+      } else {
+        setTimeline("");
+      }
+    }
+  }, [startDate, dueDate]);
 
   const handleCreateTask = async () => {
-    if (!title || !dueDate || !timeline) {
+    if (!title || !dueDate || !startDate) {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
     }
@@ -75,17 +108,14 @@ export default function CreateTaskForm() {
         {
           title,
           description,
+          sprint,
+          startDate,
           dueDate,
           timeline,
-          sprint,
           projectId,
           assignedTo: assignments,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setModal({ type: "success", message: "Task created successfully!" });
       setTimeout(() => router.push(`/project/${projectId}`), 1200);
@@ -120,17 +150,18 @@ export default function CreateTaskForm() {
 
       <div className="max-w-xl mx-auto">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-5">
+          {/* Title */}
           <label className="block text-sm font-medium">
             Task Title <span className="text-red-500">*</span>
           </label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            pattern="[A-Za-z]+"
             placeholder="Enter task title"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
           />
 
+          {/* Description */}
           <label className="block text-sm font-medium">Description</label>
           <textarea
             value={description}
@@ -138,6 +169,8 @@ export default function CreateTaskForm() {
             placeholder="Enter task description"
             className="w-full rounded-lg border px-3 py-2"
           />
+
+          {/* Sprint */}
           <label className="block text-sm font-medium mb-1">
             Task Sprint <span className="text-red-500">*</span>
           </label>
@@ -146,9 +179,21 @@ export default function CreateTaskForm() {
             value={sprint}
             onChange={(e) => setSprint(e.target.value)}
             placeholder="Sprint 1"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
           />
 
+          {/* Start Date */}
+          <label className="block text-sm font-medium">
+            Start Date <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+          />
+
+          {/* Due Date */}
           <label className="block text-sm font-medium">
             Due Date <span className="text-red-500">*</span>
           </label>
@@ -156,17 +201,17 @@ export default function CreateTaskForm() {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
           />
 
+          {/* Timeline (auto-calculated) */}
           <label className="block text-sm font-medium">
-            Timeline <span className="text-red-500">*</span>
+            Timeline (auto-calculated)
           </label>
           <input
             value={timeline}
-            onChange={(e) => setTimeline(e.target.value)}
-            placeholder="e.g. 2 weeks"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            readOnly
+            className="w-full rounded-lg border px-3 py-2 bg-gray-100 text-gray-700 cursor-not-allowed"
           />
 
           {/* Staff Assignment */}
@@ -174,15 +219,25 @@ export default function CreateTaskForm() {
             <h3 className="text-sm font-semibold mb-2">Assign Staff</h3>
             <select
               value={staffId}
-              onChange={(e) =>
-                setStaffId(e.target.value ? Number(e.target.value) : "")
-              }
-              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900 placeholder-gray-400"
+              onChange={(e) => {
+                const selectedId = e.target.value ? Number(e.target.value) : "";
+                setStaffId(selectedId);
+
+                if (selectedId) {
+                  const selectedStaff = staffs.find(
+                    (s) => s.staff.id === selectedId
+                  );
+                  setRole(selectedStaff?.staff.employment?.jobTitle?.[0] || ""); // Auto-fill role
+                } else {
+                  setRole("");
+                }
+              }}
+              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900"
             >
               <option value="">-- Select Staff --</option>
               {staffs.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.firstName} {s.lastName} ({s.email})
+                <option key={s.staff.id} value={s.staff.id}>
+                  {s.staff.firstName} {s.staff.lastName} ({s.staff.email})
                 </option>
               ))}
             </select>
@@ -191,7 +246,7 @@ export default function CreateTaskForm() {
               placeholder="Role (e.g. Lead, Contributor)"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900"
             />
 
             <button
@@ -219,15 +274,15 @@ export default function CreateTaskForm() {
             {/* List of assigned staff */}
             <ul className="mt-3 space-y-2">
               {assignments.map((a, idx) => {
-                const staff = staffs.find((s) => s.id === a.staffId);
+                const staffObj = staffs.find((s) => s.staff.id === a.staffId);
                 return (
                   <li
                     key={idx}
                     className="flex justify-between items-center border p-2 rounded-lg bg-white"
                   >
                     <span>
-                      {staff?.firstName} {staff?.lastName} ({staff?.email}) —{" "}
-                      <b>{a.role}</b>
+                      {staffObj?.staff.firstName} {staffObj?.staff.lastName} (
+                      {staffObj?.staff.email}) — <b>{a.role}</b>
                     </span>
                     <button
                       onClick={() =>
@@ -245,6 +300,7 @@ export default function CreateTaskForm() {
             </ul>
           </div>
 
+          {/* Modal */}
           {modal && (
             <CustomModal
               type={modal.type}
@@ -253,6 +309,7 @@ export default function CreateTaskForm() {
             />
           )}
 
+          {/* Submit */}
           <button
             style={{ cursor: "pointer" }}
             onClick={handleCreateTask}
