@@ -97,9 +97,18 @@ export default function AssignedToStaffModal({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await Api.patch(`/projects/${projectId}`, {
-        assignments,
-      });
+      const token = localStorage.getItem("user-token");
+      await Api.patch(
+        `/projects/${projectId}`,
+        {
+          assignments,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setModal({ type: "success", message: "Project updated successfully!" });
       setTimeout(() => {
         onClosed();

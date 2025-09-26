@@ -325,8 +325,13 @@ export default function StaffOnboardingForm() {
     if (photo) formData.append("imgFile", photo);
 
     try {
+      const token = localStorage.getItem("user-token");
       await Api.post("/staff-register", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        // headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       setModal({ type: "success", message: "Staff created successfully." });
       localStorage.removeItem(STORAGE_KEY);
@@ -689,7 +694,7 @@ export default function StaffOnboardingForm() {
                 </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Reporting Manager <span className="text-red-500">*</span>
+                    Reporting Manager
                   </label>
                   <select
                     value={reportingManager}
@@ -722,7 +727,7 @@ export default function StaffOnboardingForm() {
                 </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Direct Report <span className="text-red-500">*</span>
+                    Direct Report
                   </label>
                   <select
                     value={directReport}
