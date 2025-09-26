@@ -128,19 +128,28 @@ export default function UpdateProjectModal({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await Api.patch(`/projects/${projectId}`, {
-        projectName,
-        desc,
-        timeLine,
-        status,
-        priority,
-        prodUrl,
-        stagingUrl,
-        startDate,
-        endDate,
-        assignments,
-        departmentId: Number(departmentId),
-      });
+      const token = localStorage.getItem("user-token");
+      await Api.patch(
+        `/projects/${projectId}`,
+        {
+          projectName,
+          desc,
+          timeLine,
+          status,
+          priority,
+          prodUrl,
+          stagingUrl,
+          startDate,
+          endDate,
+          assignments,
+          departmentId: Number(departmentId),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setModal({ type: "success", message: "Project updated successfully!" });
       setTimeout(() => {
         onClose();

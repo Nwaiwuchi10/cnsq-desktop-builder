@@ -281,8 +281,8 @@ export default function HeadOfDeptOnboardingForm() {
       !employmentType ||
       !workMode ||
       !hireDate ||
-      !reportingManager ||
-      !directReport ||
+      // !reportingManager ||
+      // !directReport ||
       !departmentId ||
       !departmentalRoleId
     ) {
@@ -325,8 +325,12 @@ export default function HeadOfDeptOnboardingForm() {
     if (photo) formData.append("imgFile", photo);
 
     try {
+      const token = localStorage.getItem("user-token");
       const res = await Api.post("/staff-register", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
 
       setModal({ type: "success", message: "Staff created successfully." });
@@ -420,7 +424,7 @@ export default function HeadOfDeptOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    First Name *
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -439,7 +443,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Last Name *
+                    Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -458,7 +462,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Email *
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -469,7 +473,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Phone *
+                    Phone <span className="text-red-500">*</span>
                   </label>
                   <input
                     value={phone}
@@ -479,7 +483,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Date of Birth *
+                    Date of Birth <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -490,7 +494,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Gender *
+                    Gender <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={gender}
@@ -577,7 +581,7 @@ export default function HeadOfDeptOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    City *
+                    City <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -589,7 +593,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    State *
+                    State <span className="text-red-500">*</span>
                   </label>
                   <input
                     value={state}
@@ -600,7 +604,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Country *
+                    Country <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -627,7 +631,7 @@ export default function HeadOfDeptOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Job Titles *
+                    Job Titles <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -665,7 +669,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Employment Type *
+                    Employment Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={employmentType}
@@ -681,7 +685,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Work Mode *
+                    Work Mode <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={workMode}
@@ -695,7 +699,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Hire Date *
+                    Hire Date <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
@@ -707,7 +711,7 @@ export default function HeadOfDeptOnboardingForm() {
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Reporting Manager *
+                    Reporting Manager
                   </label>
                   <select
                     value={reportingManager}
@@ -728,7 +732,7 @@ export default function HeadOfDeptOnboardingForm() {
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Direct Report *
+                    Direct Report
                   </label>
                   <select
                     value={directReport}
@@ -759,7 +763,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Employment Status *
+                    Employment Status <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={status}
@@ -785,7 +789,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Department *
+                    Department <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={departmentId}
@@ -807,7 +811,7 @@ export default function HeadOfDeptOnboardingForm() {
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Departmental Unit *
+                    Departmental Unit <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={departmentalRoleId}
@@ -832,7 +836,7 @@ export default function HeadOfDeptOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Select Department *
+                    Select Department <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={hodDepartmentId}
@@ -853,7 +857,7 @@ export default function HeadOfDeptOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    HOD Role Name{" "}
+                    HOD Role Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
