@@ -238,7 +238,7 @@ export default function ProjectWizardForm() {
           <div className="mt-6 space-y-4">
             {step === 1 && (
               <>
-                <label className="block text-sm font-medium">
+                <label className="block text-sm font-medium text-gray-600">
                   Project Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -248,7 +248,7 @@ export default function ProjectWizardForm() {
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
-                <label className="block text-sm font-medium">
+                <label className="block text-sm font-medium text-gray-600">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -258,7 +258,7 @@ export default function ProjectWizardForm() {
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
                 <div>
-                  <label className="block text-sm  mb-1">
+                  <label className="block text-sm  mb-1 text-gray-600">
                     Department <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -300,7 +300,7 @@ export default function ProjectWizardForm() {
                   ))}
                 </select>
 
-                <label className="block text-sm font-medium">
+                <label className="block text-sm font-medium text-gray-600">
                   Production URL
                 </label>
                 <input
@@ -310,7 +310,9 @@ export default function ProjectWizardForm() {
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
-                <label className="block text-sm font-medium">Staging URL</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Staging URL
+                </label>
                 <input
                   placeholder="https://staging.example.com"
                   value={stagingUrl}
@@ -318,7 +320,7 @@ export default function ProjectWizardForm() {
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
-                <label className="block text-sm font-medium">
+                <label className="block text-sm font-medium text-gray-600">
                   Start Date <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -328,7 +330,7 @@ export default function ProjectWizardForm() {
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
 
-                <label className="block text-sm font-medium">
+                <label className="block text-sm font-medium text-gray-600">
                   End Date <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -337,7 +339,7 @@ export default function ProjectWizardForm() {
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
-                <label className="block text-sm font-medium">
+                <label className="block text-sm font-medium text-gray-600">
                   Timeline <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -364,7 +366,7 @@ export default function ProjectWizardForm() {
 
                 {/* Add Staff-Role Pair */}
                 <div className="flex flex-col gap-3 border p-3 rounded-lg bg-gray-50">
-                  <label className="block text-sm font-medium">
+                  <label className="block text-sm font-medium text-gray-600">
                     Select Staff
                   </label>
                   {/* <select
@@ -413,7 +415,9 @@ export default function ProjectWizardForm() {
                     ))}
                   </select>
 
-                  <label className="block text-sm font-medium">Role</label>
+                  <label className="block text-sm font-medium text-gray-600">
+                    Role
+                  </label>
                   <input
                     placeholder="e.g. Lead, Contributor"
                     value={role}
@@ -447,7 +451,9 @@ export default function ProjectWizardForm() {
 
                 {/* Show Added Staff-Role Pairs */}
                 <div className="mt-4">
-                  <h3 className="text-sm font-semibold mb-2">Assigned Staff</h3>
+                  <h3 className="text-sm font-semibold mb-2 text-gray-600">
+                    Assigned Staff
+                  </h3>
                   {assignments.length === 0 ? (
                     <p className="text-gray-500 text-sm">No staff added yet.</p>
                   ) : (
@@ -457,7 +463,7 @@ export default function ProjectWizardForm() {
                         return (
                           <li
                             key={idx}
-                            className="flex justify-between items-center border p-2 rounded-lg bg-white"
+                            className="flex justify-between text-gray-600 items-center border p-2 rounded-lg bg-white"
                           >
                             <span>
                               {staff?.firstName} {staff?.lastName} (

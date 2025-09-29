@@ -209,7 +209,7 @@ export default function StaffDetails() {
             />
           </div>
           <div>
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl text-gray-600 font-semibold">
               {staff.firstName} {staff.lastName}
             </h2>
             <p className="text-gray-600">
@@ -224,7 +224,7 @@ export default function StaffDetails() {
 
         {/* Bio Section */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-2">Bio</h3>
+          <h3 className="text-lg text-gray-600 font-semibold mb-2">Bio</h3>
           <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
           <p className="text-gray-600">
             {staff.description || "No bio available."}
@@ -233,7 +233,9 @@ export default function StaffDetails() {
 
         {/* Personal Information */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Personal Information</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-600">
+            Personal Information
+          </h3>
           <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
           <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
             <p>
@@ -258,7 +260,7 @@ export default function StaffDetails() {
 
         {/* Address Section */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Address</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-600">Address</h3>
           <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
           <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
             <p>
@@ -343,7 +345,7 @@ export default function StaffDetails() {
         {/* projects */}
 
         <div className="bg-white rounded-2xl shadow-sm mt-6 p-6">
-          <h3 className="text-lg font-semibold mb-4">Projects</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-600">Projects</h3>
           <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
           {projects.length === 0 ? (
             <p className="text-gray-500 text-sm">

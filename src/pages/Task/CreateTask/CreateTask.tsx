@@ -151,7 +151,7 @@ export default function CreateTaskForm() {
       <div className="max-w-xl mx-auto">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-5">
           {/* Title */}
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-gray-600">
             Task Title <span className="text-red-500">*</span>
           </label>
           <input
@@ -162,7 +162,9 @@ export default function CreateTaskForm() {
           />
 
           {/* Description */}
-          <label className="block text-sm font-medium">Description</label>
+          <label className="block text-sm font-medium text-gray-600">
+            Description
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -171,7 +173,7 @@ export default function CreateTaskForm() {
           />
 
           {/* Sprint */}
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 text-gray-600">
             Task Sprint <span className="text-red-500">*</span>
           </label>
           <input
@@ -183,7 +185,7 @@ export default function CreateTaskForm() {
           />
 
           {/* Start Date */}
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-gray-600">
             Start Date <span className="text-red-500">*</span>
           </label>
           <input
@@ -194,7 +196,7 @@ export default function CreateTaskForm() {
           />
 
           {/* Due Date */}
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-gray-600">
             Due Date <span className="text-red-500">*</span>
           </label>
           <input
@@ -205,7 +207,7 @@ export default function CreateTaskForm() {
           />
 
           {/* Timeline (auto-calculated) */}
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-medium text-gray-600">
             Timeline (auto-calculated)
           </label>
           <input
@@ -216,7 +218,9 @@ export default function CreateTaskForm() {
 
           {/* Staff Assignment */}
           <div className="border p-3 rounded-lg bg-gray-50 mt-4">
-            <h3 className="text-sm font-semibold mb-2">Assign Staff</h3>
+            <h3 className="text-sm font-semibold mb-2 text-gray-600">
+              Assign Staff
+            </h3>
             <select
               value={staffId}
               onChange={(e) => {
@@ -278,7 +282,7 @@ export default function CreateTaskForm() {
                 return (
                   <li
                     key={idx}
-                    className="flex justify-between items-center border p-2 rounded-lg bg-white"
+                    className="flex justify-between items-center border p-2 rounded-lg bg-white text-gray-600"
                   >
                     <span>
                       {staffObj?.staff.firstName} {staffObj?.staff.lastName} (
