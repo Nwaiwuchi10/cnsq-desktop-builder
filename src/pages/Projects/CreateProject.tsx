@@ -278,7 +278,9 @@ export default function ProjectWizardForm() {
                     ))}
                   </select>
                 </div>
-                <label className="block text-sm font-medium">Status</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Status
+                </label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
@@ -289,7 +291,9 @@ export default function ProjectWizardForm() {
                   ))}
                 </select>
 
-                <label className="block text-sm font-medium">Priority</label>
+                <label className="block text-sm font-medium text-gray-600">
+                  Priority
+                </label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}

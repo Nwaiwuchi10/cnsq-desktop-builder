@@ -7,6 +7,29 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 // Define Staff type
+interface Department {
+  name: string;
+  description: string;
+}
+
+interface DepartmentalRole {
+  title: string;
+  description: string;
+}
+interface Employment {
+  employeeCode: string;
+  jobTitle: string[];
+  employmentType: string;
+  workMode: string;
+  hireDate: string;
+  reportingManager: string;
+  directReport: string;
+  contractEndDate?: string | null;
+  status: string;
+  workLocation?: string | null;
+  department: Department;
+  departmentalRole: DepartmentalRole;
+}
 interface Staff {
   id: string;
   firstName: string;
@@ -14,14 +37,7 @@ interface Staff {
   photoUrl?: string;
   dateOfBirth?: string;
   nextBirthday: string;
-  employment?: {
-    departmentalRole?: {
-      title?: string;
-    };
-    department?: {
-      name?: string;
-    };
-  };
+  employment?: Employment;
 }
 
 interface PaginatedResult {
@@ -230,8 +246,21 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
       <span className="text-gray-900 font-semibold text-lg block">
         {staff.firstName} {staff.lastName}
       </span>
+
       <span className="text-gray-500 text-sm">
-        {staff.employment?.departmentalRole?.title || "Staff Member"}
+        {staff?.employment?.jobTitle?.length ? (
+          staff.employment.jobTitle.map((title: string, i: number) => (
+            <span
+              key={i}
+              className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+            >
+              {title}
+            </span>
+          ))
+        ) : (
+          <span className="text-gray-500 text-sm">Not Assigned</span>
+        )}
+        {/* {staff.employment?.departmentalRole?.title || "Staff Member"} */}
       </span>
     </div>
 
@@ -276,7 +305,19 @@ const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
         {staff.firstName} {staff.lastName}
       </span>
       <span className="text-gray-500 text-sm">
-        {staff.employment?.departmentalRole?.title || "Staff Member"}
+        {staff?.employment?.jobTitle?.length ? (
+          staff.employment.jobTitle.map((title: string, i: number) => (
+            <span
+              key={i}
+              className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+            >
+              {title}
+            </span>
+          ))
+        ) : (
+          <span className="text-gray-500 text-sm">Not Assigned</span>
+        )}
+        {/* {staff.employment?.departmentalRole?.title || "Staff Member"} */}
       </span>
     </div>
 

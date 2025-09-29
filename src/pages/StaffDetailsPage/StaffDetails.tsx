@@ -282,7 +282,9 @@ export default function StaffDetails() {
 
         {/* Organization Section */}
         <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4">Organization</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-600">
+            Organization
+          </h3>
           <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
           <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
             <p>
