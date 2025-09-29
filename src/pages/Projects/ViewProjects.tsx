@@ -160,11 +160,11 @@ export default function ViewProjects() {
                         setSelectedStatus("");
                         setShowDropdown(false);
                       }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-600"
                     >
                       All Statuses
                     </li>
-                    {["not_started", "in_progress", "testing", "completed"].map(
+                    {["Not_started", "In_progress", "Testing", "Completed"].map(
                       (status) => (
                         <li
                           key={status}
@@ -172,7 +172,7 @@ export default function ViewProjects() {
                             setSelectedStatus(status);
                             setShowDropdown(false);
                           }}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-600"
                         >
                           {status.replace("_", " ")}
                         </li>
@@ -255,14 +255,14 @@ export default function ViewProjects() {
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50"
+            className="px-4 py-2 rounded-lg border border-text-gray-600 text-gray-600 disabled:opacity-50"
           >
             Prev
           </button>
           <button
             disabled={page * limit >= total}
             onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50"
+            className="px-4 py-2 rounded-lg border border-text-gray-600 text-gray-600 disabled:opacity-50"
           >
             Next
           </button>

@@ -203,7 +203,7 @@ export default function UpdateProjectModal({
             />
 
             <div>
-              <label className="block text-sm  mb-1">
+              <label className="block text-sm  mb-1 text-gray-700">
                 Department <span className="text-red-500">*</span>
               </label>
               <select
@@ -306,7 +306,7 @@ export default function UpdateProjectModal({
             </div>
 
             {/* Assign Staff */}
-            <div className="border p-3 rounded-lg bg-gray-50">
+            <div className="border p-3 rounded-lg bg-gray-50 text-gray-600">
               <h3 className="font-medium mb-2">Assign Staff</h3>
               <div className="flex flex-col gap-3">
                 <select
@@ -355,7 +355,7 @@ export default function UpdateProjectModal({
                   return (
                     <li
                       key={idx}
-                      className="flex justify-between items-center border p-2 rounded-lg bg-white"
+                      className="flex justify-between items-center border p-2 rounded-lg bg-white text-gray-600"
                     >
                       <span>
                         {staff?.firstName} {staff?.lastName} — <b>{a.role}</b>

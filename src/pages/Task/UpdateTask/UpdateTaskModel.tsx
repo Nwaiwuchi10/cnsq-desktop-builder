@@ -207,7 +207,7 @@ export default function TaskUpdateModal({
               className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
-            <label className="block text-sm font-medium mb-1">
+            <label className="block text-sm font-medium mb-1 text-gray-700">
               Task Sprint
             </label>
             <input
@@ -265,7 +265,7 @@ export default function TaskUpdateModal({
             />
 
             {/* Assign Staff */}
-            <div className="border p-3 rounded-lg bg-gray-50">
+            <div className="border p-3 rounded-lg bg-gray-50 text-gray-600">
               <h3 className="font-medium mb-2">Assign Staff</h3>
               <div className="flex flex-col gap-3">
                 <select

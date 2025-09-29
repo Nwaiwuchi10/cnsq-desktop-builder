@@ -146,14 +146,14 @@ export default function AssignedToStaffModal({
           <div className="space-y-4">
             {/* Assign Staff */}
             <div className="border p-3 rounded-lg bg-gray-50">
-              <h3 className="font-medium mb-2">Assign Staff</h3>
+              <h3 className="font-medium mb-2 text-gray-600">Assign Staff</h3>
               <div className="flex flex-col gap-3">
                 <select
                   value={staffId}
                   onChange={(e) =>
                     setStaffId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 text-gray-600"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs.map((s) => (
