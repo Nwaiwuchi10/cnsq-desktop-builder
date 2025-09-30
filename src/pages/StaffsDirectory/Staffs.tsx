@@ -64,7 +64,7 @@ export default function StaffDirectory() {
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
 
   const [selectedRole, setSelectedRole] = useState<string>("");

@@ -138,6 +138,36 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const uniqueSprints = Array.from(new Set(tasks.map((t) => t.sprint))).sort(
     (a, b) => a - b
   );
+  // ✅ Status Colors
+  const statusColors: Record<string, string> = {
+    Not_started: "bg-red-100 text-red-600", // Not Started → Red
+    In_progress: "bg-yellow-100 text-yellow-600",
+    Ready_To_Test: "bg-blue-100 text-blue-600",
+    Testing_In_Progress: "bg-purple-100 text-purple-600",
+    Passed_Test: "bg-indigo-100 text-indigo-600",
+    Completed: "bg-green-100 text-green-600",
+  };
+
+  // ✅ Priority Colors
+  const priorityColors: Record<string, string> = {
+    Low: "bg-green-100 text-green-600",
+    Medium: "bg-yellow-100 text-yellow-600",
+    High: "bg-red-100 text-red-600",
+  };
+
+  // ✅ Urgency Colors
+  const urgencyColors: Record<string, string> = {
+    Short_Term: "bg-green-100 text-green-600",
+    Med_Term: "bg-yellow-100 text-yellow-600",
+    High_Term: "bg-orange-100 text-orange-600",
+    Immediately: "bg-red-100 text-red-600 font-semibold",
+  };
+
+  // ✅ Format function (remove underscores, capitalize)
+  const formatLabel = (val?: string) => {
+    if (!val) return "—";
+    return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  };
 
   return (
     <>
@@ -223,9 +253,52 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 >
                   {t.title}
                 </td>
-                <td className="p-2 border text-gray-600">{t?.status}</td>
-                <td className="p-2 border text-gray-600">{t.priority}</td>
-                <td className="p-2 border text-gray-600">{t.urgency}</td>
+                {/* Status */}
+                <td className="p-2 border">
+                  {t.status ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        statusColors[t.status] || "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {formatLabel(t.status)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+
+                {/* Priority */}
+                <td className="p-2 border">
+                  {t.priority ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        priorityColors[t.priority] ||
+                        "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {formatLabel(t.priority)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+
+                {/* Urgency */}
+                <td className="p-2 border">
+                  {t.urgency ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        urgencyColors[t.urgency] || "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {formatLabel(t.urgency)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+
                 <td className="p-2 border text-gray-600">
                   {t.dueDate
                     ? new Date(t.dueDate).toLocaleDateString()

@@ -276,7 +276,7 @@ export default function StaffOnboardingForm() {
   // === Submit ===
   const handleSubmit = async () => {
     if (
-      !jobTitle ||
+      jobTitle.length === 0 ||
       !employmentType ||
       !workMode ||
       !hireDate ||

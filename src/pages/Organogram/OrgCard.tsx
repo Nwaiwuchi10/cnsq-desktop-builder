@@ -74,7 +74,7 @@ const orgData: Person = {
 function Card({ person }: { person: Person }) {
   return (
     <div
-      className={`rounded-xl border-2 ${person.color || "border-gray-300"} 
+      className={`rounded-xl border-2 ${person.color || "border-gray-500"} 
         bg-white shadow-md p-3 text-center w-56 relative`}
     >
       {person.image && (
