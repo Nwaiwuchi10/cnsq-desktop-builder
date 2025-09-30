@@ -9,6 +9,10 @@ export interface Project {
   projectName: string;
   desc?: string;
   status: string;
+  department: {
+    id: number;
+    name: string;
+  };
   startDate: string;
   endDate: string;
   priority: "high" | "medium" | "low";
@@ -59,7 +63,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const progressValue = () => {
     switch (project.status as ProjectStatus) {
       case ProjectStatus.NOT_STARTED:
-        return 25;
+        return 0;
       case ProjectStatus.IN_PROGRESS:
         return 50;
       case ProjectStatus.TESTING:
@@ -77,7 +81,16 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     medium: "text-yellow-500 border border-yellow-500",
     low: "text-green-500 border border-green-500",
   };
+  const statusColors: Record<ProjectStatus, string> = {
+    not_started: "bg-red-100 text-red-600",
+    in_progress: "bg-yellow-100 text-yellow-600",
+    testing: "bg-blue-100 text-blue-600",
+    completed: "bg-green-100 text-green-600",
+  };
 
+  // 🔹 Capitalize and transform
+  const formatStatus = (status: string) =>
+    status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <div className="bg-white shadow rounded-2xl p-6 border border-gray-200 flex flex-col gap-4">
       {/* 🔹 Title + Priority */}
@@ -98,8 +111,12 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       <p className="text-gray-600 text-sm">{project.desc}</p>
 
       {/* 🔹 Status */}
-      <span className="inline-block px-3 py-1 text-xs rounded-full bg-green-100 text-green-600 font-medium w-fit">
-        {project.status.replace("_", " ")}
+      <span
+        className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
+          statusColors[project.status as ProjectStatus]
+        }`}
+      >
+        {formatStatus(project.status)}
       </span>
 
       {/* 🔹 Progress bar */}
@@ -159,7 +176,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       {/* 🔹 Footer */}
       <div className="flex justify-between items-center mt-3">
         <span className="text-sm text-lime-600 font-medium">
-          {project.createdBy?.employment?.department?.name || "—"}
+          {project?.department?.name || "—"}
         </span>
 
         <Link href={`/project/${project.id}`}>

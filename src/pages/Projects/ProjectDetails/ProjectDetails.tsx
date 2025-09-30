@@ -85,7 +85,7 @@ export default function ProjectDetails() {
   const progressValue = () => {
     switch (project.status as ProjectStatus) {
       case ProjectStatus.NOT_STARTED:
-        return 25;
+        return 0;
       case ProjectStatus.IN_PROGRESS:
         return 50;
       case ProjectStatus.TESTING:
@@ -116,7 +116,7 @@ export default function ProjectDetails() {
         }
       );
       setCommentText(""); // clear input after success
-      setModal({ type: "success", message: "Project created successfully!" });
+      setModal({ type: "success", message: "Comment added successfully!" });
       // refresh project data to show new comment
       const res = await Api.get(`/projects/${id}`);
       setProject(res.data);
@@ -130,6 +130,16 @@ export default function ProjectDetails() {
       setLoadingComment(false);
     }
   };
+  const statusColors: Record<ProjectStatus, string> = {
+    not_started: "bg-red-100 text-red-600",
+    in_progress: "bg-yellow-100 text-yellow-600",
+    testing: "bg-blue-100 text-blue-600",
+    completed: "bg-green-100 text-green-600",
+  };
+
+  // 🔹 Capitalize and transform
+  const formatStatus = (status: string) =>
+    status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <>
       <div className="min-h-screen bg-[#FAFAFA] p-6">
@@ -144,7 +154,9 @@ export default function ProjectDetails() {
 
         {/* Project Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">{project.projectName}</h1>
+          <h1 className="text-2xl text-black font-bold">
+            {project.projectName}
+          </h1>
           <span
             style={{ cursor: "pointer" }}
             onClick={() => setShowEditModal(true)}
@@ -152,9 +164,14 @@ export default function ProjectDetails() {
             <Image src={editIcon} alt="edit icon" />
           </span>
         </div>
-        <div className="inline-flex items-center px-3 py-1 mt-4 mb-4 text-sm text-green-700 bg-[#78B500]/10 border border-[#78B500] rounded-full">
-          {project.status?.replace("_", " ")}
+        <div
+          className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
+            statusColors[project.status as ProjectStatus]
+          }`}
+        >
+          {formatStatus(project.status)}
         </div>
+
         {/* Dates */}
         <div className="text-gray-600 mt-2">
           <span>Timeline:</span> {project?.timeLine}

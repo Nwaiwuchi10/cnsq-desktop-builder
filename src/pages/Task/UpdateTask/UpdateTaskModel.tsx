@@ -5,6 +5,7 @@ import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import { X } from "lucide-react";
 import CustomModal from "@/component/Message/Message";
+import { useRouter } from "next/navigation";
 
 interface Staff {
   id: number;
@@ -25,6 +26,7 @@ interface Task {
   status: string;
   priority: string;
   urgency: string;
+  sprint: number;
   dueDate?: string;
   timeline?: string;
   project: { id: number; projectName: string };
@@ -60,24 +62,35 @@ export default function TaskUpdateModal({
     type: "success" | "error";
     message: string;
   } | null>(null);
-
+  const router = useRouter();
   // === Form state ===
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [sprint, setSprint] = useState("");
+  const [sprint, setSprint] = useState<number | "">("");
   const [status, setStatus] = useState("Not_started");
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
   const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
   const [projectId, setProjectId] = useState<number | "">("");
+  const [token, setToken] = useState<string | null>(null);
 
   const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
-
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const t = localStorage.getItem("user-token");
+      if (!t) {
+        router.push("/login");
+      } else {
+        setToken(t);
+      }
+    }
+  }, [router]);
   // === Load task + staff ===
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -96,6 +109,7 @@ export default function TaskUpdateModal({
         setPriority(t.priority);
         setUrgency(t.urgency);
         setTimeline(t.timeline || "");
+        setSprint(t.sprint || "");
         setProjectId(t.project.id);
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
 
@@ -121,18 +135,26 @@ export default function TaskUpdateModal({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await Api.patch(`/task/${taskId}`, {
-        title,
-        description,
-        status,
-        priority,
-        urgency,
-        timeline,
-        dueDate,
-        projectId,
-        sprint,
-        assignedTo: assignments,
-      });
+      await Api.patch(
+        `/task/${taskId}`,
+        {
+          title,
+          description,
+          status,
+          priority,
+          urgency,
+          timeline,
+          dueDate,
+          projectId,
+          sprint: sprint ? Number(sprint) : undefined,
+          assignedTo: assignments,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setModal({ type: "success", message: "Task updated successfully!" });
       setTimeout(() => {
         onClose();
@@ -173,7 +195,7 @@ export default function TaskUpdateModal({
               placeholder="Task Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Description
@@ -182,18 +204,18 @@ export default function TaskUpdateModal({
               placeholder="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
-            <label className="block text-sm font-medium mb-1">
-              Task Sprint <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-1 text-gray-700">
+              Task Sprint
             </label>
             <input
               type="number"
               value={sprint}
-              onChange={(e) => setSprint(e.target.value)}
+              onChange={(e) => setSprint(Number(e.target.value))}
               placeholder="Sprint 1"
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">
               Task Status
@@ -201,7 +223,7 @@ export default function TaskUpdateModal({
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {TASK_STATUSES.map((s) => (
                 <option key={s}>{s}</option>
@@ -211,7 +233,7 @@ export default function TaskUpdateModal({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>
@@ -221,7 +243,7 @@ export default function TaskUpdateModal({
             <select
               value={urgency}
               onChange={(e) => setUrgency(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             >
               {URGENCIES.map((u) => (
                 <option key={u}>{u}</option>
@@ -232,18 +254,18 @@ export default function TaskUpdateModal({
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 mb-1">Timeline</label>
             <input
               placeholder="Timeline"
               value={timeline}
               onChange={(e) => setTimeline(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
 
             {/* Assign Staff */}
-            <div className="border p-3 rounded-lg bg-gray-50">
+            <div className="border p-3 rounded-lg bg-gray-50 text-gray-600">
               <h3 className="font-medium mb-2">Assign Staff</h3>
               <div className="flex flex-col gap-3">
                 <select
@@ -251,7 +273,7 @@ export default function TaskUpdateModal({
                   onChange={(e) =>
                     setStaffId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full rounded-lg border px-3 py-2"
+                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs.map((s) => (
@@ -267,7 +289,7 @@ export default function TaskUpdateModal({
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
                 <button
                   type="button"

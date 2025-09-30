@@ -131,7 +131,7 @@ export default function TeamProfiles() {
             <Link href={`/staff/${hod.staff.id}`} className="w-full">
               <button
                 style={{ cursor: "pointer" }}
-                className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-green-500 transition"
+                className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition"
               >
                 View Profile
               </button>

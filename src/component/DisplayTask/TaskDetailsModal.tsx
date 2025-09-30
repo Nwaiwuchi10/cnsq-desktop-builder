@@ -88,7 +88,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
       );
       setCommentText("");
       setMentionedStaff(null);
-      setModal({ type: "success", message: "Comment created successfully!" });
+      setModal({ type: "success", message: "Comment added successfully!" });
       window.location.reload(); // or update state with new comment
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;

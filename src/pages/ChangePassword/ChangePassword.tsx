@@ -115,7 +115,7 @@ export default function ChangePassword() {
                 type={showPassword.old ? "text" : "password"}
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 bg-white text-gray-900 placeholder-gray-400"
                 placeholder="Enter old password"
               />
               <button
@@ -140,7 +140,7 @@ export default function ChangePassword() {
                 type={showPassword.new ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 bg-white text-gray-900 placeholder-gray-400"
                 placeholder="Enter new password"
               />
               <button
@@ -165,7 +165,7 @@ export default function ChangePassword() {
                 type={showPassword.confirm ? "text" : "password"}
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-10 bg-white text-gray-900 placeholder-gray-400"
                 placeholder="Confirm new password"
               />
               <button

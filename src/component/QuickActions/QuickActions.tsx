@@ -1,6 +1,8 @@
 "use client";
 
 import svgContact from "../../assests/imageIcons/SVG.png";
+import svgContact1 from "../../assests/imageIcons/mingcute_celebrate-line.png";
+import svgContact2 from "../../assests/imageIcons/line-chart-up-02.png";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link"; // ✅ import Next.js Link
@@ -21,7 +23,7 @@ export default function QuickActions() {
       label: "Celebrations",
       content: "Browse and manage your staff with detailed updates",
       buttonText: "View Birthdays",
-      icon: <Image src={svgContact} alt="birthdays-icon" />,
+      icon: <Image src={svgContact1} alt="birthdays-icon" />,
       href: "/birthday", // ✅ navigation path
     },
     {
@@ -30,7 +32,7 @@ export default function QuickActions() {
       content:
         "Visualize company structure with interactive organogram and reporting lines",
       buttonText: "View Organogram",
-      icon: <Image src={svgContact} alt="organogram-icon" />,
+      icon: <Image src={svgContact2} alt="organogram-icon" />,
       href: "/organogram", // ✅ navigation path
     },
   ];
@@ -64,7 +66,7 @@ export default function QuickActions() {
             {/* Button as Link */}
             <Link
               href={action.href}
-              className="mt-6 flex items-center justify-center gap-2 bg-[#95D700] text-white font-semibold rounded-lg w-full h-12 hover:bg-green-500 transition"
+              className="mt-6 flex items-center justify-center gap-2 bg-[#95D700] text-white font-semibold rounded-lg w-full h-12 hover:bg-[#78B500] transition"
             >
               {action.buttonText}
               <ArrowRight size={18} />

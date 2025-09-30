@@ -276,12 +276,12 @@ export default function StaffOnboardingForm() {
   // === Submit ===
   const handleSubmit = async () => {
     if (
-      !jobTitle ||
+      jobTitle.length === 0 ||
       !employmentType ||
       !workMode ||
       !hireDate ||
-      !reportingManager ||
-      !directReport ||
+      // !reportingManager ||
+      // !directReport ||
       !departmentId ||
       !departmentalRoleId
     ) {
@@ -325,8 +325,13 @@ export default function StaffOnboardingForm() {
     if (photo) formData.append("imgFile", photo);
 
     try {
+      const token = localStorage.getItem("user-token");
       await Api.post("/staff-register", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        // headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
       setModal({ type: "success", message: "Staff created successfully." });
       localStorage.removeItem(STORAGE_KEY);
@@ -391,7 +396,7 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    First Name *
+                    First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -405,12 +410,12 @@ export default function StaffOnboardingForm() {
                     }}
                     // onChange={(e) => setFirstName(e.target.value)}
                     pattern="[A-Za-z]+"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Last Name *
+                    Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -424,49 +429,49 @@ export default function StaffOnboardingForm() {
                       setLastName(onlyLetters);
                     }}
                     // onChange={(e) => setLastName(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Email *
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Phone *
+                    Phone <span className="text-red-500">*</span>
                   </label>
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Date of Birth *
+                    Date of Birth <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={dateOfBirth}
                     onChange={(e) => setDob(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Gender *
+                    Gender <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {GENDERS.map((g) => (
                       <option key={g}>{g}</option>
@@ -480,7 +485,7 @@ export default function StaffOnboardingForm() {
                   <select
                     value={maritalStatus}
                     onChange={(e) => setMarital(e.target.value as Marital)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select --</option>
                     {MARITALS.map((m) => (
@@ -506,7 +511,7 @@ export default function StaffOnboardingForm() {
                       );
                     }}
                     placeholder="e.g., reading, football"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* Profile Pic Upload */}
@@ -548,37 +553,37 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    City *
+                    City <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     pattern="[A-Za-z]+"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    State *
+                    State <span className="text-red-500">*</span>
                   </label>
                   <input
                     value={state}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Country *
+                    Country <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={country}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
@@ -588,7 +593,7 @@ export default function StaffOnboardingForm() {
                   <input
                     value={postalCode}
                     onChange={(e) => setPostal(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
               </>
@@ -598,7 +603,7 @@ export default function StaffOnboardingForm() {
               <>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Job Titles *
+                    Job Titles <span className="text-red-500">*</span>
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -606,7 +611,7 @@ export default function StaffOnboardingForm() {
                       value={jobTitleInput}
                       onChange={(e) => setJobTitleInput(e.target.value)}
                       placeholder="e.g., Frontend Developer"
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                     />
                     <button
                       type="button"
@@ -636,7 +641,7 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Employment Type *
+                    Employment Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={employmentType}
@@ -652,12 +657,12 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Work Mode *
+                    Work Mode <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={workMode}
                     onChange={(e) => setWorkMode(e.target.value as WorkMode)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {WORK_MODES.map((w) => (
                       <option key={w}>{w}</option>
@@ -666,13 +671,13 @@ export default function StaffOnboardingForm() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Hire Date *
+                    Hire Date <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     value={hireDate}
                     onChange={(e) => setHireDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 {/* <div>
@@ -689,12 +694,12 @@ export default function StaffOnboardingForm() {
                 </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Reporting Manager *
+                    Reporting Manager
                   </label>
                   <select
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Manager --</option>
                     {staffs.map((staff) => (
@@ -722,12 +727,12 @@ export default function StaffOnboardingForm() {
                 </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Direct Report *
+                    Direct Report
                   </label>
                   <select
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Direct Report --</option>
                     {staffs.map((staff) => (
@@ -748,17 +753,17 @@ export default function StaffOnboardingForm() {
                     type="date"
                     value={contractEndDate}
                     onChange={(e) => setContractEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Employment Status *
+                    Employment Status <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as EmpStatus)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     {EMPLOYMENT_STATUS.map((s) => (
                       <option key={s}>{s}</option>
@@ -774,12 +779,12 @@ export default function StaffOnboardingForm() {
                     pattern="[A-Za-z]+"
                     value={workLocation}
                     onChange={(e) => setWorkLocation(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Department *
+                    Department <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={departmentId}
@@ -788,7 +793,7 @@ export default function StaffOnboardingForm() {
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Department --</option>
                     {departments.map((dept) => (
@@ -801,7 +806,7 @@ export default function StaffOnboardingForm() {
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Departmental Role *
+                    Departmental Unit <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={departmentalRoleId}
@@ -810,7 +815,7 @@ export default function StaffOnboardingForm() {
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   >
                     <option value="">-- Select Role --</option>
                     {roles.map((role) => (

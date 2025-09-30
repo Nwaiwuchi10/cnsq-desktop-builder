@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, ChevronDown, Plus } from "lucide-react";
+import { Search, ChevronDown, Plus, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Api from "@/utils/api";
 import ProjectStatsCards from "./ProjectStats/ProjectStats";
 import ProjectCard from "./ProjectCrad";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 interface Project {
   id: number;
@@ -14,6 +15,10 @@ interface Project {
   status: string;
   startDate: string;
   endDate: string;
+  department: {
+    id: number;
+    name: string;
+  };
   priority: "high" | "medium" | "low";
   timeLine: string;
   assignedTo: {
@@ -54,7 +59,7 @@ export default function ViewProjects() {
   const [limit] = useState(6);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
-
+  const [loading, setLoading] = useState(true);
   // 🔹 New states for filtering
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -70,6 +75,8 @@ export default function ViewProjects() {
         setTotal(res.data.total);
       } catch (error) {
         console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProjects();
@@ -93,6 +100,35 @@ export default function ViewProjects() {
 
     setProjects(filtered);
   }, [search, selectedStatus, allProjects]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh]">
+        <LoadingSpinner />
+        {/* <p>Loading project stats...</p> */}
+      </div>
+    );
+  }
+  const totalPages = Math.ceil(total / limit);
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisible = 3;
+
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > maxVisible) pages.push("...");
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (page < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
@@ -144,11 +180,11 @@ export default function ViewProjects() {
                         setSelectedStatus("");
                         setShowDropdown(false);
                       }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-600"
                     >
                       All Statuses
                     </li>
-                    {["not_started", "in_progress", "testing", "completed"].map(
+                    {["Not_started", "In_progress", "Testing", "Completed"].map(
                       (status) => (
                         <li
                           key={status}
@@ -156,7 +192,7 @@ export default function ViewProjects() {
                             setSelectedStatus(status);
                             setShowDropdown(false);
                           }}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-600"
                         >
                           {status.replace("_", " ")}
                         </li>
@@ -235,22 +271,57 @@ export default function ViewProjects() {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-center mt-8 gap-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50"
-          >
-            Prev
-          </button>
-          <button
-            disabled={page * limit >= total}
-            onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
+        {/* ✅ Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-10">
+            {/* Prev */}
+            <button
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+              className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                page === 1
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-[#95D700] text-white hover:bg-green-600"
+              }`}
+            >
+              <ArrowLeft size={16} /> Prev
+            </button>
+
+            {/* Page numbers */}
+            {getPageNumbers().map((p, idx) =>
+              typeof p === "string" ? (
+                <span key={idx} className="px-3 py-2 text-gray-500">
+                  {p}
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    page === p
+                      ? "bg-[#95D700] text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            {/* Next */}
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+              className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                page === totalPages
+                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  : "bg-[#95D700] text-white hover:bg-green-600"
+              }`}
+            >
+              Next <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

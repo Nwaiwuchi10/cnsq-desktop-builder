@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
-import { Check, X } from "lucide-react";
+import { X } from "lucide-react";
 import CustomModal from "@/component/Message/Message";
 
 interface Staff {
@@ -42,7 +42,7 @@ export default function AssignedToStaffModal({
   projectId: number;
   isOpened: boolean;
   onClosed: () => void;
-  onUpdateds: () => void; // callback to refresh parent
+  onUpdateds: () => void;
 }) {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -51,14 +51,12 @@ export default function AssignedToStaffModal({
     message: string;
   } | null>(null);
 
-  // === Form states ===
-
   const [assignments, setAssignments] = useState<
     { staffId: number; role: string }[]
   >([]);
-
   const [staffs, setStaffs] = useState<Staff[]>([]);
-  const [staffId, setStaffId] = useState<number | "">("");
+  const [search, setSearch] = useState("");
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [role, setRole] = useState("");
 
   // === Fetch project + staff ===
@@ -74,7 +72,6 @@ export default function AssignedToStaffModal({
         ]);
 
         const p: Project = projectRes.data;
-
         setAssignments(
           p.assignedTo.map((a) => ({
             staffId: a.staff.id,
@@ -97,9 +94,12 @@ export default function AssignedToStaffModal({
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await Api.patch(`/projects/${projectId}`, {
-        assignments,
-      });
+      const token = localStorage.getItem("user-token");
+      await Api.patch(
+        `/projects/${projectId}`,
+        { assignments },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setModal({ type: "success", message: "Project updated successfully!" });
       setTimeout(() => {
         onClosed();
@@ -117,6 +117,13 @@ export default function AssignedToStaffModal({
   };
 
   if (!isOpened) return null;
+
+  // filter staffs by search
+  const filteredStaffs = staffs.filter((s) =>
+    `${s.firstName} ${s.lastName} ${s.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -137,37 +144,64 @@ export default function AssignedToStaffModal({
           <div className="space-y-4">
             {/* Assign Staff */}
             <div className="border p-3 rounded-lg bg-gray-50">
-              <h3 className="font-medium mb-2">Assign Staff</h3>
-              <div className="flex flex-col gap-3">
-                <select
-                  value={staffId}
-                  onChange={(e) =>
-                    setStaffId(e.target.value ? Number(e.target.value) : "")
-                  }
-                  className="w-full rounded-lg border px-3 py-2"
-                >
-                  <option value="">-- Select Staff --</option>
-                  {staffs.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.firstName} {s.lastName} ({s.email})
-                    </option>
-                  ))}
-                </select>
+              <h3 className="font-medium mb-2 text-gray-600">Assign Staff</h3>
+              <div className="flex flex-col gap-3 relative">
+                {/* Search input */}
+                <input
+                  type="text"
+                  placeholder="Search staff by name or email..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setSelectedStaff(null);
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
+                />
+
+                {/* Dropdown results */}
+                {search && !selectedStaff && (
+                  <ul className="absolute top-12 left-0 right-0 bg-white text-gray-600 border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
+                    {filteredStaffs.length === 0 && (
+                      <li className="px-3 py-2 text-gray-500">
+                        No staff found
+                      </li>
+                    )}
+                    {filteredStaffs.map((s) => (
+                      <li
+                        key={s.id}
+                        onClick={() => {
+                          setSelectedStaff(s);
+                          setSearch(
+                            `${s.firstName} ${s.lastName} (${s.email})`
+                          );
+                        }}
+                        className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                      >
+                        {s.firstName} {s.lastName} ({s.email})
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Role input */}
                 <input
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
                 />
+
+                {/* Add button */}
                 <button
                   type="button"
                   onClick={() => {
-                    if (!staffId || !role) return;
+                    if (!selectedStaff || !role) return;
                     setAssignments((prev) => [
                       ...prev,
-                      { staffId: Number(staffId), role },
+                      { staffId: selectedStaff.id, role },
                     ]);
-                    setStaffId("");
+                    setSearch("");
+                    setSelectedStaff(null);
                     setRole("");
                   }}
                   className="px-4 py-2 bg-[#78B500] text-white rounded-lg hover:opacity-90"
@@ -176,6 +210,7 @@ export default function AssignedToStaffModal({
                 </button>
               </div>
 
+              {/* Assigned staff list */}
               <ul className="mt-3 space-y-2">
                 {assignments.map((a, idx) => {
                   const staff = staffs.find((s) => s.id === a.staffId);

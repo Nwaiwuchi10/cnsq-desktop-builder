@@ -24,6 +24,7 @@ interface Project {
   id: number;
   projectName: string;
 }
+
 interface TaskComment {
   id: number;
   task: TaskDTO;
@@ -32,6 +33,7 @@ interface TaskComment {
   mentionedStaff: Staff;
   createdAt: string;
 }
+
 interface Task {
   id: number;
   title: string;
@@ -47,25 +49,56 @@ interface Task {
   assignedTo: TaskAssignment[];
   comments: TaskComment[];
 }
+
 interface DisplayTaskProps {
-  projectId: number | string; // coming from ProjectDetails
+  projectId: number | string;
 }
 
 const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [staffList, setStaffList] = useState<Staff[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [sprintFilter, setSprintFilter] = useState<number | "all">("all");
-  const [sortAsc, setSortAsc] = useState(true);
+  const [staffFilter, setStaffFilter] = useState<number | "all">("all");
+
+  // ✅ Fetch tasks based on staff or project
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      let res;
+      if (staffFilter === "all") {
+        res = await Api.get(`/task/project/${projectId}`);
+      } else {
+        res = await Api.get(`/task/staff/${staffFilter}/project/${projectId}`);
+      }
+      setTasks(res.data || []);
+    } catch (err) {
+      console.error("Error fetching tasks", err);
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Fetch staff list for dropdown (map response correctly)
+  const fetchStaffList = async () => {
+    try {
+      const res = await Api.get(`/projects/${projectId}/staffs`);
+      const staffOnly = (res.data || []).map((item: any) => item.staff); // 🔹 unwrap staff
+      setStaffList(staffOnly);
+    } catch (err) {
+      console.error("Error fetching staff list", err);
+    }
+  };
 
   useEffect(() => {
-    Api.get(`/task/project/${projectId}`)
-      .then((res) => {
-        setTasks(res.data);
-      })
-      .catch((err) => console.error("Error fetching tasks", err))
-      .finally(() => setLoading(false));
+    fetchTasks();
+  }, [projectId, staffFilter]);
+
+  useEffect(() => {
+    fetchStaffList();
   }, [projectId]);
 
   const exportToCSV = () => {
@@ -95,30 +128,56 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   if (loading) return <p>Loading...</p>;
 
-  // Apply filter
+  // ✅ Apply sprint filter
   let displayedTasks = [...tasks];
   if (sprintFilter !== "all") {
     displayedTasks = displayedTasks.filter((t) => t.sprint === sprintFilter);
   }
 
-  // Apply sort
-  displayedTasks.sort((a, b) =>
-    sortAsc ? a.sprint - b.sprint : b.sprint - a.sprint
-  );
-
-  // Collect all sprints for dropdown
+  // ✅ Collect sprints for dropdown
   const uniqueSprints = Array.from(new Set(tasks.map((t) => t.sprint))).sort(
     (a, b) => a - b
   );
+  // ✅ Status Colors
+  const statusColors: Record<string, string> = {
+    Not_started: "bg-red-100 text-red-600", // Not Started → Red
+    In_progress: "bg-yellow-100 text-yellow-600",
+    Ready_To_Test: "bg-blue-100 text-blue-600",
+    Testing_In_Progress: "bg-purple-100 text-purple-600",
+    Passed_Test: "bg-indigo-100 text-indigo-600",
+    Completed: "bg-green-100 text-green-600",
+  };
+
+  // ✅ Priority Colors
+  const priorityColors: Record<string, string> = {
+    Low: "bg-green-100 text-green-600",
+    Medium: "bg-yellow-100 text-yellow-600",
+    High: "bg-red-100 text-red-600",
+  };
+
+  // ✅ Urgency Colors
+  const urgencyColors: Record<string, string> = {
+    Short_Term: "bg-green-100 text-green-600",
+    Med_Term: "bg-yellow-100 text-yellow-600",
+    High_Term: "bg-orange-100 text-orange-600",
+    Immediately: "bg-red-100 text-red-600 font-semibold",
+  };
+
+  // ✅ Format function (remove underscores, capitalize)
+  const formatLabel = (val?: string) => {
+    if (!val) return "—";
+    return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  };
 
   return (
     <>
-      <div className="p-6 w-full overflow-x-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Project Tasks</h2>
-          <div className="space-x-3 flex items-center">
+      <div className="p-6 w-full overflow-x-auto ">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-3 ">
+          <h2 className="text-lg font-semibold text-gray-600">Project Tasks</h2>
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Sprint Dropdown */}
             <select
-              className="px-3 py-2 border rounded-lg"
+              className="px-3 py-2 border rounded-lg text-gray-600 border-gray-500"
               value={sprintFilter}
               onChange={(e) =>
                 setSprintFilter(
@@ -126,7 +185,9 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 )
               }
             >
-              <option value="all">All Sprints</option>
+              <option value="all" className="text-gray-600">
+                All Sprints
+              </option>
               {uniqueSprints.map((s) => (
                 <option key={s} value={s}>
                   Sprint {s}
@@ -134,12 +195,25 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               ))}
             </select>
 
-            {/* <button
-              onClick={() => setSortAsc(!sortAsc)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:opacity-90"
+            {/* Staff Dropdown */}
+            <select
+              className="px-3 py-2 border rounded-lg border-gray-500"
+              value={staffFilter}
+              onChange={(e) =>
+                setStaffFilter(
+                  e.target.value === "all" ? "all" : Number(e.target.value)
+                )
+              }
             >
-              Sort: {sortAsc ? "Ascending" : "Descending"}
-            </button> */}
+              <option value="all" className="text-gray-600">
+                All Staff
+              </option>
+              {staffList.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.firstName} {s.lastName}
+                </option>
+              ))}
+            </select>
 
             <button
               onClick={exportToCSV}
@@ -150,42 +224,91 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
           </div>
         </div>
 
-        <table className="min-w-full border border-gray-200 rounded-lg text-sm">
-          <thead className="bg-gray-100 text-left">
-            <tr>
-              <th className="p-2 border">Sprint</th>
-              <th className="p-2 border">Title</th>
-              <th className="p-2 border">Status</th>
-              <th className="p-2 border">Priority</th>
-              <th className="p-2 border">Urgency</th>
-              <th className="p-2 border">Due Date</th>
-              <th className="p-2 border">Timeline</th>
-              <th className="p-2 border">Project</th>
-              <th className="p-2 border">Assigned To</th>
-              <th className="p-2 border">Created At</th>
+        {/* Tasks Table */}
+        <table className="min-w-full border border-gray-700 rounded-lg text-sm text-gray-600">
+          <thead className="bg-gray-100 text-left text-gray-600">
+            <tr className="text-gray-600">
+              <th className="p-2 border text-gray-600">Sprint</th>
+              <th className="p-2 border text-gray-600">Title</th>
+              <th className="p-2 border text-gray-600">Status</th>
+              <th className="p-2 border text-gray-600">Priority</th>
+              <th className="p-2 border text-gray-600">Urgency</th>
+              <th className="p-2 border text-gray-600">Due Date</th>
+              <th className="p-2 border text-gray-600">Timeline</th>
+              <th className="p-2 border text-gray-600">Project</th>
+              <th className="p-2 border text-gray-600">Assigned To</th>
+              <th className="p-2 border text-gray-600">Created At</th>
             </tr>
           </thead>
           <tbody>
             {displayedTasks.map((t) => (
-              <tr key={t.id} className="odd:bg-white even:bg-gray-50">
-                <td className="p-2 border">{t?.sprint}</td>
+              <tr
+                key={t.id}
+                className="odd:bg-white even:bg-gray-50 text-gray-600"
+              >
+                <td className="p-2 border text-gray-600">{t?.sprint}</td>
                 <td
-                  className="p-2 border cursor-pointer"
+                  className="p-2 border cursor-pointer text-gray-600"
                   onClick={() => setSelectedTask(t)}
                 >
                   {t.title}
                 </td>
-                <td className="p-2 border">{t?.status}</td>
-                <td className="p-2 border">{t.priority}</td>
-                <td className="p-2 border">{t.urgency}</td>
+                {/* Status */}
                 <td className="p-2 border">
+                  {t.status ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        statusColors[t.status] || "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {formatLabel(t.status)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+
+                {/* Priority */}
+                <td className="p-2 border">
+                  {t.priority ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        priorityColors[t.priority] ||
+                        "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {formatLabel(t.priority)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+
+                {/* Urgency */}
+                <td className="p-2 border">
+                  {t.urgency ? (
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        urgencyColors[t.urgency] || "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {formatLabel(t.urgency)}
+                    </span>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+
+                <td className="p-2 border text-gray-600">
                   {t.dueDate
                     ? new Date(t.dueDate).toLocaleDateString()
                     : "Not set"}
                 </td>
-                <td className="p-2 border">{t.timeline}</td>
-                <td className="p-2 border">{t.project?.projectName}</td>
-                <td className="p-2 border">
+                <td className="p-2 border text-gray-600">{t.timeline}</td>
+                <td className="p-2 border text-gray-600">
+                  {t.project?.projectName}
+                </td>
+                <td className="p-2 border text-gray-600">
                   {t.assignedTo
                     .map(
                       (a) =>
@@ -193,7 +316,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     )
                     .join(", ")}
                 </td>
-                <td className="p-2 border">
+                <td className="p-2 border text-gray-600">
                   {new Date(t.createdAt).toLocaleDateString()}
                 </td>
               </tr>

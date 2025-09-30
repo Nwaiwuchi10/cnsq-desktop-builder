@@ -21,8 +21,9 @@ export default function LatestAnniversary() {
   useEffect(() => {
     const fetchAnniversaries = async () => {
       try {
+        // ✅ backend returns { data, total, page, limit }
         const res = await Api.get("/staff-register/anniversaries/all/upcoming");
-        setAnniversaries(res.data.slice(0, 4)); // limit to 4
+        setAnniversaries(res.data.data.slice(0, 4)); // ✅ limit to 4
       } catch (error) {
         console.error("Error fetching anniversaries:", error);
       } finally {
@@ -94,16 +95,17 @@ export default function LatestAnniversary() {
               {person.firstName} {person.lastName}
             </p>
 
-            {/* Anniversary Date */}
+            {/* Anniversary Date with Lagos timezone */}
             <span className="text-gray-500 text-sm">
               {new Date(person.nextAnniversary).toLocaleDateString("en-US", {
                 month: "long",
                 day: "numeric",
                 year: "numeric",
+                timeZone: "Africa/Lagos",
               })}
             </span>
 
-            {/* Years Completed */}
+            {/* Years Completed (optional, keep commented) */}
             {/* <span className="text-gray-600 text-xs">
               {person.yearsCompleted} years completed
             </span> */}

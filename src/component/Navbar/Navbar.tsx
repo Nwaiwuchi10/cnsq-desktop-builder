@@ -115,12 +115,12 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex flex-1 justify-center">
-            <div className="flex space-x-16 justify-end w-full max-w-2xl items-center">
+            <div className="flex space-x-16 justify-end w-full max-w-2xl items-center ml-24">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-lg text-gray-700 hover:text-blue-600 transition-colors"
+                  className="text-lg text-gray-700 hover:text-[#95D700] transition-colors"
                 >
                   {link.name}
                 </Link>
@@ -173,7 +173,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="text-lg text-gray-700 hover:text-blue-600 transition"
+                  className="text-lg text-gray-700 hover:text-[#95D700] transition"
                 >
                   Login
                 </Link>
@@ -201,7 +201,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-lg font-medium text-gray-700 hover:text-blue-600 transition"
+                className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}
@@ -244,7 +244,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium text-gray-700 hover:text-blue-600 transition"
+                  className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
                 >
                   Login
                 </Link>

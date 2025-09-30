@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import TaskModal from "./TaskDetailsModal";
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import TaskUpdateModal from "@/pages/Task/UpdateTask/UpdateTaskModel";
+import Link from "next/link";
 
 const statusColumns = [
   { key: "Not_started", label: "Not Started", color: "bg-gray-400" },
@@ -157,7 +158,12 @@ export default function TaskBoard() {
             </div>
 
             {/* Add task button */}
-            <button className="mt-4 text-green-600 text-sm">+ New Task</button>
+            <Link href="/project/create">
+              {" "}
+              <button className="mt-4 text-green-600 text-sm">
+                + New Task
+              </button>
+            </Link>
           </div>
         ))}
 
@@ -169,7 +175,7 @@ export default function TaskBoard() {
       {/* /// */}
       <div className="w-full md:w-96 bg-white p-4 rounded-xl shadow">
         {/* Header */}
-        <h2 className="font-bold mb-4 flex items-center justify-between">
+        <h2 className="font-bold mb-4 flex items-center justify-between text-gray-600">
           All Tasks
           <span className="text-xs px-2 py-1 rounded bg-blue-500 text-white">
             {tasks.length}
@@ -187,7 +193,7 @@ export default function TaskBoard() {
               <div className="flex items-start justify-between">
                 <h3
                   style={{ cursor: "pointer" }}
-                  className="font-semibold text-base"
+                  className="font-semibold text-base text-gray-600"
                   onClick={() => setSelectedTask(task)}
                 >
                   {task.title}
@@ -213,7 +219,7 @@ export default function TaskBoard() {
               </p>
               {/* Status Badge */}
               <span
-                className={`inline-flex items-center px-3 py-1 text-xs font-medium border rounded-full w-fit
+                className={`inline-flex items-center text-gray-600 px-3 py-1 text-xs font-medium border rounded-full w-fit
             ${
               task.status === "Not_started"
                 ? "text-gray-600 bg-gray-100 border-gray-400"
@@ -265,7 +271,10 @@ export default function TaskBoard() {
         </div>
 
         {/* Add task button */}
-        <button className="mt-4 text-green-600 text-sm">+ New Task</button>
+        <Link href="/project/create">
+          {" "}
+          <button className="mt-4 text-green-600 text-sm">+ New Task</button>
+        </Link>
       </div>
       {/* /// */}
       {selectedTask && (
