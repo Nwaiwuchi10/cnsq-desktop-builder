@@ -76,6 +76,8 @@ export default function UpdateProjectModal({
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [search, setSearch] = useState("");
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   useEffect(() => {
     Api.get("/departments")
       .then((res) => setDepartments(res.data || []))
@@ -167,7 +169,11 @@ export default function UpdateProjectModal({
   };
 
   if (!isOpen) return null;
-
+  const filteredStaffs = staffs.filter((s) =>
+    `${s.firstName} ${s.lastName} ${s.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
@@ -309,7 +315,42 @@ export default function UpdateProjectModal({
             <div className="border p-3 rounded-lg bg-gray-50 text-gray-600">
               <h3 className="font-medium mb-2">Assign Staff</h3>
               <div className="flex flex-col gap-3">
-                <select
+                <input
+                  type="text"
+                  placeholder="Search staff by name or email..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setSelectedStaff(null);
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
+                />
+
+                {/* Dropdown results */}
+                {search && !selectedStaff && (
+                  <ul className="absolute top-12 left-0 right-0 bg-white border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
+                    {filteredStaffs.length === 0 && (
+                      <li className="px-3 py-2 text-gray-500">
+                        No staff found
+                      </li>
+                    )}
+                    {filteredStaffs.map((s) => (
+                      <li
+                        key={s.id}
+                        onClick={() => {
+                          setSelectedStaff(s);
+                          setSearch(
+                            `${s.firstName} ${s.lastName} (${s.email})`
+                          );
+                        }}
+                        className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                      >
+                        {s.firstName} {s.lastName} ({s.email})
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {/* <select
                   value={staffId}
                   onChange={(e) =>
                     setStaffId(e.target.value ? Number(e.target.value) : "")
@@ -322,7 +363,7 @@ export default function UpdateProjectModal({
                       {s.firstName} {s.lastName} ({s.email})
                     </option>
                   ))}
-                </select>
+                </select> */}
                 <label className="block text-sm text-gray-700 mb-1">
                   Project Role
                 </label>
@@ -335,12 +376,13 @@ export default function UpdateProjectModal({
                 <button
                   type="button"
                   onClick={() => {
-                    if (!staffId || !role) return;
+                    if (!selectedStaff || !role) return;
                     setAssignments((prev) => [
                       ...prev,
-                      { staffId: Number(staffId), role },
+                      { staffId: selectedStaff.id, role },
                     ]);
-                    setStaffId("");
+                    setSearch("");
+                    setSelectedStaff(null);
                     setRole("");
                   }}
                   className="px-4 py-2 bg-[#78B500] text-white rounded-lg hover:opacity-90"

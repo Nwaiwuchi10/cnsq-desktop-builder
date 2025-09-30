@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import TaskModal from "./TaskDetailsModal";
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import TaskUpdateModal from "@/pages/Task/UpdateTask/UpdateTaskModel";
+import Link from "next/link";
 
 const statusColumns = [
   { key: "Not_started", label: "Not Started", color: "bg-gray-400" },
@@ -157,7 +158,12 @@ export default function TaskBoard() {
             </div>
 
             {/* Add task button */}
-            <button className="mt-4 text-green-600 text-sm">+ New Task</button>
+            <Link href="/project/create">
+              {" "}
+              <button className="mt-4 text-green-600 text-sm">
+                + New Task
+              </button>
+            </Link>
           </div>
         ))}
 
@@ -265,7 +271,10 @@ export default function TaskBoard() {
         </div>
 
         {/* Add task button */}
-        <button className="mt-4 text-green-600 text-sm">+ New Task</button>
+        <Link href="/project/create">
+          {" "}
+          <button className="mt-4 text-green-600 text-sm">+ New Task</button>
+        </Link>
       </div>
       {/* /// */}
       {selectedTask && (

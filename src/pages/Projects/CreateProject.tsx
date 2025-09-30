@@ -71,6 +71,8 @@ export default function ProjectWizardForm() {
   const [assignments, setAssignments] = useState<
     { staffId: number; role: string }[]
   >([]);
+  const [search, setSearch] = useState("");
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   useEffect(() => {
     if (startDate && endDate) {
       const start = new Date(startDate);
@@ -194,7 +196,11 @@ export default function ProjectWizardForm() {
   const skipAssign = () => {
     router.push(`/project/${createdProjectId}`);
   };
-
+  const filteredStaffs = staffs.filter((s) =>
+    `${s.firstName} ${s.lastName} ${s.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-16">
       {/* Header */}
@@ -352,12 +358,6 @@ export default function ProjectWizardForm() {
                   readOnly
                   className="w-full rounded-lg border px-3 py-2 bg-gray-100 text-gray-900"
                 />
-                {/* <input
-                  placeholder="Enter project Timeline"
-                  value={timeLine}
-                  onChange={(e) => setTimeLine(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                /> */}
               </>
             )}
 
@@ -369,56 +369,45 @@ export default function ProjectWizardForm() {
                 </p>
 
                 {/* Add Staff-Role Pair */}
-                <div className="flex flex-col gap-3 border p-3 rounded-lg bg-gray-50">
+                <div className="flex flex-col gap-3 relative border p-3 rounded-lg bg-gray-50">
                   <label className="block text-sm font-medium text-gray-600">
                     Select Staff
                   </label>
-                  {/* <select
-                    value={staffId}
-                    onChange={(e) =>
-                      setStaffId(e.target.value ? Number(e.target.value) : "")
-                    }
-                    className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  >
-                    <option value="">-- Select Staff --</option>
-                    {staffs.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.firstName} {s.lastName} ({s.email})
-                      </option>
-                    ))}
-                  </select> */}
-                  <select
-                    value={staffId}
+                  <input
+                    type="text"
+                    placeholder="Search staff by name or email..."
+                    value={search}
                     onChange={(e) => {
-                      const selectedId = e.target.value
-                        ? Number(e.target.value)
-                        : "";
-                      setStaffId(selectedId);
-
-                      if (selectedId) {
-                        const selectedStaff = staffs.find(
-                          (s) => s.id === selectedId
-                        );
-                        if (selectedStaff?.employment?.jobTitle?.length) {
-                          // auto-populate with the first jobTitle
-                          setRole(selectedStaff.employment.jobTitle[0]);
-                        } else {
-                          setRole("");
-                        }
-                      } else {
-                        setRole("");
-                      }
+                      setSearch(e.target.value);
+                      setSelectedStaff(null);
                     }}
-                    className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  >
-                    <option value="">-- Select Staff --</option>
-                    {staffs.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.firstName} {s.lastName} ({s.email})
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
+                  />
 
+                  {/* Dropdown results */}
+                  {search && !selectedStaff && (
+                    <ul className="absolute top-32 left-0 right-0 bg-white text-gray-600 border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
+                      {filteredStaffs.length === 0 && (
+                        <li className="px-3 py-2 text-gray-500">
+                          No staff found
+                        </li>
+                      )}
+                      {filteredStaffs.map((s) => (
+                        <li
+                          key={s.id}
+                          onClick={() => {
+                            setSelectedStaff(s);
+                            setSearch(
+                              `${s.firstName} ${s.lastName} (${s.email})`
+                            );
+                          }}
+                          className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                        >
+                          {s.firstName} {s.lastName} ({s.email})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <label className="block text-sm font-medium text-gray-600">
                     Role
                   </label>
@@ -432,19 +421,13 @@ export default function ProjectWizardForm() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (!staffId || !role) {
-                        setModal({
-                          type: "error",
-                          message:
-                            "Please select staff and enter a role before adding.",
-                        });
-                        return;
-                      }
+                      if (!selectedStaff || !role) return;
                       setAssignments((prev) => [
                         ...prev,
-                        { staffId: Number(staffId), role },
+                        { staffId: selectedStaff.id, role },
                       ]);
-                      setStaffId("");
+                      setSearch("");
+                      setSelectedStaff(null);
                       setRole("");
                     }}
                     className="px-4 py-2 bg-[#78B500] text-white rounded-lg hover:opacity-90"

@@ -277,7 +277,7 @@ export default function HeadOfDeptOnboardingForm() {
   // === Submit Staff ===
   const handleSubmit = async () => {
     if (
-      !jobTitle ||
+      jobTitle.length === 0 ||
       !employmentType ||
       !workMode ||
       !hireDate ||

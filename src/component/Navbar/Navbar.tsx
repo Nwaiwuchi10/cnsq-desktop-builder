@@ -173,7 +173,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="text-lg text-gray-700 hover:text-blue-600 transition"
+                  className="text-lg text-gray-700 hover:text-[#95D700] transition"
                 >
                   Login
                 </Link>
@@ -244,7 +244,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium text-gray-700 hover:text-blue-600 transition"
+                  className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
                 >
                   Login
                 </Link>

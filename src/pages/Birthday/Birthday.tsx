@@ -57,7 +57,7 @@ const Birthday = () => {
   // Pagination state for upcoming
   const [pageUpcoming, setPageUpcoming] = useState(1);
   const [totalUpcoming, setTotalUpcoming] = useState(0);
-  const limit = 4;
+  const limit = 6;
 
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -173,7 +173,7 @@ const Birthday = () => {
 
               {/* 🔹 Pagination Controls */}
               {totalPagesUpcoming > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-6 pb-12">
+                <div className="flex justify-center items-center gap-2 mt-6 pb-12 flex-wrap">
                   {/* Previous */}
                   <button
                     onClick={() => setPageUpcoming((p) => Math.max(p - 1, 1))}
@@ -181,29 +181,59 @@ const Birthday = () => {
                     className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
                       pageUpcoming === 1
                         ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                        : "bg-[#95D700] text-white"
+                        : "bg-[#95D700] text-white hover:bg-green-600"
                     }`}
                   >
-                    <ArrowLeft size={16} /> Previous
+                    <ArrowLeft size={16} /> Prev
                   </button>
 
-                  {/* Page Numbers */}
-                  {[...Array(totalPagesUpcoming)].map((_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPageUpcoming(pageNum)}
-                        className={`px-4 py-2 rounded-lg font-medium ${
-                          pageUpcoming === pageNum
-                            ? "bg-[#95D700] text-white"
-                            : "bg-gray-200 text-gray-700"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
+                  {/* ✅ Mobile: simplified (Prev, X of Y, Next) */}
+                  <span className="block sm:hidden px-3 py-2 text-gray-700 font-medium">
+                    {pageUpcoming} / {totalPagesUpcoming}
+                  </span>
+
+                  {/* ✅ Desktop: detailed pagination with ellipsis */}
+                  <div className="hidden sm:flex gap-2">
+                    {(() => {
+                      const pages: (number | string)[] = [];
+                      if (totalPagesUpcoming <= 5) {
+                        for (let i = 1; i <= totalPagesUpcoming; i++)
+                          pages.push(i);
+                      } else {
+                        pages.push(1);
+                        if (pageUpcoming > 3) pages.push("...");
+                        const start = Math.max(2, pageUpcoming - 1);
+                        const end = Math.min(
+                          totalPagesUpcoming - 1,
+                          pageUpcoming + 1
+                        );
+                        for (let i = start; i <= end; i++) pages.push(i);
+                        if (pageUpcoming < totalPagesUpcoming - 2)
+                          pages.push("...");
+                        pages.push(totalPagesUpcoming);
+                      }
+
+                      return pages.map((p, i) =>
+                        typeof p === "string" ? (
+                          <span key={i} className="px-3 py-2 text-gray-500">
+                            {p}
+                          </span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => setPageUpcoming(p)}
+                            className={`px-4 py-2 rounded-lg font-medium ${
+                              pageUpcoming === p
+                                ? "bg-[#95D700] text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        )
+                      );
+                    })()}
+                  </div>
 
                   {/* Next */}
                   <button
@@ -216,7 +246,7 @@ const Birthday = () => {
                     className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
                       pageUpcoming === totalPagesUpcoming
                         ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                        : "bg-[#95D700] text-white"
+                        : "bg-[#95D700] text-white hover:bg-green-600"
                     }`}
                   >
                     Next <ArrowRight size={16} />
