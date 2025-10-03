@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "cnsquad-prod.s3.eu-west-2.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "cnsquad-staging.s3.eu-west-2.amazonaws.com",
         pathname: "/**",
       },
