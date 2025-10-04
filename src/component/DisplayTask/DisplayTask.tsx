@@ -10,7 +10,7 @@ interface DisplayTaskProps {
 }
 
 const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
-  const [showTable, setShowTable] = useState(false);
+  const [showTable, setShowTable] = useState(true);
 
   return (
     <div>
@@ -36,6 +36,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
               className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg text-gray-600 text-sm hover:bg-gray-100"
             >
               {showTable ? "View Board" : "View Task Table"}
+              {/* {showTable ? "View Board" : "View Task Table"} */}
               <Filter size={16} />
             </button>
 
@@ -54,6 +55,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
             onClick={() => setShowTable((prev) => !prev)}
             className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
           >
+            {/* {showTable ? "View Board" : "View Task Table"} */}
             {showTable ? "View Board" : "View Task Table"}
             <Filter size={16} />
           </button>
