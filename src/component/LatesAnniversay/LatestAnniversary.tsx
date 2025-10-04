@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import Api from "@/utils/api";
+import Link from "next/link";
 
 // TS interface matching StaffAnniversaryDto
 interface StaffAnniversary {
@@ -61,13 +62,15 @@ export default function LatestAnniversary() {
         "
       >
         {anniversaries.map((person) => (
-          <div
-            key={person.id}
-            className="flex flex-col items-start text-left w-full"
-          >
-            {/* Image */}
-            <div
-              className="
+          <>
+            <Link href={`/staff/${person.id}`}>
+              <div
+                key={person.id}
+                className="flex flex-col items-start text-left w-full"
+              >
+                {/* Image */}
+                <div
+                  className="
                 relative
                 w-[315px]
                 h-[315px]
@@ -79,37 +82,42 @@ export default function LatestAnniversary() {
                 shadow-sm
                 bg-gray-200
               "
-            >
-              <Image
-                src={person.photoUrl || "/default-avatar.png"}
-                alt={`${person.firstName} ${person.lastName}`}
-                width={280}
-                height={280}
-                className="w-full h-full object-cover"
-                unoptimized
-              />
-            </div>
+                >
+                  <Image
+                    src={person.photoUrl || "/default-avatar.png"}
+                    alt={`${person.firstName} ${person.lastName}`}
+                    width={280}
+                    height={280}
+                    className="w-full h-full object-cover"
+                    unoptimized
+                  />
+                </div>
 
-            {/* Name */}
-            <p className="mt-3 text-gray-900 font-semibold text-lg">
-              {person.firstName} {person.lastName}
-            </p>
+                {/* Name */}
+                <p className="mt-3 text-gray-900 font-semibold text-lg">
+                  {person.firstName} {person.lastName}
+                </p>
 
-            {/* Anniversary Date with Lagos timezone */}
-            <span className="text-gray-500 text-sm">
-              {new Date(person.nextAnniversary).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-                timeZone: "Africa/Lagos",
-              })}
-            </span>
+                {/* Anniversary Date with Lagos timezone */}
+                <span className="text-gray-500 text-sm">
+                  {new Date(person.nextAnniversary).toLocaleDateString(
+                    "en-US",
+                    {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                      timeZone: "Africa/Lagos",
+                    }
+                  )}
+                </span>
 
-            {/* Years Completed (optional, keep commented) */}
-            {/* <span className="text-gray-600 text-xs">
+                {/* Years Completed (optional, keep commented) */}
+                {/* <span className="text-gray-600 text-xs">
               {person.yearsCompleted} years completed
             </span> */}
-          </div>
+              </div>
+            </Link>
+          </>
         ))}
       </div>
     </div>

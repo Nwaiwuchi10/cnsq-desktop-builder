@@ -32,6 +32,7 @@ export interface TaskDTO {
   status?: string;
   priority?: string;
   urgency?: string;
+  startDate?: string;
   dueDate?: string;
   timeline?: string;
   createdAt: string;

@@ -610,47 +610,6 @@ export default function UpdateProfileModal({
 
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
-                    Reporting Manager *
-                  </label>
-                  <select
-                    value={reportingManager}
-                    onChange={(e) => setReportingManager(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  >
-                    <option value="">-- Select Manager --</option>
-                    {staffs.map((staff) => (
-                      <option
-                        key={staff.id}
-                        value={`${staff.firstName} ${staff.lastName}`}
-                      >
-                        {staff.firstName} {staff.lastName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Direct Report *
-                  </label>
-                  <select
-                    value={directReport}
-                    onChange={(e) => setDirectReport(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  >
-                    <option value="">-- Select Direct Report --</option>
-                    {staffs.map((staff) => (
-                      <option
-                        key={staff.id}
-                        value={`${staff.firstName} ${staff.lastName}`}
-                      >
-                        {staff.firstName} {staff.lastName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
                     Contract End Date
                   </label>
                   <input

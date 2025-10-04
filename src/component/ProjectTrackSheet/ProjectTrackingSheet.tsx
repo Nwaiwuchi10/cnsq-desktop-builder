@@ -41,6 +41,7 @@ interface Task {
   status?: string;
   priority?: string;
   urgency?: string;
+  startDate?: string;
   dueDate?: string;
   timeline?: string;
   createdAt: string;
@@ -140,7 +141,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   );
   // ✅ Status Colors
   const statusColors: Record<string, string> = {
-    Not_started: "bg-red-100 text-red-600", // Not Started → Red
+    Not_started: "bg-red-100 text-red-600",
+    Failed_Test: "bg-red-100 text-red-700", // Not Started → Red
     In_progress: "bg-yellow-100 text-yellow-600",
     Ready_To_Test: "bg-blue-100 text-blue-600",
     Testing_In_Progress: "bg-purple-100 text-purple-600",
@@ -233,6 +235,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <th className="p-2 border text-gray-600">Status</th>
               <th className="p-2 border text-gray-600">Priority</th>
               <th className="p-2 border text-gray-600">Urgency</th>
+              <th className="p-2 border text-gray-600">Start Date</th>
               <th className="p-2 border text-gray-600">Due Date</th>
               <th className="p-2 border text-gray-600">Timeline</th>
               <th className="p-2 border text-gray-600">Project</th>
@@ -243,6 +246,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
           <tbody>
             {displayedTasks.map((t) => (
               <tr
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelectedTask(t)}
                 key={t.id}
                 className="odd:bg-white even:bg-gray-50 text-gray-600"
               >
@@ -298,7 +303,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     "—"
                   )}
                 </td>
-
+                <td className="p-2 border text-gray-600">
+                  {t.startDate
+                    ? new Date(t?.startDate).toLocaleDateString()
+                    : "Not set"}
+                </td>
                 <td className="p-2 border text-gray-600">
                   {t.dueDate
                     ? new Date(t.dueDate).toLocaleDateString()
