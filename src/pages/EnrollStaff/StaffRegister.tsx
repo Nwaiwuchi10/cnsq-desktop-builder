@@ -335,7 +335,7 @@ export default function StaffOnboardingForm() {
       });
       setModal({ type: "success", message: "Staff created successfully." });
       localStorage.removeItem(STORAGE_KEY);
-      setTimeout(() => router.push("/staff"), 1200);
+      setTimeout(() => router.push("/staff"), 1000);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
