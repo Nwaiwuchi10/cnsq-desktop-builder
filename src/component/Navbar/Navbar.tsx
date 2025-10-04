@@ -227,7 +227,7 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href={`/change-password`}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    className="block py-2 text-gray-700 hover:bg-gray-100"
                     onClick={() => setIsDropdownOpen(false)}
                   >
                     Change Password

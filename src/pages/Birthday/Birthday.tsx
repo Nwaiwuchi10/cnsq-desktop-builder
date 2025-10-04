@@ -314,7 +314,7 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
 
     <Link href={`/staff/${staff.id}`} className="w-full mt-6">
       <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
-        Send Message
+        View Profile
       </button>
     </Link>
   </div>
@@ -369,7 +369,7 @@ const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
 
     <Link href={`/staff/${staff.id}`} className="w-full mt-6">
       <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
-        Send Message
+        View Profile
       </button>
     </Link>
   </div>
