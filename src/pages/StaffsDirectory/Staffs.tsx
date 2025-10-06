@@ -554,13 +554,13 @@ export default function StaffDirectory() {
 
               {showDropdown && (
                 <div className="absolute top-16 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <ul className="max-h-60 overflow-y-auto">
+                  <ul className="max-h-60 overflow-y-auto text-gray-600">
                     <li
                       onClick={() => {
                         setSelectedRole("");
                         setShowDropdown(false);
                       }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer"
                     >
                       All Roles
                     </li>
@@ -571,7 +571,7 @@ export default function StaffDirectory() {
                           setSelectedRole(role.title);
                           setShowDropdown(false);
                         }}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 text-gray-600 py-2 hover:bg-gray-100 cursor-pointer"
                       >
                         {role.title} ({role.department?.name})
                       </li>
@@ -608,7 +608,7 @@ export default function StaffDirectory() {
                       setSelectedRole("");
                       setShowDropdown(false);
                     }}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    className="px-4 text-gray-600 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     All Roles
                   </li>
@@ -619,7 +619,7 @@ export default function StaffDirectory() {
                         setSelectedRole(role.title);
                         setShowDropdown(false);
                       }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer"
                     >
                       {role.title} ({role.department?.name})
                     </li>
