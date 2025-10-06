@@ -295,7 +295,7 @@ export default function ProjectDetails() {
               placeholder="Add a comment"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 pr-20"
+              className="w-full bg-white text-gray-600 border rounded-lg px-3 py-2 pr-20"
             />
             <button
               onClick={handleAddComment}
