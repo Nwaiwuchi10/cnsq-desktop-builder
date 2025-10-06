@@ -179,9 +179,11 @@ export default function UpdateProjectModal({
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Update Project</h2>
+          <h2 className="text-lg text-gray-600 font-semibold">
+            Update Project
+          </h2>
           <button onClick={onClose}>
-            <X size={20} />
+            <X size={20} className="text-gray-600" />
           </button>
         </div>
 

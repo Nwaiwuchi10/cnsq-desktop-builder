@@ -255,7 +255,7 @@ export default function ProjectDetails() {
                 </div>
               ))}
             <button
-              className="w-15 h-15 rounded-full bg-gray-100 border flex items-center justify-center"
+              className="w-15 h-15 text-gray-600 rounded-full bg-gray-100 border flex items-center justify-center"
               style={{ cursor: "pointer" }}
               onClick={() => setShowEditModals(true)}
             >
@@ -295,7 +295,7 @@ export default function ProjectDetails() {
               placeholder="Add a comment"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 pr-20"
+              className="w-full bg-white text-gray-600 border rounded-lg px-3 py-2 pr-20"
             />
             <button
               onClick={handleAddComment}
