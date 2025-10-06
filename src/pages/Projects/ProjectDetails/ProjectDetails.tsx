@@ -255,7 +255,7 @@ export default function ProjectDetails() {
                 </div>
               ))}
             <button
-              className="w-15 h-15 rounded-full bg-gray-100 border flex items-center justify-center"
+              className="w-15 h-15 text-gray-600 rounded-full bg-gray-100 border flex items-center justify-center"
               style={{ cursor: "pointer" }}
               onClick={() => setShowEditModals(true)}
             >

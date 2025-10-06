@@ -5,6 +5,7 @@ import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import { X } from "lucide-react";
 import CustomModal from "@/component/Message/Message";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 interface Staff {
   id: number;
@@ -130,16 +131,16 @@ export default function AssignedToStaffModal({
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-lg font-semibold text-gray-600">
             Update Project Assigned Staffs
           </h2>
           <button onClick={onClosed}>
-            <X size={20} />
+            <X size={20} className="text-gray-600" />
           </button>
         </div>
 
         {loading ? (
-          <p>Loading...</p>
+          <LoadingSpinner />
         ) : (
           <div className="space-y-4">
             {/* Assign Staff */}
@@ -175,7 +176,7 @@ export default function AssignedToStaffModal({
                             `${s.firstName} ${s.lastName} (${s.email})`
                           );
                         }}
-                        className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                        className="px-3 py-2 text-gray-600 cursor-pointer hover:bg-gray-100"
                       >
                         {s.firstName} {s.lastName} ({s.email})
                       </li>
@@ -217,7 +218,7 @@ export default function AssignedToStaffModal({
                   return (
                     <li
                       key={idx}
-                      className="flex justify-between items-center border p-2 rounded-lg bg-white"
+                      className="flex text-gray-600 justify-between items-center border p-2 rounded-lg bg-white"
                     >
                       <span>
                         {staff?.firstName} {staff?.lastName} — <b>{a.role}</b>
