@@ -18,7 +18,7 @@ const orgData: Person = {
   title: "CEO",
   dept: "Procurement",
   location: "Maryland, USA",
-  color: "border-green-400",
+  color: "border-green-500",
   image: "/images/ceo.jpg",
   children: [
     {
