@@ -232,7 +232,7 @@ export default function ProjectDetails() {
           <h3 className="font-semibold text-gray-700 mb-2">Assigned Staff</h3>
           <div className="flex items-center mt-2">
             {project.assignedTo
-              ?.slice(0, 4)
+              ?.slice(0, 10)
               .map((assign: AssignedTo, idx: number) => (
                 <div
                   key={idx}

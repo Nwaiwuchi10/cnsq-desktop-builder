@@ -223,13 +223,13 @@ export default function ViewProjects() {
 
             {showDropdown && (
               <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-lg shadow-lg w-56 z-10">
-                <ul className="max-h-60 overflow-y-auto">
+                <ul className="max-h-60 text-gray-600 overflow-y-auto">
                   <li
                     onClick={() => {
                       setSelectedStatus("");
                       setShowDropdown(false);
                     }}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    className="px-4 text-gray-600 py-2 hover:bg-gray-100 cursor-pointer"
                   >
                     All Statuses
                   </li>
@@ -241,7 +241,7 @@ export default function ViewProjects() {
                           setSelectedStatus(status);
                           setShowDropdown(false);
                         }}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer"
                       >
                         {status.replace("_", " ")}
                       </li>
