@@ -404,6 +404,7 @@ import Link from "next/link";
 import Api from "@/utils/api";
 import Image, { StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 // === Staff Interface ===
 interface Staff {
@@ -640,7 +641,9 @@ export default function StaffDirectory() {
         {/* 👥 People Grid */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
           {loading ? (
-            <p className="text-gray-600">Loading staff...</p>
+            <p className="text-gray-600">
+              <LoadingSpinner />
+            </p>
           ) : filteredStaff.length > 0 ? (
             filteredStaff.map((person) => (
               <div
