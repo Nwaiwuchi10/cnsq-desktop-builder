@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import imgHome from "../../assests/images/cnsquadlogo.png";
+import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
 type User = {
