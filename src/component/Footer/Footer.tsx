@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import logo from "../../assests/images/cnsquadlogo.png";
+import logo from "../../assests/images/CNSQ.png";
 
 export default function Footer() {
   return (
