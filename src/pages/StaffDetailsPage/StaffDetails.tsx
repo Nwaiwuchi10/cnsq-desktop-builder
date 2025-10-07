@@ -9,12 +9,14 @@ import Api from "@/utils/api";
 import ProjectCard from "../Projects/ProjectCrad";
 import editIcon from "../../assests/images/Button.png";
 import UpdateProfileModal from "../UpdateStaffProfile/UpdateStaffProfileModal";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 interface Project {
   id: number;
   projectName: string;
   desc?: string;
   status: string;
   startDate: string;
+
   department: {
     id: number;
     name: string;
@@ -94,6 +96,7 @@ interface Staff {
   maritalStatus: string;
   email: string;
   phone: string;
+  hobbies: string[];
   photoUrl: string;
   address: Address;
   employment: Employment;
@@ -160,7 +163,8 @@ export default function StaffDetails() {
   if (loadingStaff) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
-        <p className="text-gray-500">Loading staff details...</p>
+        <LoadingSpinner />
+        {/* <p className="text-gray-500">Loading staff details...</p> */}
       </div>
     );
   }
@@ -240,8 +244,11 @@ export default function StaffDetails() {
           <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
             <p>
               <span className="font-medium">Date of Birth:</span>{" "}
-              {staff.dateOfBirth}
+              {staff.dateOfBirth
+                ? staff.dateOfBirth.replace(/^\d{4}/, "****")
+                : "N/A"}
             </p>
+
             <p>
               <span className="font-medium">Gender:</span> {staff.gender}
             </p>
@@ -254,6 +261,24 @@ export default function StaffDetails() {
             </p>
             <p>
               <span className="font-medium">Phone:</span> {staff.phone}
+            </p>
+            <p>
+              <span className="font-medium">Hobbies:</span>{" "}
+              <div className="flex flex-wrap gap-2">
+                {staff?.hobbies?.length ? (
+                  staff.hobbies.map((title: string, i: number) => (
+                    <span
+                      key={i}
+                      className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                    >
+                      {title}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-sm"></span>
+                )}
+              </div>
+              {/* {staff.employment.jobTitle} */}
             </p>
           </div>
         </div>
@@ -272,10 +297,6 @@ export default function StaffDetails() {
             <p>
               <span className="font-medium">Country:</span>{" "}
               {staff.address.country}
-            </p>
-            <p>
-              <span className="font-medium">Postal Code:</span>{" "}
-              {staff.address.postalCode}
             </p>
           </div>
         </div>

@@ -7,7 +7,7 @@ import { AxiosError } from "axios";
 import Image from "next/image";
 import CustomModal from "@/component/Message/Message";
 
-const GENDERS = ["Male", "Female", "Other"] as const;
+const GENDERS = ["Male", "Female"] as const;
 const MARITALS = ["Single", "Married", "Divorced", "Widowed"] as const;
 const EMPLOYMENT_TYPES = [
   "Full-Time",
@@ -109,7 +109,7 @@ export default function UpdateProfileModal({
   // === File Upload ===
   const [photo, setPhoto] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-
+  const [hobbiesinput, setHobbiesInput] = useState("");
   // === Localstorage ===
   useEffect(() => {
     const id = localStorage.getItem("userId");
@@ -234,11 +234,11 @@ export default function UpdateProfileModal({
         jobTitle,
         employmentType,
         workMode,
-        hireDate,
+
         reportingManager,
         directReport,
         contractEndDate: contractEndDate || undefined,
-        status,
+
         workLocation: workLocation || undefined,
         departmentId: Number(departmentId),
         departmentalRoleId: Number(departmentalRoleId),
@@ -375,23 +375,60 @@ export default function UpdateProfileModal({
                 </div>
                 {/* Hobbies */}
                 <div>
-                  <label className="block text-sm mb-1">Hobbies</label>
-                  <input
-                    value={hobbies.join(", ")}
-                    onChange={(e) =>
-                      setHobbies(
-                        e.target.value
-                          .split(",")
-                          .map((h) => h.trim())
-                          .filter((h) => h)
-                      )
-                    }
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  />
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Hobbies
+                  </label>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={hobbiesinput}
+                      onChange={(e) => setHobbiesInput(e.target.value)}
+                      placeholder="e.g., Reading, Football"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-700 placeholder-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          hobbiesinput.trim() &&
+                          !hobbies.includes(hobbiesinput.trim())
+                        ) {
+                          setHobbies([...hobbies, hobbiesinput.trim()]);
+                          setHobbiesInput("");
+                        }
+                      }}
+                      className="px-3 py-2 bg-[#95D700] text-white rounded-lg"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {hobbies.map((hobby) => (
+                      <span
+                        key={hobby}
+                        className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
+                      >
+                        {hobby}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setHobbies(hobbies.filter((h) => h !== hobby))
+                          }
+                          className="text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 {/* ✅ Description */}
                 <div>
-                  <label className="block text-sm mb-1">Description</label>
+                  <label className="block text-sm mb-1">
+                    Tell us more about yourself
+                  </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -468,16 +505,6 @@ export default function UpdateProfileModal({
                     value={country}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Postal Code
-                  </label>
-                  <input
-                    value={postalCode}
-                    onChange={(e) => setPostal(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
@@ -608,31 +635,6 @@ export default function UpdateProfileModal({
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Contract End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={contractEndDate}
-                    onChange={(e) => setContractEndDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-gray-700 mb-1">
-                    Employment Status *
-                  </label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as EmpStatus)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-                  >
-                    {EMPLOYMENT_STATUS.map((s) => (
-                      <option key={s}>{s}</option>
-                    ))}
-                  </select>
-                </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Work Location
