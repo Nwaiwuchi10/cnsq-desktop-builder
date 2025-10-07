@@ -9,6 +9,7 @@ import Api from "@/utils/api";
 import ProjectCard from "../Projects/ProjectCrad";
 import editIcon from "../../assests/images/Button.png";
 import UpdateProfileModal from "../UpdateStaffProfile/UpdateStaffProfileModal";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 interface Project {
   id: number;
   projectName: string;
@@ -162,7 +163,8 @@ export default function StaffDetails() {
   if (loadingStaff) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
-        <p className="text-gray-500">Loading staff details...</p>
+        <LoadingSpinner />
+        {/* <p className="text-gray-500">Loading staff details...</p> */}
       </div>
     );
   }
@@ -242,8 +244,11 @@ export default function StaffDetails() {
           <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
             <p>
               <span className="font-medium">Date of Birth:</span>{" "}
-              {staff.dateOfBirth}
+              {staff.dateOfBirth
+                ? staff.dateOfBirth.replace(/^\d{4}/, "****")
+                : "N/A"}
             </p>
+
             <p>
               <span className="font-medium">Gender:</span> {staff.gender}
             </p>
