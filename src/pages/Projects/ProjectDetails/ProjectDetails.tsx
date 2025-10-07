@@ -12,6 +12,7 @@ import { ProjectStatus } from "@/dataTypes/Data-Types";
 import AssignedToStaffModal from "../UpdateProject/AssignedToStaffModal";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 interface Project {
   id: number;
@@ -60,6 +61,7 @@ export default function ProjectDetails() {
   const [commentText, setCommentText] = useState("");
   const [loadingComment, setLoadingComment] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [loadingProject, setLoadingProject] = useState(true);
   const [modal, setModal] = useState<{
     type: "success" | "error";
     message: string;
@@ -76,6 +78,8 @@ export default function ProjectDetails() {
         setProject(res.data);
       } catch (err) {
         console.error("Failed to fetch project", err);
+      } finally {
+        setLoadingProject(false);
       }
     };
     fetchProject();
@@ -140,6 +144,15 @@ export default function ProjectDetails() {
   // 🔹 Capitalize and transform
   const formatStatus = (status: string) =>
     status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  if (loadingProject) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
+        <LoadingSpinner />
+        {/* <p className="text-gray-500">Loading staff details...</p> */}
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen bg-[#FAFAFA] p-6">
