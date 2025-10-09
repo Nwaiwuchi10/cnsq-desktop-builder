@@ -8,7 +8,7 @@ import { AxiosError } from "axios";
 import Image from "next/image";
 import CustomModal from "@/component/Message/Message";
 
-const GENDERS = ["Male", "Female", "Other"] as const;
+const GENDERS = ["Male", "Female"] as const;
 const MARITALS = ["Single", "Married", "Divorced", "Widowed"] as const;
 const EMPLOYMENT_TYPES = [
   "Full-Time",
@@ -233,10 +233,7 @@ export default function StaffOnboardingForm() {
 
   // === Navigation ===
   const next = () => {
-    if (
-      step === 1 &&
-      (!firstName || !lastName || !email || !phone || !dateOfBirth)
-    ) {
+    if (step === 1 && (!firstName || !lastName || !email || !phone)) {
       setModal({
         type: "error",
         message: "Fill all required personal fields.",
@@ -298,7 +295,7 @@ export default function StaffOnboardingForm() {
       firstName,
       lastName,
 
-      dateOfBirth,
+      // dateOfBirth,
       gender,
       maritalStatus: maritalStatus || undefined,
       email,
@@ -453,7 +450,7 @@ export default function StaffOnboardingForm() {
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Date of Birth <span className="text-red-500">*</span>
                   </label>
@@ -463,7 +460,7 @@ export default function StaffOnboardingForm() {
                     onChange={(e) => setDob(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
-                </div>
+                </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Gender <span className="text-red-500">*</span>
@@ -493,8 +490,59 @@ export default function StaffOnboardingForm() {
                     ))}
                   </select>
                 </div>
-
+                {/* Hobbies Section (multi-add like Job Title) */}
                 <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Hobbies
+                  </label>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={hobbiesinput}
+                      onChange={(e) => setHobbiesInput(e.target.value)}
+                      placeholder="e.g., Reading, Football"
+                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-700 placeholder-gray-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          hobbiesinput.trim() &&
+                          !hobbies.includes(hobbiesinput.trim())
+                        ) {
+                          setHobbies([...hobbies, hobbiesinput.trim()]);
+                          setHobbiesInput("");
+                        }
+                      }}
+                      className="px-3 py-2 bg-[#95D700] text-white rounded-lg"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {hobbies.map((hobby) => (
+                      <span
+                        key={hobby}
+                        className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
+                      >
+                        {hobby}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setHobbies(hobbies.filter((h) => h !== hobby))
+                          }
+                          className="text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Hobbies
                   </label>
@@ -513,7 +561,7 @@ export default function StaffOnboardingForm() {
                     placeholder="e.g., reading, football"
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
-                </div>
+                </div> */}
                 {/* Profile Pic Upload */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
@@ -586,7 +634,7 @@ export default function StaffOnboardingForm() {
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Postal Code
                   </label>
@@ -595,7 +643,7 @@ export default function StaffOnboardingForm() {
                     onChange={(e) => setPostal(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
-                </div>
+                </div> */}
               </>
             )}
 
@@ -692,7 +740,7 @@ export default function StaffOnboardingForm() {
                     className="w-full rounded-lg border border-gray-300 px-3 py-2"
                   />
                 </div> */}
-                <div>
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Reporting Manager
                   </label>
@@ -711,7 +759,7 @@ export default function StaffOnboardingForm() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
                 {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Direct Report *
@@ -725,7 +773,7 @@ export default function StaffOnboardingForm() {
                   />
                   
                 </div> */}
-                <div>
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Direct Report
                   </label>
@@ -744,8 +792,8 @@ export default function StaffOnboardingForm() {
                       </option>
                     ))}
                   </select>
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Contract End Date
                   </label>
@@ -755,8 +803,8 @@ export default function StaffOnboardingForm() {
                     onChange={(e) => setContractEndDate(e.target.value)}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                   />
-                </div>
-                <div>
+                </div> */}
+                {/* <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Employment Status <span className="text-red-500">*</span>
                   </label>
@@ -769,7 +817,7 @@ export default function StaffOnboardingForm() {
                       <option key={s}>{s}</option>
                     ))}
                   </select>
-                </div>
+                </div> */}
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">
                     Work Location
