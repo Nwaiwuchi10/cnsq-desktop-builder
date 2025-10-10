@@ -241,7 +241,7 @@ export default function StaffDetails() {
             Personal Information
           </h3>
           <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
-          <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
+          <div className="grid sm:grid-cols-2 gap-4 text-gray-600">
             <p>
               <span className="font-medium">Date of Birth:</span>{" "}
               {staff.dateOfBirth
