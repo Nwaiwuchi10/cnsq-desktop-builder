@@ -7,7 +7,7 @@ import heroimg2 from "../../assests/images/DSC00141-Picsart-AiImageEnhancer.jpg"
 import heroimg3 from "../../assests/images/DSC00139-Picsart-AiImageEnhancer.jpg";
 import heroimg4 from "../../assests/images/DSC00153-Picsart-AiImageEnhancer.jpg";
 import heroimg5 from "../../assests/images/DSC00151-Picsart-AiImageEnhancer.jpg";
-import heroimg6 from "../../assests/images/DSC00104-Picsart-AiImageEnhancer.jpg";
+// import heroimg6 from "../../assests/images/DSC00104-Picsart-AiImageEnhancer.jpg";
 import heroimg7 from "../../assests/images/DSC00159-Picsart-AiImageEnhancer.jpg";
 import heroimgLogo from "../../assests/images/cnsquad.png";
 import Api from "@/utils/api";
@@ -83,7 +83,7 @@ export default function Hero() {
     { image: heroimg3, text: "" },
     { image: heroimg4, text: "" },
     { image: heroimg5, text: "" },
-    { image: heroimg6, text: "" },
+    // { image: heroimg6, text: "" },
     { image: heroimg7, text: "" },
   ];
 
@@ -142,7 +142,7 @@ export default function Hero() {
           priority={current === 0}
           loading={current === 0 ? "eager" : "lazy"}
           quality={85}
-          className="transition-opacity duration-500 ease-in-out brightness-75 object-cover object-[center_top]"
+          className="transition-opacity duration-600 ease-in-out brightness-75 object-cover object-[center_top]"
         />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70" />
