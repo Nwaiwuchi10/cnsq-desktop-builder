@@ -63,11 +63,11 @@ export default function LatestBirthday() {
       >
         {birthdays.map((person) => (
           <>
-            <Link href={`/staff/${person.id}`}>
-              <div
-                key={person.id}
-                className="flex flex-col items-start text-left w-full"
-              >
+            <div
+              key={person.id}
+              className="flex flex-col items-start text-left w-full"
+            >
+              <Link href={`/staff/${person.id}`}>
                 {/* Image Container with fallback if no photo */}
                 <div
                   className="
@@ -107,8 +107,8 @@ export default function LatestBirthday() {
                     timeZone: "Africa/Lagos",
                   })}
                 </span>
-              </div>
-            </Link>
+              </Link>
+            </div>
           </>
         ))}
       </div>
