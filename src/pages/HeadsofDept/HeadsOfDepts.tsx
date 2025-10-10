@@ -15,6 +15,7 @@ import Link from "next/link";
 
 import Api from "@/utils/api";
 import Image, { StaticImageData } from "next/image";
+import { useRouter } from "next/navigation";
 
 // 🔹 Interface for HeadOfDepartment API response
 interface HeadOfDepartment {
@@ -49,6 +50,7 @@ interface HeadOfDepartment {
 }
 
 export default function HeadsStaffDirectory() {
+  const router = useRouter();
   const [staffList, setStaffList] = useState<HeadOfDepartment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -80,7 +82,10 @@ export default function HeadsStaffDirectory() {
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
       <div className="max-w-[95%] mx-auto px-4 sm:px-8">
         {/* 🔙 Back Button */}
-        <div className="flex items-center gap-2 text-black cursor-pointer hover:opacity-70">
+        <div
+          className="flex items-center gap-2 text-black cursor-pointer hover:opacity-70"
+          onClick={() => router.back()}
+        >
           <ArrowLeft size={20} />
           <span className="font-medium">Back</span>
         </div>
