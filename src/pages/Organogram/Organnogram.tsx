@@ -2,7 +2,7 @@
 "use client";
 
 import OrgChartDemo from "./OrganogramDomiData";
-import OrgChart from "./OrgaTree";
+// import OrgChart from "./OrgaTree";
 
 // import OrgChart from "./OrgaTree";
 
