@@ -102,6 +102,14 @@ export default function CreateTaskForm() {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
     }
+    if (assignments.length === 0) {
+      setModal({
+        type: "error",
+        message:
+          "Please assign at least one staff to this task before creating it.",
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       await Api.post(
