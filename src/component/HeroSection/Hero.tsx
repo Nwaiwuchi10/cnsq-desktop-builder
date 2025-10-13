@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Image, { StaticImageData } from "next/image";
-import heroimg1 from "../../assests/images/cn-team-Picsart-AiImageEnhancer.jpg";
-import heroimg2 from "../../assests/images/DSC00141-Picsart-AiImageEnhancer.jpg";
-import heroimg3 from "../../assests/images/DSC00139-Picsart-AiImageEnhancer.jpg";
-import heroimg4 from "../../assests/images/DSC00153-Picsart-AiImageEnhancer.jpg";
-import heroimg5 from "../../assests/images/DSC00151-Picsart-AiImageEnhancer.jpg";
-// import heroimg6 from "../../assests/images/DSC00104-Picsart-AiImageEnhancer.jpg";
-import heroimg7 from "../../assests/images/DSC00159-Picsart-AiImageEnhancer.jpg";
+// import heroimg1 from "../../assests/images/cn-team-Picsart-AiImageEnhancer.jpg";
+// import heroimg2 from "../../assests/images/DSC00141-Picsart-AiImageEnhancer.jpg";
+// import heroimg3 from "../../assests/images/DSC00139-Picsart-AiImageEnhancer.jpg";
+// import heroimg4 from "../../assests/images/DSC00153-Picsart-AiImageEnhancer.jpg";
+// import heroimg5 from "../../assests/images/DSC00151-Picsart-AiImageEnhancer.jpg";
+// // import heroimg6 from "../../assests/images/DSC00104-Picsart-AiImageEnhancer.jpg";
+// import heroimg7 from "../../assests/images/DSC00159-Picsart-AiImageEnhancer.jpg";
 import heroimgLogo from "../../assests/images/cnsquad.png";
 import Api from "@/utils/api";
 
@@ -61,30 +61,55 @@ export default function Hero() {
 
   // ---------- Slides ----------
   const welcomeSlide = {
-    image: heroimg1,
+    image:
+      "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760307934/cn-team-Picsart-AiImageEnhancer_ti53lc.jpg",
     text: "Welcome",
     image2: heroimgLogo,
   };
 
   const birthdaySlides = todaysBirthdays.map((staff) => ({
-    image: staff.photoUrl || heroimg2,
+    image:
+      staff.photoUrl ||
+      "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308078/DSC00141-Picsart-AiImageEnhancer_kyidxc.jpg",
     text: `Happy Birthday ${staff.firstName} ${staff.lastName}`,
   }));
 
   const anniversarySlides = todaysAnniversaries.map((staff) => ({
-    image: staff.photoUrl || heroimg3,
-    text: `Happy ${staff.yearsCompleted} Year${
+    image:
+      staff.photoUrl ||
+      "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
+    text: `Happy ${staff?.yearsCompleted} Year${
       staff.yearsCompleted > 1 ? "s" : ""
     } Anniversary ${staff.firstName} ${staff.lastName}`,
   }));
 
   const gallerySlides = [
-    { image: heroimg2, text: "" },
-    { image: heroimg3, text: "" },
-    { image: heroimg4, text: "" },
-    { image: heroimg5, text: "" },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308078/DSC00141-Picsart-AiImageEnhancer_kyidxc.jpg",
+      text: "",
+    },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
+      text: "",
+    },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308313/DSC00153-Picsart-AiImageEnhancer_wwbr54.jpg",
+      text: "",
+    },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308387/DSC00151-Picsart-AiImageEnhancer_knw3qh.jpg",
+      text: "",
+    },
     // { image: heroimg6, text: "" },
-    { image: heroimg7, text: "" },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308443/DSC00159-Picsart-AiImageEnhancer_gd2fv6.jpg",
+      text: "",
+    },
   ];
 
   let slides: {
@@ -139,6 +164,7 @@ export default function Hero() {
           src={currentImage}
           alt="Hero background"
           fill
+          unoptimized
           priority={current === 0}
           loading={current === 0 ? "eager" : "lazy"}
           quality={85}

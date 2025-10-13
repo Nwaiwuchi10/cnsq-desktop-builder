@@ -23,6 +23,7 @@ interface Task {
   id: number;
   title: string;
   description?: string;
+  taskModule?: string;
   status: string;
   priority: string;
   urgency: string;
@@ -66,6 +67,7 @@ export default function TaskUpdateModal({
   const router = useRouter();
   // === Form state ===
   const [title, setTitle] = useState("");
+  const [taskModule, setTaskModule] = useState("");
   const [description, setDescription] = useState("");
   const [sprint, setSprint] = useState<number | "">("");
   const [status, setStatus] = useState("Not_started");
@@ -106,6 +108,7 @@ export default function TaskUpdateModal({
         const t: Task = taskRes.data;
         setTitle(t.title);
         setDescription(t.description || "");
+        setTaskModule(t.taskModule || "");
         setStatus(t.status);
         setPriority(t.priority);
         setUrgency(t.urgency);
@@ -141,6 +144,7 @@ export default function TaskUpdateModal({
         {
           title,
           description,
+          taskModule,
           status,
           priority,
           urgency,
@@ -207,7 +211,15 @@ export default function TaskUpdateModal({
               onChange={(e) => setDescription(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
-
+            <label className="block text-sm font-medium text-gray-600">
+              Task Module/Feature <span className="text-red-500"></span>
+            </label>
+            <input
+              value={taskModule}
+              onChange={(e) => setTaskModule(e.target.value)}
+              placeholder="e.g. Task on Authentication, Dashboard etc"
+              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+            />
             <label className="block text-sm font-medium mb-1 text-gray-700">
               Task Sprint
             </label>

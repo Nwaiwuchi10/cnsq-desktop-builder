@@ -38,6 +38,7 @@ interface Task {
   id: number;
   title: string;
   description?: string;
+  taskModule?: string;
   status?: string;
   priority?: string;
   urgency?: string;
@@ -104,7 +105,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   const exportToCSV = () => {
     const data = tasks.map((t) => ({
-      ID: t.id,
+      // ID: t.id,
       Sprint: t.sprint,
       Title: t.title,
       Description: t.description || "",
@@ -113,6 +114,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
       Urgency: t.urgency,
       DueDate: t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "Not set",
       Timeline: t.timeline || "",
+      Module: t.taskModule || "",
       Project: t.project?.projectName,
       AssignedTo: t.assignedTo
         .map((a) => `${a.staff.firstName} ${a.staff.lastName} (${a.role})`)
@@ -146,8 +148,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     In_progress: "bg-yellow-100 text-yellow-600",
     Ready_To_Test: "bg-blue-100 text-blue-600",
     Testing_In_Progress: "bg-purple-100 text-purple-600",
-    Passed_Test: "bg-indigo-100 text-indigo-600",
-    Completed: "bg-green-100 text-green-600",
+    Passed_Test: "bg-green-100 text-green-500",
+    Completed: "bg-green-200 text-green-600",
   };
 
   // ✅ Priority Colors
@@ -238,6 +240,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <th className="p-2 border text-gray-600">Start Date</th>
               <th className="p-2 border text-gray-600">Due Date</th>
               <th className="p-2 border text-gray-600">Timeline</th>
+              <th className="p-2 border text-gray-600">Module</th>
               <th className="p-2 border text-gray-600">Project</th>
               <th className="p-2 border text-gray-600">Assigned To</th>
               <th className="p-2 border text-gray-600">Created At</th>
@@ -314,6 +317,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     : "Not set"}
                 </td>
                 <td className="p-2 border text-gray-600">{t.timeline}</td>
+                <td className="p-2 border text-gray-600">{t.taskModule}</td>
                 <td className="p-2 border text-gray-600">
                   {t.project?.projectName}
                 </td>

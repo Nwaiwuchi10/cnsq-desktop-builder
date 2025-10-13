@@ -33,16 +33,21 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
   // Fetch staff for mentions
   useEffect(() => {
-    const fetchStaff = async () => {
+    const fetchProjectStaff = async () => {
+      if (!task?.project?.id) return; // make sure projectId exists
+
       try {
-        const res = await Api.get(`/staff-register/`);
-        setStaffList(res.data); // assuming backend returns { data: Staff[] }
+        const res = await Api.get(`/projects/${task.project?.id}/staffs`);
+        // Assuming your backend returns [{ staff: { id, firstName, lastName, ... }, role }]
+        const projectStaff = res.data.map((item: any) => item.staff);
+        setStaffList(projectStaff);
       } catch (err) {
-        console.error("Error fetching staff:", err);
+        console.error("Error fetching project staff:", err);
       }
     };
-    fetchStaff();
-  }, []);
+
+    fetchProjectStaff();
+  }, [task?.project?.id]);
 
   // Handle typing for mentions
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -99,7 +104,37 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     }
   };
 
+  const statusColors: Record<string, string> = {
+    Not_started: "bg-red-100 text-red-600",
+    Failed_Test: "bg-red-100 text-red-700", // Not Started → Red
+    In_progress: "bg-yellow-100 text-yellow-600",
+    Ready_To_Test: "bg-blue-100 text-blue-600",
+    Testing_In_Progress: "bg-purple-100 text-purple-600",
+    Passed_Test: "bg-green-100 text-green-500",
+    Completed: "bg-green-200 text-green-600",
+  };
+
+  const priorityColors: Record<string, string> = {
+    Low: "bg-green-100 text-green-600",
+    Medium: "bg-yellow-100 text-yellow-600",
+    High: "bg-red-100 text-red-600",
+  };
   // Insert selected staff
+  // Helper to detect links and make them clickable
+  const renderCommentText = (text: string) => {
+    if (!text) return "";
+
+    // Regex to match URLs (http, https, www)
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+
+    // Replace URLs with anchor tags
+    const linkedText = text.replace(urlRegex, (url) => {
+      const validUrl = url.startsWith("http") ? url : `https://${url}`;
+      return `<a href="${validUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline">${url}</a>`;
+    });
+
+    return linkedText;
+  };
 
   return (
     <>
@@ -116,11 +151,31 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
           {/* Status + Priority */}
           <div className="flex items-center justify-between mb-4">
-            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-              {task.status?.replace("_", " ")}
+            <span className=" text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+              {task.status ? (
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    statusColors[task.status] || "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {task.status?.replace("_", " ")}
+                </span>
+              ) : (
+                "—"
+              )}
             </span>
-            <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium mr-12">
-              {task.priority}
+            <span className="text-red-700 px-3 py-1 rounded-full text-xs font-medium mr-12">
+              {task.priority ? (
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    priorityColors[task.priority] || "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {task.priority}
+                </span>
+              ) : (
+                "—"
+              )}
             </span>
           </div>
 
@@ -193,6 +248,10 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             {task.description || "No description provided."}
           </p>
 
+          <h3 className="font-semibold mb-1">Task Feature/Module</h3>
+          <p className="text-sm text-gray-700 mb-4">
+            {task.taskModule || "No Module/Feature provided."}
+          </p>
           {/* Comments section */}
           {/* Comments section */}
           <h3 className="font-semibold mb-2">Comments</h3>
@@ -201,20 +260,46 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             {task.comments?.length ? (
               <div className="mt-2">
                 {task?.comments.map((c) => (
-                  <p key={c.id} className="text-sm text-gray-600">
-                    <span className="font-semibold">{c.staff.firstName}</span>{" "}
-                    {c.mentionedStaff && (
-                      <span className="text-blue-500">
-                        → @{c.mentionedStaff.firstName}
-                      </span>
-                    )}
-                    : {c.text}
-                    <p className="mb-4">
+                  <div key={c.id} className="text-sm text-gray-600 mb-4">
+                    <p>
+                      <span className="font-semibold">{c.staff.firstName}</span>{" "}
+                      {c.mentionedStaff && (
+                        <span className="text-blue-500">
+                          → @{c.mentionedStaff.firstName}
+                        </span>
+                      )}
+                      :
+                    </p>
+
+                    {/* Render text with clickable links */}
+                    <p
+                      className="mt-1"
+                      dangerouslySetInnerHTML={{
+                        __html: renderCommentText(c.text),
+                      }}
+                    />
+
+                    <p className="text-xs text-gray-500 mt-1">
                       {c.createdAt
                         ? new Date(c.createdAt).toLocaleString()
-                        : "No due date"}{" "}
+                        : "No due date"}
                     </p>
-                  </p>
+                  </div>
+
+                  // <p key={c.id} className="text-sm text-gray-600">
+                  //   <span className="font-semibold">{c.staff.firstName}</span>{" "}
+                  //   {c.mentionedStaff && (
+                  //     <span className="text-blue-500">
+                  //       → @{c.mentionedStaff.firstName}
+                  //     </span>
+                  //   )}
+                  //   : {c.text}
+                  //   <p className="mb-4">
+                  //     {c.createdAt
+                  //       ? new Date(c.createdAt).toLocaleString()
+                  //       : "No due date"}{" "}
+                  //   </p>
+                  // </p>
                 ))}
               </div>
             ) : (
