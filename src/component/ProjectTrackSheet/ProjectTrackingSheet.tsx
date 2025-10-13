@@ -252,7 +252,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 style={{ cursor: "pointer" }}
                 onClick={() => setSelectedTask(t)}
                 key={t.id}
-                className="odd:bg-white even:bg-gray-50 text-gray-600"
+                className="odd:bg-white even:bg-gray-50 text-gray-600 hover:bg-green-100 transition-colors duration-150 cursor-pointer text-gray-600"
               >
                 <td className="p-2 border text-gray-600">{t?.sprint}</td>
                 <td

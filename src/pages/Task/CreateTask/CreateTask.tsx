@@ -25,7 +25,18 @@ interface ProjectStaff {
   };
   role: string; // role from project assignment
 }
+const TASK_STATUSES = [
+  "Not_started",
+  "In_progress",
+  "Ready_To_Test",
+  "Testing_In_Progress",
+  "Failed_Test",
+  "Passed_Test",
+  "Completed",
+];
 
+const PRIORITIES = ["Low", "Medium", "High"];
+const URGENCIES = ["Short_Term", "Med_Term", "High_Term", "Immediately"];
 export default function CreateTaskForm() {
   const router = useRouter();
   const params = useParams();
@@ -48,7 +59,9 @@ export default function CreateTaskForm() {
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
-
+  const [status, setStatus] = useState("Not_started");
+  const [priority, setPriority] = useState("Medium");
+  const [urgency, setUrgency] = useState("Short_Term");
   // === AssignedTo ===
   const [assignments, setAssignments] = useState<
     { staffId: number; role: string }[]
@@ -98,7 +111,7 @@ export default function CreateTaskForm() {
   }, [startDate, dueDate]);
 
   const handleCreateTask = async () => {
-    if (!title || !dueDate || !startDate) {
+    if (!title || !dueDate || !startDate || !sprint) {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
     }
@@ -119,6 +132,9 @@ export default function CreateTaskForm() {
           description,
           taskModule,
           sprint,
+          status: status || "Not_started",
+          priority: priority || "Medium",
+          urgency: urgency || "Short_Term",
           startDate,
           dueDate,
           timeline,
@@ -202,6 +218,51 @@ export default function CreateTaskForm() {
             placeholder="Sprint 1"
             className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
           />
+          {/* status, urgency and priority */}
+          {/* Status */}
+          <label className="block text-sm text-gray-700 mb-1">
+            Task Status
+          </label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+          >
+            {TASK_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+
+          {/* Priority */}
+          <label className="block text-sm text-gray-700 mb-1">Priority</label>
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+          >
+            {PRIORITIES.map((p) => (
+              <option key={p} value={p}>
+                {p.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+
+          {/* Urgency */}
+          <label className="block text-sm text-gray-700 mb-1">Urgency</label>
+          <select
+            value={urgency}
+            onChange={(e) => setUrgency(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+          >
+            <option value="">-- Select Urgency --</option>
+            {URGENCIES.map((u) => (
+              <option key={u} value={u}>
+                {u.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
 
           {/* Start Date */}
           <label className="block text-sm font-medium text-gray-600">
