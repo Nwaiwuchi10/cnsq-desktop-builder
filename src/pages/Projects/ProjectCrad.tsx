@@ -15,7 +15,7 @@ export interface Project {
   };
   startDate: string;
   endDate: string;
-  priority: "high" | "medium" | "low";
+  priority: "critical" | "high" | "medium" | "low";
   timeLine: string;
   assignedTo: {
     id: number;
@@ -77,6 +77,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const progress = progressValue();
   // const progress = 75; // 🔹 Placeholder: you can compute this from your data
   const priorityColors: Record<string, string> = {
+    critical: "text-red-700 border border-red-500",
     high: "text-red-500 border border-red-500",
     medium: "text-yellow-500 border border-yellow-500",
     low: "text-green-500 border border-green-500",
