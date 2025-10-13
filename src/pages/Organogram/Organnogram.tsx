@@ -1,6 +1,7 @@
 // app/organogram/page.tsx
 "use client";
 
+import OrgChartDemo from "./OrganogramDomiData";
 import OrgChart from "./OrgaTree";
 
 // import OrgChart from "./OrgaTree";
@@ -11,6 +12,7 @@ export default function OrganogramPage() {
       <h1 className="text-3xl font-bold text-center py-6">
         Company Organogram
       </h1>
+      {/* <OrgChartDemo /> */}
       <OrgChart />
     </main>
   );

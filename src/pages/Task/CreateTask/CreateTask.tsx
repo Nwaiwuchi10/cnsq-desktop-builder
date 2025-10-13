@@ -42,6 +42,7 @@ export default function CreateTaskForm() {
 
   // === Task State ===
   const [title, setTitle] = useState("");
+  const [taskModule, setTaskModule] = useState("");
   const [description, setDescription] = useState("");
   const [sprint, setSprint] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -108,6 +109,7 @@ export default function CreateTaskForm() {
         {
           title,
           description,
+          taskModule,
           sprint,
           startDate,
           dueDate,
@@ -171,7 +173,16 @@ export default function CreateTaskForm() {
             placeholder="Enter task description"
             className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 border-gray-700"
           />
-
+          {/* Task Module/Feature */}
+          <label className="block text-sm font-medium text-gray-600">
+            Task Module/Feature <span className="text-red-500"></span>
+          </label>
+          <input
+            value={taskModule}
+            onChange={(e) => setTaskModule(e.target.value)}
+            placeholder="e.g. Task on Authentication, Dashboard etc"
+            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+          />
           {/* Sprint */}
           <label className="block text-sm font-medium mb-1 text-gray-600">
             Task Sprint <span className="text-red-500">*</span>

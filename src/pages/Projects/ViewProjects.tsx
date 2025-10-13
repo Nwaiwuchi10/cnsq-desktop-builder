@@ -19,7 +19,7 @@ interface Project {
     id: number;
     name: string;
   };
-  priority: "high" | "medium" | "low";
+  priority:"critical" | "high" | "medium" | "low";
   timeLine: string;
   assignedTo: {
     id: number;

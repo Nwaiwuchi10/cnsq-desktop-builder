@@ -31,6 +31,7 @@ export interface TaskDTO {
   description?: string;
   status?: string;
   priority?: string;
+  taskModule?: string;
   urgency?: string;
   startDate?: string;
   dueDate?: string;

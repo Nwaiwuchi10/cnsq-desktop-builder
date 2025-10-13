@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
         hostname: "adsng.s3.eu-north-1.amazonaws.com", //
         pathname: "/**", // allow all paths under this host
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   eslint: {
