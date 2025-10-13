@@ -12,8 +12,8 @@ export default function OrganogramPage() {
       <h1 className="text-3xl font-bold text-center py-6">
         Company Organogram
       </h1>
-      {/* <OrgChartDemo /> */}
-      <OrgChart />
+      <OrgChartDemo />
+      {/* <OrgChart /> */}
     </main>
   );
 }
