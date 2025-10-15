@@ -9,6 +9,7 @@ import svgContact1 from "../../assests/imageIcons/SVG (1).png";
 import svgContact2 from "../../assests/imageIcons/SVG (2).png";
 import svgContact3 from "../../assests/imageIcons/SVG (3).png";
 import Api from "@/utils/api";
+import Link from "next/link";
 
 interface Stats {
   totalEmployees: number;
@@ -43,24 +44,28 @@ export default function StatsCards() {
       label: "Total Employees",
       value: stats?.totalEmployees ?? 0,
       icon: <Image src={svgContact} alt="employees-icon" />,
+      href: "/staff",
     },
     {
       id: 2,
       label: "Departments",
       value: stats?.totalDepartments ?? 0,
       icon: <Image src={svgContact1} alt="departments-icon" />,
+      href: "/heads-of-departments",
     },
     {
       id: 3,
       label: "Birthday this month",
       value: stats?.birthdays ?? 0,
       icon: <Image src={svgContact2} alt="birthdays-icon" />,
+      href: "/birthday",
     },
     {
       id: 4,
       label: "Anniversaries this Quarter",
       value: stats?.anniversaries ?? 0,
       icon: <Image src={svgContact3} alt="anniversaries-icon" />,
+      href: "/anniversary",
     },
   ];
 
@@ -80,9 +85,11 @@ export default function StatsCards() {
             key={stat.id}
             className="flex flex-col items-start gap-3 border border-[#E5E7EB] bg-white rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%]"
           >
-            <div className="text-gray-600">{stat.icon}</div>
-            <p className="text-gray-900 font-medium">{stat.label}</p>
-            <h2 className="text-2xl font-bold text-gray-900">{stat.value}</h2>
+            <Link href={stat.href} className="hover:opacity-80">
+              <div className="text-gray-600">{stat.icon}</div>
+              <p className="text-gray-900 font-medium">{stat.label}</p>
+              <h2 className="text-2xl font-bold text-gray-900">{stat.value}</h2>
+            </Link>
           </div>
         ))}
       </div>
