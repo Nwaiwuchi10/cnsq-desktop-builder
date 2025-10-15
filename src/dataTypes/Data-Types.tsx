@@ -21,7 +21,7 @@ export interface TaskComment {
   task: TaskDTO;
   text: string;
   staff: Staff;
-
+  fileUrl?: string;
   mentionedStaff: Staff;
   createdAt: string;
 }
@@ -32,6 +32,7 @@ export interface TaskDTO {
   status?: string;
   priority?: string;
   taskModule?: string;
+  fileUrl?: string;
   urgency?: string;
   startDate?: string;
   dueDate?: string;
