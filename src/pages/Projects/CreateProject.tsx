@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, X } from "lucide-react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
+import Image from "next/image";
 
 interface Staff {
   id: number;
@@ -57,6 +58,8 @@ export default function ProjectWizardForm() {
   const [stagingUrl, setStagingUrl] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [apk, setApk] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [departmentId, setDepartmentId] = useState<number | "">("");
 
   // === Step 2: Assignment ===
@@ -110,6 +113,19 @@ export default function ProjectWizardForm() {
   const next = () => setStep((s) => Math.min(totalSteps, s + 1));
   const back = () => setStep((s) => Math.max(1, s - 1));
 
+  ////file upload handler
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f && f.type.startsWith("image/")) {
+      setApk(f);
+      setPreview(URL.createObjectURL(f));
+    }
+  };
+
+  const removeFile = () => {
+    setApk(null);
+    setPreview(null);
+  };
   // === Step 1: Create Project ===
   const handleCreateProject = async () => {
     if (!projectName || !desc || !startDate || !timeLine || !endDate) {
@@ -121,28 +137,28 @@ export default function ProjectWizardForm() {
     }
     // if (!token) return;
     setSubmitting(true);
-
+    const dto = {
+      projectName,
+      desc,
+      status,
+      priority,
+      timeLine,
+      apk,
+      prodUrl: prodUrl || undefined,
+      stagingUrl: stagingUrl || undefined,
+      startDate,
+      endDate,
+      departmentId: Number(departmentId),
+    };
+    const formData = new FormData();
+    formData.append("dto", JSON.stringify(dto));
+    if (apk) formData.append("apk", apk);
     try {
-      const res = await Api.post(
-        "/projects",
-        {
-          projectName,
-          desc,
-          status,
-          priority,
-          timeLine,
-          prodUrl: prodUrl || undefined,
-          stagingUrl: stagingUrl || undefined,
-          startDate,
-          endDate,
-          departmentId: Number(departmentId),
+      const res = await Api.post("/projects", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
       setCreatedProjectId(res.data.id);
       setModal({ type: "success", message: "Project created successfully!" });
       next();
@@ -329,7 +345,33 @@ export default function ProjectWizardForm() {
                   onChange={(e) => setStagingUrl(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 />
+                {/* //file input */}
+                <div>
+                  <label className="block text-sm text-gray-700 mb-1">
+                    Mobile App APK File
+                  </label>
+                  {apk ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700">{apk.name}</span>
+                      <button
+                        type="button"
+                        onClick={removeFile}
+                        className="text-red-500 text-sm hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept=".apk,application/vnd.android.package-archive"
+                      onChange={handleFileChange}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                    />
+                  )}
+                </div>
 
+                {/* ////file input */}
                 <label className="block text-sm font-medium text-gray-600">
                   Start Date <span className="text-red-500">*</span>
                 </label>
