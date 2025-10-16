@@ -17,7 +17,7 @@ const navLinks = [
   { name: "Staff", href: "/staff" },
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
-  { name: "Organogram", href: "/organogram" },
+  { name: "Organogram", href: "/" },
   { name: "Project", href: "/project" },
 ];
 
