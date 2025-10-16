@@ -25,6 +25,7 @@ interface Project {
   timeLine: string;
   prodUrl: string;
   stagingUrl: string;
+  apk?: string;
   assignedTo: {
     id: number;
     role: string;
@@ -219,6 +220,25 @@ export default function ProjectDetails() {
               {project?.prodUrl}
             </a>
           </div>
+          {/* ///apk */}
+          <div className="text-gray-600 mt-2">
+            <span>Mobile App (APK):</span>
+            {project?.apk ? (
+              <a
+                href={project.apk}
+                target="_blank"
+                className="text-blue-600 hover:text-blue-800 underline ml-1"
+                download
+              >
+                Download APK
+              </a>
+            ) : (
+              <span className="text-gray-600 ml-1 italic">
+                No APK available
+              </span>
+            )}
+          </div>
+          {/* apk */}
         </div>
 
         {/* Progress */}

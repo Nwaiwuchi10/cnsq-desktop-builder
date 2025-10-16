@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import { Check, X } from "lucide-react";
@@ -78,6 +78,8 @@ export default function UpdateProjectModal({
   const [departments, setDepartments] = useState<Department[]>([]);
   const [search, setSearch] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [apk, setApk] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   useEffect(() => {
     Api.get("/departments")
       .then((res) => setDepartments(res.data || []))
@@ -127,31 +129,44 @@ export default function UpdateProjectModal({
     fetchData();
   }, [isOpen, projectId]);
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f && f.type.startsWith("image/")) {
+      setApk(f);
+      setPreview(URL.createObjectURL(f));
+    }
+  };
+
+  const removeFile = () => {
+    setApk(null);
+    setPreview(null);
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
+    const dto = {
+      projectName,
+      desc,
+      timeLine,
+      status,
+      priority,
+      prodUrl,
+      stagingUrl,
+      startDate,
+      endDate,
+      assignments,
+      departmentId: Number(departmentId),
+    };
+    const formData = new FormData();
+    formData.append("dto", JSON.stringify(dto));
+    if (apk) formData.append("apk", apk);
     try {
       const token = localStorage.getItem("user-token");
-      await Api.patch(
-        `/projects/${projectId}`,
-        {
-          projectName,
-          desc,
-          timeLine,
-          status,
-          priority,
-          prodUrl,
-          stagingUrl,
-          startDate,
-          endDate,
-          assignments,
-          departmentId: Number(departmentId),
+      await Api.patch(`/projects/${projectId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      });
       setModal({ type: "success", message: "Project updated successfully!" });
       setTimeout(() => {
         onClose();
@@ -261,12 +276,41 @@ export default function UpdateProjectModal({
             <label className="block text-sm text-gray-700 mb-1">
               Stagging Link
             </label>
+
             <input
               placeholder="Staging URL"
               value={stagingUrl}
               onChange={(e) => setStagingUrl(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
             />
+
+            {/* ///////file uploader */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">
+                Mobile App APK File
+              </label>
+              {apk ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">{apk.name}</span>
+                  <button
+                    type="button"
+                    onClick={removeFile}
+                    className="text-red-500 text-sm hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="file"
+                  accept=".apk,application/vnd.android.package-archive"
+                  onChange={handleFileChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                />
+              )}
+            </div>
+
+            {/* file uploader */}
             <label className="block text-sm text-gray-700 mb-1">
               Tiimeline
             </label>
