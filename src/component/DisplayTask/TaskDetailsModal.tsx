@@ -123,7 +123,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     });
   };
   // 💬 Add new comment
-  const handleAddComment = async () => {
+  const handleAddComments = async () => {
     if (!commentText.trim() || !taskData) return;
     setLoading(true);
     try {
@@ -145,6 +145,45 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
       setModal({ type: "success", message: "Comment added successfully!" });
       await refreshTask();
       //       window.location.reload(); // or update state with new comment
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to add comment.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleAddComment = async () => {
+    if ((!commentText.trim() && !file) || !taskData) return; // ⬅️ Allow either text or file
+
+    setLoading(true);
+    try {
+      // First, create a comment (even if it's empty text)
+      const res = await Api.patch(
+        `/task/${task.id}/comments`,
+        {
+          text: commentText || "",
+          mentionedStaffId: mentionedStaff?.id ?? null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const commentId = res.data?.id;
+
+      // If a file is attached, upload it
+      if (file && commentId) {
+        await handleAttachFile(commentId);
+        setFile(null);
+      }
+
+      // Reset fields
+      setCommentText("");
+      setMentionedStaff(null);
+
+      setModal({ type: "success", message: "Comment added successfully!" });
+      await refreshTask();
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -414,7 +453,8 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
               <button
                 style={{ cursor: "pointer" }}
                 onClick={handleAddComment}
-                disabled={loading}
+                disabled={loading || (!commentText.trim() && !file)}
+                // disabled={loading}
                 className="bg-[#95D700] text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-60"
               >
                 {loading ? "Posting..." : "Post Comment"}
