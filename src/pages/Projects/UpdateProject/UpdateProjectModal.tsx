@@ -276,6 +276,14 @@ export default function UpdateProjectModal({
             <label className="block text-sm text-gray-700 mb-1">
               Stagging Link
             </label>
+
+            <input
+              placeholder="Staging URL"
+              value={stagingUrl}
+              onChange={(e) => setStagingUrl(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            />
+
             {/* ///////file uploader */}
             <div>
               <label className="block text-sm text-gray-700 mb-1">
@@ -303,13 +311,6 @@ export default function UpdateProjectModal({
             </div>
 
             {/* file uploader */}
-
-            <input
-              placeholder="Staging URL"
-              value={stagingUrl}
-              onChange={(e) => setStagingUrl(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-            />
             <label className="block text-sm text-gray-700 mb-1">
               Tiimeline
             </label>
