@@ -61,21 +61,21 @@ export default function NotificationModal({
                 <p className="text-xs text-gray-500 mb-1">Staff Assigned</p>
                 <div className="flex -space-x-2 items-center">
                   <Image
-                    src="https://randomuser.me/api/portraits/women/1.jpg"
+                    src="https://res.cloudinary.com/dlrelihio/image/upload/v1760686725/1_zkbp2k.jpg"
                     width={28}
                     height={28}
                     alt="staff"
                     className="rounded-full border border-white"
                   />
                   <Image
-                    src="https://randomuser.me/api/portraits/men/2.jpg"
+                    src="https://res.cloudinary.com/dlrelihio/image/upload/v1760686800/2_eqreql.jpg"
                     width={28}
                     height={28}
                     alt="staff"
                     className="rounded-full border border-white"
                   />
                   <Image
-                    src="https://randomuser.me/api/portraits/men/3.jpg"
+                    src="https://res.cloudinary.com/dlrelihio/image/upload/v1760686858/3_krvkni.jpg"
                     width={28}
                     height={28}
                     alt="staff"
