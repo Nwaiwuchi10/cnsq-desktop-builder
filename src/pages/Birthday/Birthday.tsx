@@ -303,12 +303,11 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
     <div className="mt-3 text-gray-600 text-sm">
       🎂{" "}
       {staff?.dateOfBirth
-        ? new Date(staff.dateOfBirth).toLocaleDateString("en-US", {
+        ? `**** ${new Date(staff.dateOfBirth).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
-            year: "numeric",
             timeZone: "Africa/Lagos",
-          })
+          })}`
         : "N/A"}
     </div>
 
