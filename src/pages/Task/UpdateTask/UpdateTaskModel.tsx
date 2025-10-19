@@ -28,6 +28,7 @@ interface Task {
   priority: string;
   urgency: string;
   sprint: number;
+  startDate: string;
   dueDate?: string;
   timeline?: string;
   project: { id: number; projectName: string };
@@ -82,6 +83,8 @@ export default function TaskUpdateModal({
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
+  const [startDate, setStartDate] = useState("");
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const t = localStorage.getItem("user-token");
@@ -115,6 +118,7 @@ export default function TaskUpdateModal({
         setTimeline(t.timeline || "");
         setSprint(t.sprint || "");
         setProjectId(t.project.id);
+        setStartDate(t.startDate ? t.startDate.split("T")[0] : "");
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
 
         setAssignments(
@@ -135,7 +139,20 @@ export default function TaskUpdateModal({
 
     fetchData();
   }, [isOpen, taskId]);
-
+  useEffect(() => {
+    if (startDate && dueDate) {
+      const start = new Date(startDate);
+      const end = new Date(dueDate);
+      if (end >= start) {
+        const diffDays = Math.ceil(
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        setTimeline(`${diffDays} days`);
+      } else {
+        setTimeline("");
+      }
+    }
+  }, [startDate, dueDate]);
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
@@ -149,6 +166,7 @@ export default function TaskUpdateModal({
           priority,
           urgency,
           timeline,
+          startDate,
           dueDate,
           projectId,
           sprint: sprint ? Number(sprint) : undefined,
@@ -165,6 +183,7 @@ export default function TaskUpdateModal({
         onClose();
         onUpdated();
       }, 1200);
+      window.location.reload();
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -262,6 +281,16 @@ export default function TaskUpdateModal({
                 <option key={u}>{u}</option>
               ))}
             </select>
+            {/* Start Date */}
+            <label className="block text-sm font-medium text-gray-600">
+              Start Date
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+            />
             <label className="block text-sm text-gray-700 mb-1">Due Date</label>
             <input
               type="date"
