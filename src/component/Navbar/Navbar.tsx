@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Bell } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
+
 type User = {
   firstName: string;
   lastName: string;
@@ -13,7 +14,7 @@ type User = {
 };
 
 const navLinks = [
-  { name: "Home", href: "/" },
+  // { name: "Home", href: "/" },
   { name: "Staff", href: "/staff" },
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
@@ -27,8 +28,10 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  //  Fetch user profile
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -50,6 +53,29 @@ export default function Navbar() {
         setUser(null);
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  //  Fetch unread notifications count
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await Api.get("/notification/unread-count/recipient", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUnreadCount(res.data.unreadCount || 0);
+      } catch (error) {
+        console.error("Failed to fetch unread count", error);
+      }
+    };
+
+    fetchUnreadCount();
+
+    // optional: auto-refresh every 60 seconds
+    const interval = setInterval(fetchUnreadCount, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   // Close dropdown if clicked outside
@@ -102,7 +128,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/*  Logo */}
           <Link href="/" className="text-2xl font-bold text-blue-600">
             <Image
               src={imgHome}
@@ -126,23 +152,39 @@ export default function Navbar() {
                 </Link>
               ))}
 
-              {/* {!loading &&
-                
-                
-                
-                
-                } */}
+              {/* Notification Bell + Count */}
+
+              {/*  User Profile */}
               {user ? (
                 <div className="relative z-50" ref={dropdownRef}>
-                  <button
-                    onClick={() => setIsDropdownOpen((prev) => !prev)}
-                    className="flex items-center gap-2 focus:outline-none"
-                  >
-                    {getAvatar()}
-                    <span className="hidden md:inline font-medium text-gray-700">
-                      {user.firstName}
-                    </span>
-                  </button>
+                  <div className="flex items-center gap-2 focus:outline-none">
+                    <button
+                      onClick={() => setIsDropdownOpen((prev) => !prev)}
+                      className="flex items-center gap-2 focus:outline-none"
+                    >
+                      {getAvatar()}
+                      <span className="hidden md:inline font-medium text-gray-700">
+                        {user.firstName}
+                      </span>
+                      {/* ///// Notification Bell + Count */}
+                    </button>
+                    {/* {user && (
+                      <Link href="/notifications" className="relative left-9">
+                        <Bell
+                          className="text-gray-700 hover:text-[#95D700]"
+                          size={22}
+                        />
+                        {unreadCount > 0 && (
+                          <span
+                            className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
+                            // style={{ backgroundColor: "#FF990C" }}
+                          >
+                            {unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                    )} */}
+                  </div>
 
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg py-2">
@@ -181,11 +223,28 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          {/* Mobile Menu Button + Notification */}
+          <div className="md:hidden flex items-center gap-4">
+            {/* {user && (
+              <Link href="/notifications" className="relative">
+                <Bell
+                  className="text-gray-700 hover:text-[#95D700]"
+                  size={22}
+                />
+                {unreadCount > 0 && (
+                  <span
+                    className="bg-[#FF990C] absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
+                    // style={{ backgroundColor: "#FF990C" }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+            )} */}
+
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-blue-600 focus:outline-none"
+              className="text-gray-700 hover:text-[#95D700] focus:outline-none"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
