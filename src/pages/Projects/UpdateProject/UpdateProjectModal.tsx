@@ -128,7 +128,16 @@ export default function UpdateProjectModal({
 
     fetchData();
   }, [isOpen, projectId]);
-
+  useEffect(() => {
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffDays = Math.ceil(
+        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      setTimeLine(`${diffDays} day${diffDays !== 1 ? "s" : ""}`);
+    }
+  }, [startDate, endDate]);
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (f && f.type.startsWith("image/")) {
@@ -311,15 +320,6 @@ export default function UpdateProjectModal({
             </div>
 
             {/* file uploader */}
-            <label className="block text-sm text-gray-700 mb-1">
-              Tiimeline
-            </label>
-            <input
-              placeholder="Timeline"
-              value={timeLine}
-              onChange={(e) => setTimeLine(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
-            />
 
             <div>
               <div>
@@ -345,6 +345,7 @@ export default function UpdateProjectModal({
                     End Date
                   </label>
                 </div>
+
                 <div>
                   {" "}
                   <input
@@ -355,6 +356,17 @@ export default function UpdateProjectModal({
                   />
                 </div>
               </div>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">
+                Tiimeline
+              </label>
+              <input
+                placeholder="Timeline"
+                value={timeLine}
+                onChange={(e) => setTimeLine(e.target.value)}
+                className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              />
             </div>
 
             {/* Assign Staff */}
