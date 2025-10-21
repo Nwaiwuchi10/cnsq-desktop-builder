@@ -197,7 +197,7 @@ export default function NotificationModal({
             </span>
           </p>
           <h2 className="text-2xl font-semibold text-gray-900 mt-1">
-            {notification.title}
+            {notification.title.replace("_", " ")}
           </h2>
           <p className="text-sm text-gray-400 mt-1">
             {formatDate(notification.createdAt)}
@@ -214,7 +214,8 @@ export default function NotificationModal({
               <div className="flex-1 ml-3">
                 {/* Title */}
                 <h3 className="text-sm font-semibold text-gray-900">
-                  {displayTask?.title || relatedProject?.projectName}
+                  {displayTask?.title.replace("_", " ") ||
+                    relatedProject?.projectName.replace("_", " ")}
                 </h3>
 
                 {/* Staff Assigned */}

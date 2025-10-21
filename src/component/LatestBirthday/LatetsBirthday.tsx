@@ -46,7 +46,7 @@ export default function LatestBirthday() {
   return (
     <div className="bg-[#FAFAFA] min-h-[60vh] flex flex-col items-center px-4 sm:px-6 md:px-12 lg:px-20 pt-12">
       {/* Heading */}
-      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
+      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-7xl">
         Latest Birthdays
       </h1>
 

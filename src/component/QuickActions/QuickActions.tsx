@@ -40,12 +40,12 @@ export default function QuickActions() {
   return (
     <div className="bg-[#FAFAFA] min-h-[80vh] flex flex-col items-center px-8 sm:px-6 md:px-20 pt-12">
       {/* Heading */}
-      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
+      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-7xl">
         Quick Actions
       </h1>
 
       {/* Action Cards */}
-      <div className="flex flex-wrap gap-8 justify-center w-full max-w-6xl">
+      <div className="flex flex-wrap gap-8 justify-center w-full max-w-7xl">
         {actions.map((action) => (
           <div
             key={action.id}

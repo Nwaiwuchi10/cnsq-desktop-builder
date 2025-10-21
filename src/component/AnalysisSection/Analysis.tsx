@@ -79,7 +79,7 @@ export default function StatsCards() {
 
   return (
     <div className="bg-[#FAFAFA] min-h-[80vh] sm:min-h-[100vh] md:min-h-[70vh] lg:min-h-[50vh] flex items-center justify-center px-8 sm:px-6 md:px-20 pt-8">
-      <div className="flex flex-wrap gap-6 justify-center w-full max-w-6xl">
+      <div className="flex flex-wrap gap-6 justify-center w-full max-w-7xl">
         {statsView.map((stat) => (
           <div
             key={stat.id}

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Api from "@/utils/api";
+import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 interface AnnouncementModalProps {
   notification: {
@@ -35,7 +36,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const [details, setDetails] = useState<DemoData | AnnouncementData | null>(
     null
   );
-
+  console.log("notification", notification);
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -90,9 +91,11 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
   if (!details)
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-gray-200 bg-opacity-40 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-xl w-full max-w-lg text-center">
-          <p className="text-gray-500 text-sm">Loading details...</p>
+          <p className="text-gray-500 text-sm">
+            <LoadingSpinner />
+          </p>
         </div>
       </div>
     );
@@ -105,7 +108,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const announcementDetails = details as AnnouncementData;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 h-full">
       <div className="bg-white rounded-2xl w-full max-w-2xl p-6 relative shadow-lg">
         <button
           onClick={onClose}
@@ -148,7 +151,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
                   {demoDetails.videos.map((videoUrl, i) => (
                     <div
                       key={i}
-                      className="min-w-[300px] h-40 bg-gray-200 rounded-lg overflow-hidden relative"
+                      className="min-w-[600px] h-40 bg-gray-200 rounded-lg overflow-hidden relative"
                     >
                       <video
                         src={videoUrl}
