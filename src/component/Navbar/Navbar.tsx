@@ -151,7 +151,25 @@ export default function Navbar() {
                   {link.name}
                 </Link>
               ))}
-
+              <div>
+                {" "}
+                {user && (
+                  <Link href="/notifications" className="relative left-9">
+                    <Bell
+                      className="text-gray-700 hover:text-[#95D700]"
+                      size={22}
+                    />
+                    {unreadCount > 0 && (
+                      <span
+                        className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
+                        // style={{ backgroundColor: "#FF990C" }}
+                      >
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
+              </div>
               {/* Notification Bell + Count */}
 
               {/*  User Profile */}
@@ -168,22 +186,6 @@ export default function Navbar() {
                       </span>
                       {/* ///// Notification Bell + Count */}
                     </button>
-                    {user && (
-                      <Link href="/notifications" className="relative left-9">
-                        <Bell
-                          className="text-gray-700 hover:text-[#95D700]"
-                          size={22}
-                        />
-                        {unreadCount > 0 && (
-                          <span
-                            className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                            // style={{ backgroundColor: "#FF990C" }}
-                          >
-                            {unreadCount}
-                          </span>
-                        )}
-                      </Link>
-                    )}
                   </div>
 
                   {isDropdownOpen && (
