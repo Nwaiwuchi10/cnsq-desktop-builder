@@ -168,7 +168,7 @@ export default function Navbar() {
                       </span>
                       {/* ///// Notification Bell + Count */}
                     </button>
-                    {/* {user && (
+                    {user && (
                       <Link href="/notifications" className="relative left-9">
                         <Bell
                           className="text-gray-700 hover:text-[#95D700]"
@@ -183,7 +183,7 @@ export default function Navbar() {
                           </span>
                         )}
                       </Link>
-                    )} */}
+                    )}
                   </div>
 
                   {isDropdownOpen && (
@@ -225,7 +225,7 @@ export default function Navbar() {
 
           {/* Mobile Menu Button + Notification */}
           <div className="md:hidden flex items-center gap-4">
-            {/* {user && (
+            {user && (
               <Link href="/notifications" className="relative">
                 <Bell
                   className="text-gray-700 hover:text-[#95D700]"
@@ -240,7 +240,7 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-            )} */}
+            )}
 
             <button
               onClick={() => setIsOpen(!isOpen)}
