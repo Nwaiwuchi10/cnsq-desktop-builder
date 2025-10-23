@@ -64,6 +64,8 @@ export default function Notification() {
     };
 
     fetchAnnouncementCount();
+    const interval = setInterval(fetchAnnouncementCount, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -84,7 +86,7 @@ export default function Notification() {
     fetchUnreadCount();
 
     // optional: auto-refresh every 60 seconds
-    const interval = setInterval(fetchUnreadCount, 60000);
+    const interval = setInterval(fetchUnreadCount, 2000);
     return () => clearInterval(interval);
   }, []);
   //   const unreadCount = notifications.filter((n) => !n.isRead).length;

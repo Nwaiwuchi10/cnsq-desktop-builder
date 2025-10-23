@@ -58,6 +58,8 @@ const AnnouncementList: React.FC = () => {
     };
 
     fetchAnnouncements();
+    const interval = setInterval(fetchAnnouncements, 2000);
+    return () => clearInterval(interval);
   }, []);
   const handleDelete = async () => {
     if (!deleteTarget) return;

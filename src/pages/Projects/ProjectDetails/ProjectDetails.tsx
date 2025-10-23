@@ -13,6 +13,8 @@ import AssignedToStaffModal from "../UpdateProject/AssignedToStaffModal";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
+import Navbar from "@/component/Navbar/Navbar";
+import Footer from "@/component/Footer/Footer";
 
 interface Project {
   id: number;
@@ -86,7 +88,12 @@ export default function ProjectDetails() {
     fetchProject();
   }, [id]);
 
-  if (!project) return <p className="p-6">Loading...</p>;
+  if (!project)
+    return (
+      <p className="p-6">
+        <LoadingSpinner />
+      </p>
+    );
   const progressValue = () => {
     switch (project.status as ProjectStatus) {
       case ProjectStatus.NOT_STARTED:
@@ -156,6 +163,7 @@ export default function ProjectDetails() {
 
   return (
     <>
+      <Navbar />
       <div className="min-h-screen bg-[#FAFAFA] p-6">
         {/* Back Button */}
         <div
@@ -381,6 +389,7 @@ export default function ProjectDetails() {
           onUpdateds={() => window.location.reload()}
         />
       </div>
+      <Footer />
     </>
   );
 }
