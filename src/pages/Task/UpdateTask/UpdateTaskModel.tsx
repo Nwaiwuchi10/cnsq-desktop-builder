@@ -391,7 +391,7 @@ export default function TaskUpdateModal({
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full py-3 bg-[#95D700] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-60"
+            className="w-full cursor-pointer py-3 bg-[#95D700] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-60"
           >
             {submitting ? "Updating..." : "Update Task"}
           </button>

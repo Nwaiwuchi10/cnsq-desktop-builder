@@ -1,10 +1,10 @@
-import Index from "@/pages/Projects/ProjectDetails/Index";
+import ProjectDetails from "@/pages/Projects/ProjectDetails/ProjectDetails";
 import React from "react";
 
 const page = () => {
   return (
     <div>
-      <Index />
+      <ProjectDetails />
     </div>
   );
 };

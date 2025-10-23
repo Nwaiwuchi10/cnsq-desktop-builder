@@ -6,6 +6,7 @@ import { Menu, X, Bell } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
+import MessageCeoModal from "../MessageCEO/MessageCEO";
 
 type User = {
   firstName: string;
@@ -25,6 +26,7 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export default function Navbar() {
     fetchUnreadCount();
 
     // optional: auto-refresh every 60 seconds
-    const interval = setInterval(fetchUnreadCount, 60000);
+    const interval = setInterval(fetchUnreadCount, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -125,194 +127,214 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/*  Logo */}
-          <Link href="/" className="text-2xl font-bold text-blue-600">
-            <Image
-              src={imgHome}
-              alt="logo"
-              width={120}
-              height={60}
-              unoptimized
-            />
-          </Link>
+    <>
+      <nav className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/*  Logo */}
+            <Link href="/" className="text-2xl font-bold text-blue-600">
+              <Image
+                src={imgHome}
+                alt="logo"
+                width={120}
+                height={60}
+                unoptimized
+              />
+            </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex flex-1 justify-center">
-            <div className="flex space-x-16 justify-end w-full max-w-2xl items-center ml-24">
+            {/* Desktop Menu */}
+            <div className="hidden md:flex flex-1 justify-center">
+              <div className="flex space-x-16 justify-end w-full max-w-2xl items-center ml-24">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className="text-lg text-gray-700 hover:text-[#95D700] transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+                <div>
+                  {" "}
+                  {user && (
+                    <Link href="/notifications" className="relative left-9">
+                      <Bell
+                        className="text-gray-700 hover:text-[#95D700]"
+                        size={22}
+                      />
+                      {unreadCount > 0 && (
+                        <span
+                          className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
+                          // style={{ backgroundColor: "#FF990C" }}
+                        >
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                  )}
+                </div>
+                {/* Notification Bell + Count */}
+
+                {/*  User Profile */}
+                {user ? (
+                  <div className="relative z-50" ref={dropdownRef}>
+                    <div className="flex items-center gap-2 focus:outline-none">
+                      <button
+                        onClick={() => setIsDropdownOpen((prev) => !prev)}
+                        className="flex items-center gap-2 focus:outline-none"
+                      >
+                        {getAvatar()}
+                        <span className="hidden md:inline font-medium text-gray-700">
+                          {user.firstName}
+                        </span>
+                        {/* ///// Notification Bell + Count */}
+                      </button>
+                    </div>
+
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg py-2">
+                        <Link
+                          href={`/staff/${userId}`}
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          View Profile
+                        </Link>
+                        <Link
+                          href={`/change-password`}
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Change Password
+                        </Link>
+                        <div
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => setIsOpenModal(true)}
+                        >
+                          Message the CEO
+                        </div>
+                        <button
+                          style={{ cursor: "pointer" }}
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="text-lg text-gray-700 hover:text-[#95D700] transition"
+                  >
+                    Login
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Menu Button + Notification */}
+            <div className="md:hidden flex items-center gap-4">
+              {user && (
+                <Link href="/notifications" className="relative">
+                  <Bell
+                    className="text-gray-700 hover:text-[#95D700]"
+                    size={22}
+                  />
+                  {unreadCount > 0 && (
+                    <span
+                      className="bg-[#FF990C] absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
+                      // style={{ backgroundColor: "#FF990C" }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-gray-700 hover:text-[#95D700] focus:outline-none"
+              >
+                {isOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown */}
+        {isOpen && (
+          <div className="md:hidden bg-white shadow-lg h-screen">
+            <div className="flex flex-col items-start px-6 py-8 space-y-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-lg text-gray-700 hover:text-[#95D700] transition-colors"
+                  className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
+                  onClick={() => setIsOpen(false)}
                 >
                   {link.name}
                 </Link>
               ))}
-              <div>
-                {" "}
-                {user && (
-                  <Link href="/notifications" className="relative left-9">
-                    <Bell
-                      className="text-gray-700 hover:text-[#95D700]"
-                      size={22}
-                    />
-                    {unreadCount > 0 && (
-                      <span
-                        className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                        // style={{ backgroundColor: "#FF990C" }}
-                      >
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Link>
-                )}
-              </div>
-              {/* Notification Bell + Count */}
 
-              {/*  User Profile */}
-              {user ? (
-                <div className="relative z-50" ref={dropdownRef}>
-                  <div className="flex items-center gap-2 focus:outline-none">
-                    <button
-                      onClick={() => setIsDropdownOpen((prev) => !prev)}
-                      className="flex items-center gap-2 focus:outline-none"
-                    >
+              {!loading &&
+                (user ? (
+                  <div className="w-full">
+                    <div className="flex items-center gap-3 mb-4">
                       {getAvatar()}
-                      <span className="hidden md:inline font-medium text-gray-700">
-                        {user.firstName}
+                      <span className="font-medium text-gray-700">
+                        {user.firstName} {user.lastName}
                       </span>
-                      {/* ///// Notification Bell + Count */}
+                    </div>
+
+                    <Link
+                      href={`/staff/${userId}`}
+                      onClick={() => setIsOpen(false)}
+                      className="block py-2 text-gray-700 hover:text-blue-600"
+                    >
+                      View Profile
+                    </Link>
+                    <Link
+                      href={`/change-password`}
+                      className="block py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      Change Password
+                    </Link>
+                    <div
+                      className="block py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => setIsOpenModal(true)}
+                    >
+                      Message the CEO
+                    </div>
+                    <button
+                      style={{ cursor: "pointer" }}
+                      onClick={handleLogout}
+                      className="block py-2 text-left text-gray-700 hover:text-blue-600"
+                    >
+                      Logout
                     </button>
                   </div>
-
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg py-2">
-                      <Link
-                        href={`/staff/${userId}`}
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        View Profile
-                      </Link>
-                      <Link
-                        href={`/change-password`}
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        Change Password
-                      </Link>
-                      <button
-                        style={{ cursor: "pointer" }}
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="text-lg text-gray-700 hover:text-[#95D700] transition"
-                >
-                  Login
-                </Link>
-              )}
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
+                  >
+                    Login
+                  </Link>
+                ))}
             </div>
           </div>
-
-          {/* Mobile Menu Button + Notification */}
-          <div className="md:hidden flex items-center gap-4">
-            {user && (
-              <Link href="/notifications" className="relative">
-                <Bell
-                  className="text-gray-700 hover:text-[#95D700]"
-                  size={22}
-                />
-                {unreadCount > 0 && (
-                  <span
-                    className="bg-[#FF990C] absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                    // style={{ backgroundColor: "#FF990C" }}
-                  >
-                    {unreadCount}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-[#95D700] focus:outline-none"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Dropdown */}
-      {isOpen && (
-        <div className="md:hidden bg-white shadow-lg h-screen">
-          <div className="flex flex-col items-start px-6 py-8 space-y-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-
-            {!loading &&
-              (user ? (
-                <div className="w-full">
-                  <div className="flex items-center gap-3 mb-4">
-                    {getAvatar()}
-                    <span className="font-medium text-gray-700">
-                      {user.firstName} {user.lastName}
-                    </span>
-                  </div>
-
-                  <Link
-                    href={`/staff/${userId}`}
-                    onClick={() => setIsOpen(false)}
-                    className="block py-2 text-gray-700 hover:text-blue-600"
-                  >
-                    View Profile
-                  </Link>
-                  <Link
-                    href={`/change-password`}
-                    className="block py-2 text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsDropdownOpen(false)}
-                  >
-                    Change Password
-                  </Link>
-                  <button
-                    style={{ cursor: "pointer" }}
-                    onClick={handleLogout}
-                    className="block py-2 text-left text-gray-700 hover:text-blue-600"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
-                >
-                  Login
-                </Link>
-              ))}
-          </div>
-        </div>
+        )}
+      </nav>
+      {isOpenModal && (
+        <MessageCeoModal
+          isOpen={isOpenModal}
+          onClose={() => setIsOpenModal(false)}
+        />
       )}
-    </nav>
+    </>
   );
 }

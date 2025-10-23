@@ -137,6 +137,8 @@ export default function CreateTaskForm() {
           urgency: urgency || "Short_Term",
           startDate,
           dueDate,
+          // startDate: new Date(startDate).toISOString(),
+          // dueDate: new Date(dueDate).toISOString(),
           timeline,
           projectId,
           assignedTo: assignments,

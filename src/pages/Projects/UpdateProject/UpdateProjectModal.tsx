@@ -31,6 +31,7 @@ interface Project {
   prodUrl?: string;
   stagingUrl?: string;
   assignedTo: ProjectAssignment[];
+  deparment: Department;
 }
 interface Department {
   id: number;
@@ -106,6 +107,7 @@ export default function UpdateProjectModal({
         setStatus(p.status);
         setPriority(p.priority);
         setProdUrl(p.prodUrl || "");
+        // setDepartment(p.deparment?.name)
         setStagingUrl(p.stagingUrl || "");
         setStartDate(p.startDate?.split("T")[0]);
         setEndDate(p.endDate?.split("T")[0]);
@@ -236,7 +238,7 @@ export default function UpdateProjectModal({
 
             <div>
               <label className="block text-sm  mb-1 text-gray-700">
-                Department <span className="text-red-500">*</span>
+                Department
               </label>
               <select
                 value={departmentId}
@@ -490,7 +492,7 @@ export default function UpdateProjectModal({
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full py-3 bg-[#95D700] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-60"
+            className="w-full cursor-pointer py-3 bg-[#95D700] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-60"
           >
             {submitting ? "Updating..." : "Update Project"}
           </button>
