@@ -6,19 +6,25 @@ import { AxiosError } from "axios";
 import { X } from "lucide-react";
 import CustomModal from "@/component/Message/Message";
 import { useRouter } from "next/navigation";
-
+interface StaffEmployment {
+  jobTitle: string[];
+}
 interface Staff {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
+  employment?: StaffEmployment;
+  staff: Staff;
 }
 
 interface TaskAssignment {
   staffId: number;
   role: string;
 }
-
+interface ProjectAssignment {
+  staff: Staff;
+}
 interface Task {
   id: number;
   title: string;
@@ -31,7 +37,7 @@ interface Task {
   startDate: string;
   dueDate?: string;
   timeline?: string;
-  project: { id: number; projectName: string };
+  project: { id: number; projectName: string; assignedTo: ProjectAssignment[] };
   assignedTo: { id: number; role: string; staff: Staff }[];
 }
 
@@ -103,12 +109,10 @@ export default function TaskUpdateModal({
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [taskRes, staffRes] = await Promise.all([
-          Api.get(`/task/${taskId}`),
-          Api.get("/staff-register"),
-        ]);
-
+        // Step 1: Fetch the task
+        const taskRes = await Api.get(`/task/${taskId}`);
         const t: Task = taskRes.data;
+
         setTitle(t.title);
         setDescription(t.description || "");
         setTaskModule(t.taskModule || "");
@@ -128,10 +132,14 @@ export default function TaskUpdateModal({
           }))
         );
 
-        setStaffs(staffRes.data || []);
+        // setStaffs(projectStaffs);
+        const projectRes = await Api.get(`/projects/${t.project.id}/staffs`);
+        const projectStaffs: Staff[] = projectRes.data;
+
+        setStaffs(projectStaffs);
       } catch (err) {
         console.error("Failed to load task or staff", err);
-        setModal({ type: "error", message: "Failed to load task." });
+        setModal({ type: "error", message: "Failed to load task or staff." });
       } finally {
         setLoading(false);
       }
@@ -139,6 +147,7 @@ export default function TaskUpdateModal({
 
     fetchData();
   }, [isOpen, taskId]);
+
   useEffect(() => {
     if (startDate && dueDate) {
       const start = new Date(startDate);
@@ -312,15 +321,31 @@ export default function TaskUpdateModal({
               <div className="flex flex-col gap-3">
                 <select
                   value={staffId}
-                  onChange={(e) =>
-                    setStaffId(e.target.value ? Number(e.target.value) : "")
-                  }
+                  onChange={(e) => {
+                    const selectedId = e.target.value
+                      ? Number(e.target.value)
+                      : "";
+                    setStaffId(selectedId);
+
+                    if (selectedId) {
+                      const selectedStaff = staffs.find(
+                        (s) => s.staff?.id === selectedId
+                      );
+                      // Get the first job title of that staff
+                      setRole(
+                        selectedStaff?.staff?.employment?.jobTitle?.[0] || ""
+                      );
+                    } else {
+                      setRole("");
+                    }
+                  }}
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.firstName} {s.lastName} ({s.email})
+                    <option key={s.staff.id} value={s.staff.id}>
+                      {s?.staff?.firstName} {s?.staff?.lastName} (
+                      {s?.staff?.email})
                     </option>
                   ))}
                 </select>
@@ -352,14 +377,15 @@ export default function TaskUpdateModal({
 
               <ul className="mt-3 space-y-2">
                 {assignments.map((a, idx) => {
-                  const staff = staffs.find((s) => s.id === a.staffId);
+                  const staff = staffs.find((s) => s?.staff?.id === a.staffId);
                   return (
                     <li
                       key={idx}
                       className="flex justify-between items-center border p-2 rounded-lg bg-white"
                     >
                       <span>
-                        {staff?.firstName} {staff?.lastName} — <b>{a.role}</b>
+                        {staff?.staff?.firstName} {staff?.staff?.lastName} —{" "}
+                        <b>{a.role}</b>
                       </span>
                       <button
                         onClick={() =>
@@ -391,7 +417,7 @@ export default function TaskUpdateModal({
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full py-3 bg-[#95D700] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-60"
+            className="w-full cursor-pointer py-3 bg-[#95D700] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-60"
           >
             {submitting ? "Updating..." : "Update Task"}
           </button>

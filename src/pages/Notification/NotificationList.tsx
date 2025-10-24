@@ -7,9 +7,13 @@ import {
   Clock,
   AlertTriangle,
   Layers,
+  Trash2,
 } from "lucide-react";
 import Api from "@/utils/api";
 import NotificationModal from "./NotificationModal";
+import DeleteConfirmModal from "./DeleteResuableModal";
+import { AxiosError } from "axios";
+import CustomModal from "@/component/Message/Message";
 
 interface Notification {
   id: number;
@@ -42,9 +46,16 @@ const NotificationList: React.FC<NotificationListProps> = ({
   activeTab,
   setSelectedNotification,
 }) => {
+  const [modal, setModal] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Notification | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -66,7 +77,41 @@ const NotificationList: React.FC<NotificationListProps> = ({
     };
 
     fetchNotifications();
+    const interval = setInterval(fetchNotifications, 2000);
+    return () => clearInterval(interval);
   }, []);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      // Get the stored token
+      const token = localStorage.getItem("user-token");
+      if (!token) {
+        throw new Error("No authorization token found");
+      }
+
+      // Send DELETE request with Authorization header
+      await Api.delete(`/notification/${deleteTarget.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Update local state after successful deletion
+      setNotifications((prev) => prev.filter((n) => n.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      setModal({ type: "success", message: "Message deleted successfully!" });
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to Delete.",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleOpenNotification = async (n: Notification) => {
     try {
@@ -101,29 +146,48 @@ const NotificationList: React.FC<NotificationListProps> = ({
         )}
 
         {nonAnnouncement.map((n) => (
-          <div
-            key={n.id}
-            onClick={() => handleOpenNotification(n)}
-            className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors rounded-lg px-2 cursor-pointer"
-          >
-            <div className="mt-1">
-              {iconMap[n.type] ?? <Tag className="text-gray-400" size={18} />}
+          <div className="flex items-center gap-8 py-3 ">
+            <div
+              key={n.id}
+              onClick={() => handleOpenNotification(n)}
+              className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors rounded-lg px-2 cursor-pointer"
+            >
+              <div className="mt-1">
+                {iconMap[n.type] ?? <Tag className="text-gray-400" size={18} />}
+              </div>
+              <div>
+                <p
+                  className={`text-sm ${
+                    n.isRead ? "text-gray-600" : "text-gray-800 font-medium"
+                  }`}
+                >
+                  {n.title.replace("_", " ")}
+                </p>
+                <span className="text-xs text-gray-400 mt-1 block">
+                  {new Date(n.createdAt).toLocaleString()}
+                </span>
+              </div>
             </div>
+            {/* Delete Button */}
             <div>
-              <p
-                className={`text-sm ${
-                  n.isRead ? "text-gray-600" : "text-gray-800 font-medium"
-                }`}
+              <button
+                onClick={() => setDeleteTarget(n)}
+                className="text-red-500 hover:text-red-600 p-2"
+                title="Delete notification"
               >
-                {n.title}
-              </p>
-              <span className="text-xs text-gray-400 mt-1 block">
-                {new Date(n.createdAt).toLocaleString()}
-              </span>
+                <Trash2 size={16} />
+              </button>
             </div>
           </div>
         ))}
       </div>
+      {modal && (
+        <CustomModal
+          type={modal.type}
+          message={modal.message}
+          onClose={() => setModal(null)}
+        />
+      )}
 
       {selected && (
         <NotificationModal
@@ -134,6 +198,14 @@ const NotificationList: React.FC<NotificationListProps> = ({
               <Tag className="text-gray-400" size={18} />
             )
           }
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteConfirmModal
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+          loading={deleting}
         />
       )}
     </>

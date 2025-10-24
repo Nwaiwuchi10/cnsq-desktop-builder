@@ -7,11 +7,15 @@ import { X } from "lucide-react";
 import CustomModal from "@/component/Message/Message";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
+interface StaffEmployment {
+  jobTitle: string[];
+}
 interface Staff {
   id: number;
   firstName: string;
   lastName: string;
   email: string;
+  employment: StaffEmployment;
 }
 
 interface ProjectAssignment {
@@ -56,6 +60,7 @@ export default function AssignedToStaffModal({
     { staffId: number; role: string }[]
   >([]);
   const [staffs, setStaffs] = useState<Staff[]>([]);
+
   const [search, setSearch] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [role, setRole] = useState("");
@@ -175,6 +180,13 @@ export default function AssignedToStaffModal({
                           setSearch(
                             `${s.firstName} ${s.lastName} (${s.email})`
                           );
+
+                          //  Auto-fill role from employment.jobTitle (first one if array)
+                          if (s.employment?.jobTitle?.length) {
+                            setRole(s.employment.jobTitle[0]);
+                          } else {
+                            setRole("");
+                          }
                         }}
                         className="px-3 py-2 text-gray-600 cursor-pointer hover:bg-gray-100"
                       >

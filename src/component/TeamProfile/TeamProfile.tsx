@@ -55,9 +55,9 @@ export default function TeamProfiles() {
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[80vh] flex flex-col items-center px-6 sm:px-10 md:px-16 pt-12">
+    <div className="bg-[#FAFAFA] min-h-[80vh] flex flex-col items-center px-6 sm:px-10 md:px-20 pt-12 ">
       {/* Heading */}
-      <div className="flex items-center justify-between w-full max-w-6xl mb-10">
+      <div className="flex items-center justify-between w-full max-w-7xl mb-10 mt-8">
         <h1 className="text-2xl md:text-3xl font-bold text-black">
           Heads of Departments
         </h1>
@@ -72,7 +72,7 @@ export default function TeamProfiles() {
       </div>
 
       {/* Card Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
         {hodList?.map((hod) => (
           <div
             key={hod.id}

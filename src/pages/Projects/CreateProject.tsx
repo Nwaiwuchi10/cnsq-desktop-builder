@@ -442,6 +442,13 @@ export default function ProjectWizardForm() {
                             setSearch(
                               `${s.firstName} ${s.lastName} (${s.email})`
                             );
+
+                            //  Auto-fill role from employment.jobTitle (first one if array)
+                            if (s.employment?.jobTitle?.length) {
+                              setRole(s.employment.jobTitle[0]);
+                            } else {
+                              setRole("");
+                            }
                           }}
                           className="px-3 py-2 cursor-pointer hover:bg-gray-100"
                         >

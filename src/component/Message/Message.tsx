@@ -18,7 +18,7 @@ export default function CustomModal({
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
-    }, 10000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, [onClose]);
 
