@@ -211,7 +211,7 @@ export default function Navbar() {
                           className="block px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
                           onClick={() => setIsOpenModal(true)}
                         >
-                          Message the CEO
+                          Urgent Message to the CEO
                         </div>
                         <button
                           style={{ cursor: "pointer" }}
@@ -306,7 +306,7 @@ export default function Navbar() {
                       className="block py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
                       onClick={() => setIsOpenModal(true)}
                     >
-                      Message the CEO
+                      Urgent Message to the CEO
                     </div>
                     <button
                       style={{ cursor: "pointer" }}
