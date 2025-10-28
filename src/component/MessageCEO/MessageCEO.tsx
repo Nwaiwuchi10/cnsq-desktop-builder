@@ -135,7 +135,7 @@ export default function MessageCeoModal({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-600">
                 Urgent Message to the CEO
               </span>
               <button
