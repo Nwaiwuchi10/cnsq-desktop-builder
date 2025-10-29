@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useRef, useCallback } from "react";
-import { X, Paperclip, Send, Type, Bold, Italic, List } from "lucide-react";
+import {
+  X,
+  Paperclip,
+  Send,
+  Type,
+  Bold,
+  Italic,
+  List,
+  AlertTriangle,
+} from "lucide-react";
 import { AxiosError } from "axios";
 import Api from "@/utils/api";
 import CustomModal from "../Message/Message";
@@ -24,6 +33,7 @@ export default function MessageCeoModal({
     message: string;
   } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false); //
 
   const inputFileRef = useRef<HTMLInputElement | null>(null);
   const dropRef = useRef<HTMLDivElement | null>(null);
@@ -53,26 +63,16 @@ export default function MessageCeoModal({
     }
   }, []);
 
-  // WhatsApp sending
-  const sendToWhatsApp = (subject: string, content: string) => {
-    const ceoNumber = "2348136757488";
-    const message = `Subject: ${subject}\n\nMessage: ${content}`;
-    const encoded = encodeURIComponent(message);
-
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const base = isMobile
-      ? "https://api.whatsapp.com/send"
-      : "https://web.whatsapp.com/send";
-
-    const url = `${base}?phone=${ceoNumber}&text=${encoded}`;
-    window.open(url, "_blank");
-  };
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleSubmit = async () => {
+    if (!subject || !content) {
+      setModal({
+        type: "error",
+        message: "Please message should have a subject and content.",
+      });
+      return;
+    }
     if (loading) return;
     setLoading(true);
-    // sendToWhatsApp(subject, content);
 
     try {
       const formData = new FormData();
@@ -89,15 +89,10 @@ export default function MessageCeoModal({
       });
 
       setModal({ type: "success", message: "Message sent successfully!" });
-
-      // Open WhatsApp Web
-
-      // Reset form
       setSubject("");
       setContent("");
       setFile(null);
 
-      // Auto-close
       setTimeout(() => {
         setModal(null);
         onClose();
@@ -110,11 +105,13 @@ export default function MessageCeoModal({
       });
     } finally {
       setLoading(false);
+      setShowConfirm(false);
     }
   };
 
   return (
     <>
+      {/* MAIN MODAL */}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-fadeIn">
           {/* Header Toolbar */}
@@ -135,7 +132,7 @@ export default function MessageCeoModal({
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-600">
                 Urgent Message to the CEO
               </span>
               <button
@@ -148,8 +145,7 @@ export default function MessageCeoModal({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-4">
-            {/* Subject */}
+          <form onSubmit={(e) => e.preventDefault()} className="p-4">
             <div className="mb-3">
               <label className="text-xs text-gray-500 font-medium">
                 Subject
@@ -164,7 +160,6 @@ export default function MessageCeoModal({
               />
             </div>
 
-            {/* Message Box */}
             <div
               ref={dropRef}
               onDragOver={onDragOver}
@@ -184,10 +179,8 @@ export default function MessageCeoModal({
                 className="w-full resize-none bg-transparent outline-none text-sm placeholder:text-gray-400 pr-12"
               />
 
-              {/* If file is selected - show chip */}
               {file && (
                 <div className="absolute left-8 bottom-2 flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-600 shadow-sm">
-                  {/* <Paperclip size={14} /> */}
                   <span className="max-w-[160px] truncate">{file.name}</span>
                   <button
                     type="button"
@@ -199,7 +192,6 @@ export default function MessageCeoModal({
                 </div>
               )}
 
-              {/* Attach file icon */}
               <div className="absolute left-4 bottom-3 flex items-center gap-3">
                 <label className="cursor-pointer text-gray-600 hover:text-gray-800">
                   <Paperclip size={18} />
@@ -212,12 +204,19 @@ export default function MessageCeoModal({
                 </label>
               </div>
 
-              {/* Floating circular send button */}
+              {/*  Send Button (opens confirmation modal) */}
               <button
                 type="button"
-                onClick={(ev) => {
-                  ev.preventDefault();
-                  handleSubmit();
+                onClick={() => {
+                  if (!subject.trim() || !content.trim()) {
+                    setModal({
+                      type: "error",
+                      message:
+                        "Please message should have a subject and content.",
+                    });
+                    return;
+                  }
+                  setShowConfirm(true);
                 }}
                 disabled={loading}
                 className="absolute right-3 bottom-3 w-10 h-10 rounded-full bg-[#95D700] flex items-center justify-center text-white hover:scale-105 active:scale-95 transition disabled:opacity-50 shadow-md"
@@ -247,7 +246,38 @@ export default function MessageCeoModal({
         </div>
       </div>
 
-      {/* Feedback Modal */}
+      {/*  Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-xl text-center animate-fadeIn">
+            <AlertTriangle className="mx-auto text-yellow-500 mb-3" size={36} />
+            <h2 className="text-lg font-semibold mb-1 text-gray-600">
+              Do you really want to send this message?
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              This <strong>Message cannot be undone</strong> once sent to the
+              CEO.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="px-4 py-2 rounded-lg bg-[#95D700] hover:bg-[#84c000] text-white text-sm font-medium disabled:opacity-50"
+              >
+                {loading ? "Sending..." : "Send"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Feedback Modal */}
       {modal && (
         <CustomModal
           type={modal.type}
