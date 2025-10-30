@@ -128,7 +128,7 @@ const AnnouncementList: React.FC = () => {
                 >
                   {n.title}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{n.message}</p>
+                {/* <p className="text-xs text-gray-500 mt-1">{n.message}</p> */}
                 <span className="text-xs text-gray-400 mt-1 block">
                   {new Date(n.createdAt).toLocaleString()}
                 </span>
