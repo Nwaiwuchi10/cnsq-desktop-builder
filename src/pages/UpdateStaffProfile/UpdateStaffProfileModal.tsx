@@ -234,7 +234,7 @@ export default function UpdateProfileModal({
         jobTitle,
         employmentType,
         workMode,
-
+        hireDate,
         reportingManager,
         directReport,
         contractEndDate: contractEndDate || undefined,

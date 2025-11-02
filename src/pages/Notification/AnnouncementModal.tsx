@@ -37,6 +37,30 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
     null
   );
   console.log("notification", notification);
+
+  const renderTextWithLinks = (text: string) => {
+    if (!text) return null;
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts = text.split(urlRegex);
+
+    return parts.map((part, i) =>
+      urlRegex.test(part) ? (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline break-words"
+        >
+          {part}
+        </a>
+      ) : (
+        <span key={i}>{part}</span>
+      )
+    );
+  };
+
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -132,19 +156,23 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               {demoDetails.nameOfProduct}
             </h3>
             <p className="text-sm text-gray-600 mb-3">
-              {demoDetails.description}
+              {/* {demoDetails.description} */}
+              {renderTextWithLinks(demoDetails.description)}
             </p>
 
             <h4 className="text-sm font-medium text-gray-800 mb-2">
               How it works
             </h4>
             <ol className="list-decimal list-inside text-sm text-gray-600 mb-4">
-              {demoDetails.howItWorks?.split("\n").map((step, index) => (
+              {/* {demoDetails.howItWorks?.split("\n").map((step, index) => (
                 <li key={index}>{step}</li>
+              ))} */}
+              {demoDetails.howItWorks?.split("\n").map((step, index) => (
+                <li key={index}>{renderTextWithLinks(step)}</li>
               ))}
             </ol>
 
-            {/* ✅ Safe check before mapping videos */}
+            {/* Safe check before mapping videos */}
             {Array.isArray(demoDetails.videos) &&
               demoDetails.videos.length > 0 && (
                 <div className="flex overflow-x-auto gap-3 pb-2">
@@ -171,7 +199,8 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               {announcementDetails.title}
             </h3>
             <p className="text-sm text-gray-600">
-              {announcementDetails.description}
+              {/* {announcementDetails.description} */}
+              {renderTextWithLinks(announcementDetails.description)}
             </p>
           </>
         )}
