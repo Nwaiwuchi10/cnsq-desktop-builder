@@ -359,7 +359,7 @@ export default function StaffDetails() {
               {staff.employment.department.name}
             </p>
             <p>
-              <span className="font-medium">Role:</span>{" "}
+              <span className="font-medium">Departmental Unit:</span>{" "}
               {staff.employment.departmentalRole.title}
             </p>
           </div>

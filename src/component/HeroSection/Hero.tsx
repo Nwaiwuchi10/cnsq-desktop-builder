@@ -118,6 +118,18 @@ export default function HeroSection() {
       text: "",
       type: "gallery",
     },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308387/DSC00151-Picsart-AiImageEnhancer_knw3qh.jpg",
+      text: "",
+      type: "gallery",
+    },
+    {
+      image:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308443/DSC00159-Picsart-AiImageEnhancer_gd2fv6.jpg",
+      text: "",
+      type: "gallery",
+    },
   ];
 
   // 🧠 Detect if file is image/video
