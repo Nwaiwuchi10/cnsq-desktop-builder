@@ -4,14 +4,53 @@ import React, { useState } from "react";
 import { Search, Filter, Plus } from "lucide-react";
 import TaskBoard from "./TaskBoard";
 import ProjectTasksSheet from "../ProjectTrackSheet/ProjectTrackingSheet";
-
+import { StaticImageData } from "next/image";
+interface Project {
+  id: number;
+  uuid: string;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: string;
+  timeLine: string;
+  prodUrl: string;
+  stagingUrl: string;
+  apk?: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      uuid: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl: string | StaticImageData | null;
+    };
+  }[];
+  comments: {
+    id: number;
+    text: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+  };
+}
 interface DisplayTaskProps {
-  projectId: number | string; // coming from ProjectDetails
+  projectId: Project; // coming from ProjectDetails
 }
 
 const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const [showTable, setShowTable] = useState(true);
-
+  console.log("Project ID in DisplayTask:", projectId);
   return (
     <div>
       <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900">
@@ -40,7 +79,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <Filter size={16} />
             </button>
 
-            <Link href={`/project/${projectId}/add-task`}>
+            <Link href={`/project/${projectId?.uuid}/add-task`}>
               <button className="flex items-center gap-2 px-3 py-1 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
                 Add New Task <Plus size={16} />
               </button>
@@ -60,7 +99,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
             <Filter size={16} />
           </button>
 
-          <Link href={`/project/${projectId}/add-task`}>
+          <Link href={`/project/${projectId?.uuid}/add-task`}>
             <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
               Add New Task <Plus size={18} />
             </button>
@@ -73,7 +112,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
         {showTable ? (
           <ProjectTasksSheet projectId={projectId} />
         ) : (
-          <TaskBoard />
+          <TaskBoard projectId={projectId} />
         )}
       </div>
     </div>

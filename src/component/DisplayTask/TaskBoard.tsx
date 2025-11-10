@@ -7,7 +7,45 @@ import TaskModal from "./TaskDetailsModal";
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import TaskUpdateModal from "@/pages/Task/UpdateTask/UpdateTaskModel";
 import Link from "next/link";
-
+interface Project {
+  id: number;
+  uuid: string;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: string;
+  timeLine: string;
+  prodUrl: string;
+  stagingUrl: string;
+  apk?: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      uuid: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl: string | StaticImageData | null;
+    };
+  }[];
+  comments: {
+    id: number;
+    text: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+  };
+}
 const statusColumns = [
   { key: "Not_started", label: "Not Started", color: "bg-gray-400" },
   { key: "In_progress", label: "In Progress", color: "bg-[#95D700]" },
@@ -15,11 +53,13 @@ const statusColumns = [
   { key: "Completed", label: "Completed", color: "bg-emerald-500" },
   // { key: "ALL", label: "All Tasks", color: "bg-blue-500" },
 ];
+interface DisplayTaskProps {
+  projectId: Project;
+}
+const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
+  // const params = useParams();
 
-export default function TaskBoard() {
-  const params = useParams();
-
-  const projectId = Number(params?.id);
+  // const projectId = Number(params?.id);
 
   console.log("projectId", projectId);
   const [tasks, setTasks] = useState<TaskDTO[]>([]);
@@ -29,7 +69,7 @@ export default function TaskBoard() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await Api.get(`/task/project/${projectId}`);
+        const res = await Api.get(`/task/project/${projectId?.id}`);
         setTasks(res.data);
       } catch (error) {
         console.error("Error fetching tasks:", error);
@@ -282,4 +322,5 @@ export default function TaskBoard() {
       )}
     </>
   );
-}
+};
+export default TaskBoard;

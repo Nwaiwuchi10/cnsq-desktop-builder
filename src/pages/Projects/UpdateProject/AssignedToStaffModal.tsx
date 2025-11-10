@@ -101,8 +101,8 @@ export default function AssignedToStaffModal({
     setSubmitting(true);
     try {
       const token = localStorage.getItem("user-token");
-      await Api.patch(
-        `/projects/${projectId}`,
+      await Api.post(
+        `/projects/${projectId}/assign`,
         { assignments },
         { headers: { Authorization: `Bearer ${token}` } }
       );
