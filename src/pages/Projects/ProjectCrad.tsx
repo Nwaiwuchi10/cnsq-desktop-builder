@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ProjectStatus } from "@/dataTypes/Data-Types";
 export interface Project {
   id: number;
+  uuid: string;
   projectName: string;
   desc?: string;
   status: string;
@@ -180,7 +181,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           {project?.department?.name || "—"}
         </span>
 
-        <Link href={`/project/${project.id}`}>
+        <Link href={`/project/${project?.uuid}`}>
           <button
             style={{ cursor: "pointer" }}
             className="text-lime-600 font-medium text-sm"

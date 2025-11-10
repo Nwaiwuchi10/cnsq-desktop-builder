@@ -16,6 +16,7 @@ import ProjectCard from "./ProjectCrad";
 
 interface Project {
   id: number;
+  uuid: string;
   projectName: string;
   desc?: string;
   status: string;

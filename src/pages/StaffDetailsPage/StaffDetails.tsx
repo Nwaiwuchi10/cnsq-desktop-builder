@@ -12,6 +12,7 @@ import UpdateProfileModal from "../UpdateStaffProfile/UpdateStaffProfileModal";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 interface Project {
   id: number;
+  uuid: string;
   projectName: string;
   desc?: string;
   status: string;
@@ -88,6 +89,7 @@ interface Employment {
 
 interface Staff {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   description?: string | null;
@@ -104,10 +106,11 @@ interface Staff {
 
 export default function StaffDetails() {
   const params = useParams();
-  const id = params?.id as string;
+  const uuid = params?.uuid as string;
   const router = useRouter();
 
   // ✅ Always at top level
+  const [staffUUid, setStaffUUid] = useState<Staff | null>(null);
   const [staff, setStaff] = useState<Staff | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
@@ -122,7 +125,25 @@ export default function StaffDetails() {
   }, []);
   // const [loadingProjects, setLoadingProjects] = useState(true);
 
+  useEffect(() => {
+    if (!uuid) return;
+
+    const fetchStaff = async () => {
+      try {
+        const res = await Api.get(`/staff-register/data/${uuid}`);
+        setStaffUUid(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingStaff(false);
+      }
+    };
+
+    fetchStaff();
+  }, [uuid]);
   // ✅ Staff fetch
+
+  const id = staffUUid?.id;
   useEffect(() => {
     if (!id) return;
 
@@ -169,7 +190,7 @@ export default function StaffDetails() {
     );
   }
 
-  if (!staff) {
+  if (!staffUUid || !staff) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
         <p className="text-red-500">Staff not found.</p>
