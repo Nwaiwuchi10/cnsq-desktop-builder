@@ -172,7 +172,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               ))}
             </ol>
 
-            {/* ✅ Safe check before mapping videos */}
+            {/* Safe check before mapping videos */}
             {Array.isArray(demoDetails.videos) &&
               demoDetails.videos.length > 0 && (
                 <div className="flex overflow-x-auto gap-3 pb-2">

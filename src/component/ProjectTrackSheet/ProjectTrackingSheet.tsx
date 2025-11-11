@@ -6,7 +6,47 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import TaskModal from "../DisplayTask/TaskDetailsModal";
+import { StaticImageData } from "next/image";
 
+interface Project {
+  id: number;
+  uuid: string;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: string;
+  timeLine: string;
+  prodUrl: string;
+  stagingUrl: string;
+  apk?: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      uuid: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl: string | StaticImageData | null;
+    };
+  }[];
+  comments: {
+    id: number;
+    text: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+  };
+}
 interface Staff {
   id: number;
   firstName: string;
@@ -53,7 +93,7 @@ interface Task {
 }
 
 interface DisplayTaskProps {
-  projectId: number | string;
+  projectId: Project;
 }
 
 const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
@@ -71,9 +111,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     try {
       let res;
       if (staffFilter === "all") {
-        res = await Api.get(`/task/project/${projectId}`);
+        res = await Api.get(`/task/project/${projectId?.id}`);
       } else {
-        res = await Api.get(`/task/staff/${staffFilter}/project/${projectId}`);
+        res = await Api.get(
+          `/task/staff/${staffFilter}/project/${projectId?.id}`
+        );
       }
       setTasks(res.data || []);
     } catch (err) {

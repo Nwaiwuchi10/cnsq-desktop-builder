@@ -18,6 +18,7 @@ import Footer from "@/component/Footer/Footer";
 
 interface Project {
   id: number;
+  uuid: string;
   projectName: string;
   desc?: string;
   status: string;
@@ -33,6 +34,7 @@ interface Project {
     role: string;
     staff: {
       id: number;
+      uuid: string;
       firstName: string;
       lastName: string;
       email: string;
@@ -57,7 +59,8 @@ type AssignedTo = Project["assignedTo"][number];
 export default function ProjectDetails() {
   const router = useRouter();
   const params = useParams();
-  const id = params?.id as string;
+  const uuid = params?.uuid as string;
+  const [projectUuid, setProjectUuid] = useState<Project | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showEditModals, setShowEditModals] = useState(false);
@@ -73,7 +76,20 @@ export default function ProjectDetails() {
     const t = localStorage.getItem("user-token");
     setToken(t);
   }, []);
-
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await Api.get(`/projects/data/${uuid}`);
+        setProjectUuid(res.data);
+      } catch (err) {
+        console.error("Failed to fetch project", err);
+      } finally {
+        setLoadingProject(false);
+      }
+    };
+    fetchProject();
+  }, [uuid]);
+  const id = projectUuid?.id;
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -368,7 +384,7 @@ export default function ProjectDetails() {
         </div> */}
 
         <div className="mt-24">
-          <DisplayTask projectId={id} />
+          <DisplayTask projectId={project} />
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import Api from "@/utils/api"; // axios wrapper
 import MessageCeoModal from "../MessageCEO/MessageCEO";
 
 type User = {
+  uuid: string;
   firstName: string;
   lastName: string;
   photoUrl?: string;
@@ -20,6 +21,7 @@ const navLinks = [
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
   { name: "Organogram", href: "/" },
+  // { name: "Message", href: "/chat" },
   { name: "Project", href: "/project" },
 ];
 
@@ -194,7 +196,7 @@ export default function Navbar() {
                     {isDropdownOpen && (
                       <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg py-2">
                         <Link
-                          href={`/staff/${userId}`}
+                          href={`/staff/${user?.uuid}`}
                           className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsDropdownOpen(false)}
                         >
@@ -289,7 +291,7 @@ export default function Navbar() {
                     </div>
 
                     <Link
-                      href={`/staff/${userId}`}
+                      href={`/staff/${user?.uuid}`}
                       onClick={() => setIsOpen(false)}
                       className="block py-2 text-gray-700 hover:text-blue-600"
                     >

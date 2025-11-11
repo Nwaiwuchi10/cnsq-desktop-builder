@@ -1,24 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import Image, { StaticImageData } from "next/image";
-// import heroimg1 from "../../assests/images/cn-team-Picsart-AiImageEnhancer.jpg";
-// import heroimg2 from "../../assests/images/DSC00141-Picsart-AiImageEnhancer.jpg";
-// import heroimg3 from "../../assests/images/DSC00139-Picsart-AiImageEnhancer.jpg";
-// import heroimg4 from "../../assests/images/DSC00153-Picsart-AiImageEnhancer.jpg";
-// import heroimg5 from "../../assests/images/DSC00151-Picsart-AiImageEnhancer.jpg";
-// // import heroimg6 from "../../assests/images/DSC00104-Picsart-AiImageEnhancer.jpg";
-// import heroimg7 from "../../assests/images/DSC00159-Picsart-AiImageEnhancer.jpg";
-import heroimgLogo from "../../assests/images/cnsquad.png";
+import { motion, AnimatePresence } from "framer-motion";
 import Api from "@/utils/api";
+import heroimgLogo from "../../assests/images/cnsquad.png";
 
-// ---------- Types ----------
 interface Staff {
   id: string;
   firstName: string;
   lastName: string;
   photoUrl?: string | null;
-  nextBirthday: string;
 }
 
 interface StaffAnniversary {
@@ -26,30 +18,53 @@ interface StaffAnniversary {
   firstName: string;
   lastName: string;
   photoUrl?: string | StaticImageData | null;
-  nextAnniversary: string;
   yearsCompleted: number;
 }
 
-// ---------- Component ----------
-export default function Hero() {
+interface Quote {
+  id: string;
+  subject: string;
+  description: string;
+  fileUrl?: string[];
+  createdBy?: {
+    firstName?: string;
+    lastName?: string;
+  };
+}
+
+export default function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [todaysBirthdays, setTodaysBirthdays] = useState<Staff[]>([]);
   const [todaysAnniversaries, setTodaysAnniversaries] = useState<
     StaffAnniversary[]
   >([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
+  const textRef = useRef<HTMLDivElement>(null);
 
-  // ---------- Fetch Data ----------
+  // 🧠 Pre-calculate frequently used URLs for instant availability
+  const defaultImages = useMemo(
+    () => ({
+      defaultBirthday:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308078/DSC00141-Picsart-AiImageEnhancer_kyidxc.jpg",
+      defaultAnniversary:
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
+    }),
+    []
+  );
+
+  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [birthdayRes, anniversaryRes] = await Promise.all([
+        const [birthdayRes, anniversaryRes, quoteRes] = await Promise.all([
           Api.get<Staff[]>("/staff-register/birthdays/today"),
           Api.get<StaffAnniversary[]>("/staff-register/anniversaries/today"),
+          Api.get<Quote[]>("/quote/all/today"),
         ]);
-
         setTodaysBirthdays(birthdayRes.data || []);
         setTodaysAnniversaries(anniversaryRes.data || []);
+        setQuotes(quoteRes.data || []);
       } catch (error) {
         console.error("Error fetching hero data:", error);
       } finally {
@@ -59,87 +74,167 @@ export default function Hero() {
     fetchData();
   }, []);
 
-  // ---------- Slides ----------
-  const welcomeSlide = {
-    image:
-      "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760307934/cn-team-Picsart-AiImageEnhancer_ti53lc.jpg",
-    text: "Welcome",
-    image2: heroimgLogo,
-  };
-
-  const birthdaySlides = todaysBirthdays.map((staff) => ({
-    image:
-      staff.photoUrl ||
-      "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308078/DSC00141-Picsart-AiImageEnhancer_kyidxc.jpg",
-    text: `Happy Birthday ${staff.firstName} ${staff.lastName}`,
-  }));
-
-  const anniversarySlides = todaysAnniversaries.map((staff) => ({
-    image:
-      staff.photoUrl ||
-      "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
-    text: `Happy ${staff?.yearsCompleted} Year${
-      staff.yearsCompleted > 1 ? "s" : ""
-    } Anniversary ${staff.firstName} ${staff.lastName}`,
-  }));
-
-  const gallerySlides = [
-    {
+  const welcomeSlide = useMemo(
+    () => ({
       image:
-        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308078/DSC00141-Picsart-AiImageEnhancer_kyidxc.jpg",
-      text: "",
-    },
-    {
-      image:
-        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
-      text: "",
-    },
-    {
-      image:
-        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308313/DSC00153-Picsart-AiImageEnhancer_wwbr54.jpg",
-      text: "",
-    },
-    {
-      image:
-        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308387/DSC00151-Picsart-AiImageEnhancer_knw3qh.jpg",
-      text: "",
-    },
-    // { image: heroimg6, text: "" },
-    {
-      image:
-        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308443/DSC00159-Picsart-AiImageEnhancer_gd2fv6.jpg",
-      text: "",
-    },
-  ];
+        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760307934/cn-team-Picsart-AiImageEnhancer_ti53lc.jpg",
+      text: "Welcome",
+      image2: heroimgLogo,
+      type: "welcome",
+    }),
+    []
+  );
 
-  let slides: {
-    image: string | StaticImageData;
-    text: string;
-    image2?: any;
-  }[] = [];
+  // 🎂 Birthdays
+  const birthdaySlides = useMemo(
+    () =>
+      todaysBirthdays.map((staff) => ({
+        image: staff.photoUrl || defaultImages.defaultBirthday,
+        text: ` Happy Birthday ${staff.firstName} ${staff.lastName}!`,
+        type: "celebration",
+      })),
+    [todaysBirthdays, defaultImages]
+  );
 
-  if (todaysBirthdays.length > 0 || todaysAnniversaries.length > 0) {
-    slides = [welcomeSlide, ...birthdaySlides, ...anniversarySlides];
-  } else {
-    slides = [welcomeSlide, ...gallerySlides];
-  }
+  // 🎉 Anniversaries
+  const anniversarySlides = useMemo(
+    () =>
+      todaysAnniversaries.map((staff) => {
+        const years = staff.yearsCompleted || 0;
+        const anniversaryText =
+          years > 0
+            ? ` Happy ${years} Year${years > 1 ? "s" : ""} Anniversary ${
+                staff.firstName
+              } ${staff.lastName}!`
+            : ` Happy Anniversary ${staff.firstName} ${staff.lastName}!`;
+        return {
+          image: staff.photoUrl || defaultImages.defaultAnniversary,
+          text: anniversaryText,
+          type: "celebration",
+        };
+      }),
+    [todaysAnniversaries, defaultImages]
+  );
 
-  // ---------- Preload Images ----------
+  // 🖼️ Default gallery slides
+  const gallerySlides = useMemo(
+    () => [
+      {
+        image:
+          "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308078/DSC00141-Picsart-AiImageEnhancer_kyidxc.jpg",
+        text: "",
+        type: "gallery",
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
+        text: "",
+        type: "gallery",
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308313/DSC00153-Picsart-AiImageEnhancer_wwbr54.jpg",
+        text: "",
+        type: "gallery",
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308387/DSC00151-Picsart-AiImageEnhancer_knw3qh.jpg",
+        text: "",
+        type: "gallery",
+      },
+      {
+        image:
+          "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308443/DSC00159-Picsart-AiImageEnhancer_gd2fv6.jpg",
+        text: "",
+        type: "gallery",
+      },
+    ],
+    []
+  );
+
+  const isImage = (url: string) => /\.(jpeg|jpg|png|gif|webp|svg)$/i.test(url);
+  const isVideo = (url: string) => /\.(mp4|mov|avi|mkv|webm)$/i.test(url);
+
+  // 🧩 Compose slides
+  const slides = useMemo(() => {
+    let s: any[] = [welcomeSlide];
+    if (todaysBirthdays.length > 0 || todaysAnniversaries.length > 0) {
+      s = [welcomeSlide, ...birthdaySlides, ...anniversarySlides];
+    } else if (quotes.length > 0) {
+      const quote = quotes[0];
+      if (quote.description) s.push({ type: "quote", quote });
+      if (quote.fileUrl?.length) {
+        quote.fileUrl.forEach((url) =>
+          s.push({
+            type: isImage(url)
+              ? "imageQuote"
+              : isVideo(url)
+              ? "videoQuote"
+              : "unsupported",
+            url,
+          })
+        );
+      }
+    } else {
+      s = [welcomeSlide, ...gallerySlides];
+    }
+    return s;
+  }, [
+    todaysBirthdays,
+    todaysAnniversaries,
+    quotes,
+    welcomeSlide,
+    birthdaySlides,
+    anniversarySlides,
+    gallerySlides,
+  ]);
+
+  // 🔁 Faster Slide Rotation (now every 6s instead of 10s)
   useEffect(() => {
-    slides.forEach((slide) => {
-      const img = new window.Image();
-      img.src =
-        (slide.image as StaticImageData)?.src ?? (slide.image as string);
-    });
-  }, [slides]);
-
-  // ---------- Auto Slide ----------
-  useEffect(() => {
+    if (slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 6000); // ⏩ Faster transition
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  // 🧠 Preload next image (browser cache)
+  // 🧠 Preload next image (browser cache)
+  useEffect(() => {
+    const nextIndex = (current + 1) % slides.length;
+    const next = slides[nextIndex];
+    if (next?.image || next?.url) {
+      const preload = new window.Image(); // ✅ Explicitly reference the native Image constructor
+      preload.src = next.image || next.url;
+    }
+  }, [current, slides]);
+
+  // 🌀 Smooth quote scrolling
+  useEffect(() => {
+    const textEl = textRef.current;
+    if (!textEl || slides[current]?.type !== "quote") return;
+    textEl.scrollTop = 0;
+    const scrollDistance = textEl.scrollHeight - textEl.clientHeight;
+    if (scrollDistance <= 0) return;
+    const duration = 40000;
+    let start = performance.now();
+    let dir: "down" | "up" = "down";
+
+    const scrollAnim = (time: number) => {
+      const progress = Math.min((time - start) / duration, 1);
+      textEl.scrollTop =
+        dir === "down"
+          ? scrollDistance * progress
+          : scrollDistance * (1 - progress);
+      if (progress >= 1) {
+        dir = dir === "down" ? "up" : "down";
+        start = time;
+      }
+      requestAnimationFrame(scrollAnim);
+    };
+    requestAnimationFrame(scrollAnim);
+  }, [current, slides]);
 
   if (loading) {
     return (
@@ -149,52 +244,95 @@ export default function Hero() {
     );
   }
 
-  // ---------- Render ----------
   const currentSlide = slides[current];
-  const currentImage =
-    (currentSlide.image as StaticImageData)?.src ??
-    (currentSlide.image as string);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
-      {/* Optimized background */}
-      <div className="absolute inset-0">
-        <Image
-          key={currentImage}
-          src={currentImage}
-          alt="Hero background"
-          fill
-          unoptimized
-          priority={current === 0}
-          loading={current === 0 ? "eager" : "lazy"}
-          quality={85}
-          className="transition-opacity duration-600 ease-in-out brightness-75 object-cover object-[center_top]"
+    <div className="relative w-full h-screen overflow-hidden bg-[#1F3300]">
+      {/* Background / Media */}
+      {currentSlide.type === "videoQuote" ? (
+        <video
+          src={currentSlide.url}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata" // ⚡ only load metadata, not full file
+          className="absolute inset-0 w-full h-full object-cover brightness-75"
         />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70" />
-      </div>
+      ) : currentSlide.type === "imageQuote" || currentSlide.image ? (
+        <Image
+          src={currentSlide.url || currentSlide.image}
+          alt="Slide Background"
+          fill
+          unoptimized={false}
+          loading="eager" // ⚡ Eager for first image
+          placeholder="blur" // Blur placeholder for smooth load
+          blurDataURL="/blur-placeholder.png" // ⚡ Add a tiny placeholder image in /public
+          priority={current === 0} // Preload first image only
+          className="object-cover brightness-75 transition-opacity duration-500 object-[center_top]"
+        />
+      ) : null}
 
-      {/* Text content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full w-full px-4 text-center">
-        {currentSlide.text && (
-          <h1
-            className={`text-white text-3xl md:text-6xl font-bold transition-all duration-1000 ${
-              currentSlide.text === "Welcome" ? "mb-6" : ""
-            }`}
-          >
-            {currentSlide.text}
-          </h1>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
+        {/* Welcome / Celebration */}
+        {["welcome", "celebration"].includes(currentSlide.type) && (
+          <>
+            <h1 className="text-3xl md:text-6xl font-bold mb-4">
+              {currentSlide.text}
+            </h1>
+            {currentSlide.image2 && (
+              <div className="mt-4 w-[200px] md:w-[300px]">
+                <Image
+                  src={currentSlide.image2}
+                  alt="Logo"
+                  className="w-full h-auto object-contain"
+                  loading="lazy"
+                />
+              </div>
+            )}
+          </>
         )}
 
-        {currentSlide.image2 && (
-          <div className="mt-4 w-[200px] md:w-[300px]">
-            <Image
-              src={currentSlide.image2 as StaticImageData}
-              alt="Logo"
-              className="w-full h-auto object-contain"
-              priority
-            />
-          </div>
+        {/* Quote */}
+        {currentSlide.type === "quote" && (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide.quote.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="max-w-3xl"
+            >
+              <div
+                ref={textRef}
+                className="max-h-[55vh] mt-20 overflow-hidden leading-relaxed text-white scrollbar-hide"
+                style={{
+                  maskImage:
+                    "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+                }}
+              >
+                <h1 className="text-3xl md:text-4xl font-semibold">
+                  “{currentSlide.quote.description}”
+                </h1>
+              </div>
+
+              <p className="mt-4 text-lg italic">
+                —{" "}
+                {currentSlide.quote.createdBy?.firstName
+                  ? `${currentSlide.quote.createdBy.firstName} ${currentSlide.quote.createdBy.lastName}`
+                  : "Unknown"}
+              </p>
+              <p className="mt-2 text-base opacity-80">
+                {currentSlide.quote.subject}
+              </p>
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </div>

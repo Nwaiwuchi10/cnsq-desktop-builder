@@ -6,9 +6,50 @@ import { ArrowLeft } from "lucide-react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
+import { StaticImageData } from "next/image";
 
+interface Project {
+  id: number;
+  uuid: string;
+  projectName: string;
+  desc?: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: string;
+  timeLine: string;
+  prodUrl: string;
+  stagingUrl: string;
+  apk?: string;
+  assignedTo: {
+    id: number;
+    role: string;
+    staff: {
+      id: number;
+      uuid: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      photoUrl: string | StaticImageData | null;
+    };
+  }[];
+  comments: {
+    id: number;
+    text: string;
+    staff: {
+      firstName: string;
+      lastName: string;
+    };
+    createdAt: string;
+  }[];
+  createdBy: {
+    firstName: string;
+    lastName: string;
+  };
+}
 interface Staff {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -40,7 +81,8 @@ const URGENCIES = ["Short_Term", "Med_Term", "High_Term", "Immediately"];
 export default function CreateTaskForm() {
   const router = useRouter();
   const params = useParams();
-  const projectId = Number(params?.id);
+
+  const projectId = params?.uuid as string;
 
   const [token, setToken] = useState<string | null>(null);
   // const [staffs, setStaffs] = useState<Staff[]>([]);
@@ -52,6 +94,7 @@ export default function CreateTaskForm() {
   } | null>(null);
 
   // === Task State ===
+  const [projectUuid, setProjectUuid] = useState<Project | null>(null);
   const [title, setTitle] = useState("");
   const [taskModule, setTaskModule] = useState("");
   const [description, setDescription] = useState("");
@@ -62,6 +105,8 @@ export default function CreateTaskForm() {
   const [status, setStatus] = useState("Not_started");
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
+  const [loadingProject, setLoadingProject] = useState(true);
+
   // === AssignedTo ===
   const [assignments, setAssignments] = useState<
     { staffId: number; role: string }[]
@@ -69,6 +114,19 @@ export default function CreateTaskForm() {
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
 
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await Api.get(`/projects/data/${projectId}`);
+        setProjectUuid(res.data);
+      } catch (err) {
+        console.error("Failed to fetch project", err);
+      } finally {
+        setLoadingProject(false);
+      }
+    };
+    fetchProject();
+  }, [projectId]);
   // Load token
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -82,9 +140,10 @@ export default function CreateTaskForm() {
   }, [router]);
 
   // Load staffs assigned to this project
+
   useEffect(() => {
-    if (!projectId) return;
-    Api.get(`/projects/${projectId}/staffs`)
+    if (!projectUuid?.id) return;
+    Api.get(`/projects/${projectUuid?.id}/staffs`)
       .then((res) => setStaffs(res.data || []))
       .catch(() =>
         setModal({
@@ -92,7 +151,7 @@ export default function CreateTaskForm() {
           message: "Failed to load project staff list.",
         })
       );
-  }, [projectId]);
+  }, [projectUuid?.id]);
 
   // Auto-calc timeline (days) when startDate & dueDate are set
   useEffect(() => {
@@ -111,6 +170,13 @@ export default function CreateTaskForm() {
   }, [startDate, dueDate]);
 
   const handleCreateTask = async () => {
+    if (!projectUuid?.id) {
+      setModal({
+        type: "error",
+        message: "Project not loaded yet. Try again.",
+      });
+      return;
+    }
     if (!title || !dueDate || !startDate || !sprint) {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
@@ -124,27 +190,28 @@ export default function CreateTaskForm() {
       return;
     }
     setSubmitting(true);
+    const data = {
+      title,
+      description,
+      taskModule,
+      sprint,
+      status: status || "Not_started",
+      priority: priority || "Medium",
+      urgency: urgency || "Short_Term",
+      startDate,
+      dueDate,
+      // startDate: new Date(startDate).toISOString(),
+      // dueDate: new Date(dueDate).toISOString(),
+      timeline,
+      projectId: projectUuid?.id,
+      assignedTo: assignments,
+    };
+
+    console.log("Creating task with data:", data);
     try {
-      await Api.post(
-        "/task",
-        {
-          title,
-          description,
-          taskModule,
-          sprint,
-          status: status || "Not_started",
-          priority: priority || "Medium",
-          urgency: urgency || "Short_Term",
-          startDate,
-          dueDate,
-          // startDate: new Date(startDate).toISOString(),
-          // dueDate: new Date(dueDate).toISOString(),
-          timeline,
-          projectId,
-          assignedTo: assignments,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await Api.post("/task", data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setModal({ type: "success", message: "Task created successfully!" });
       setTimeout(() => router.push(`/project/${projectId}`), 1200);
     } catch (e: unknown) {

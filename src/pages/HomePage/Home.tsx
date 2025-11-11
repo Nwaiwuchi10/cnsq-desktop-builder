@@ -30,7 +30,7 @@
 import { useEffect, useState } from "react";
 import Api from "@/utils/api";
 import Navbar from "@/component/Navbar/Navbar";
-import Hero from "@/component/HeroSection/Hero";
+
 import StatsCards from "@/component/AnalysisSection/Analysis";
 import Footer from "@/component/Footer/Footer";
 import LatestAnniversary from "@/component/LatesAnniversay/LatestAnniversary";
@@ -38,6 +38,7 @@ import LatestBirthday from "@/component/LatestBirthday/LatetsBirthday";
 import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
+import HeroSection from "@/component/HeroSection/Hero";
 
 interface Notification {
   id: number;
@@ -111,7 +112,9 @@ const HomePage = () => {
   return (
     <div>
       <Navbar />
-      <Hero />
+
+      <HeroSection />
+
       <StatsCards />
       <QuickActions />
       <LatestBirthday />
