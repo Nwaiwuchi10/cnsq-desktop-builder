@@ -21,6 +21,7 @@ const navLinks = [
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
   { name: "Organogram", href: "/" },
+  // { name: "Message", href: "/chat" },
   { name: "Project", href: "/project" },
 ];
 
