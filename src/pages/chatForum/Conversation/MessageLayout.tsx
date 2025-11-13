@@ -20,7 +20,7 @@ interface Member {
 
 interface LastMessage {
   text: string;
-  createdAt: string; // Backend now provides this
+  createdAt: string; // Backend now provides this field
 }
 
 interface ConversationResponse {
