@@ -426,7 +426,7 @@ const initialEdges: Edge[] = [
     id: "dm-seo",
     source: "digitalmarketing",
     target: "seo",
-    type: "smoothstep",
+    type: "smootjhstep",
   },
 ];
 
