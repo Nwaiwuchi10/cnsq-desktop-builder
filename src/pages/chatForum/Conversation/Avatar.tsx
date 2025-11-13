@@ -3,19 +3,25 @@ import React from "react";
 import Image from "next/image";
 
 type AvatarProps = {
-  name: string;
-
+  name?: string; // make optional to avoid runtime crash
   src?: string;
   online?: boolean;
   size?: number; // default: 40
 };
 
-const Avatar: React.FC<AvatarProps> = ({ name, src, online, size = 40 }) => {
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+const Avatar: React.FC<AvatarProps> = ({
+  name = "?",
+  src,
+  online,
+  size = 40,
+}) => {
+  const initials =
+    name
+      ?.trim()
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() || "?";
 
   return (
     <div

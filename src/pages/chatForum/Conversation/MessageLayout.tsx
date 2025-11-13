@@ -97,7 +97,9 @@ const MessagesLayout: React.FC = () => {
       const staff: Msg[] = res.data.staffMatches
         .filter(
           (s) =>
-            !convs.some((c) => c.name.includes(`${s.firstName} ${s.lastName}`))
+            !convs.some((c) =>
+              (c.name ?? "").includes(`${s.firstName} ${s.lastName}`)
+            )
         )
         .map((s) => ({
           id: `staff-${s.id}`,
@@ -145,6 +147,27 @@ const MessagesLayout: React.FC = () => {
     const interval = setInterval(fetchConversations, 1000);
     return () => clearInterval(interval);
   }, [search]);
+  ////hanle  mark conversation as read
+  // Inside MessagesLayout component
+  const markConversationAsRead = async (conversationId: string) => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    try {
+      await Api.patch(
+        `/chat/mark-read/${conversationId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update local unread count in conversations state
+      setConversations((prev) =>
+        prev.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c))
+      );
+    } catch (err) {
+      console.error("Failed to mark conversation as read:", err);
+    }
+  };
 
   // === Handle select (conversation or staff) ===
   const handleSelect = async (id: string) => {
@@ -182,11 +205,13 @@ const MessagesLayout: React.FC = () => {
 
         setSelected(conv.id);
         setStaffMatches([]); // clear search results
+        await markConversationAsRead(id);
       } catch (err) {
         console.error("Failed to start DM:", err);
       }
     } else {
       setSelected(id);
+      await markConversationAsRead(id);
     }
   };
 

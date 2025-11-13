@@ -3,13 +3,20 @@ import React from "react";
 import ConversationItem, { Msg } from "./ConversationItems";
 
 const ConversationList: React.FC<{
-  items: Msg[];
+  items?: Msg[]; // make optional
   onSelect: (id: string) => void;
-}> = ({ items, onSelect }) => {
+}> = ({ items = [], onSelect }) => {
+  // Handle empty state
+  if (!items.length) {
+    return (
+      <div className="text-gray-400 text-center py-8">
+        No conversations yet.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 text-gray-600">
-      {/* Filter pills */}
-
       <div className="mt-4 space-y-3">
         {items.map((it) => (
           <ConversationItem

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Menu, X, Bell } from "lucide-react";
+import { Menu, X, Bell, MessageCircle } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
@@ -33,6 +33,9 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [chatUnreadCount, setChatUnreadCount] = useState<number>(0);
+  console.log("Unread chat Count:", chatUnreadCount);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   //  Fetch user profile
@@ -79,6 +82,29 @@ export default function Navbar() {
 
     // optional: auto-refresh every 60 seconds
     const interval = setInterval(fetchUnreadCount, 2000);
+    return () => clearInterval(interval);
+  }, []);
+  // 🔹 Fetch unread chat messages
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    const fetchChatUnread = async () => {
+      try {
+        const res = await Api.get("/chat/unread-total/all/conversations", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log("API Response:", res.data); // should log 2
+        setChatUnreadCount(res.data);
+      } catch (error) {
+        console.error("Failed to fetch chat unread count", error);
+      }
+    };
+
+    fetchChatUnread();
+
+    // optional: auto-refresh every 10 seconds
+    const interval = setInterval(fetchChatUnread, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -146,16 +172,24 @@ export default function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex flex-1 justify-center">
-              <div className="flex space-x-12 justify-end w-full max-w-2xl items-center ml-24">
+              <div className="flex space-x-11 justify-end w-full max-w-2xl items-center ml-24">
                 {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="text-lg text-gray-700 hover:text-[#95D700] transition-colors"
-                  >
-                    {link.name}
-                  </Link>
+                  <div key={link.name} className="relative inline-block">
+                    <Link
+                      href={link.href}
+                      className="text-lg text-gray-700 hover:text-[#95D700] transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+
+                    {link.name === "Message" && chatUnreadCount > 0 && (
+                      <span className="absolute -top-2 -right-3 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
+                        {chatUnreadCount}
+                      </span>
+                    )}
+                  </div>
                 ))}
+
                 <div>
                   {" "}
                   {user && (
@@ -238,6 +272,19 @@ export default function Navbar() {
 
             {/* Mobile Menu Button + Notification */}
             <div className="md:hidden flex items-center gap-4">
+              {/* 🔹 Message Icon */}
+              <Link href="/chat" className="relative">
+                <MessageCircle
+                  className="text-gray-700 hover:text-[#95D700]"
+                  size={22}
+                />{" "}
+                {/* replace with Message icon */}
+                {chatUnreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
+                    {chatUnreadCount}
+                  </span>
+                )}
+              </Link>
               {user && (
                 <Link href="/notifications" className="relative">
                   <Bell
@@ -270,14 +317,21 @@ export default function Navbar() {
           <div className="md:hidden bg-white shadow-lg h-screen">
             <div className="flex flex-col items-start px-6 py-8 space-y-6">
               {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </Link>
+                <div key={link.name} className="relative w-full">
+                  <Link
+                    href={link.href}
+                    onClick={() => setIsOpen(false)}
+                    className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
+                  >
+                    {link.name}
+                  </Link>
+
+                  {/* {link.name === "Message" && chatUnreadCount > 0 && (
+                    <span className="bg-red-500 absolute -top-2 left-24 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
+                      {chatUnreadCount}
+                    </span>
+                  )} */}
+                </div>
               ))}
 
               {!loading &&
