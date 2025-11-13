@@ -21,7 +21,7 @@ const navLinks = [
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
   { name: "Organogram", href: "/" },
-  // { name: "Message", href: "/chat" },
+  { name: "Message", href: "/chat" },
   { name: "Project", href: "/project" },
 ];
 
@@ -146,7 +146,7 @@ export default function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex flex-1 justify-center">
-              <div className="flex space-x-16 justify-end w-full max-w-2xl items-center ml-24">
+              <div className="flex space-x-12 justify-end w-full max-w-2xl items-center ml-24">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
@@ -183,10 +183,10 @@ export default function Navbar() {
                     <div className="flex items-center gap-2 focus:outline-none">
                       <button
                         onClick={() => setIsDropdownOpen((prev) => !prev)}
-                        className="flex items-center gap-2 focus:outline-none"
+                        className="flex items-center gap-2 focus:outline-none pl-2"
                       >
                         {getAvatar()}
-                        <span className="hidden md:inline font-medium text-gray-700">
+                        <span className="hidden md:inline font-medium text-gray-700 pl-2">
                           {user.firstName}
                         </span>
                         {/* ///// Notification Bell + Count */}
