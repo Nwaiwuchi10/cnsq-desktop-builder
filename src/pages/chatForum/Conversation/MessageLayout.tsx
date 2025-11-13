@@ -5,8 +5,9 @@ import Footer from "@/component/Footer/Footer";
 import ConversationList from "./ConversationList";
 import ConversationView from "./ConversationView";
 import Api from "@/utils/api";
-import { io, Socket } from "socket.io-client";
+
 import { Msg } from "./ConversationItems";
+import io from "socket.io-client";
 
 interface Member {
   id: number;
@@ -48,7 +49,11 @@ const MessagesLayout: React.FC = () => {
   const [search, setSearch] = useState<string>("");
   const [staffMatches, setStaffMatches] = useState<Msg[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const socketRef = useRef<Socket | null>(null);
+
+  // const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
+
+  // const socketRef = useRef<Socket | null>(null);
 
   // === Fetch conversations and staff matches ===
   const fetchConversations = async () => {
