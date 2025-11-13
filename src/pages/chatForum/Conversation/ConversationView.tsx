@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState, useRef, ReactNode } from "react";
 import Api from "@/utils/api";
-import { io, Socket } from "socket.io-client";
+// import { io, Socket } from "socket.io-client";
+import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
 
 type ConversationViewProps = {
@@ -45,7 +46,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   console.log("currentUserId", currentUserId);
 
-  const socketRef = useRef<Socket | null>(null);
+  // const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
