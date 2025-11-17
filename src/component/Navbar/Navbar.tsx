@@ -21,7 +21,7 @@ const navLinks = [
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
   { name: "Organogram", href: "/" },
-  { name: "Message", href: "/chat" },
+  { name: "Chat", href: "/chat" },
   { name: "Project", href: "/project" },
 ];
 
@@ -81,8 +81,8 @@ export default function Navbar() {
     fetchUnreadCount();
 
     // optional: auto-refresh every 60 seconds
-    const interval = setInterval(fetchUnreadCount, 2000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchUnreadCount, 2000);
+    // return () => clearInterval(interval);
   }, []);
   // 🔹 Fetch unread chat messages
   useEffect(() => {
@@ -104,8 +104,8 @@ export default function Navbar() {
     fetchChatUnread();
 
     // optional: auto-refresh every 10 seconds
-    const interval = setInterval(fetchChatUnread, 1000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchChatUnread, 1000);
+    // return () => clearInterval(interval);
   }, []);
 
   // Close dropdown if clicked outside

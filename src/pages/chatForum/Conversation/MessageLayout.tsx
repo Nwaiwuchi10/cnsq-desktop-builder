@@ -49,6 +49,7 @@ const MessagesLayout: React.FC = () => {
   const [search, setSearch] = useState<string>("");
   const [staffMatches, setStaffMatches] = useState<Msg[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // const socketRef = useRef<Socket | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -59,6 +60,7 @@ const MessagesLayout: React.FC = () => {
   const fetchConversations = async () => {
     const token = localStorage.getItem("user-token");
     try {
+      setLoading(true);
       const res = await Api.get<DMResponse>("/chat/dms/all/user", {
         params: { search: search || undefined },
         headers: { Authorization: `Bearer ${token}` },
@@ -119,6 +121,8 @@ const MessagesLayout: React.FC = () => {
       setStaffMatches(staff);
     } catch (err) {
       console.error("Failed fetching conversations:", err);
+    } finally {
+      setLoading(false); // <--- STOP LOADING
     }
   };
 
@@ -149,8 +153,8 @@ const MessagesLayout: React.FC = () => {
   // === Fetch on mount and when search changes ===
   useEffect(() => {
     fetchConversations();
-    const interval = setInterval(fetchConversations, 1000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchConversations, 1000);
+    // return () => clearInterval(interval);
   }, [search]);
   ////hanle  mark conversation as read
   // Inside MessagesLayout component
@@ -257,11 +261,14 @@ const MessagesLayout: React.FC = () => {
                     Channels
                   </button>
                 </div>
-                <ConversationList
-                  items={conversations}
-                  onSelect={handleSelect}
-                />
-
+                {loading ? (
+                  <div className="space-y-4">Loading....</div>
+                ) : (
+                  <ConversationList
+                    items={conversations}
+                    onSelect={handleSelect}
+                  />
+                )}
                 {staffMatches.length > 0 && (
                   <div className="mt-6">
                     <h2 className="text-gray-500 text-sm mb-2">
