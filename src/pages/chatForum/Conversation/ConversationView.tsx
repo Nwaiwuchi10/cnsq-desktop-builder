@@ -4,6 +4,7 @@ import Api from "@/utils/api";
 // import { io, Socket } from "socket.io-client";
 import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
+import EmojiPicker from "emoji-picker-react";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -28,6 +29,7 @@ type Msg = {
   avatar?: string;
   text: string;
   me: boolean;
+  edited?: boolean;
   time: string;
   attachments?: Attachment[];
   reactions?: Reaction[];
@@ -42,9 +44,25 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [replyingTo, setReplyingTo] = useState<Msg | null>(null);
+  const [replyTo, setReplyTo] = useState<Msg | null>(null);
+  const [editMessage, setEditMessage] = useState<Msg | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(
+    new Set()
+  );
+
   console.log("currentUserId", currentUserId);
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
+    null
+  );
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   // const socketRef = useRef<Socket | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -56,6 +74,13 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       behavior: "smooth",
     });
   };
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setCurrentUserId(payload.staffId || payload.id || payload.sub);
+    }
+  }, []);
 
   const fetchMessages = async () => {
     if (!conversation?.id) return;
@@ -126,30 +151,52 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             hour: "2-digit",
             minute: "2-digit",
           }),
+          name: msg.author.firstName + " " + msg.author.lastName,
           attachments: msg.attachments,
           reactions: msg.reactions,
-          parent: msg.parent
-            ? { id: msg.parent.id, text: msg.parent.text }
-            : undefined,
-          name: msg.author.firstName + " " + msg.author.lastName, // <-- add this
+          parent: msg.parent,
         },
       ]);
     });
 
-    // === 4️ Optional fallback polling every 1s (NOT inside fetchMessages) ===
-    const interval = setInterval(fetchMessages, 1000);
+    /////for edit message
+    socketRef.current.on("message:edit", (msg: any) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m
+        )
+      );
+    });
+    socketRef.current.on("message:delete", (msg: any) => {
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    });
 
     // === 5️ Cleanup ===
     return () => {
-      clearInterval(interval);
+      // clearInterval(interval);
       socketRef.current?.emit("leaveConversation", conversation?.id);
       socketRef.current?.disconnect();
     };
   }, [conversation?.id, currentUserId]);
-  useEffect(() => {
-    const interval = setInterval(fetchMessages, 1000);
-    return () => clearInterval(interval);
-  }, [messages]);
+
+  //////record voice
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+
+    recorder.ondataavailable = (e) => {
+      setAudioBlob(e.data);
+      setAudioUrl(URL.createObjectURL(e.data));
+    };
+
+    recorder.start();
+    setMediaRecorder(recorder);
+    setIsRecording(true);
+  };
+  const stopRecording = () => {
+    mediaRecorder?.stop();
+    setIsRecording(false);
+  };
 
   ///post message
   const postMessage = async () => {
@@ -164,6 +211,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       JSON.stringify({
         conversationId: conversation?.id,
         text,
+        // parentId: replyTo?.id ?? null,
         parentId: replyingTo?.id,
       })
     );
@@ -186,6 +234,94 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       console.error(err);
     }
   };
+
+  const sendVoiceNote = async () => {
+    if (!audioBlob) return;
+
+    const token = localStorage.getItem("user-token");
+
+    const formData = new FormData();
+    formData.append(
+      "dto",
+      JSON.stringify({ conversationId: conversation?.id, text: "" })
+    );
+
+    formData.append("file", audioBlob, "voice-note.webm");
+
+    await Api.post("/chat/messages", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    setAudioBlob(null);
+    setAudioUrl(null);
+  };
+  //// close emoji picker
+  const handleEmojiSelect = (emoji: any) => {
+    setText((prev) => prev + emoji.native);
+    setShowEmojiPicker(false); // Auto-close
+  };
+  ///// edit and delete conversation
+  const startEditing = (message: Msg) => {
+    setText(message.text);
+    setReplyingTo(message);
+  };
+
+  const saveEdit = async (messageId: string) => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    try {
+      const res = await Api.patch(
+        `/chat/messages/${messageId}/edit`,
+        { text },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // Clear edit state
+      setEditMessage(null);
+      setReplyTo(null);
+      setText("");
+
+      // frontend will get updated via socket 'message:edit'
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  // component-level state
+
+  // function to delete
+  const deleteMessage = async (messageId: string) => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    // optimistic: mark as deleting (used to disable button / show spinner)
+    setDeletingMessageIds((prev) => new Set(prev).add(messageId));
+
+    try {
+      await Api.delete(`/chat/message/${messageId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Option A (optimistic removal): immediately remove message from UI
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+
+      // The socket will also emit message:delete — the handler filtering by id is idempotent.
+    } catch (err) {
+      console.error("Delete failed", err);
+      // you may show a toast here
+    } finally {
+      setDeletingMessageIds((prev) => {
+        const copy = new Set(prev);
+        copy.delete(messageId);
+        return copy;
+      });
+    }
+  };
+
   /////parse links in message text
 
   const parseLinks = (text: string): ReactNode => {
@@ -245,6 +381,15 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         >
           ✖
         </button>
+        {/* ////voice recording preview */}
+        {isRecording && (
+          <button
+            className="px-2 py-1 bg-gray-600 text-white rounded"
+            onClick={stopRecording}
+          >
+            ⏹ Stop
+          </button>
+        )}
       </div>
     );
   };
@@ -272,9 +417,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
         <div className="flex-1 min-w-0">
           <div className="font-semibold truncate">{conversation?.name}</div>
-          <div className="text-xs text-green-500">
-            {conversation ? "Online" : ""}
-          </div>
+          {/* <div className="text-xs text-green-500">
+            {conversation ? "Active" : ""}
+          </div> */}
         </div>
       </div>
 
@@ -302,12 +447,116 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 Reply to: {m.parent.text}
               </div>
             )}
-            <MessageBubble text={parseLinks(m.text)} me={m.me} time={m.time} />
+            <MessageBubble
+              // text={parseLinks(m.text)}
+              text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
+              me={m.me}
+              time={m.time}
+              selected={selectedMessageId === m.id}
+              onClick={() =>
+                setSelectedMessageId(selectedMessageId === m.id ? null : m.id)
+              }
+            />
+            {/* edith and delete buttons for own messages */}
+            {/* ACTION BUTTONS */}
+            {selectedMessageId === m.id && (
+              <div
+                className={`flex gap-3 mt-1 ${
+                  m.me ? "justify-end" : "justify-start"
+                }`}
+              >
+                {/* SHOW EDIT BUTTON ONLY IF MESSAGE IS MY OWN */}
+                {m.me && (
+                  <button
+                    onClick={() => {
+                      setEditMessage(m);
+                      setText(m.text);
+                      setReplyTo(null);
+                    }}
+                    className="text-blue-500 text-sm hover:underline"
+                  >
+                    Edit
+                  </button>
+                )}
 
+                {/* DELETE BUTTON ALSO ONLY FOR MY OWN MESSAGES */}
+                {m.me && (
+                  <button
+                    onClick={() => deleteMessage(m.id)}
+                    className="text-red-500 text-sm cursor-pointer hover:underline disabled:opacity-50"
+                    disabled={deletingMessageIds.has(m.id)}
+                  >
+                    {deletingMessageIds.has(m.id) ? "Deleting..." : "Delete"}
+                  </button>
+                )}
+              </div>
+            )}
             {/* Attachments */}
             {(m.attachments ?? []).length > 0 && (
+              <div
+                className={`flex mt-1 ${
+                  m.me ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div className="flex flex-wrap gap-2">
+                  {m.attachments!.map((a) => {
+                    if (a.mimeType?.startsWith("audio/")) {
+                      return (
+                        <audio key={a.id} controls className="w-64">
+                          <source src={a.url} type={a.mimeType} />
+                        </audio>
+                      );
+                    }
+
+                    const ext = a.filename?.split(".").pop()?.toLowerCase();
+
+                    if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
+                      return (
+                        <img
+                          key={a.id}
+                          src={a.url}
+                          className="w-32 h-32 object-cover rounded"
+                        />
+                      );
+                    }
+
+                    if (ext && ["mp4", "mov", "webm"].includes(ext)) {
+                      return (
+                        <video
+                          key={a.id}
+                          src={a.url}
+                          controls
+                          className="w-40 rounded"
+                        />
+                      );
+                    }
+
+                    return (
+                      <a
+                        key={a.id}
+                        href={a.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline text-blue-600"
+                      >
+                        {a.filename || "Attachment"}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* {(m.attachments ?? []).length > 0 && (
               <div className="flex flex-wrap gap-2 mt-1 ml-2">
                 {m.attachments!.map((a) => {
+                  if (a.mimeType?.startsWith("audio/")) {
+                    return (
+                      <audio key={a.id} controls className="w-64">
+                        <source src={a.url} type={a.mimeType} />
+                      </audio>
+                    );
+                  }
                   const ext = a.filename?.split(".").pop()?.toLowerCase();
                   if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
                     return (
@@ -341,19 +590,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   }
                 })}
               </div>
-            )}
-
-            {/* Actions */}
-            {/* <div className="flex gap-2 mt-1 ml-2">
-              <button
-                onClick={() => setReplyingTo(m)}
-                className="cursor-pointer"
-              >
-                Reply
-              </button>
-              <button className="cursor-pointer">👍</button>
-              <button className="cursor-pointer">❤️</button>
-            </div> */}
+            )} */}
           </div>
         ))}
       </div>
@@ -388,9 +625,70 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               />
             </label>
 
+            {/* ////voice recording */}
+            <button
+              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+              onClick={startRecording}
+            >
+              🎤
+            </button>
+            {/* /////voice recording playback */}
+            {audioUrl && (
+              <div className="p-2 border rounded bg-gray-100">
+                <audio controls src={audioUrl} className="w-full" />
+
+                <div className="flex gap-3 mt-2">
+                  <button
+                    className="px-3 py-1 bg-red-500 text-white rounded"
+                    onClick={() => {
+                      setAudioUrl(null);
+                      setAudioBlob(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    className="px-3 py-1 bg-green-500 text-white rounded"
+                    onClick={sendVoiceNote}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* ////emoji send */}
+            {/* Emoji Button */}
+            <button
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
+            >
+              😀
+            </button>
+
+            {showEmojiPicker && (
+              <div className="absolute bottom-12 left-2 z-50 bg-white shadow-lg rounded-lg">
+                {/* Header + Close Button */}
+                <div className="flex justify-between items-center px-2 py-1 border-b">
+                  <span className="text-sm font-semibold">Emoji</span>
+                  <button
+                    onClick={() => setShowEmojiPicker(false)}
+                    className="text-gray-500 hover:text-red-500 text-lg leading-none"
+                  >
+                    ✖
+                  </button>
+                </div>
+                <EmojiPicker onEmojiClick={handleEmojiSelect} />
+                {/* <Picker
+                  data={data}
+                  onEmojiSelect={handleEmojiSelect} // ⬅ clean method
+                /> */}
+              </div>
+            )}
+
             {/* Message Input */}
             <input
-              className="flex-1 rounded-full border px-4 py-2"
+              className="flex-1 min-w-0 rounded-full border px-4 py-2"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -398,12 +696,28 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             />
 
             {/* Send Button */}
-            <button
+            {editMessage ? (
+              <button
+                onClick={() => saveEdit(editMessage.id)}
+                className="p-3 bg-green-500 cursor-pointer text-white rounded-full"
+              >
+                Edit
+              </button>
+            ) : (
+              <button
+                onClick={postMessage}
+                className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+              >
+                ➤
+              </button>
+            )}
+
+            {/* <button
               onClick={postMessage}
               className="p-3 rounded-full bg-green-500 text-white cursor-pointer hover:bg-green-600"
             >
               ➤
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

@@ -44,7 +44,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  /* config options here */
+  // /* config options here */
+  // transpilePackages: ["emoji-mart"],
 };
 
 export default nextConfig;
