@@ -4,10 +4,16 @@ import Api from "@/utils/api";
 // import { io, Socket } from "socket.io-client";
 import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
-import Picker from "@emoji-mart/react";
+// import Picker from "@emoji-mart/react";
 
+// import data from "@emoji-mart/data";
+// import { Picker } from "emoji-mart";
+// import data from "@emoji-mart/data";
+
+import dynamic from "next/dynamic";
 import data from "@emoji-mart/data";
 
+const Picker = dynamic(() => import("@emoji-mart/react"), { ssr: false });
 type ConversationViewProps = {
   conversation: Msg | null;
   onBack?: () => void;
