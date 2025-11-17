@@ -180,10 +180,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       socketRef.current?.disconnect();
     };
   }, [conversation?.id, currentUserId]);
-  // useEffect(() => {
-  //   const interval = setInterval(fetchMessages, 1000);
-  //   return () => clearInterval(interval);
-  // }, [messages]);
 
   //////record voice
   const startRecording = async () => {
