@@ -155,10 +155,15 @@ const MessagesLayout: React.FC = () => {
 
   // === Fetch on mount and when search changes ===
   useEffect(() => {
-    fetchConversations();
-    // const interval = setInterval(fetchConversations, 1000);
-    // return () => clearInterval(interval);
+    const t = setTimeout(() => fetchConversations(), 300);
+    return () => clearTimeout(t);
   }, [search]);
+
+  // useEffect(() => {
+  //   fetchConversations();
+
+  // }, [search]);
+
   ////hanle  mark conversation as read
   // Inside MessagesLayout component
   const markConversationAsRead = async (conversationId: string) => {
