@@ -29,6 +29,7 @@ type Msg = {
   avatar?: string;
   text: string;
   me: boolean;
+  createdAt: string;
   edited?: boolean;
   time: string;
   attachments?: Attachment[];
@@ -107,6 +108,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         id: m.id,
         text: m.text,
         me: m.author.id === userId,
+        createdAt: m.createdAt,
         time: new Date(m.createdAt).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -147,6 +149,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           id: msg.id,
           text: msg.text,
           me: msg.authorId === currentUserId,
+          createdAt: msg.createdAt,
           time: new Date(msg.createdAt).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -178,23 +181,51 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       socketRef.current?.disconnect();
     };
   }, [conversation?.id, currentUserId]);
-
+  //// close emoji picker
+  const handleEmojiSelect = (emoji: any) => {
+    setText((prev) => prev + emoji.emoji);
+    setShowEmojiPicker(false);
+  };
   //////record voice
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    recorder.ondataavailable = (e) => {
-      setAudioBlob(e.data);
-      setAudioUrl(URL.createObjectURL(e.data));
-    };
+      let recorder: MediaRecorder;
 
-    recorder.start();
-    setMediaRecorder(recorder);
-    setIsRecording(true);
+      // SAFARI FIX
+      try {
+        recorder = new MediaRecorder(stream, {
+          mimeType: "audio/webm;codecs=opus",
+        });
+      } catch (err) {
+        recorder = new MediaRecorder(stream);
+      }
+
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Mic Permission or HTTPS issue:", err);
+      alert("Microphone access failed. Make sure you're on HTTPS.");
+    }
   };
+
   const stopRecording = () => {
-    mediaRecorder?.stop();
+    if (!mediaRecorder) return;
+    mediaRecorder.stop();
     setIsRecording(false);
   };
 
@@ -258,16 +289,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     setAudioBlob(null);
     setAudioUrl(null);
   };
-  //// close emoji picker
-  const handleEmojiSelect = (emoji: any) => {
-    setText((prev) => prev + emoji.native);
-    setShowEmojiPicker(false); // Auto-close
-  };
+
   ///// edit and delete conversation
-  const startEditing = (message: Msg) => {
-    setText(message.text);
-    setReplyingTo(message);
-  };
 
   const saveEdit = async (messageId: string) => {
     const token = localStorage.getItem("user-token");
@@ -282,9 +305,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         }
       );
       // Clear edit state
-      setEditMessage(null);
+      setEditMessage(null); // <-- important
+      setText(""); // <-- reset input
       setReplyTo(null);
-      setText("");
 
       // frontend will get updated via socket 'message:edit'
     } catch (err) {
@@ -321,6 +344,29 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       });
     }
   };
+  /////format date
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    ) {
+      return "Today";
+    } else if (
+      date.getDate() === yesterday.getDate() &&
+      date.getMonth() === yesterday.getMonth() &&
+      date.getFullYear() === yesterday.getFullYear()
+    ) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
 
   /////parse links in message text
 
@@ -342,6 +388,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       )
     );
   };
+  let lastDate = "";
   /////render file preview
   const renderFilePreview = (fileItem: File, idx: number) => {
     const ext = fileItem.name.split(".").pop()?.toLowerCase();
@@ -394,6 +441,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     );
   };
   ////
+
   return (
     <div className="flex flex-col w-full h-full text-gray-600">
       {/* Header */}
@@ -439,160 +487,152 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </button>
           </div>
         )}
+        {/* /////date format */}
 
-        {messages.map((m) => (
-          <div key={m.id}>
-            {m.parent && (
-              <div className="text-xs text-gray-400 mb-1 ml-2 border-l-2 pl-2">
-                Reply to: {m.parent.text}
-              </div>
-            )}
-            <MessageBubble
-              // text={parseLinks(m.text)}
-              text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
-              me={m.me}
-              time={m.time}
-              selected={selectedMessageId === m.id}
-              onClick={() =>
-                setSelectedMessageId(selectedMessageId === m.id ? null : m.id)
-              }
-            />
-            {/* edith and delete buttons for own messages */}
-            {/* ACTION BUTTONS */}
-            {selectedMessageId === m.id && (
-              <div
-                className={`flex gap-3 mt-1 ${
-                  m.me ? "justify-end" : "justify-start"
-                }`}
-              >
-                {/* SHOW EDIT BUTTON ONLY IF MESSAGE IS MY OWN */}
-                {m.me && (
-                  <button
-                    onClick={() => {
-                      setEditMessage(m);
-                      setText(m.text);
-                      setReplyTo(null);
-                    }}
-                    className="text-blue-500 text-sm hover:underline"
-                  >
-                    Edit
-                  </button>
-                )}
+        {messages.map((m) => {
+          const msgDate = formatDate(m.createdAt); // use createdAt instead of time
+          const showDateSeparator = msgDate !== lastDate;
+          lastDate = msgDate; // update for next iteration
 
-                {/* DELETE BUTTON ALSO ONLY FOR MY OWN MESSAGES */}
-                {m.me && (
-                  <button
-                    onClick={() => deleteMessage(m.id)}
-                    className="text-red-500 text-sm cursor-pointer hover:underline disabled:opacity-50"
-                    disabled={deletingMessageIds.has(m.id)}
-                  >
-                    {deletingMessageIds.has(m.id) ? "Deleting..." : "Delete"}
-                  </button>
-                )}
-              </div>
-            )}
-            {/* Attachments */}
-            {(m.attachments ?? []).length > 0 && (
-              <div
-                className={`flex mt-1 ${
-                  m.me ? "justify-end" : "justify-start"
-                }`}
-              >
-                <div className="flex flex-wrap gap-2">
-                  {m.attachments!.map((a) => {
-                    if (a.mimeType?.startsWith("audio/")) {
-                      return (
-                        <audio key={a.id} controls className="w-64">
-                          <source src={a.url} type={a.mimeType} />
-                        </audio>
-                      );
-                    }
-
-                    const ext = a.filename?.split(".").pop()?.toLowerCase();
-
-                    if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                      return (
-                        <img
-                          key={a.id}
-                          src={a.url}
-                          className="w-32 h-32 object-cover rounded"
-                        />
-                      );
-                    }
-
-                    if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                      return (
-                        <video
-                          key={a.id}
-                          src={a.url}
-                          controls
-                          className="w-40 rounded"
-                        />
-                      );
-                    }
-
-                    return (
-                      <a
-                        key={a.id}
-                        href={a.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-blue-600"
-                      >
-                        {a.filename || "Attachment"}
-                      </a>
-                    );
-                  })}
+          return (
+            <div key={m.id} className="mb-2">
+              {/* Date separator */}
+              {showDateSeparator && (
+                <div className="flex justify-center my-2">
+                  <div className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">
+                    {msgDate}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* {(m.attachments ?? []).length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-1 ml-2">
-                {m.attachments!.map((a) => {
-                  if (a.mimeType?.startsWith("audio/")) {
-                    return (
-                      <audio key={a.id} controls className="w-64">
-                        <source src={a.url} type={a.mimeType} />
-                      </audio>
-                    );
+              {/* Parent Reply */}
+              {m.parent && (
+                <div className="text-xs text-gray-400 mb-1 ml-2 border-l-2 pl-2">
+                  Reply to: {m.parent.text}
+                </div>
+              )}
+
+              {/* Message bubble (only if text exists) */}
+              {m.text && (
+                <MessageBubble
+                  text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
+                  me={m.me}
+                  time={m.time} // stays inside bubble
+                  selected={selectedMessageId === m.id}
+                  onClick={() =>
+                    setSelectedMessageId(
+                      selectedMessageId === m.id ? null : m.id
+                    )
                   }
-                  const ext = a.filename?.split(".").pop()?.toLowerCase();
-                  if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                    return (
-                      <img
-                        key={a.id}
-                        src={a.url}
-                        className="w-32 h-32 object-cover rounded"
-                      />
-                    );
-                  } else if (ext && ["mp4", "mov"].includes(ext)) {
-                    return (
-                      <video
-                        key={a.id}
-                        src={a.url}
-                        controls
-                        className="w-40 rounded"
-                      />
-                    );
-                  } else {
-                    return (
-                      <a
-                        key={a.id}
-                        href={a.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline text-blue-600"
+                />
+              )}
+
+              {/* Action buttons for selected message */}
+              {selectedMessageId === m.id && (
+                <div
+                  className={`flex gap-3 mt-1 ${
+                    m.me ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  {m.me && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setEditMessage(m);
+                          setText(m.text);
+                          setReplyTo(null);
+                        }}
+                        className="text-blue-500 text-sm hover:underline"
                       >
-                        {a.filename || "Attachment"}
-                      </a>
-                    );
-                  }
-                })}
-              </div>
-            )} */}
-          </div>
-        ))}
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteMessage(m.id)}
+                        className="text-red-500 text-sm cursor-pointer hover:underline disabled:opacity-50"
+                        disabled={deletingMessageIds.has(m.id)}
+                      >
+                        {deletingMessageIds.has(m.id)
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Attachments */}
+              {(m.attachments ?? []).length > 0 && (
+                <div
+                  className={`flex flex-col mt-1 ${
+                    m.me ? "items-end" : "items-start"
+                  }`}
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {m.attachments!.map((a) => {
+                      const ext = a.filename?.split(".").pop()?.toLowerCase();
+
+                      const renderTime = (
+                        <div className="text-xs text-gray-500 mt-1 text-right">
+                          {m.time}
+                        </div>
+                      );
+
+                      if (a.mimeType?.startsWith("audio/")) {
+                        return (
+                          <div key={a.id} className="relative">
+                            <audio controls className="w-64">
+                              <source src={a.url} type={a.mimeType} />
+                            </audio>
+                            {renderTime}
+                          </div>
+                        );
+                      }
+
+                      if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
+                        return (
+                          <div key={a.id} className="relative">
+                            <img
+                              src={a.url}
+                              className="w-32 h-32 object-cover rounded"
+                            />
+                            {renderTime}
+                          </div>
+                        );
+                      }
+
+                      if (ext && ["mp4", "mov", "webm"].includes(ext)) {
+                        return (
+                          <div key={a.id} className="relative">
+                            <video
+                              src={a.url}
+                              controls
+                              className="w-40 rounded"
+                            />
+                            {renderTime}
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={a.id} className="relative">
+                          <a
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline text-blue-600"
+                          >
+                            {a.filename || "Attachment"}
+                          </a>
+                          {renderTime}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Input */}
@@ -660,7 +700,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             {/* ////emoji send */}
             {/* Emoji Button */}
             <button
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              onClick={() => setShowEmojiPicker((p) => !p)}
+              // onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
             >
               😀
@@ -687,18 +728,25 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             )}
 
             {/* Message Input */}
-            <input
-              className="flex-1 min-w-0 rounded-full border px-4 py-2"
+
+            <textarea
+              className="flex-1 min-w-0 rounded-full border px-4 py-3 resize-none focus:outline-none"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && postMessage()}
+              rows={1} // auto expand? Tailwind can use h-auto
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  postMessage();
+                }
+              }}
             />
 
             {/* Send Button */}
             {editMessage ? (
               <button
-                onClick={() => saveEdit(editMessage.id)}
+                onClick={() => saveEdit(editMessage?.id)}
                 className="p-3 bg-green-500 cursor-pointer text-white rounded-full"
               >
                 Edit
@@ -711,13 +759,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 ➤
               </button>
             )}
-
-            {/* <button
-              onClick={postMessage}
-              className="p-3 rounded-full bg-green-500 text-white cursor-pointer hover:bg-green-600"
-            >
-              ➤
-            </button> */}
           </div>
         </div>
       </div>
