@@ -89,6 +89,7 @@ const MessagesLayout: React.FC = () => {
           preview: c.lastMessage?.text || "",
           text: c.lastMessage?.text || "", // <-- add text
           me: false, // <-- add me
+          createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
           time: c.lastMessage?.createdAt
             ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -115,6 +116,8 @@ const MessagesLayout: React.FC = () => {
           preview: "",
           text: "", // <-- add text
           me: false, // <-- add me
+          createdAt: "",
+
           time: "",
         }));
 
@@ -229,7 +232,13 @@ const MessagesLayout: React.FC = () => {
       <Navbar />
 
       <div className="min-h-screen bg-[#FAFAFA] text-gray-600 p-8 pt-32">
-        <div className="max-w-6xl mx-auto">
+        <div
+          className="mx-auto
+    max-w-full  
+    sm:max-w-full
+    md:max-w-5xl
+    lg:max-w-6xl"
+        >
           {/* Desktop layout */}
           <div className="hidden md:grid grid-cols-3 gap-8">
             <div className="col-span-1">
@@ -283,7 +292,7 @@ const MessagesLayout: React.FC = () => {
               </div>
             </div>
 
-            <div className="col-span-2 bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
+            <div className="col-span-3 md:col-span-2 bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
               {selected ? (
                 <ConversationView
                   conversation={
@@ -336,7 +345,10 @@ const MessagesLayout: React.FC = () => {
             )}
 
             {selected && (
-              <div className="bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
+              <div
+                className="bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm
+      w-full"
+              >
                 <ConversationView
                   conversation={
                     conversations.find((c) => c.id === selected) || null

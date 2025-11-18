@@ -7,7 +7,9 @@ const ConversationList: React.FC<{
   onSelect: (id: string) => void;
 }> = ({ items = [], onSelect }) => {
   // Handle empty state
-  if (!items.length) {
+
+
+  if (items.length===0) {
     return (
       <div className="text-gray-400 text-center py-8">
         No conversations yet.

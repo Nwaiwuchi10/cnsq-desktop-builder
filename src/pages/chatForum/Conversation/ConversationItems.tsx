@@ -22,6 +22,7 @@ export type Msg = {
   text: string; // REQUIRED
   me: boolean; // REQUIRED
   preview: string;
+  createdAt: string;
   time: string;
 
   unread?: number;
