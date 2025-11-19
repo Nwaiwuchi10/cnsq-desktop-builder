@@ -1,30 +1,3 @@
-// "use client";
-// import StatsCards from "@/component/AnalysisSection/Analysis";
-// import Footer from "@/component/Footer/Footer";
-// import Hero from "@/component/HeroSection/Hero";
-// import LatestAnniversary from "@/component/LatesAnniversay/LatestAnniversary";
-// import LatestBirthday from "@/component/LatestBirthday/LatetsBirthday";
-// import Navbar from "@/component/Navbar/Navbar";
-// import QuickActions from "@/component/QuickActions/QuickActions";
-// import TeamProfiles from "@/component/TeamProfile/TeamProfile";
-
-// import React from "react";
-
-// const HomePage = () => {
-//   return (
-//     <div>
-//       <Navbar />
-//       <Hero />
-//       <StatsCards />
-//       <QuickActions />
-//       <LatestBirthday />
-//       <TeamProfiles />
-//       <LatestAnniversary />
-//       <Footer />
-//     </div>
-//   );
-// };
-
 // export default HomePage;
 "use client";
 import { useEffect, useState } from "react";
@@ -39,6 +12,7 @@ import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
+// import EnableNotificationsButton from "@/component/EnableNotificationButton/EnableNotificationsButton";
 
 interface Notification {
   id: number;
@@ -114,7 +88,7 @@ const HomePage = () => {
       <Navbar />
 
       <HeroSection />
-
+      {/* <EnableNotificationsButton /> */}
       <StatsCards />
       <QuickActions />
       <LatestBirthday />

@@ -31,6 +31,7 @@ interface Task {
 
 interface Project {
   id: number;
+  uuid: string;
   projectName: string;
   desc?: string;
   status: string;
@@ -67,6 +68,7 @@ export default function NotificationModal({
   onClose,
   notification,
 }: NotificationModalProps) {
+  console.log("notificationData", notification);
   const [open, setOpen] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -141,9 +143,9 @@ export default function NotificationModal({
   //   };
   const handleOpen = () => {
     if (relatedProject) {
-      router.push(`/project/${relatedProject.id}`);
+      router.push(`/project/${relatedProject.uuid}`);
     } else if (project) {
-      router.push(`/project/${project.id}`);
+      router.push(`/project/${project.uuid}`);
     }
   };
 

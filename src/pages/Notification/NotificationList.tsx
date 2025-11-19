@@ -77,8 +77,8 @@ const NotificationList: React.FC<NotificationListProps> = ({
     };
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 2000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchNotifications, 2000);
+    // return () => clearInterval(interval);
   }, []);
 
   const handleDelete = async () => {

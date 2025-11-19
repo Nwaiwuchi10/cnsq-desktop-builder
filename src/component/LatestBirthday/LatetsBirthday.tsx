@@ -8,6 +8,7 @@ import Link from "next/link";
 // Define TS interface matching StaffBirthdayDto
 interface StaffBirthday {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   dateOfBirth: string;
@@ -67,7 +68,7 @@ export default function LatestBirthday() {
               key={person.id}
               className="flex flex-col items-start text-left w-full"
             >
-              <Link href={`/staff/${person.id}`}>
+              <Link href={`/staff/${person?.uuid}`}>
                 {/* Image Container with fallback if no photo */}
                 <div
                   className="
