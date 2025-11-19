@@ -7,6 +7,7 @@ import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
 import MessageCeoModal from "../MessageCEO/MessageCEO";
+import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
 
 type User = {
   uuid: string;
@@ -249,6 +250,9 @@ export default function Navbar() {
                         >
                           Urgent Message to the CEO
                         </div>
+                        <div className="block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <EnableNotificationsButton />
+                        </div>
                         <button
                           style={{ cursor: "pointer" }}
                           onClick={handleLogout}
@@ -363,6 +367,9 @@ export default function Navbar() {
                       onClick={() => setIsOpenModal(true)}
                     >
                       Urgent Message to the CEO
+                    </div>
+                    <div className="block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                      <EnableNotificationsButton />
                     </div>
                     <button
                       style={{ cursor: "pointer" }}
