@@ -8,6 +8,7 @@ import Link from "next/link";
 // TS interface matching StaffAnniversaryDto
 interface StaffAnniversary {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   photoUrl?: string | StaticImageData | null;
@@ -63,7 +64,7 @@ export default function LatestAnniversary() {
       >
         {anniversaries.map((person) => (
           <>
-            <Link href={`/staff/${person.id}`}>
+            <Link href={`/staff/${person?.uuid}`}>
               <div
                 key={person.id}
                 className="flex flex-col items-start text-left w-full"

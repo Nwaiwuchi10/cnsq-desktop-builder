@@ -46,6 +46,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [replyingTo, setReplyingTo] = useState<Msg | null>(null);
   const [replyTo, setReplyTo] = useState<Msg | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [editMessage, setEditMessage] = useState<Msg | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -188,38 +189,63 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   };
   //////record voice
   const startRecording = async () => {
+    // 1 Check browser support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Your browser does not support audio recording.");
+      return;
+    }
+
     try {
+      // 2 Get audio stream
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      let recorder: MediaRecorder;
+      // 3 Create MediaRecorder with MIME type fallback
+      let recorder: MediaRecorder | null = null;
 
-      // SAFARI FIX
-      try {
-        recorder = new MediaRecorder(stream, {
-          mimeType: "audio/webm;codecs=opus",
-        });
-      } catch (err) {
-        recorder = new MediaRecorder(stream);
+      const mimeTypes = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/ogg",
+        "",
+      ];
+
+      for (const mime of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mime)) {
+          recorder = new MediaRecorder(
+            stream,
+            mime ? { mimeType: mime } : undefined
+          );
+          break;
+        }
       }
 
-      const chunks: BlobPart[] = [];
+      // Fallback just in case
+      if (!recorder) recorder = new MediaRecorder(stream);
 
+      // 4 Collect audio data chunks
+      const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
       };
 
+      // 5 When recording stops, create blob and URL
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
+        const blob = new Blob(chunks, {
+          type: recorder!.mimeType || "audio/webm",
+        });
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
       };
 
+      // 6️⃣ Start recording
       recorder.start();
       setMediaRecorder(recorder);
       setIsRecording(true);
     } catch (err) {
       console.error("Mic Permission or HTTPS issue:", err);
-      alert("Microphone access failed. Make sure you're on HTTPS.");
+      alert(
+        "Microphone access failed. Make sure you're on HTTPS and allowed access."
+      );
     }
   };
 
@@ -250,6 +276,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     files.forEach((f) => formData.append("file", f));
 
     try {
+      setIsSaving(true);
       await Api.post("/chat/messages", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -263,6 +290,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       setReplyingTo(null);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -297,6 +326,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     if (!token) return;
 
     try {
+      setIsSaving(true);
       const res = await Api.patch(
         `/chat/messages/${messageId}/edit`,
         { text },
@@ -305,13 +335,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         }
       );
       // Clear edit state
-      setEditMessage(null); // <-- important
-      setText(""); // <-- reset input
+      setEditMessage(null);
+      setText("");
       setReplyTo(null);
+      setReplyingTo(null);
+      setSelectedMessageId(null);
 
       // frontend will get updated via socket 'message:edit'
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsSaving(false);
     }
   };
   // component-level state
@@ -744,21 +778,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             />
 
             {/* Send Button */}
-            {editMessage ? (
-              <button
-                onClick={() => saveEdit(editMessage?.id)}
-                className="p-3 bg-green-500 cursor-pointer text-white rounded-full"
-              >
-                Edit
-              </button>
-            ) : (
-              <button
-                onClick={postMessage}
-                className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
-              >
-                ➤
-              </button>
-            )}
+
+            <button
+              onClick={() => {
+                if (editMessage) {
+                  saveEdit(editMessage.id);
+                } else {
+                  postMessage();
+                }
+              }}
+              disabled={isSaving}
+              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+            >
+              {editMessage ? "Save" : "➤"}
+            </button>
           </div>
         </div>
       </div>
