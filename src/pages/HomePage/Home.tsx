@@ -1,5 +1,3 @@
-
-
 // export default HomePage;
 "use client";
 import { useEffect, useState } from "react";
@@ -14,6 +12,7 @@ import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
+// import EnableNotificationsButton from "@/component/EnableNotificationButton/EnableNotificationsButton";
 
 interface Notification {
   id: number;
@@ -89,7 +88,7 @@ const HomePage = () => {
       <Navbar />
 
       <HeroSection />
-
+      {/* <EnableNotificationsButton /> */}
       <StatsCards />
       <QuickActions />
       <LatestBirthday />
