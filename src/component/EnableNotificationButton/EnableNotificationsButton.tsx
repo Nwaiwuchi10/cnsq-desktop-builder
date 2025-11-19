@@ -1,16 +1,12 @@
-"use client";
 import Api from "@/utils/api";
-import { useState } from "react";
 
-export default function EnableNotificationsButton() {
-  const [enabled, setEnabled] = useState(false);
+export async function RequestNotificationPermission() {
+  if (!("serviceWorker" in navigator)) {
+    alert("Service worker not supported in this browser.");
+    return;
+  }
 
-  async function enableNotifications() {
-    if (!("serviceWorker" in navigator)) {
-      alert("Service worker not supported in this browser.");
-      return;
-    }
-
+  try {
     const registration = await navigator.serviceWorker.register("/sw.js");
 
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -26,22 +22,12 @@ export default function EnableNotificationsButton() {
       applicationServerKey,
     });
 
-    // If Api is axios-style
+    // send subscription to backend
     await Api.post("/push-notification/subscribe", subscription);
-
-    setEnabled(true);
+    console.log("Notifications enabled automatically");
+  } catch (err) {
+    console.error("Notification permission error:", err);
   }
-
-  return (
-    <div>
-      <button
-        onClick={enableNotifications}
-        className="px-4 py-2 bg-lime-500 text-white rounded-lg"
-      >
-        {enabled ? "Notifications Enabled" : "Enable Notifications"}
-      </button>
-    </div>
-  );
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {

@@ -12,7 +12,7 @@ import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
-// import EnableNotificationsButton from "@/component/EnableNotificationButton/EnableNotificationsButton";
+import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
 
 interface Notification {
   id: number;
@@ -27,6 +27,16 @@ interface Notification {
 const HomePage = () => {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
+  useEffect(() => {
+    const askedBefore = localStorage.getItem(
+      "notification_permission_requested"
+    );
+
+    if (!askedBefore) {
+      RequestNotificationPermission();
+      localStorage.setItem("notification_permission_requested", "true");
+    }
+  }, []);
 
   useEffect(() => {
     const fetchSpecialNotices = async () => {
@@ -88,7 +98,7 @@ const HomePage = () => {
       <Navbar />
 
       <HeroSection />
-      {/* <EnableNotificationsButton /> */}
+
       <StatsCards />
       <QuickActions />
       <LatestBirthday />
