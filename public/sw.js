@@ -1,48 +1,50 @@
-// PUSH EVENT
+// sw.js
+
+// Handle push notifications
 self.addEventListener("push", (event) => {
-  let data = event.data?.json() || {};
+  const data = event.data?.json() || {};
 
-  // DELETE backend URL fully so Chrome cannot use it
-  if (data.url) delete data.url;
-  if (data.actions) delete data.actions; // especially this if backend sends actions
+  const title = data.title || "Announcement";
+  const body = data.description || "";
+  const icon = "/CNSQ.png";
+  const badge = "/CNSQ.png";
 
-  const payload = {
-    title: data.title || "Announcement",
-    body: data.body || "",
-    icon: "/CNSQ.png",
-    badge: "/CNSQ.png",
-    data: {
-      url: "/notifications", // ONLY THIS WILL BE USED
-      type: data.type || null,
-    },
+  // Store any URL or ID in data for later
+  const notificationData = {
+    url: "/notifications", // frontend fallback
+    id: null,
+    type: data.type || null,
   };
 
-  // Flush any previous SW cached values
-  event.waitUntil(Promise.resolve());
-
-  event.waitUntil(self.registration.showNotification(payload.title, payload));
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon,
+      badge,
+      data: notificationData,
+    })
+  );
 });
 
-// NOTIFICATION CLICK EVENT
+// Handle notification click
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const forcedUrl = self.location.origin + "/notifications";
+  // Use the URL from notification data
+  const url = "/notifications";
 
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
+        // Check if a window with the URL is already open
         for (const client of clientList) {
-          if ("focus" in client) {
-            if (client.url !== forcedUrl && "navigate" in client) {
-              client.navigate(forcedUrl);
-            }
+          if (client.url.endsWith(url) && "focus" in client) {
             return client.focus();
           }
         }
-
-        return clients.openWindow(forcedUrl);
+        // If not, open a new window with the frontend URL
+        return clients.openWindow(url);
       })
   );
 });
