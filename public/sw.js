@@ -1,116 +1,50 @@
-// PUSH EVENT
+// sw.js
+
+// Handle push notifications
 self.addEventListener("push", (event) => {
   const data = event.data?.json() || {};
 
+  const title = data.title || "Announcement";
+  const body = data.description || "";
+  const icon = "/CNSQ.png";
+  const badge = "/CNSQ.png";
+
+  // Store any URL or ID in data for later
+  const notificationData = {
+    url: "/notifications", // frontend fallback
+    id: null,
+    type: data.type || null,
+  };
+
   event.waitUntil(
-    self.registration.showNotification(data.title || "Announcement", {
-      body: data.body || "",
-      icon: "/CNSQ.png",
-      badge: "/CNSQ.png",
-      data: {
-        // FORCE override any backend URL
-        url: "/notifications",
-        type: data.type || null,
-        id: data.id || null,
-      },
+    self.registration.showNotification(title, {
+      body,
+      icon,
+      badge,
+      data: notificationData,
     })
   );
 });
 
-// NOTIFICATION CLICK
+// Handle notification click
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  // FORCE navigation only to /notifications
-  const forcedUrl = self.location.origin + "/notifications";
+  // Use the URL from notification data
+  const url = "/notifications";
 
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
+        // Check if a window with the URL is already open
         for (const client of clientList) {
-          if ("focus" in client) {
-            // Only navigate if already not on /Notification
-            if (client.url !== forcedUrl && "navigate" in client) {
-              client.navigate(forcedUrl);
-            }
+          if (client.url.endsWith(url) && "focus" in client) {
             return client.focus();
           }
         }
-
-        // No window open → open a new one
-        return clients.openWindow(forcedUrl);
+        // If not, open a new window with the frontend URL
+        return clients.openWindow(url);
       })
   );
 });
-
-// self.addEventListener("push", (event) => {
-//   const data = event.data?.json() || {};
-
-//   event.waitUntil(
-//     self.registration.showNotification(data.title || "Announcement", {
-//       body: data.body || "",
-//       icon: "/CNSQ.png",
-//       badge: "/CNSQ.png",
-//       data: {
-//         url: "/Notification", // <<< Force navigation here
-//         type: data.type || null,
-//         id: data.id || null,
-//       },
-//     })
-//   );
-// });
-
-// self.addEventListener("notificationclick", (event) => {
-//   event.notification.close();
-
-//   // Force navigation to the Notifications page
-//   const url = "/Notification";
-
-//   event.waitUntil(
-//     clients
-//       .matchAll({ type: "window", includeUncontrolled: true })
-//       .then((clientList) => {
-//         for (const client of clientList) {
-//           if ("focus" in client) {
-//             if (client.url !== url && "navigate" in client) {
-//               client.navigate(url);
-//             }
-//             return client.focus();
-//           }
-//         }
-//         return clients.openWindow(url);
-//       })
-//   );
-// });
-
-// // self.addEventListener("push", (event) => {
-// //   const data = event.data?.json() || {};
-
-// //   event.waitUntil(
-// //     self.registration.showNotification(data.title || "Announcement", {
-// //       body: data.body || "",
-// //       icon: "/CNSQ.png",
-// //       badge: "/CNSQ.png",
-// //       data,
-// //     })
-// //   );
-// // });
-
-// // self.addEventListener("notificationclick", (event) => {
-// //   event.notification.close();
-// //   const url = event.notification.data?.url || "/";
-
-// //   event.waitUntil(
-// //     clients
-// //       .matchAll({ type: "window", includeUncontrolled: true })
-// //       .then((clientList) => {
-// //         for (const client of clientList) {
-// //           if (client.url === url && "focus" in client) {
-// //             return client.focus();
-// //           }
-// //         }
-// //         return clients.openWindow(url);
-// //       })
-// //   );
-// // });
