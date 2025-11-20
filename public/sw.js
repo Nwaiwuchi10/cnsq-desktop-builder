@@ -9,7 +9,7 @@ self.addEventListener("push", (event) => {
       badge: "/CNSQ.png",
       data: {
         // FORCE override any backend URL
-        url: "/Notification",
+        url: "/notifications",
         type: data.type || null,
         id: data.id || null,
       },
@@ -22,7 +22,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   // FORCE navigation only to /Notification
-  const forcedUrl = "/Notification";
+  const forcedUrl = "/notifications";
 
   event.waitUntil(
     clients
