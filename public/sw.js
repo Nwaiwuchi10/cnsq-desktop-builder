@@ -1,3 +1,4 @@
+// PUSH EVENT
 self.addEventListener("push", (event) => {
   const data = event.data?.json() || {};
 
@@ -7,7 +8,8 @@ self.addEventListener("push", (event) => {
       icon: "/CNSQ.png",
       badge: "/CNSQ.png",
       data: {
-        url: "/Notification", // <<< Force navigation here
+        // FORCE override any backend URL
+        url: "/Notification",
         type: data.type || null,
         id: data.id || null,
       },
@@ -15,11 +17,12 @@ self.addEventListener("push", (event) => {
   );
 });
 
+// NOTIFICATION CLICK
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  // Force navigation to the Notifications page
-  const url = "/Notification";
+  // FORCE navigation only to /Notification
+  const forcedUrl = "/Notification";
 
   event.waitUntil(
     clients
@@ -27,13 +30,16 @@ self.addEventListener("notificationclick", (event) => {
       .then((clientList) => {
         for (const client of clientList) {
           if ("focus" in client) {
-            if (client.url !== url && "navigate" in client) {
-              client.navigate(url);
+            // Only navigate if already not on /Notification
+            if (client.url !== forcedUrl && "navigate" in client) {
+              client.navigate(forcedUrl);
             }
             return client.focus();
           }
         }
-        return clients.openWindow(url);
+
+        // No window open → open a new one
+        return clients.openWindow(forcedUrl);
       })
   );
 });
@@ -46,21 +52,30 @@ self.addEventListener("notificationclick", (event) => {
 //       body: data.body || "",
 //       icon: "/CNSQ.png",
 //       badge: "/CNSQ.png",
-//       data,
+//       data: {
+//         url: "/Notification", // <<< Force navigation here
+//         type: data.type || null,
+//         id: data.id || null,
+//       },
 //     })
 //   );
 // });
 
 // self.addEventListener("notificationclick", (event) => {
 //   event.notification.close();
-//   const url = event.notification.data?.url || "/";
+
+//   // Force navigation to the Notifications page
+//   const url = "/Notification";
 
 //   event.waitUntil(
 //     clients
 //       .matchAll({ type: "window", includeUncontrolled: true })
 //       .then((clientList) => {
 //         for (const client of clientList) {
-//           if (client.url === url && "focus" in client) {
+//           if ("focus" in client) {
+//             if (client.url !== url && "navigate" in client) {
+//               client.navigate(url);
+//             }
 //             return client.focus();
 //           }
 //         }
@@ -68,3 +83,34 @@ self.addEventListener("notificationclick", (event) => {
 //       })
 //   );
 // });
+
+// // self.addEventListener("push", (event) => {
+// //   const data = event.data?.json() || {};
+
+// //   event.waitUntil(
+// //     self.registration.showNotification(data.title || "Announcement", {
+// //       body: data.body || "",
+// //       icon: "/CNSQ.png",
+// //       badge: "/CNSQ.png",
+// //       data,
+// //     })
+// //   );
+// // });
+
+// // self.addEventListener("notificationclick", (event) => {
+// //   event.notification.close();
+// //   const url = event.notification.data?.url || "/";
+
+// //   event.waitUntil(
+// //     clients
+// //       .matchAll({ type: "window", includeUncontrolled: true })
+// //       .then((clientList) => {
+// //         for (const client of clientList) {
+// //           if (client.url === url && "focus" in client) {
+// //             return client.focus();
+// //           }
+// //         }
+// //         return clients.openWindow(url);
+// //       })
+// //   );
+// // });
