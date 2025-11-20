@@ -27,16 +27,6 @@ interface Notification {
 const HomePage = () => {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
-  useEffect(() => {
-    const askedBefore = localStorage.getItem(
-      "notification_permission_requested"
-    );
-
-    if (!askedBefore) {
-      RequestNotificationPermission();
-      localStorage.setItem("notification_permission_requested", "true");
-    }
-  }, []);
 
   useEffect(() => {
     const fetchSpecialNotices = async () => {
@@ -81,6 +71,36 @@ const HomePage = () => {
     };
 
     fetchSpecialNotices();
+  }, []);
+  useEffect(() => {
+    const askedBefore = localStorage.getItem(
+      "notification_permission_requested"
+    );
+
+    if (!askedBefore) {
+      const timer = setTimeout(async () => {
+        if (document.visibilityState === "visible") {
+          await navigator.serviceWorker.ready;
+          RequestNotificationPermission();
+          localStorage.setItem("notification_permission_requested", "true");
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  useEffect(() => {
+    const askedBefore = localStorage.getItem(
+      "notification_permission_requested"
+    );
+
+    if (!askedBefore && Notification.permission === "granted") {
+      RequestNotificationPermission();
+      localStorage.setItem("notification_permission_requested", "true");
+    }
+  }, []);
+  useEffect(() => {
+    RequestNotificationPermission();
   }, []);
 
   const handleCloseModal = () => {
