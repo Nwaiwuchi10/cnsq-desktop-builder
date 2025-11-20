@@ -21,8 +21,8 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  // FORCE navigation only to /Notification
-  const forcedUrl = "/notifications";
+  // FORCE navigation only to /notifications
+  const forcedUrl = self.location.origin + "/notifications";
 
   event.waitUntil(
     clients
