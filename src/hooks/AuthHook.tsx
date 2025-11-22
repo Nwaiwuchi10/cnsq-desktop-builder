@@ -6,17 +6,25 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   //   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname: any = usePathname();
 
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     // setToken(t);
 
     // allow login and register pages without redirect
-    if (
-      pathname === "/login"
-      // || pathname === "/register"
-    ) {
+    // if (
+    //   pathname === "/login"
+    //   // || pathname === "/register"
+    // ) {
+    //   setIsAuthenticated(true);
+    //   return;
+    // }
+    //  Allow login, forgot-password, and reset-password pages
+    const allowedRoutes = ["/login", "/forgot-password", "/reset-password"];
+
+    // If current page is under an allowed route, don't block it
+    if (allowedRoutes.includes(pathname)) {
       setIsAuthenticated(true);
       return;
     }
