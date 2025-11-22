@@ -110,6 +110,14 @@ export default function Login() {
             </div>
           </div>
         </div>
+        <div className="flex justify-end mt-2">
+          <button
+            onClick={() => router.push("/forgot-password")}
+            className="text-sm text-blue-600 cursor-pointer hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </div>
 
         {/* Modal */}
         {modal && (

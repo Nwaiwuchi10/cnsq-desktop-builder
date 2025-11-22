@@ -8,6 +8,7 @@ import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
 import MessageCeoModal from "../MessageCEO/MessageCEO";
 import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
+import { initChatSocket } from "@/utils/chatSocket";
 
 type User = {
   uuid: string;
@@ -40,6 +41,27 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   //  Fetch user profile
+  // 🔹 Realtime chat unread count via Socket.IO
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    // Initialize socket
+    const socket = initChatSocket(token);
+
+    // Listen for unread count updates
+    socket.on("chat:unreadCount", (data: { total: number }) => {
+      console.log("Realtime chat unread count:", data.total);
+      setChatUnreadCount(data.total);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      socket.off("chat:unreadCount");
+      socket.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -81,9 +103,15 @@ export default function Navbar() {
 
     fetchUnreadCount();
 
-    // optional: auto-refresh every 60 seconds
-    // const interval = setInterval(fetchUnreadCount, 2000);
-    // return () => clearInterval(interval);
+    const socket = initChatSocket(token);
+    socket.on("chat:unreadCount", (data: { total: number }) => {
+      setChatUnreadCount(data.total);
+    });
+
+    return () => {
+      socket.off("chat:unreadCount");
+      socket.disconnect();
+    };
   }, []);
   // 🔹 Fetch unread chat messages
   useEffect(() => {

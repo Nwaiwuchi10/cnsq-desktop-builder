@@ -65,17 +65,55 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const prevConversationId = useRef<string | null>(null);
+  const hasUserScrolled = useRef(false);
 
   // const socketRef = useRef<Socket | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!conversation?.id) return;
 
-  const scrollToBottom = () => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  };
+    // If conversation changed, reset scroll flag
+    if (prevConversationId.current !== conversation.id) {
+      prevConversationId.current = conversation.id;
+      hasUserScrolled.current = false;
+      // scroll immediately after opening conversation
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 50);
+    }
+  }, [conversation?.id]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      const bottomReached =
+        container.scrollHeight - container.scrollTop === container.clientHeight;
+
+      if (!bottomReached) {
+        hasUserScrolled.current = true;
+      }
+    };
+
+    container.addEventListener("scroll", onScroll);
+
+    return () => container.removeEventListener("scroll", onScroll);
+  }, []);
+  useEffect(() => {
+    if (!hasUserScrolled.current) {
+      scrollRef.current?.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
+
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     if (token) {
