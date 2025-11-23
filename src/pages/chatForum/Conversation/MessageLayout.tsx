@@ -138,15 +138,77 @@ const MessagesLayout: React.FC = () => {
 
     socketRef.current.on("connect", () => console.log("Socket connected"));
 
+    // socketRef.current.on("message:new", (msg: any) => {
+    //   setConversations((prev) =>
+    //     prev.map((c) =>
+    //       c.id === msg.conversationId
+    //         ? { ...c, preview: msg.text, unread: (c.unread || 0) + 1 }
+    //         : c
+    //     )
+    //   );
+    // });
+    // === SOCKET EVENT: new conversation appears ===
+    socketRef.current.on("conversation:new", (conv: any) => {
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === conv.id);
+        if (exists) return prev;
+
+        const peer = conv.members.find((m: any) => m.id !== currentUserId);
+
+        const msg: Msg = {
+          id: conv.id,
+          name: `${peer.firstName} ${peer.lastName}`,
+          avatar: peer.avatar,
+          preview: conv.lastMessage?.text || "",
+          text: conv.lastMessage?.text || "",
+          me: false,
+          createdAt: conv.createdAt,
+          time: conv.lastMessage?.createdAt
+            ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "",
+          unread: 1,
+        };
+
+        return [msg, ...prev];
+      });
+    });
     socketRef.current.on("message:new", (msg: any) => {
       setConversations((prev) =>
-        prev.map((c) =>
-          c.id === msg.conversationId
-            ? { ...c, preview: msg.text, unread: (c.unread || 0) + 1 }
-            : c
-        )
+        prev.map((c) => {
+          if (c.id !== msg.conversationId) return c;
+
+          const isOpen = selected === msg.conversationId;
+
+          return {
+            ...c,
+            preview: msg.text,
+            unread: isOpen ? 0 : (c.unread || 0) + 1,
+          };
+        })
       );
+
+      if (selected === msg.conversationId) {
+        markConversationAsRead(msg.conversationId);
+      }
     });
+    socketRef.current.on(
+      "chat:unreadCount",
+      ({
+        total,
+        conversationId,
+      }: {
+        total: number;
+        conversationId: number;
+      }) => {
+        const convId = conversationId.toString(); // convert to string
+        setConversations((prev) =>
+          prev.map((c) => (c.id === convId ? { ...c, unread: total } : c))
+        );
+      }
+    );
 
     return () => {
       socketRef.current?.disconnect();
@@ -158,11 +220,6 @@ const MessagesLayout: React.FC = () => {
     const t = setTimeout(() => fetchConversations(), 300);
     return () => clearTimeout(t);
   }, [search]);
-
-  // useEffect(() => {
-  //   fetchConversations();
-
-  // }, [search]);
 
   ////hanle  mark conversation as read
   // Inside MessagesLayout component
@@ -222,6 +279,7 @@ const MessagesLayout: React.FC = () => {
 
         setSelected(conv.id);
         setStaffMatches([]); // clear search results
+        socketRef.current?.emit("joinConversation", id);
         await markConversationAsRead(id);
       } catch (err) {
         console.error("Failed to start DM:", err);
