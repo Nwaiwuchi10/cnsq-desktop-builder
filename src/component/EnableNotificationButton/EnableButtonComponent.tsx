@@ -27,7 +27,10 @@ export default function EnableNotificationsButton() {
     });
 
     // If Api is axios-style
-    await Api.post("/push-notification/subscribe", subscription);
+    const token = localStorage.getItem("user-token");
+    await Api.post("/push-notification/subscribe", subscription, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     setEnabled(true);
   }
@@ -36,7 +39,7 @@ export default function EnableNotificationsButton() {
     <div>
       <button
         onClick={enableNotifications}
-        className="px-4 py-2 bg-lime-500 text-white rounded-lg"
+        className="px-4 py-2 bg-lime-500 text-white rounded-lg cursor-pointer"
       >
         {enabled ? "Notifications Enabled" : "Enable Notifications"}
       </button>
