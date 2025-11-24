@@ -27,33 +27,36 @@ self.addEventListener("push", (event) => {
 
 // Handle notification click
 self.addEventListener("notificationclick", (event) => {
-  event.notification.close(); // close on click
-  let url = event.notification.data?.url || "/";
-  // // let url = "/notifications"; // default fallback
+  event.notification.close();
 
-  // if (event.notification.data?.type === "chat") {
-  //   url = event.notification.data.url; // open specific chat conversation
-  // } else if (event.notification.data?.type === "announcement") {
-  //   url = "/notifications"; // open announcements page
-  // }
+  const url = event.notification.data?.url || "/";
 
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
-        // Focus existing window with the same URL
+        // If a window with the target URL is already open, focus it
         for (const client of clientList) {
           if (client.url.endsWith(url) && "focus" in client) {
             return client.focus();
           }
         }
 
-        // If not open, open a new window
-        if (client.openWindow) return clients.openWindow(url);
-        // return clients.openWindow(url);
+        // Otherwise, open a new window
+        return clients.openWindow(url);
       })
   );
 });
+
+
+
+
+
+
+
+
+
+
 
 // // sw.js
 
