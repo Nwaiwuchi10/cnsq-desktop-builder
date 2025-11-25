@@ -247,71 +247,64 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   };
   //////record voice
   const startRecording = async () => {
-    // 1 Check browser support
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Your browser does not support audio recording.");
-      return;
-    }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    alert("Browser does not support audio recording.");
+    return;
+  }
 
-    try {
-      // 2 Get audio stream
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // 3 Create MediaRecorder with MIME type fallback
-      let recorder: MediaRecorder | null = null;
+    // BEST cross browser MIME types
+    const supportedMimeTypes = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus",
+      "audio/ogg",
+    ];
 
-      const mimeTypes = [
-        "audio/webm;codecs=opus",
-        "audio/webm",
-        "audio/ogg",
-        "",
-      ];
+    let mimeType = "";
 
-      for (const mime of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(mime)) {
-          recorder = new MediaRecorder(
-            stream,
-            mime ? { mimeType: mime } : undefined
-          );
-          break;
-        }
+    for (const type of supportedMimeTypes) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        mimeType = type;
+        break;
       }
-
-      // Fallback just in case
-      if (!recorder) recorder = new MediaRecorder(stream);
-
-      // 4 Collect audio data chunks
-      const chunks: BlobPart[] = [];
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      // 5 When recording stops, create blob and URL
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, {
-          type: recorder!.mimeType || "audio/webm",
-        });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
-      };
-
-      // 6️⃣ Start recording
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Mic Permission or HTTPS issue:", err);
-      alert(
-        "Microphone access failed. Make sure you're on HTTPS and allowed access."
-      );
     }
-  };
 
-  const stopRecording = () => {
-    if (!mediaRecorder) return;
-    mediaRecorder.stop();
-    setIsRecording(false);
-  };
+    const recorder = new MediaRecorder(
+      stream,
+      mimeType ? { mimeType } : undefined
+    );
+
+    const chunks: BlobPart[] = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };   
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
+      setAudioBlob(blob);
+      setAudioUrl(URL.createObjectURL(blob));
+    };
+
+    recorder.start();
+    setMediaRecorder(recorder);
+    setIsRecording(true);
+  } catch (err) {
+    console.error(err);
+    alert("Microphone permission denied or unsupported device.");
+  }
+};
+const stopRecording = () => {
+  if (!mediaRecorder) return;
+  mediaRecorder.stop();
+  setIsRecording(false);
+};
+
+ 
 
   ///post message
 
@@ -353,44 +346,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
-  const postMessagek = async () => {
-    if (!text.trim() && files.length === 0) return;
-
-    const token = localStorage.getItem("user-token");
-    if (!token) return;
-
-    const formData = new FormData();
-    formData.append(
-      "dto",
-      JSON.stringify({
-        conversationId: conversation?.id,
-        text,
-        // parentId: replyTo?.id ?? null,
-        parentId: replyingTo?.id,
-      })
-    );
-
-    files.forEach((f) => formData.append("file", f));
-
-    try {
-      setIsSaving(true);
-      await Api.post("/chat/messages", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      // Clear input and files after sending
-      setText("");
-      setFiles([]);
-      setReplyingTo(null);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  
 
   const sendVoiceNote = async () => {
     if (!audioBlob) return;
