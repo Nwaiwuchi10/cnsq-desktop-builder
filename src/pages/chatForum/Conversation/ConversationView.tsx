@@ -142,7 +142,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       const userId = payload.staffId || payload.id || payload.sub;
       console.log("decoded userId:", userId);
       setCurrentUserId(userId);
-
       const mapped: Msg[] = messagesData.map((m: any) => ({
         id: m.id,
         text: m.text,
@@ -154,9 +153,30 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         }),
         attachments: m.attachments,
         reactions: m.reactions,
-        parent: m.parent ? { id: m.parent.id, text: m.parent.text } : undefined,
-        name: m.author.firstName + " " + m.author.lastName, // <-- add this
+        parent: m.parent
+          ? {
+              id: m.parent.id,
+              text: m.parent.text,
+              attachments: m.parent.attachments,
+            }
+          : undefined, // <-- include attachments if needed
+        name: m.author.firstName + " " + m.author.lastName,
       }));
+
+      // const mapped: Msg[] = messagesData.map((m: any) => ({
+      //   id: m.id,
+      //   text: m.text,
+      //   me: m.author.id === userId,
+      //   createdAt: m.createdAt,
+      //   time: new Date(m.createdAt).toLocaleTimeString([], {
+      //     hour: "2-digit",
+      //     minute: "2-digit",
+      //   }),
+      //   attachments: m.attachments,
+      //   reactions: m.reactions,
+      //   parent: m.parent ? { id: m.parent.id, text: m.parent.text } : undefined,
+      //   name: m.author.firstName + " " + m.author.lastName, // <-- add this
+      // }));
 
       setMessages(mapped.reverse());
       //   scrollToBottom();
@@ -294,7 +314,46 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   };
 
   ///post message
+
   const postMessage = async () => {
+    if (!text.trim() && files.length === 0) return;
+
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    const formData = new FormData();
+    formData.append(
+      "dto",
+      JSON.stringify({
+        conversationId: conversation?.id,
+        text,
+        parentId: replyingTo?.id ?? null, // <-- send parentId for reply
+      })
+    );
+
+    files.forEach((f) => formData.append("file", f));
+
+    try {
+      setIsSaving(true);
+      await Api.post("/chat/messages", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Clear input and files after sending
+      setText("");
+      setFiles([]);
+      setReplyingTo(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const postMessagek = async () => {
     if (!text.trim() && files.length === 0) return;
 
     const token = localStorage.getItem("user-token");
@@ -548,27 +607,16 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/5"
       >
-        {replyingTo && (
-          <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-2">
-            Replying to: {replyingTo.text}
-            <button
-              className="ml-2 text-red-500"
-              onClick={() => setReplyingTo(null)}
-            >
-              ✖
-            </button>
-          </div>
-        )}
-        {/* /////date format */}
-
         {messages.map((m) => {
-          const msgDate = formatDate(m.createdAt); // use createdAt instead of time
+          const msgDate = formatDate(m.createdAt);
           const showDateSeparator = msgDate !== lastDate;
-          lastDate = msgDate; // update for next iteration
+          lastDate = msgDate;
+
+          const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
           return (
             <div key={m.id} className="mb-2">
-              {/* Date separator */}
+              {/* DATE SEPARATOR */}
               {showDateSeparator && (
                 <div className="flex justify-center my-2">
                   <div className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">
@@ -577,130 +625,345 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 </div>
               )}
 
-              {/* Parent Reply */}
-              {m.parent && (
-                <div className="text-xs text-gray-400 mb-1 ml-2 border-l-2 pl-2">
-                  Reply to: {m.parent.text}
-                </div>
-              )}
+              {/* ======================================================
+         REPLYING-TO PREVIEW (appears only above the clicked message)
+         ====================================================== */}
+              {isReplyPreviewSpot && (
+                <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded">
+                  <div className="font-semibold text-sm">Replying to:</div>
 
-              {/* Message bubble (only if text exists) */}
-              {m.text && (
-                <MessageBubble
-                  text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
-                  me={m.me}
-                  time={m.time} // stays inside bubble
-                  selected={selectedMessageId === m.id}
-                  onClick={() =>
-                    setSelectedMessageId(
-                      selectedMessageId === m.id ? null : m.id
-                    )
-                  }
-                />
-              )}
+                  {/* Text */}
+                  <div className="text-gray-700 text-sm">{replyingTo.text}</div>
 
-              {/* Action buttons for selected message */}
-              {selectedMessageId === m.id && (
-                <div
-                  className={`flex gap-3 mt-1 ${
-                    m.me ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {m.me && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setEditMessage(m);
-                          setText(m.text);
-                          setReplyTo(null);
-                        }}
-                        className="text-blue-500 text-sm hover:underline"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteMessage(m.id)}
-                        className="text-red-500 text-sm cursor-pointer hover:underline disabled:opacity-50"
-                        disabled={deletingMessageIds.has(m.id)}
-                      >
-                        {deletingMessageIds.has(m.id)
-                          ? "Deleting..."
-                          : "Delete"}
-                      </button>
-                    </>
+                  {/* Attachments */}
+                  {(replyingTo.attachments?.length ?? 0) > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {(replyingTo.attachments ?? []).map((a) => (
+                        <a
+                          key={a.id}
+                          href={a.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline text-blue-600 text-xs"
+                        >
+                          {a.filename || "Attachment"}
+                        </a>
+                      ))}
+                    </div>
                   )}
+
+                  <button
+                    className="ml-2 text-red-500 text-xs"
+                    onClick={() => setReplyingTo(null)}
+                  >
+                    ✖
+                  </button>
                 </div>
               )}
 
-              {/* Attachments */}
-              {(m.attachments ?? []).length > 0 && (
-                <div
-                  className={`flex flex-col mt-1 ${
-                    m.me ? "items-end" : "items-start"
-                  }`}
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {m.attachments!.map((a) => {
-                      const ext = a.filename?.split(".").pop()?.toLowerCase();
+              {/* ======================================================
+   PARENT MESSAGE (Teams/Slack-style reply container)
+====================================================== */}
+              {m.parent ? (
+                <div className="max-w-[85%] mb-2 ml-2 mb-6">
+                  <div className="border border-lime-500 bg-gray-100 rounded-xl p-3 text-xs shadow-sm">
+                    {/* ---------- PARENT (replied-to message) ---------- */}
+                    <div className="font-semibold text-gray-700 mb-1">
+                      Replying to:
+                    </div>
 
-                      const renderTime = (
-                        <div className="text-xs text-gray-500 mt-1 text-right">
-                          {m.time}
-                        </div>
-                      );
+                    <div className="text-gray-700 mb-2">{m.parent.text}</div>
 
-                      if (a.mimeType?.startsWith("audio/")) {
-                        return (
-                          <div key={a.id} className="relative">
-                            <audio controls className="w-64">
-                              <source src={a.url} type={a.mimeType} />
-                            </audio>
-                            {renderTime}
-                          </div>
-                        );
-                      }
-
-                      if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                        return (
-                          <div key={a.id} className="relative">
-                            <img
-                              src={a.url}
-                              className="w-32 h-32 object-cover rounded"
-                            />
-                            {renderTime}
-                          </div>
-                        );
-                      }
-
-                      if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                        return (
-                          <div key={a.id} className="relative">
-                            <video
-                              src={a.url}
-                              controls
-                              className="w-40 rounded"
-                            />
-                            {renderTime}
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div key={a.id} className="relative">
+                    {(m.parent.attachments?.length ?? 0) > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {(m.parent.attachments ?? []).map((a) => (
                           <a
+                            key={a.id}
                             href={a.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline text-blue-600"
+                            className="underline text-blue-600 text-xs"
                           >
                             {a.filename || "Attachment"}
                           </a>
-                          {renderTime}
+                        ))}
+                      </div>
+                    )}
+
+                    <hr className="border-gray-300 my-2" />
+
+                    {/* ---------- CHILD MESSAGE TEXT ---------- */}
+                    {m.text && (
+                      <MessageBubble
+                        text={
+                          parseLinks(m.text) + (m.edited ? " (edited)" : "")
+                        }
+                        me={m.me}
+                        time={m.time}
+                        selected={selectedMessageId === m.id}
+                        onClick={() =>
+                          setSelectedMessageId(
+                            selectedMessageId === m.id ? null : m.id
+                          )
+                        }
+                      />
+                    )}
+                    {selectedMessageId === m.id && (
+                      <div
+                        className={`flex gap-3 mt-1 ${
+                          m.me ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        {m.me && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setEditMessage(m);
+                                setText(m.text);
+                                setReplyTo(null);
+                              }}
+                              className="text-blue-500 text-sm hover:underline"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => deleteMessage(m.id)}
+                              className="text-red-500 text-sm hover:underline disabled:opacity-50"
+                              disabled={deletingMessageIds.has(m.id)}
+                            >
+                              {deletingMessageIds.has(m.id)
+                                ? "Deleting..."
+                                : "Delete"}
+                            </button>
+                          </>
+                        )}
+
+                        {/* Reply button */}
+                        <button
+                          onClick={() => setReplyingTo(m)}
+                          className="text-gray-600 text-sm hover:underline"
+                        >
+                          Reply
+                        </button>
+                      </div>
+                    )}
+                    {/* ---------- CHILD ATTACHMENTS ---------- */}
+                    {(m.attachments?.length ?? 0) > 0 && (
+                      <div
+                        className={`flex flex-col mt-2 ${
+                          m.me ? "items-end" : "items-start"
+                        }`}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {(m.attachments ?? []).map((a) => {
+                            const ext = a.filename
+                              ?.split(".")
+                              .pop()
+                              ?.toLowerCase();
+                            const time = (
+                              <div className="text-xs text-gray-500 mt-1 text-right">
+                                {m.time}
+                              </div>
+                            );
+
+                            if (a.mimeType?.startsWith("audio/")) {
+                              return (
+                                <div key={a.id} className="relative">
+                                  <audio controls className="w-64">
+                                    <source src={a.url} type={a.mimeType} />
+                                  </audio>
+                                  {time}
+                                </div>
+                              );
+                            }
+
+                            if (
+                              ext &&
+                              ["png", "jpg", "jpeg", "gif"].includes(ext)
+                            ) {
+                              return (
+                                <div key={a.id} className="relative">
+                                  <img
+                                    src={a.url}
+                                    className="w-32 h-32 object-cover rounded"
+                                  />
+                                  {time}
+                                </div>
+                              );
+                            }
+
+                            if (ext && ["mp4", "mov", "webm"].includes(ext)) {
+                              return (
+                                <div key={a.id} className="relative">
+                                  <video
+                                    src={a.url}
+                                    controls
+                                    className="w-40 rounded"
+                                  />
+                                  {time}
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div key={a.id} className="relative">
+                                <a
+                                  href={a.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline text-blue-600"
+                                >
+                                  {a.filename || "Attachment"}
+                                </a>
+                                {time}
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    )}
                   </div>
                 </div>
+              ) : (
+                <>
+                  {/* MESSAGE BUBBLE */}
+                  {m.text && (
+                    <MessageBubble
+                      text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
+                      me={m.me}
+                      time={m.time}
+                      selected={selectedMessageId === m.id}
+                      onClick={() =>
+                        setSelectedMessageId(
+                          selectedMessageId === m.id ? null : m.id
+                        )
+                      }
+                    />
+                  )}
+
+                  {/* ======================================================
+         ACTION BUTTONS (Edit / Delete / Reply)
+         ====================================================== */}
+                  {selectedMessageId === m.id && (
+                    <div
+                      className={`flex gap-3 mt-1 ${
+                        m.me ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      {m.me && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setEditMessage(m);
+                              setText(m.text);
+                              setReplyTo(null);
+                            }}
+                            className="text-blue-500 text-sm hover:underline"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            onClick={() => deleteMessage(m.id)}
+                            className="text-red-500 text-sm hover:underline disabled:opacity-50"
+                            disabled={deletingMessageIds.has(m.id)}
+                          >
+                            {deletingMessageIds.has(m.id)
+                              ? "Deleting..."
+                              : "Delete"}
+                          </button>
+                        </>
+                      )}
+
+                      {/* Reply button */}
+                      <button
+                        onClick={() => setReplyingTo(m)}
+                        className="text-gray-600 text-sm hover:underline"
+                      >
+                        Reply
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ======================================================
+         ATTACHMENTS
+         ====================================================== */}
+                  {(m.attachments?.length ?? 0) > 0 && (
+                    <div
+                      className={`flex flex-col mt-1 ${
+                        m.me ? "items-end" : "items-start"
+                      }`}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {(m.attachments ?? []).map((a) => {
+                          const ext = a.filename
+                            ?.split(".")
+                            .pop()
+                            ?.toLowerCase();
+                          const time = (
+                            <div className="text-xs text-gray-500 mt-1 text-right">
+                              {m.time}
+                            </div>
+                          );
+
+                          if (a.mimeType?.startsWith("audio/")) {
+                            return (
+                              <div key={a.id} className="relative">
+                                <audio controls className="w-64">
+                                  <source src={a.url} type={a.mimeType} />
+                                </audio>
+                                {time}
+                              </div>
+                            );
+                          }
+
+                          if (
+                            ext &&
+                            ["png", "jpg", "jpeg", "gif"].includes(ext)
+                          ) {
+                            return (
+                              <div key={a.id} className="relative">
+                                <img
+                                  src={a.url}
+                                  className="w-32 h-32 object-cover rounded"
+                                />
+                                {time}
+                              </div>
+                            );
+                          }
+
+                          if (ext && ["mp4", "mov", "webm"].includes(ext)) {
+                            return (
+                              <div key={a.id} className="relative">
+                                <video
+                                  src={a.url}
+                                  controls
+                                  className="w-40 rounded"
+                                />
+                                {time}
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div key={a.id} className="relative">
+                              <a
+                                href={a.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-blue-600"
+                              >
+                                {a.filename || "Attachment"}
+                              </a>
+                              {time}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           );

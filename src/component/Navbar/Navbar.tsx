@@ -205,8 +205,8 @@ export default function Navbar() {
                       {link.name}
                     </Link>
 
-                    {link.name === "Message" && chatUnreadCount > 0 && (
-                      <span className="absolute -top-2 -right-3 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
+                    {link.name === "Chat" && chatUnreadCount > 0 && (
+                      <span className="absolute -top-2 -right-4 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
                         {chatUnreadCount}
                       </span>
                     )}
