@@ -132,37 +132,32 @@ const MessagesLayout: React.FC = () => {
   // === Initialize socket connection ===
   useEffect(() => {
     const token = localStorage.getItem("user-token");
+    if (!token) return;
+
     socketRef.current = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
       query: { token },
     });
 
     socketRef.current.on("connect", () => console.log("Socket connected"));
 
-    // socketRef.current.on("message:new", (msg: any) => {
-    //   setConversations((prev) =>
-    //     prev.map((c) =>
-    //       c.id === msg.conversationId
-    //         ? { ...c, preview: msg.text, unread: (c.unread || 0) + 1 }
-    //         : c
-    //     )
-    //   );
-    // });
-    // === SOCKET EVENT: new conversation appears ===
+    // === 1️⃣ New conversation appears ===
     socketRef.current.on("conversation:new", (conv: any) => {
       setConversations((prev) => {
         const exists = prev.some((c) => c.id === conv.id);
         if (exists) return prev;
 
-        const peer = conv.members.find((m: any) => m.id !== currentUserId);
+        const peer = conv.members.find(
+          (m: any) => m.user.id !== currentUserId
+        )?.user;
 
         const msg: Msg = {
           id: conv.id,
-          name: `${peer.firstName} ${peer.lastName}`,
-          avatar: peer.avatar,
+          name: peer ? `${peer.firstName} ${peer.lastName}` : "Unknown User",
+          avatar: peer?.photoUrl || "https://via.placeholder.com/40",
           preview: conv.lastMessage?.text || "",
           text: conv.lastMessage?.text || "",
           me: false,
-          createdAt: conv.createdAt,
+          createdAt: conv.lastMessage?.createdAt || new Date().toISOString(),
           time: conv.lastMessage?.createdAt
             ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -175,6 +170,8 @@ const MessagesLayout: React.FC = () => {
         return [msg, ...prev];
       });
     });
+
+    // === 2️⃣ New message in existing conversation ===
     socketRef.current.on("message:new", (msg: any) => {
       setConversations((prev) =>
         prev.map((c) => {
@@ -185,7 +182,16 @@ const MessagesLayout: React.FC = () => {
           return {
             ...c,
             preview: msg.text,
+            text: msg.text,
+            // If user has conversation open, unread = 0, else increment
             unread: isOpen ? 0 : (c.unread || 0) + 1,
+            createdAt: msg.createdAt || c.createdAt,
+            time: msg.createdAt
+              ? new Date(msg.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : c.time,
           };
         })
       );
@@ -194,26 +200,122 @@ const MessagesLayout: React.FC = () => {
         markConversationAsRead(msg.conversationId);
       }
     });
+
+    // === 3️⃣ Backend emits full conversation updates including unread counts ===
     socketRef.current.on(
-      "chat:unreadCount",
-      ({
-        total,
-        conversationId,
-      }: {
-        total: number;
-        conversationId: number;
-      }) => {
-        const convId = conversationId.toString(); // convert to string
-        setConversations((prev) =>
-          prev.map((c) => (c.id === convId ? { ...c, unread: total } : c))
-        );
+      "dmConversationsUpdated",
+      (data: { conversations: any[] }) => {
+        setConversations((prev) => {
+          const mapped: Msg[] = data.conversations.map((c) => {
+            const peer = c.members.find(
+              (m: any) => m.user.id !== currentUserId
+            )?.user;
+
+            return {
+              id: c.id,
+              name: peer
+                ? `${peer.firstName} ${peer.lastName}`
+                : "Unknown User",
+              avatar: peer?.photoUrl || "https://via.placeholder.com/40",
+              preview: c.lastMessage?.text || "",
+              text: c.lastMessage?.text || "",
+              me: false,
+              createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
+              time: c.lastMessage?.createdAt
+                ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "",
+              unread: c.unreadCount || 0, // sync unread count from backend
+            };
+          });
+
+          return mapped;
+        });
       }
     );
 
     return () => {
       socketRef.current?.disconnect();
     };
-  }, []);
+  }, [currentUserId, selected]);
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("user-token");
+  //   socketRef.current = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
+  //     query: { token },
+  //   });
+
+  //   socketRef.current.on("connect", () => console.log("Socket connected"));
+
+  //   // === SOCKET EVENT: new conversation appears ===
+  //   socketRef.current.on("conversation:new", (conv: any) => {
+  //     setConversations((prev) => {
+  //       const exists = prev.some((c) => c.id === conv.id);
+  //       if (exists) return prev;
+
+  //       const peer = conv.members.find((m: any) => m.id !== currentUserId);
+
+  //       const msg: Msg = {
+  //         id: conv.id,
+  //         name: `${peer.firstName} ${peer.lastName}`,
+  //         avatar: peer.avatar,
+  //         preview: conv.lastMessage?.text || "",
+  //         text: conv.lastMessage?.text || "",
+  //         me: false,
+  //         createdAt: conv.createdAt,
+  //         time: conv.lastMessage?.createdAt
+  //           ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+  //               hour: "2-digit",
+  //               minute: "2-digit",
+  //             })
+  //           : "",
+  //         unread: 1,
+  //       };
+
+  //       return [msg, ...prev];
+  //     });
+  //   });
+  //   socketRef.current.on("message:new", (msg: any) => {
+  //     setConversations((prev) =>
+  //       prev.map((c) => {
+  //         if (c.id !== msg.conversationId) return c;
+
+  //         const isOpen = selected === msg.conversationId;
+
+  //         return {
+  //           ...c,
+  //           preview: msg.text,
+  //           unread: isOpen ? 0 : (c.unread || 0) + 1,
+  //         };
+  //       })
+  //     );
+
+  //     if (selected === msg.conversationId) {
+  //       markConversationAsRead(msg.conversationId);
+  //     }
+  //   });
+  //   socketRef.current.on(
+  //     "chat:unreadCount",
+  //     ({
+  //       total,
+  //       conversationId,
+  //     }: {
+  //       total: number;
+  //       conversationId: number;
+  //     }) => {
+  //       const convId = conversationId.toString(); // convert to string
+  //       setConversations((prev) =>
+  //         prev.map((c) => (c.id === convId ? { ...c, unread: total } : c))
+  //       );
+  //     }
+  //   );
+
+  //   return () => {
+  //     socketRef.current?.disconnect();
+  //   };
+  // }, []);
 
   // === Fetch on mount and when search changes ===
   useEffect(() => {
