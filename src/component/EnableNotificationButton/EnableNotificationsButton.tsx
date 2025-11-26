@@ -21,9 +21,11 @@ export async function RequestNotificationPermission() {
       userVisibleOnly: true,
       applicationServerKey,
     });
-
+    const token = localStorage.getItem("user-token");
     // send subscription to backend
-    await Api.post("/push-notification/subscribe", subscription);
+    await Api.post("/push-notification/subscribe", subscription, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     console.log("Notifications enabled automatically");
   } catch (err) {
     console.error("Notification permission error:", err);

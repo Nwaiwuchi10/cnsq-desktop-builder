@@ -8,7 +8,7 @@ import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
 import MessageCeoModal from "../MessageCEO/MessageCEO";
 import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
-import { initChatSocket } from "@/utils/chatSocket";
+import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
 
 type User = {
   uuid: string;
@@ -44,20 +44,25 @@ export default function Navbar() {
   // 🔹 Realtime chat unread count via Socket.IO
   useEffect(() => {
     const token = localStorage.getItem("user-token");
-    if (!token) return;
+    const storedUserId = localStorage.getItem("userId");
+    if (!token || !storedUserId) return;
 
-    // Initialize socket
-    const socket = initChatSocket(token);
+    // init socket (this should decode token server-side; we also send userId in auth)
+    initChatSocket(Number(storedUserId));
 
-    // Listen for unread count updates
+    const socket = getChatSocket();
+    if (!socket) return;
+
     socket.on("chat:unreadCount", (data: { total: number }) => {
-      console.log("Realtime chat unread count:", data.total);
-      setChatUnreadCount(data.total);
+      setChatUnreadCount(
+        typeof data === "object" ? data.total ?? 0 : Number(data) ?? 0
+      );
     });
 
-    // Cleanup on unmount
+    // When component unmounts
     return () => {
       socket.off("chat:unreadCount");
+      // don't disconnect here if other components rely on the socket; but if only navbar uses it, disconnect:
       socket.disconnect();
     };
   }, []);
@@ -102,29 +107,20 @@ export default function Navbar() {
     };
 
     fetchUnreadCount();
-
-    const socket = initChatSocket(token);
-    socket.on("chat:unreadCount", (data: { total: number }) => {
-      setChatUnreadCount(data.total);
-    });
-
-    return () => {
-      socket.off("chat:unreadCount");
-      socket.disconnect();
-    };
   }, []);
   // 🔹 Fetch unread chat messages
+
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     if (!token) return;
 
     const fetchChatUnread = async () => {
       try {
-        const res = await Api.get("/chat/unread-total/all/conversations", {
+        const res = await Api.get("/chat/unread-total/user/all/conversations", {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("API Response:", res.data); // should log 2
-        setChatUnreadCount(res.data);
+        setChatUnreadCount(res.data?.total ?? Number(res.data) ?? 0);
       } catch (error) {
         console.error("Failed to fetch chat unread count", error);
       }
@@ -133,8 +129,6 @@ export default function Navbar() {
     fetchChatUnread();
 
     // optional: auto-refresh every 10 seconds
-    // const interval = setInterval(fetchChatUnread, 1000);
-    // return () => clearInterval(interval);
   }, []);
 
   // Close dropdown if clicked outside
@@ -211,8 +205,8 @@ export default function Navbar() {
                       {link.name}
                     </Link>
 
-                    {link.name === "Message" && chatUnreadCount > 0 && (
-                      <span className="absolute -top-2 -right-3 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
+                    {link.name === "Chat" && chatUnreadCount > 0 && (
+                      <span className="absolute -top-2 -right-4 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
                         {chatUnreadCount}
                       </span>
                     )}
