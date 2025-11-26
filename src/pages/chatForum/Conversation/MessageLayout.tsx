@@ -512,7 +512,7 @@ const MessagesLayout: React.FC = () => {
 
             {selected && (
               <div
-                className="bg-white h-[100vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm"
+                className="bg-white h-[80vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm"
                 //           className="bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm
                 // w-full"
               >
