@@ -164,7 +164,8 @@ const MessagesLayout: React.FC = () => {
                 minute: "2-digit",
               })
             : "",
-          unread: 1,
+          unread: conv.unreadCount ?? 0,
+          // unread: 1,
         };
 
         return [msg, ...prev];
@@ -396,7 +397,7 @@ const MessagesLayout: React.FC = () => {
     <>
       <Navbar />
 
-      <div className="min-h-screen bg-[#FAFAFA] text-gray-600 p-8 pt-32">
+      <div className="min-h-screen bg-[#FAFAFA] text-gray-600 p-0 pt-20 md:p-8 md:pt-32">
         <div
           className="mx-auto
     max-w-full  
@@ -478,7 +479,7 @@ const MessagesLayout: React.FC = () => {
           {/* Mobile layout */}
           <div className="block md:hidden">
             {!selected && (
-              <div>
+              <div className="p-8">
                 <h1 className="text-2xl font-semibold text-gray-700">
                   Your Messages
                 </h1>
@@ -511,8 +512,9 @@ const MessagesLayout: React.FC = () => {
 
             {selected && (
               <div
-                className="bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm
-      w-full"
+                className="bg-white h-[100vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm"
+                //           className="bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm
+                // w-full"
               >
                 <ConversationView
                   conversation={

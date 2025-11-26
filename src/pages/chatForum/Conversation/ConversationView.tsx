@@ -247,64 +247,62 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   };
   //////record voice
   const startRecording = async () => {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    alert("Browser does not support audio recording.");
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    // BEST cross browser MIME types
-    const supportedMimeTypes = [
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/mp4",
-      "audio/ogg;codecs=opus",
-      "audio/ogg",
-    ];
-
-    let mimeType = "";
-
-    for (const type of supportedMimeTypes) {
-      if (MediaRecorder.isTypeSupported(type)) {
-        mimeType = type;
-        break;
-      }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert("Browser does not support audio recording.");
+      return;
     }
 
-    const recorder = new MediaRecorder(
-      stream,
-      mimeType ? { mimeType } : undefined
-    );
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    const chunks: BlobPart[] = [];
+      // BEST cross browser MIME types
+      const supportedMimeTypes = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg",
+      ];
 
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunks.push(e.data);
-    };   
+      let mimeType = "";
 
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
-      setAudioBlob(blob);
-      setAudioUrl(URL.createObjectURL(blob));
-    };
+      for (const type of supportedMimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mimeType = type;
+          break;
+        }
+      }
 
-    recorder.start();
-    setMediaRecorder(recorder);
-    setIsRecording(true);
-  } catch (err) {
-    console.error(err);
-    alert("Microphone permission denied or unsupported device.");
-  }
-};
-const stopRecording = () => {
-  if (!mediaRecorder) return;
-  mediaRecorder.stop();
-  setIsRecording(false);
-};
+      const recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined
+      );
 
- 
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } catch (err) {
+      console.error(err);
+      alert("Microphone permission denied or unsupported device.");
+    }
+  };
+  const stopRecording = () => {
+    if (!mediaRecorder) return;
+    mediaRecorder.stop();
+    setIsRecording(false);
+  };
 
   ///post message
 
@@ -345,8 +343,6 @@ const stopRecording = () => {
       setIsSaving(false);
     }
   };
-
-  
 
   const sendVoiceNote = async () => {
     if (!audioBlob) return;
@@ -481,6 +477,7 @@ const stopRecording = () => {
     const ext = fileItem.name.split(".").pop()?.toLowerCase();
     const isImage = ext && ["png", "jpg", "jpeg", "gif"].includes(ext);
     const isVideo = ext && ["mp4", "mov", "webm"].includes(ext);
+    const isAudio = ext && ["mp3", "wav", "ogg", "m4a"].includes(ext);
 
     return (
       <div
@@ -496,6 +493,13 @@ const stopRecording = () => {
         )}
         {isVideo && (
           <video
+            src={URL.createObjectURL(fileItem)}
+            className="w-20 h-20 rounded"
+            controls
+          />
+        )}
+        {isAudio && (
+          <audio
             src={URL.createObjectURL(fileItem)}
             className="w-20 h-20 rounded"
             controls
@@ -943,7 +947,7 @@ const stopRecording = () => {
               <input
                 type="file"
                 multiple
-                accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
                 className="hidden"
                 onChange={(e: any) => {
                   if (e.target.files) {
@@ -1011,10 +1015,6 @@ const stopRecording = () => {
                   </button>
                 </div>
                 <EmojiPicker onEmojiClick={handleEmojiSelect} />
-                {/* <Picker
-                  data={data}
-                  onEmojiSelect={handleEmojiSelect} // ⬅ clean method
-                /> */}
               </div>
             )}
 
