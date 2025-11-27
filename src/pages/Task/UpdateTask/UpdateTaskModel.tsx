@@ -48,6 +48,7 @@ const TASK_STATUSES = [
   "Testing_In_Progress",
   "Failed_Test",
   "Passed_Test",
+  "Dev_Completed",
   "Completed",
 ];
 
