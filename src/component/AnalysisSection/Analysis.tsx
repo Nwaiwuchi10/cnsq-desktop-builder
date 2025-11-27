@@ -78,20 +78,27 @@ export default function StatsCards() {
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[80vh] sm:min-h-[100vh] md:min-h-[70vh] lg:min-h-[50vh] flex items-center justify-center px-8 sm:px-6 md:px-20 pt-8">
-      <div className="flex flex-wrap gap-6 justify-center w-full max-w-7xl">
-        {statsView.map((stat) => (
-          <div
-            key={stat.id}
-            className="flex flex-col items-start gap-3 border border-[#E5E7EB] bg-white rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%]"
-          >
-            <Link href={stat.href} className="hover:opacity-80">
-              <div className="text-gray-600">{stat.icon}</div>
-              <p className="text-gray-900 font-medium">{stat.label}</p>
-              <h2 className="text-2xl font-bold text-gray-900">{stat.value}</h2>
-            </Link>
-          </div>
-        ))}
+    <div className="bg-[#FAFAFA] min-h-[80vh] sm:min-h-[100vh] md:min-h-[70vh] lg:min-h-[50vh]  px-8 sm:px-6 md:px-20 pt-20">
+      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-7xl">
+        Quick Analysis
+      </h1>
+      <div className="flex items-center justify-center">
+        <div className="flex flex-wrap gap-6 justify-center w-full max-w-7xl">
+          {statsView.map((stat) => (
+            <div
+              key={stat.id}
+              className="flex flex-col items-start gap-3 border border-[#E5E7EB] bg-white rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%]"
+            >
+              <Link href={stat.href} className="hover:opacity-80">
+                <div className="text-gray-600">{stat.icon}</div>
+                <p className="text-gray-900 font-medium">{stat.label}</p>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {stat.value}
+                </h2>
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
