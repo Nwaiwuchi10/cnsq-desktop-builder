@@ -94,7 +94,7 @@ export default function SubscriptionStatsCards() {
             </div>
 
             {/* Value */}
-            <h2 className="text-2xl font-bold text-gray-900 mt-2 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 mt-1 mb-1">
               {item.value}
             </h2>
           </div>
