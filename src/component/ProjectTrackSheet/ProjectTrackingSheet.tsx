@@ -129,7 +129,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   // ✅ Fetch staff list for dropdown (map response correctly)
   const fetchStaffList = async () => {
     try {
-      const res = await Api.get(`/projects/${projectId}/staffs`);
+      const res = await Api.get(`/projects/${projectId?.id}/staffs`);
       const staffOnly = (res.data || []).map((item: any) => item.staff); // 🔹 unwrap staff
       setStaffList(staffOnly);
     } catch (err) {
