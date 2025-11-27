@@ -66,6 +66,11 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const prevConversationId = useRef<string | null>(null);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const pageSize = 30;
   const hasUserScrolled = useRef(false);
 
   // const socketRef = useRef<Socket | null>(null);
@@ -88,11 +93,34 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, [conversation?.id]);
 
+  // useEffect(() => {
+  //   const container = scrollRef.current;
+  //   if (!container) return;
+
+  //   const onScroll = () => {
+  //     const bottomReached =
+  //       container.scrollHeight - container.scrollTop === container.clientHeight;
+
+  //     if (!bottomReached) {
+  //       hasUserScrolled.current = true;
+  //     }
+  //   };
+
+  //   container.addEventListener("scroll", onScroll);
+
+  //   return () => container.removeEventListener("scroll", onScroll);
+  // }, []);
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
 
     const onScroll = () => {
+      const topReached = container.scrollTop === 0;
+
+      if (topReached) {
+        loadMoreMessages();
+      }
+
       const bottomReached =
         container.scrollHeight - container.scrollTop === container.clientHeight;
 
@@ -122,7 +150,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, []);
 
-  const fetchMessages = async () => {
+  const fetchMessagesy = async () => {
     if (!conversation?.id) return;
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -163,25 +191,127 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         name: m.author.firstName + " " + m.author.lastName,
       }));
 
-      // const mapped: Msg[] = messagesData.map((m: any) => ({
-      //   id: m.id,
-      //   text: m.text,
-      //   me: m.author.id === userId,
-      //   createdAt: m.createdAt,
-      //   time: new Date(m.createdAt).toLocaleTimeString([], {
-      //     hour: "2-digit",
-      //     minute: "2-digit",
-      //   }),
-      //   attachments: m.attachments,
-      //   reactions: m.reactions,
-      //   parent: m.parent ? { id: m.parent.id, text: m.parent.text } : undefined,
-      //   name: m.author.firstName + " " + m.author.lastName, // <-- add this
-      // }));
-
       setMessages(mapped.reverse());
       //   scrollToBottom();
     } catch (err) {
       console.error("Failed to fetch messages:", err);
+    }
+  };
+  const fetchMessages = async () => {
+    if (!conversation?.id) return;
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    try {
+      const res = await Api.get(
+        `/chat/conversations/${conversation.id}/messages?limit=${pageSize}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const messagesData = Array.isArray(res.data.messages)
+        ? res.data.messages
+        : [];
+
+      const nextCursor = res.data.nextCursor;
+      setCursor(nextCursor);
+      setHasMore(Boolean(nextCursor));
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const userId = payload.staffId || payload.id || payload.sub;
+      setCurrentUserId(userId);
+
+      const mapped = messagesData.map((m: any) => ({
+        id: m.id,
+        text: m.text,
+        me: m.author.id === userId,
+        createdAt: m.createdAt,
+        time: new Date(m.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        attachments: m.attachments,
+        reactions: m.reactions,
+        parent: m.parent
+          ? {
+              id: m.parent.id,
+              text: m.parent.text,
+              attachments: m.parent.attachments,
+            }
+          : undefined,
+        name: m.author.firstName + " " + m.author.lastName,
+      }));
+
+      // backend returns DESC, reverse to ASC for display
+      setMessages(mapped.reverse());
+    } catch (err) {
+      console.error("Failed to fetch messages:", err);
+    }
+  };
+  const loadMoreMessages = async () => {
+    if (!conversation?.id) return;
+    if (!cursor || loadingMore || !hasMore) return;
+
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    try {
+      setLoadingMore(true);
+
+      const res = await Api.get(
+        `/chat/conversations/${conversation.id}/messages?cursor=${cursor}&limit=${pageSize}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const messagesData = Array.isArray(res.data.messages)
+        ? res.data.messages
+        : [];
+
+      const newCursor = res.data.nextCursor;
+      setCursor(newCursor);
+      setHasMore(Boolean(newCursor));
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const userId = payload.staffId || payload.id || payload.sub;
+
+      // map results
+      const mapped = messagesData.map((m: any) => ({
+        id: m.id,
+        text: m.text,
+        me: m.author.id === userId,
+        createdAt: m.createdAt,
+        time: new Date(m.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        attachments: m.attachments,
+        reactions: m.reactions,
+        parent: m.parent
+          ? {
+              id: m.parent.id,
+              text: m.parent.text,
+              attachments: m.parent.attachments,
+            }
+          : undefined,
+        name: m.author.firstName + " " + m.author.lastName,
+      }));
+
+      // append to TOP (older messages)
+      setMessages((prev) => [...mapped.reverse(), ...prev]);
+
+      // maintain scroll position after items prepend
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = 200; // keeps user near the same place
+        }
+      }, 50);
+    } catch (err) {
+      console.error("Load more failed", err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -567,6 +697,11 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/5"
       >
+        {loadingMore && (
+          <div className="text-center text-gray-500 text-sm py-2">
+            Loading more...
+          </div>
+        )}
         {messages.map((m) => {
           const msgDate = formatDate(m.createdAt);
           const showDateSeparator = msgDate !== lastDate;

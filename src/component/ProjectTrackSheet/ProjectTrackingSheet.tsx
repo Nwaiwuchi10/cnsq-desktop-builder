@@ -191,6 +191,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     Ready_To_Test: "bg-blue-100 text-blue-600",
     Testing_In_Progress: "bg-purple-100 text-purple-600",
     Passed_Test: "bg-green-100 text-green-500",
+    Dev_Completed: "bg-green-300 text-green-500",
     Completed: "bg-green-200 text-green-600",
   };
 

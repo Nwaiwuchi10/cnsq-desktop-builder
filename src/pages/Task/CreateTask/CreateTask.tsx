@@ -73,6 +73,7 @@ const TASK_STATUSES = [
   "Testing_In_Progress",
   "Failed_Test",
   "Passed_Test",
+  "Dev_Completed",
   "Completed",
 ];
 
@@ -198,7 +199,7 @@ export default function CreateTaskForm() {
       status: status || "Not_started",
       priority: priority || "Medium",
       urgency: urgency || "Short_Term",
-      startDate,
+      startDate,   
       dueDate,
       // startDate: new Date(startDate).toISOString(),
       // dueDate: new Date(dueDate).toISOString(),
