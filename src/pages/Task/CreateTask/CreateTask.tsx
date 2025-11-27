@@ -199,7 +199,7 @@ export default function CreateTaskForm() {
       status: status || "Not_started",
       priority: priority || "Medium",
       urgency: urgency || "Short_Term",
-      startDate,   
+      startDate,
       dueDate,
       // startDate: new Date(startDate).toISOString(),
       // dueDate: new Date(dueDate).toISOString(),
