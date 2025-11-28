@@ -12,9 +12,9 @@ import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
-// import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
+
 import SubscriptionStatsCards from "@/component/QuoteRequestSubscriptionStat/SubscriptionStatCard";
-import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
+import { enableNotifications } from "@/component/EnableNotificationButton/EnableNotificationsButton";
 
 interface Notification {
   id: number;
@@ -29,6 +29,21 @@ interface Notification {
 const HomePage = () => {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    async function initNotifications() {
+      const result = await enableNotifications();
+      setNotificationsEnabled(result);
+
+      // Show toast for 8 seconds
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 8000);
+    }
+
+    initNotifications();
+  }, []);
 
   useEffect(() => {
     const fetchSpecialNotices = async () => {
@@ -88,6 +103,16 @@ const HomePage = () => {
   return (
     <div>
       <Navbar />
+      {/* Optional display for notification status */}
+      <div
+        className={`fixed top-16 right-4 p-3 rounded-md shadow-lg z-50 transition-opacity duration-500 ${
+          showToast ? "opacity-100" : "opacity-0"
+        } ${notificationsEnabled ? "bg-lime-500" : "bg-red-500"} text-white`}
+      >
+        {notificationsEnabled
+          ? "Notifications Enabled ✅"
+          : "Notifications Not Enabled ⚠️"}
+      </div>
 
       <HeroSection />
       <SubscriptionStatsCards />
