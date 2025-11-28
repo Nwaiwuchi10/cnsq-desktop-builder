@@ -113,7 +113,7 @@ const StaffCard = ({ data }: { data: StaffData }) => {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-      {data.id && (
+      {data?.uuid && (
         <Link
           href={`/staff/${data?.uuid}`}
           className="absolute inset-0 z-10"
