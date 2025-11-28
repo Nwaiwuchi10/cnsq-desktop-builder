@@ -1,19 +1,33 @@
 import Api from "@/utils/api";
 
 export async function RequestNotificationPermission() {
-  if (!("serviceWorker" in navigator)) {
-    alert("Service worker not supported in this browser.");
+  // ❌ Prevent crash: iOS + non-PWA browsers = no push
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+
+  if (isIOS && !isPWA) {
+    console.warn(
+      "iOS Safari does not support Web Push unless installed as PWA."
+    );
+    return;
+  }
+
+  // ❌ Prevent crash on unsupported browsers
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    console.warn("Push notifications not supported in this browser.");
     return;
   }
 
   try {
     const registration = await navigator.serviceWorker.register("/sw.js");
 
-    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!vapidKey) {
-      console.error("VAPID public key missing");
+    if (!registration.pushManager) {
+      console.warn("Push Manager not available on this device.");
       return;
     }
+
+    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!vapidKey) return;
 
     const applicationServerKey: any = urlBase64ToUint8Array(vapidKey);
 
@@ -21,12 +35,14 @@ export async function RequestNotificationPermission() {
       userVisibleOnly: true,
       applicationServerKey,
     });
+
     const token = localStorage.getItem("user-token");
-    // send subscription to backend
+
     await Api.post("/push-notification/subscribe", subscription, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    console.log("Notifications enabled automatically");
+
+    console.log("Notifications enabled");
   } catch (err) {
     console.error("Notification permission error:", err);
   }
