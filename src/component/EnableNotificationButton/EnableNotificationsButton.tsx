@@ -1,24 +1,26 @@
 import Api from "@/utils/api";
 
 export async function RequestNotificationPermission() {
-  // ❌ Prevent crash: iOS + non-PWA browsers = no push
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isPWA = window.matchMedia("(display-mode: standalone)").matches;
-
-  if (isIOS && !isPWA) {
-    console.warn(
-      "iOS Safari does not support Web Push unless installed as PWA."
-    );
-    return;
-  }
-
-  // ❌ Prevent crash on unsupported browsers
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    console.warn("Push notifications not supported in this browser.");
-    return;
-  }
-
   try {
+    if (typeof window === "undefined" || typeof navigator === "undefined")
+      return;
+
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isPWA = window.matchMedia("(display-mode: standalone)").matches;
+
+    // iOS Safari only supports push in PWA
+    if (isIOS && !isPWA) {
+      console.warn(
+        "iOS Safari does not support Web Push unless installed as PWA."
+      );
+      return;
+    }
+
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      console.warn("Push notifications not supported in this browser.");
+      return;
+    }
+
     const registration = await navigator.serviceWorker.register("/sw.js");
 
     if (!registration.pushManager) {
@@ -53,7 +55,6 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const rawData = atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-
   for (let i = 0; i < rawData.length; i++) {
     outputArray[i] = rawData.charCodeAt(i);
   }
