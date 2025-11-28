@@ -790,8 +790,19 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                     {/* ---------- CHILD MESSAGE TEXT ---------- */}
                     {m.text && (
                       <MessageBubble
+                        // text={
+                        //   parseLinks(m.text) + (m.edited ? " (edited)" : "")
+                        // }
                         text={
-                          parseLinks(m.text) + (m.edited ? " (edited)" : "")
+                          <>
+                            {parseLinks(m.text)}
+                            {m.edited && (
+                              <span className="text-xs text-gray-500">
+                                {" "}
+                                (edited)
+                              </span>
+                            )}
+                          </>
                         }
                         me={m.me}
                         time={m.time}
@@ -925,7 +936,18 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   {/* MESSAGE BUBBLE */}
                   {m.text && (
                     <MessageBubble
-                      text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
+                      // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
+                      text={
+                        <>
+                          {parseLinks(m.text)}
+                          {m.edited && (
+                            <span className="text-xs text-gray-500">
+                              {" "}
+                              (edited)
+                            </span>
+                          )}
+                        </>
+                      }
                       me={m.me}
                       time={m.time}
                       selected={selectedMessageId === m.id}
