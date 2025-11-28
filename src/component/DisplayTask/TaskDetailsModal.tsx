@@ -227,7 +227,9 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     In_progress: "bg-yellow-100 text-yellow-600",
     Ready_To_Test: "bg-blue-100 text-blue-600",
     Testing_In_Progress: "bg-purple-100 text-purple-600",
+    On_Hold: "bg-orange-200 text-orange-600",
     Passed_Test: "bg-green-100 text-green-500",
+    Dev_Completed: "bg-green-300 text-green-500",
     Completed: "bg-green-200 text-green-600",
   };
 

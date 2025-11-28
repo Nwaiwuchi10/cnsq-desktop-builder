@@ -25,6 +25,8 @@ import StaffDirectoryModal from "@/component/StaffDirectoryModal/StaffDirectoryM
 // ---------------- TYPES ----------------
 interface Staff {
   id: number;
+  uuid: string;
+
   firstName: string;
   lastName: string;
   photoUrl?: string;
@@ -48,6 +50,7 @@ interface DepartmentalRole {
 
 interface HeadOfDepartment {
   id: number;
+
   staff: Staff;
   department: Department;
 }
@@ -58,6 +61,7 @@ interface StaffData {
   department: string;
   photo: string;
   id?: number;
+  uuid: string;
 }
 
 interface DeptData {
@@ -109,9 +113,9 @@ const StaffCard = ({ data }: { data: StaffData }) => {
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
 
-      {data.id && (
+      {data?.uuid && (
         <Link
-          href={`/staff/${data.id}`}
+          href={`/staff/${data?.uuid}`}
           className="absolute inset-0 z-10"
           title={data.name}
         />
@@ -178,9 +182,11 @@ export default function OrgChart() {
         // CEO (static)
         builtNodes.push({
           id: "ceo",
+
           type: "staffCard",
           position: { x: 600, y: 0 },
           data: {
+            uuid: "ceo",
             name: "Emeka Okafor",
             role: "CEO",
             department: "Chief Executive Officer",
@@ -208,6 +214,7 @@ export default function OrgChart() {
             position: { x: 300 + xOffset, y: yHod },
             data: {
               id: hod.staff?.id,
+              uuid: hod.staff?.uuid,
               name: `${hod.staff?.firstName ?? ""} ${
                 hod.staff?.lastName ?? ""
               }`,
