@@ -74,34 +74,6 @@ const HomePage = () => {
 
     fetchSpecialNotices();
   }, []);
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-
-  //   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  //   const isPWA = window.matchMedia("(display-mode: standalone)").matches;
-
-  //   const askedBefore = localStorage.getItem(
-  //     "notification_permission_requested"
-  //   );
-
-  //   if (!askedBefore && Notification.permission !== "granted") {
-  //     if (isIOS && !isPWA) {
-  //       console.log(
-  //         "iOS Safari not in PWA mode – skipping notification request"
-  //       );
-  //       return;
-  //     }
-
-  //     const timer = setTimeout(() => {
-  //       if (document.visibilityState === "visible") {
-  //         RequestNotificationPermission();
-  //         localStorage.setItem("notification_permission_requested", "true");
-  //       }
-  //     }, 1500);
-
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, []);
 
   const handleCloseModal = () => {
     if (activeNotification) {
