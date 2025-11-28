@@ -12,9 +12,9 @@ import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
-// import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
+
 import SubscriptionStatsCards from "@/component/QuoteRequestSubscriptionStat/SubscriptionStatCard";
-import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
+import { enableNotifications } from "@/component/EnableNotificationButton/EnableNotificationsButton";
 
 interface Notification {
   id: number;
@@ -29,7 +29,15 @@ interface Notification {
 const HomePage = () => {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  useEffect(() => {
+    async function initNotifications() {
+      const result = await enableNotifications();
+      setNotificationsEnabled(result);
+    }
 
+    initNotifications();
+  }, []);
   useEffect(() => {
     const fetchSpecialNotices = async () => {
       try {
@@ -74,34 +82,6 @@ const HomePage = () => {
 
     fetchSpecialNotices();
   }, []);
-  // useEffect(() => {
-  //   if (typeof window === "undefined") return;
-
-  //   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  //   const isPWA = window.matchMedia("(display-mode: standalone)").matches;
-
-  //   const askedBefore = localStorage.getItem(
-  //     "notification_permission_requested"
-  //   );
-
-  //   if (!askedBefore && Notification.permission !== "granted") {
-  //     if (isIOS && !isPWA) {
-  //       console.log(
-  //         "iOS Safari not in PWA mode – skipping notification request"
-  //       );
-  //       return;
-  //     }
-
-  //     const timer = setTimeout(() => {
-  //       if (document.visibilityState === "visible") {
-  //         RequestNotificationPermission();
-  //         localStorage.setItem("notification_permission_requested", "true");
-  //       }
-  //     }, 1500);
-
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, []);
 
   const handleCloseModal = () => {
     if (activeNotification) {
@@ -116,6 +96,12 @@ const HomePage = () => {
   return (
     <div>
       <Navbar />
+      {/* Optional display for notification status */}
+      <div className="fixed top-16 right-4 p-2 bg-lime-500 text-white rounded-md z-50">
+        {notificationsEnabled
+          ? "Notifications Enabled ✅"
+          : "Notifications Not Enabled ⚠️"}
+      </div>
 
       <HeroSection />
       <SubscriptionStatsCards />
