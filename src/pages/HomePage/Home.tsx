@@ -12,8 +12,9 @@ import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
-import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
+// import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
 import SubscriptionStatsCards from "@/component/QuoteRequestSubscriptionStat/SubscriptionStatCard";
+import { RequestNotificationPermission } from "@/component/EnableNotificationButton/EnableNotificationsButton";
 
 interface Notification {
   id: number;
@@ -72,36 +73,6 @@ const HomePage = () => {
     };
 
     fetchSpecialNotices();
-  }, []);
-  useEffect(() => {
-    const askedBefore = localStorage.getItem(
-      "notification_permission_requested"
-    );
-
-    if (!askedBefore) {
-      const timer = setTimeout(async () => {
-        if (document.visibilityState === "visible") {
-          await navigator.serviceWorker.ready;
-          RequestNotificationPermission();
-          localStorage.setItem("notification_permission_requested", "true");
-        }
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, []);
-  useEffect(() => {
-    const askedBefore = localStorage.getItem(
-      "notification_permission_requested"
-    );
-
-    if (!askedBefore && Notification.permission === "granted") {
-      RequestNotificationPermission();
-      localStorage.setItem("notification_permission_requested", "true");
-    }
-  }, []);
-  useEffect(() => {
-    RequestNotificationPermission();
   }, []);
 
   const handleCloseModal = () => {
