@@ -32,6 +32,7 @@ interface Employment {
 }
 interface Staff {
   id: string;
+  uuid: string;
   firstName: string;
   lastName: string;
   photoUrl?: string;
@@ -311,7 +312,7 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
         : "N/A"}
     </div>
 
-    <Link href={`/staff/${staff.id}`} className="w-full mt-6">
+    <Link href={`/staff/${staff.uuid}`} className="w-full mt-6">
       <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
         View Profile
       </button>
@@ -366,7 +367,7 @@ const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
       })}
     </div>
 
-    <Link href={`/staff/${staff.id}`} className="w-full mt-6">
+    <Link href={`/staff/${staff.uuid}`} className="w-full mt-6">
       <button className="w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
         View Profile
       </button>
