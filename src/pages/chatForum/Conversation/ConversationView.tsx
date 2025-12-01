@@ -790,9 +790,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                     {/* ---------- CHILD MESSAGE TEXT ---------- */}
                     {m.text && (
                       <MessageBubble
-                        // text={
-                        //   parseLinks(m.text) + (m.edited ? " (edited)" : "")
-                        // }
                         text={
                           <>
                             {parseLinks(m.text)}

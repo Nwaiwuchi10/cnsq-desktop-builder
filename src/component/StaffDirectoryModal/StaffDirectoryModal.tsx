@@ -37,6 +37,7 @@ interface Employment {
 
 interface Staff {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
   description?: string | null;
@@ -177,7 +178,7 @@ export default function StaffDirectoryModal({
                 </div>
 
                 {/* View Profile */}
-                <Link href={`/staff/${person.id}`} className="w-full">
+                <Link href={`/staff/${person.uuid}`} className="w-full">
                   <button className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
                     View Profile
                   </button>
