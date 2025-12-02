@@ -8,6 +8,8 @@ import Api from "@/utils/api";
 
 import { Msg } from "./ConversationItems";
 import io from "socket.io-client";
+import MessagesTabs from "./MessageLayoutSwitchTabs";
+import CreateChannelForm from "../Channels/CreateChannel";
 
 interface Member {
   id: number;
@@ -50,6 +52,9 @@ const MessagesLayout: React.FC = () => {
   const [staffMatches, setStaffMatches] = useState<Msg[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [activeTab, setActiveTab] = useState<
+    "all" | "unread" | "channels" | "create"
+  >("all");
 
   // const socketRef = useRef<Socket | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
@@ -392,6 +397,12 @@ const MessagesLayout: React.FC = () => {
       await markConversationAsRead(id);
     }
   };
+  const filteredConversations = conversations.filter((c: any) => {
+    if (activeTab === "all") return true;
+    if (activeTab === "unread") return c.unread > 0;
+    if (activeTab === "channels") return c.isChannel === true; // optional
+    return true;
+  });
 
   return (
     <>
@@ -422,25 +433,18 @@ const MessagesLayout: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <div className="flex gap-3 mt-6 mb-4">
-                  <button className="px-4 py-1 rounded-full bg-lime-500 text-white text-sm">
-                    All
-                  </button>
-                  <button className="px-4 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
-                    Unread
-                  </button>
-                  <button className="px-4 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
-                    Archived
-                  </button>
-                  <button className="px-4 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
-                    Channels
-                  </button>
+                <div>
+                  <MessagesTabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
                 </div>
                 {loading ? (
                   <div className="space-y-4">Loading....</div>
                 ) : (
                   <ConversationList
-                    items={conversations}
+                    // items={conversations}
+                    items={filteredConversations}
                     onSelect={handleSelect}
                   />
                 )}
@@ -458,7 +462,7 @@ const MessagesLayout: React.FC = () => {
               </div>
             </div>
 
-            <div className="col-span-3 md:col-span-2 bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
+            {/* <div className="col-span-3 md:col-span-2 bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
               {selected ? (
                 <ConversationView
                   conversation={
@@ -467,6 +471,22 @@ const MessagesLayout: React.FC = () => {
                   onBack={() => setSelected(null)}
                   //   id={selected}
                   //   onBack={() => setSelected(null)}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-gray-600">
+                  <p>Select a conversation to start chatting 💬</p>
+                </div>
+              )}
+            </div> */}
+            <div className="col-span-3 md:col-span-2 bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
+              {activeTab === "create" ? (
+                <CreateChannelForm /> // Show channel creation UI
+              ) : selected ? (
+                <ConversationView
+                  conversation={
+                    filteredConversations.find((c) => c.id === selected) || null
+                  }
+                  onBack={() => setSelected(null)}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-600">
