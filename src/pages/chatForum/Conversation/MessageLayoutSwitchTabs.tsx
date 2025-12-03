@@ -23,7 +23,7 @@ const MessagesTabs: React.FC<MessagesTabsProps> = ({
         <button
           key={tab.key}
           onClick={() => setActiveTab(tab.key)}
-          className={`px-4 py-1 rounded-full text-sm 
+          className={`px-4 py-1 rounded-full text-sm  cursor-pointer
             ${
               activeTab === tab.key
                 ? "bg-lime-500 text-white"
