@@ -410,7 +410,7 @@ const initialEdges: Edge[] = [
   // Marketing children
   ...[
     "graphics..",
-    "copywriting.",
+    "copywriting..",
     "digitalmarketing",
     "social&content",
     "offlinemarketing",
