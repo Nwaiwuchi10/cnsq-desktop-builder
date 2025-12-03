@@ -34,6 +34,8 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteTaskModal, setShowDeleteTaskModal] = useState(false);
+  const [deletingTask, setDeletingTask] = useState(false);
 
   // 🧠 Load token and user info
   useEffect(() => {
@@ -243,6 +245,38 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
   const displayTask = taskData || task;
 
+  // 🗑 Delete Task
+
+  const handleDeleteTask = async () => {
+    if (!token) return;
+    setDeletingTask(true);
+
+    try {
+      await Api.delete(`/task/${task.id}/task`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setModal({
+        type: "success",
+        message: "Task deleted successfully!",
+      });
+
+      setShowDeleteTaskModal(false);
+
+      // Close the modal after deleting
+      onClose();
+      window.location.reload();
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message: err.response?.data?.message || "Failed to delete task.",
+      });
+    } finally {
+      setDeletingTask(false);
+    }
+  };
+
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
@@ -287,12 +321,21 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           {/* Title */}
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-2xl font-bold">{displayTask.title}</h2>
-            <span
-              style={{ cursor: "pointer" }}
-              onClick={() => setShowEditModal(true)}
-            >
-              <Image src={editIcon} alt="edit icon" />
-            </span>
+            <div className="flex gap-10 items-center">
+              <span
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowEditModal(true)}
+              >
+                <Image src={editIcon} alt="edit icon" />
+              </span>
+              <button
+                onClick={() => setShowDeleteTaskModal(true)}
+                className="text-red-500 hover:text-red-700 cursor-pointer"
+                title="Delete Task"
+              >
+                <Trash size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Assigned Staff */}
@@ -466,6 +509,39 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
         </div>
 
         {/* Modals */}
+
+        {/* Delete Task Confirmation Modal */}
+        {showDeleteTaskModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+              <h2 className="text-xl font-semibold text-red-600 mb-3">
+                Delete Task?
+              </h2>
+              <p className="text-sm text-gray-700 mb-5">
+                Are you sure you want to delete this task? This action cannot be
+                undone.
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteTaskModal(false)}
+                  className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleDeleteTask}
+                  disabled={deletingTask}
+                  className="cursor-pointer px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 disabled:opacity-60"
+                >
+                  {deletingTask ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {editingComment && (
           <EditCommentModal
             commentId={editingComment.id}
