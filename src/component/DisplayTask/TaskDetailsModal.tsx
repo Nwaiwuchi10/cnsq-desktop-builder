@@ -320,7 +320,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </div>
           {/* Title */}
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-2xl font-bold">{displayTask.title}</h2>
+            <h2 className="text-2xl font-bold">Task Title</h2>
             <div className="flex gap-10 items-center">
               <span
                 style={{ cursor: "pointer" }}
@@ -337,7 +337,9 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
               </button>
             </div>
           </div>
-
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold">{displayTask.title}</h2>
+          </div>
           {/* Assigned Staff */}
           <div className="flex items-center gap-2 mb-4">
             {displayTask.assignedTo?.map((assign) => (
