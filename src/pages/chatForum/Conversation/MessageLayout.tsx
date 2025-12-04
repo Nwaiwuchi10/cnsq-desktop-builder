@@ -3,11 +3,14 @@ import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/component/Navbar/Navbar";
 import Footer from "@/component/Footer/Footer";
 import ConversationList from "./ConversationList";
-import ConversationView from "./ConversationView";
-import Api from "@/utils/api";
 
+import ConversationView from "./ConversationView";
+import CreateChannelForm from "../Channels/CreateChannel";
+import MessagesTabs from "./MessageLayoutSwitchTabs";
+import Api from "@/utils/api";
 import { Msg } from "./ConversationItems";
 import io from "socket.io-client";
+import ChannelConversationList from "../Channels/ConversationList";
 
 interface Member {
   id: number;
@@ -21,7 +24,7 @@ interface Member {
 
 interface LastMessage {
   text: string;
-  createdAt: string; // Backend now provides this field
+  createdAt: string;
 }
 
 interface ConversationResponse {
@@ -30,6 +33,7 @@ interface ConversationResponse {
   lastMessage?: LastMessage;
   unreadCount: number;
 }
+
 interface StaffResponse {
   id: number;
   firstName: string;
@@ -45,18 +49,16 @@ interface DMResponse {
 
 const MessagesLayout: React.FC = () => {
   const [conversations, setConversations] = useState<Msg[]>([]);
+  const [channels, setChannels] = useState<Msg[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState<string>("");
   const [staffMatches, setStaffMatches] = useState<Msg[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  // const socketRef = useRef<Socket | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
 
-  // const socketRef = useRef<Socket | null>(null);
-
-  // === Fetch conversations and staff matches ===
+  // Fetch DMs
   const fetchConversations = async () => {
     const token = localStorage.getItem("user-token");
     try {
@@ -72,23 +74,13 @@ const MessagesLayout: React.FC = () => {
         const peer =
           c.members.find((m) => m.user.id !== res.data.currentUserId)?.user ||
           null;
-
-        const name = peer
-          ? `${peer.firstName} ${peer.lastName}`
-          : "Unknown User";
-
-        const avatar =
-          peer?.photoUrl && peer.photoUrl.trim() !== ""
-            ? peer.photoUrl
-            : "https://via.placeholder.com/40";
-
         return {
           id: c.id,
-          name,
-          avatar,
+          name: peer ? `${peer.firstName} ${peer.lastName}` : "Unknown User",
+          avatar: peer?.photoUrl || "https://via.placeholder.com/40",
           preview: c.lastMessage?.text || "",
-          text: c.lastMessage?.text || "", // <-- add text
-          me: false, // <-- add me
+          text: c.lastMessage?.text || "",
+          me: false,
           createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
           time: c.lastMessage?.createdAt
             ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
@@ -97,6 +89,7 @@ const MessagesLayout: React.FC = () => {
               })
             : "",
           unread: c.unreadCount,
+          isChannel: false,
         };
       });
 
@@ -114,10 +107,9 @@ const MessagesLayout: React.FC = () => {
           name: `${s.firstName} ${s.lastName}`,
           avatar: s.photoUrl || "https://via.placeholder.com/40",
           preview: "",
-          text: "", // <-- add text
-          me: false, // <-- add me
+          text: "",
+          me: false,
           createdAt: "",
-
           time: "",
         }));
 
@@ -125,11 +117,51 @@ const MessagesLayout: React.FC = () => {
     } catch (err) {
       console.error("Failed fetching conversations:", err);
     } finally {
-      setLoading(false); // <--- STOP LOADING
+      setLoading(false);
     }
   };
 
-  // === Initialize socket connection ===
+  // Fetch channels
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (activeTab === "channels") {
+      Api.get(`/chat/channels/all/user`, {
+        params: { search },
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => {
+          const mapped: Msg[] = res.data.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            avatar: "", // Optional
+            preview: c.lastMessage?.text || "",
+            text: c.lastMessage?.text || "",
+            me: false,
+            createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
+            time: c.lastMessage?.createdAt
+              ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "",
+            unread: c.unreadCount || 0,
+            isChannel: true,
+          }));
+          setChannels(mapped);
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [activeTab, search]);
+
+  // Fetch DMs on mount & search change
+  useEffect(() => {
+    if (activeTab === "all") {
+      const t = setTimeout(() => fetchConversations(), 300);
+      return () => clearTimeout(t);
+    }
+  }, [search, activeTab]);
+
+  // Socket connection
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -140,16 +172,12 @@ const MessagesLayout: React.FC = () => {
 
     socketRef.current.on("connect", () => console.log("Socket connected"));
 
-    // === 1️⃣ New conversation appears ===
     socketRef.current.on("conversation:new", (conv: any) => {
       setConversations((prev) => {
-        const exists = prev.some((c) => c.id === conv.id);
-        if (exists) return prev;
-
+        if (prev.some((c) => c.id === conv.id)) return prev;
         const peer = conv.members.find(
           (m: any) => m.user.id !== currentUserId
         )?.user;
-
         const msg: Msg = {
           id: conv.id,
           name: peer ? `${peer.firstName} ${peer.lastName}` : "Unknown User",
@@ -165,26 +193,20 @@ const MessagesLayout: React.FC = () => {
               })
             : "",
           unread: conv.unreadCount ?? 0,
-          // unread: 1,
         };
-
         return [msg, ...prev];
       });
     });
 
-    // === 2️⃣ New message in existing conversation ===
     socketRef.current.on("message:new", (msg: any) => {
       setConversations((prev) =>
         prev.map((c) => {
           if (c.id !== msg.conversationId) return c;
-
           const isOpen = selected === msg.conversationId;
-
           return {
             ...c,
             preview: msg.text,
             text: msg.text,
-            // If user has conversation open, unread = 0, else increment
             unread: isOpen ? 0 : (c.unread || 0) + 1,
             createdAt: msg.createdAt || c.createdAt,
             time: msg.createdAt
@@ -196,149 +218,29 @@ const MessagesLayout: React.FC = () => {
           };
         })
       );
-
-      if (selected === msg.conversationId) {
+      if (selected === msg.conversationId)
         markConversationAsRead(msg.conversationId);
-      }
     });
-
-    // === 3️⃣ Backend emits full conversation updates including unread counts ===
-    socketRef.current.on(
-      "dmConversationsUpdated",
-      (data: { conversations: any[] }) => {
-        setConversations((prev) => {
-          const mapped: Msg[] = data.conversations.map((c) => {
-            const peer = c.members.find(
-              (m: any) => m.user.id !== currentUserId
-            )?.user;
-
-            return {
-              id: c.id,
-              name: peer
-                ? `${peer.firstName} ${peer.lastName}`
-                : "Unknown User",
-              avatar: peer?.photoUrl || "https://via.placeholder.com/40",
-              preview: c.lastMessage?.text || "",
-              text: c.lastMessage?.text || "",
-              me: false,
-              createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
-              time: c.lastMessage?.createdAt
-                ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "",
-              unread: c.unreadCount || 0, // sync unread count from backend
-            };
-          });
-
-          return mapped;
-        });
-      }
-    );
 
     return () => {
       socketRef.current?.disconnect();
     };
   }, [currentUserId, selected]);
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("user-token");
-  //   socketRef.current = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
-  //     query: { token },
-  //   });
-
-  //   socketRef.current.on("connect", () => console.log("Socket connected"));
-
-  //   // === SOCKET EVENT: new conversation appears ===
-  //   socketRef.current.on("conversation:new", (conv: any) => {
-  //     setConversations((prev) => {
-  //       const exists = prev.some((c) => c.id === conv.id);
-  //       if (exists) return prev;
-
-  //       const peer = conv.members.find((m: any) => m.id !== currentUserId);
-
-  //       const msg: Msg = {
-  //         id: conv.id,
-  //         name: `${peer.firstName} ${peer.lastName}`,
-  //         avatar: peer.avatar,
-  //         preview: conv.lastMessage?.text || "",
-  //         text: conv.lastMessage?.text || "",
-  //         me: false,
-  //         createdAt: conv.createdAt,
-  //         time: conv.lastMessage?.createdAt
-  //           ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
-  //               hour: "2-digit",
-  //               minute: "2-digit",
-  //             })
-  //           : "",
-  //         unread: 1,
-  //       };
-
-  //       return [msg, ...prev];
-  //     });
-  //   });
-  //   socketRef.current.on("message:new", (msg: any) => {
-  //     setConversations((prev) =>
-  //       prev.map((c) => {
-  //         if (c.id !== msg.conversationId) return c;
-
-  //         const isOpen = selected === msg.conversationId;
-
-  //         return {
-  //           ...c,
-  //           preview: msg.text,
-  //           unread: isOpen ? 0 : (c.unread || 0) + 1,
-  //         };
-  //       })
-  //     );
-
-  //     if (selected === msg.conversationId) {
-  //       markConversationAsRead(msg.conversationId);
-  //     }
-  //   });
-  //   socketRef.current.on(
-  //     "chat:unreadCount",
-  //     ({
-  //       total,
-  //       conversationId,
-  //     }: {
-  //       total: number;
-  //       conversationId: number;
-  //     }) => {
-  //       const convId = conversationId.toString(); // convert to string
-  //       setConversations((prev) =>
-  //         prev.map((c) => (c.id === convId ? { ...c, unread: total } : c))
-  //       );
-  //     }
-  //   );
-
-  //   return () => {
-  //     socketRef.current?.disconnect();
-  //   };
-  // }, []);
-
-  // === Fetch on mount and when search changes ===
-  useEffect(() => {
-    const t = setTimeout(() => fetchConversations(), 300);
-    return () => clearTimeout(t);
-  }, [search]);
-
-  ////hanle  mark conversation as read
-  // Inside MessagesLayout component
+  // Mark conversation as read
   const markConversationAsRead = async (conversationId: string) => {
     const token = localStorage.getItem("user-token");
     if (!token) return;
-
     try {
       await Api.patch(
         `/chat/mark-read/${conversationId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      // Update local unread count in conversations state
       setConversations((prev) =>
+        prev.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c))
+      );
+      setChannels((prev) =>
         prev.map((c) => (c.id === conversationId ? { ...c, unread: 0 } : c))
       );
     } catch (err) {
@@ -346,7 +248,7 @@ const MessagesLayout: React.FC = () => {
     }
   };
 
-  // === Handle select (conversation or staff) ===
+  // Handle select
   const handleSelect = async (id: string) => {
     const token = localStorage.getItem("user-token");
 
@@ -381,7 +283,7 @@ const MessagesLayout: React.FC = () => {
         });
 
         setSelected(conv.id);
-        setStaffMatches([]); // clear search results
+        setStaffMatches([]);
         socketRef.current?.emit("joinConversation", id);
         await markConversationAsRead(id);
       } catch (err) {
@@ -393,19 +295,20 @@ const MessagesLayout: React.FC = () => {
     }
   };
 
+  // Filter DMs
+  const filteredConversations = conversations.filter((c: any) => {
+    if (activeTab === "all") return true;
+    if (activeTab === "unread") return c.unread > 0;
+    return true;
+  });
+
   return (
     <>
       <Navbar />
 
       <div className="min-h-screen bg-[#FAFAFA] text-gray-600 p-0 pt-20 md:p-8 md:pt-32">
-        <div
-          className="mx-auto
-    max-w-full  
-    sm:max-w-full
-    md:max-w-5xl
-    lg:max-w-6xl"
-        >
-          {/* Desktop layout */}
+        <div className="mx-auto max-w-full sm:max-w-full md:max-w-5xl lg:max-w-6xl">
+          {/* Desktop */}
           <div className="hidden md:grid grid-cols-3 gap-8">
             <div className="col-span-1">
               <h1 className="text-3xl font-semibold text-gray-700">
@@ -422,28 +325,25 @@ const MessagesLayout: React.FC = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
-                <div className="flex gap-3 mt-6 mb-4">
-                  <button className="px-4 py-1 rounded-full bg-lime-500 text-white text-sm">
-                    All
-                  </button>
-                  <button className="px-4 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
-                    Unread
-                  </button>
-                  <button className="px-4 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
-                    Archived
-                  </button>
-                  <button className="px-4 py-1 rounded-full bg-gray-100 text-sm text-gray-600">
-                    Channels
-                  </button>
-                </div>
+                <MessagesTabs
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                />
+
                 {loading ? (
                   <div className="space-y-4">Loading....</div>
+                ) : activeTab === "channels" ? (
+                  <ChannelConversationList
+                    items={channels}
+                    onSelect={handleSelect}
+                  />
                 ) : (
                   <ConversationList
-                    items={conversations}
+                    items={filteredConversations}
                     onSelect={handleSelect}
                   />
                 )}
+
                 {staffMatches.length > 0 && (
                   <div className="mt-6">
                     <h2 className="text-gray-500 text-sm mb-2">
@@ -458,15 +358,22 @@ const MessagesLayout: React.FC = () => {
               </div>
             </div>
 
-            <div className="col-span-3 md:col-span-2 bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm">
-              {selected ? (
+            <div
+              className={`col-span-3 md:col-span-2 bg-white rounded-lg overflow-hidden shadow-sm ${
+                activeTab === "create" ? "h-auto" : "h-[80vh]"
+              }`}
+            >
+              {activeTab === "create" ? (
+                <CreateChannelForm />
+              ) : selected ? (
                 <ConversationView
                   conversation={
-                    conversations.find((c) => c.id === selected) || null
+                    activeTab === "channels"
+                      ? channels.find((c) => c.id === selected) || null
+                      : filteredConversations.find((c) => c.id === selected) ||
+                        null
                   }
                   onBack={() => setSelected(null)}
-                  //   id={selected}
-                  //   onBack={() => setSelected(null)}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-600">
@@ -476,60 +383,76 @@ const MessagesLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile layout */}
+          {/* Mobile */}
           <div className="block md:hidden">
-            {!selected && (
-              <div className="p-8">
-                <h1 className="text-2xl font-semibold text-gray-700">
-                  Your Messages
-                </h1>
-                <p className="text-sm text-gray-500 mt-1 mb-4">
-                  Tap to open a conversation.
-                </p>
-                <input
-                  className="placeholder-gray-400 block w-full rounded-lg border border-gray-200 bg-white p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
-                  placeholder="Search all staff and conversations..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                <ConversationList
-                  items={conversations}
-                  onSelect={handleSelect}
-                />
-                {staffMatches.length > 0 && (
-                  <div className="mt-6">
-                    <h2 className="text-gray-500 text-sm mb-2">
-                      Search Results
-                    </h2>
-                    <ConversationList
-                      items={staffMatches}
+            {activeTab === "create" ? (
+              <CreateChannelForm />
+            ) : (
+              !selected && (
+                <div className="p-8">
+                  <h1 className="text-2xl font-semibold text-gray-700">
+                    Your Messages
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-1 mb-4">
+                    Tap to open a conversation.
+                  </p>
+                  <MessagesTabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
+
+                  <input
+                    className="placeholder-gray-400 block w-full rounded-lg border border-gray-200 bg-white p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
+                    placeholder="Search all staff and conversations..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+
+                  {loading ? (
+                    <div>Loading...</div>
+                  ) : activeTab === "channels" ? (
+                    <ChannelConversationList
+                      items={channels}
                       onSelect={handleSelect}
                     />
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <ConversationList
+                      items={filteredConversations}
+                      onSelect={handleSelect}
+                    />
+                  )}
+
+                  {staffMatches.length > 0 && (
+                    <div className="mt-6">
+                      <h2 className="text-gray-500 text-sm mb-2">
+                        Search Results
+                      </h2>
+                      <ConversationList
+                        items={staffMatches}
+                        onSelect={handleSelect}
+                      />
+                    </div>
+                  )}
+                </div>
+              )
             )}
 
             {selected && (
-              <div
-                className="bg-white h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm"
-                //           className="bg-white rounded-lg h-[80vh] overflow-hidden shadow-sm
-                // w-full"
-              >
+              <div className="bg-white h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
                 <ConversationView
                   conversation={
-                    conversations.find((c) => c.id === selected) || null
+                    activeTab === "channels"
+                      ? channels.find((c) => c.id === selected) || null
+                      : filteredConversations.find((c) => c.id === selected) ||
+                        null
                   }
                   onBack={() => setSelected(null)}
-                  //   id={selected}
-                  //   onBack={() => setSelected(null)}
                 />
               </div>
             )}
           </div>
         </div>
       </div>
-
       <Footer />
     </>
   );
