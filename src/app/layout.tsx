@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ProtectedLayout from "@/hooks/AuthGuard";
+import ClientRoot from "./ClientRoot";
 // import ScrollToTop from "@/component/ScrollToTop/ScrollToTop";
 
 const geistSans = Geist({
@@ -30,7 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* <ScrollToTop /> */}
-        <ProtectedLayout>{children}</ProtectedLayout>
+        <ProtectedLayout>
+          <ClientRoot>{children}</ClientRoot>
+        </ProtectedLayout>
       </body>
     </html>
   );

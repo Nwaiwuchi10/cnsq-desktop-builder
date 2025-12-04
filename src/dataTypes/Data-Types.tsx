@@ -35,13 +35,6 @@ export interface DepartmentalRole {
   };
 }
 
-// export interface Staff {
-//   id: number;
-//   firstName: string;
-//   lastName: string;
-//   photoUrl?: string | null;
-// }
-
 export interface TaskAssignment {
   id: number;
   staff: Staff;
