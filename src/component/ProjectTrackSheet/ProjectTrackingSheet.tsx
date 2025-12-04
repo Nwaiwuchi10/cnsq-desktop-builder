@@ -291,7 +291,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </tr>
           </thead>
           <tbody>
-            {displayedTasks.map((t) => (
+            {displayedTasks.map((t: any) => (
               <tr
                 style={{ cursor: "pointer" }}
                 onClick={() => setSelectedTask(t)}
@@ -368,7 +368,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 <td className="p-2 border text-gray-600">
                   {t.assignedTo
                     .map(
-                      (a) =>
+                      (a: any) =>
                         `${a.staff.firstName} ${a.staff.lastName} (${a.role})`
                     )
                     .join(", ")}
