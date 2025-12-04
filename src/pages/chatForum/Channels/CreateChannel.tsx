@@ -216,7 +216,7 @@ export default function CreateChannelForm() {
 
       {/* CARD */}
       <div className="max-w-xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6 hover:border-lime-500 transition-shadow transition-colors">
           {/* STEP 1 — CHANNEL DETAILS */}
           {step === 1 && (
             <>
@@ -228,17 +228,17 @@ export default function CreateChannelForm() {
                   value={channelName}
                   onChange={(e) => setChannelName(e.target.value)}
                   placeholder="e.g. General, Dev Team"
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-lg px-3 py-2 hover:border-lime-500 transition-shadow transition-colors"
                 />
 
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 ">
                   Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Channel description..."
-                  className="w-full border rounded-lg px-3 py-2"
+                  className="w-full border rounded-lg px-3 py-2 hover:border-lime-500 transition-shadow transition-colors"
                 />
               </div>
             </>

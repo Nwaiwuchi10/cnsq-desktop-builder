@@ -11,7 +11,7 @@ const MessagesTabs: React.FC<MessagesTabsProps> = ({
   setActiveTab,
 }) => {
   const tabs = [
-    { key: "all", label: "All" },
+    { key: "all", label: "DMs" },
     { key: "channels", label: "Channels" },
     { key: "create", label: "+ Channel" },
   ];
