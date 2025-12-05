@@ -12,6 +12,7 @@ import {
   ConversationType,
   MemberRole,
 } from "@/dataTypes/Data-Types";
+import Link from "next/link";
 
 interface Staff {
   id: number;
@@ -208,6 +209,7 @@ export default function CreateChannelForm() {
           <ArrowLeft size={20} />
           <span className="font-medium">Back</span>
         </button>
+
         <h2 className="text-lg md:text-2xl font-semibold text-gray-900">
           {step === 1 ? "Create Channel" : "Add Members"}
         </h2>
