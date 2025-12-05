@@ -7,6 +7,8 @@ import io from "socket.io-client";
 import EmojiPicker from "emoji-picker-react";
 
 import ChannelMessageBubble from "./ChannelMessageBuble";
+import VerticalOptionsMenu from "./VerticalOptionMenu";
+import ConversationMembersManager from "./ConversationMmebersManager";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -75,6 +77,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [mode, setMode] = useState<"add" | "view" | "remove" | null>(null);
 
   const pageSize = 30;
   const hasUserScrolled = useRef(false);
@@ -616,6 +619,21 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             {conversation ? "Active" : ""}
           </div> */}
         </div>
+        <div>
+          <VerticalOptionsMenu
+            onAddMember={() => setMode("add")}
+            onViewMembers={() => setMode("view")}
+            onRemoveMember={() => setMode("remove")}
+          />
+
+          {mode && (
+            <ConversationMembersManager
+              conversationId={conversation?.id}
+              mode={mode}
+              onClose={() => setMode(null)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Messages */}
@@ -782,6 +800,94 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     {/* ---------- CHILD ATTACHMENTS ---------- */}
                     {(m.attachments?.length ?? 0) > 0 && (
                       <div
+                        className={`flex flex-col mt-1 ${
+                          m.me ? "items-end" : "items-start"
+                        }`}
+                      >
+                        <div className="flex flex-wrap gap-2">
+                          {(m.attachments ?? []).map((a) => {
+                            const ext = a.filename
+                              ?.split(".")
+                              .pop()
+                              ?.toLowerCase();
+                            const time = (
+                              <div className="text-xs text-gray-500 mt-1 text-right">
+                                {m.time}
+                              </div>
+                            );
+
+                            /* Author ABOVE attachment — same style as ChannelMessageBubble */
+                            const authorInfo = (
+                              <div className="flex items-center gap-2 mb-1">
+                                {m.author?.photoUrl && (
+                                  <img
+                                    src={m.author.photoUrl}
+                                    alt={m.author?.firstName ?? ""}
+                                    className="w-6 h-6 rounded-full object-cover"
+                                  />
+                                )}
+                                <span className="text-xs font-semibold text-gray-600">
+                                  {m.author?.firstName ?? ""}
+                                </span>
+                              </div>
+                            );
+
+                            return (
+                              <div key={a.id} className="flex flex-col">
+                                {/* 🆕 AUTHOR ON TOP */}
+                                {authorInfo}
+
+                                {/* FILE PREVIEW */}
+                                {a.mimeType?.startsWith("audio/") ? (
+                                  <div className="relative">
+                                    <audio controls className="w-64">
+                                      <source src={a.url} type={a.mimeType} />
+                                    </audio>
+                                    {time}
+                                  </div>
+                                ) : ext &&
+                                  ["png", "jpg", "jpeg", "gif"].includes(
+                                    ext
+                                  ) ? (
+                                  <div className="relative">
+                                    <img
+                                      src={a.url}
+                                      className="w-32 h-32 object-cover rounded"
+                                    />
+                                    {time}
+                                  </div>
+                                ) : ext &&
+                                  ["mp4", "mov", "webm"].includes(ext) ? (
+                                  <div className="relative">
+                                    <video
+                                      src={a.url}
+                                      controls
+                                      className="w-40 rounded"
+                                    />
+                                    {time}
+                                  </div>
+                                ) : (
+                                  <div className="relative">
+                                    <a
+                                      href={a.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="underline text-blue-600"
+                                    >
+                                      {a.filename || "Attachment"}
+                                    </a>
+                                    {time}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* {(m.attachments?.length ?? 0) > 0 && (
+                      <div
                         className={`flex flex-col mt-2 ${
                           m.me ? "items-end" : "items-start"
                         }`}
@@ -853,7 +959,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           })}
                         </div>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
               ) : (
@@ -951,6 +1057,92 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             </div>
                           );
 
+                          /* Author ABOVE attachment — same style as ChannelMessageBubble */
+                          const authorInfo = (
+                            <div className="flex items-center gap-2 mb-1">
+                              {m.author?.photoUrl && (
+                                <img
+                                  src={m.author.photoUrl}
+                                  alt={m.author?.firstName ?? ""}
+                                  className="w-6 h-6 rounded-full object-cover"
+                                />
+                              )}
+                              <span className="text-xs font-semibold text-gray-600">
+                                {m.author?.firstName ?? ""}
+                              </span>
+                            </div>
+                          );
+
+                          return (
+                            <div key={a.id} className="flex flex-col">
+                              {/* 🆕 AUTHOR ON TOP */}
+                              {authorInfo}
+
+                              {/* FILE PREVIEW */}
+                              {a.mimeType?.startsWith("audio/") ? (
+                                <div className="relative">
+                                  <audio controls className="w-64">
+                                    <source src={a.url} type={a.mimeType} />
+                                  </audio>
+                                  {time}
+                                </div>
+                              ) : ext &&
+                                ["png", "jpg", "jpeg", "gif"].includes(ext) ? (
+                                <div className="relative">
+                                  <img
+                                    src={a.url}
+                                    className="w-32 h-32 object-cover rounded"
+                                  />
+                                  {time}
+                                </div>
+                              ) : ext &&
+                                ["mp4", "mov", "webm"].includes(ext) ? (
+                                <div className="relative">
+                                  <video
+                                    src={a.url}
+                                    controls
+                                    className="w-40 rounded"
+                                  />
+                                  {time}
+                                </div>
+                              ) : (
+                                <div className="relative">
+                                  <a
+                                    href={a.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline text-blue-600"
+                                  >
+                                    {a.filename || "Attachment"}
+                                  </a>
+                                  {time}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* {(m.attachments?.length ?? 0) > 0 && (
+                    <div
+                      className={`flex flex-col mt-1 ${
+                        m.me ? "items-end" : "items-start"
+                      }`}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {(m.attachments ?? []).map((a) => {
+                          const ext = a.filename
+                            ?.split(".")
+                            .pop()
+                            ?.toLowerCase();
+                          const time = (
+                            <div className="text-xs text-gray-500 mt-1 text-right">
+                              {m.time}
+                            </div>
+                          );
+
                           if (a.mimeType?.startsWith("audio/")) {
                             return (
                               <div key={a.id} className="relative">
@@ -1006,7 +1198,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         })}
                       </div>
                     </div>
-                  )}
+                  )} */}
                 </>
               )}
             </div>
