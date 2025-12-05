@@ -11,6 +11,7 @@ import Api from "@/utils/api";
 import { Msg } from "./ConversationItems";
 import io from "socket.io-client";
 import ChannelConversationList from "../Channels/ConversationList";
+import ChannelConversationView from "../Channels/ChannelConverationView";
 
 interface Member {
   id: number;
@@ -366,6 +367,42 @@ const MessagesLayout: React.FC = () => {
               {activeTab === "create" ? (
                 <CreateChannelForm />
               ) : selected ? (
+                (() => {
+                  const conv: any =
+                    activeTab === "channels"
+                      ? channels.find((c: any) => c.id === selected) || null
+                      : filteredConversations.find((c) => c.id === selected) ||
+                        null;
+
+                  if (!conv) {
+                    return (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-600">
+                        <p>Conversation not found</p>
+                      </div>
+                    );
+                  }
+
+                  return conv.isChannel ? (
+                    <ChannelConversationView
+                      conversation={conv}
+                      onBack={() => setSelected(null)}
+                    />
+                  ) : (
+                    <ConversationView
+                      conversation={conv}
+                      onBack={() => setSelected(null)}
+                    />
+                  );
+                })()
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-gray-600">
+                  <p>Select a conversation to start chatting 💬</p>
+                </div>
+              )}
+
+              {/* {activeTab === "create" ? (
+                <CreateChannelForm />
+              ) : selected ? (
                 <ConversationView
                   conversation={
                     activeTab === "channels"
@@ -379,7 +416,7 @@ const MessagesLayout: React.FC = () => {
                 <div className="flex flex-col items-center justify-center h-full text-gray-600">
                   <p>Select a conversation to start chatting 💬</p>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -439,7 +476,7 @@ const MessagesLayout: React.FC = () => {
 
             {selected && (
               <div className="bg-white h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
-                <ConversationView
+                {/* <ConversationView
                   conversation={
                     activeTab === "channels"
                       ? channels.find((c) => c.id === selected) || null
@@ -447,7 +484,28 @@ const MessagesLayout: React.FC = () => {
                         null
                   }
                   onBack={() => setSelected(null)}
-                />
+                /> */}
+                {(() => {
+                  const conv: any =
+                    activeTab === "channels"
+                      ? channels.find((c) => c.id === selected) || null
+                      : filteredConversations.find((c) => c.id === selected) ||
+                        null;
+
+                  if (!conv) return null;
+
+                  return conv.isChannel ? (
+                    <ChannelConversationView
+                      conversation={conv}
+                      onBack={() => setSelected(null)}
+                    />
+                  ) : (
+                    <ConversationView
+                      conversation={conv}
+                      onBack={() => setSelected(null)}
+                    />
+                  );
+                })()}
               </div>
             )}
           </div>
