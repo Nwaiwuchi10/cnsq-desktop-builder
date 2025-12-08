@@ -9,6 +9,7 @@ import EmojiPicker from "emoji-picker-react";
 import ChannelMessageBubble from "./ChannelMessageBuble";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
+import parseMentions from "@/utils/ParseMention";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -51,9 +52,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 }) => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
-  const [staffList, setStaffList] = useState<any[]>([]);
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+
   const [files, setFiles] = useState<File[]>([]);
   const [replyTo, setReplyTo] = useState<Msg | null>(null);
   const [replyingTo, setReplyingTo] = useState<Msg | null>(null);
@@ -71,6 +70,12 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     null
   );
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+
+  const [recording, setRecording] = useState(false);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const prevConversationId = useRef<string | null>(null);
@@ -78,12 +83,67 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [mode, setMode] = useState<"add" | "view" | "remove" | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(100);
+  const [search, setSearch] = useState("");
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const pageSize = 30;
   const hasUserScrolled = useRef(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (!conversation?.id) return;
+
+    // If conversation changed, reset scroll flag
+    if (prevConversationId.current !== conversation.id) {
+      prevConversationId.current = conversation.id;
+      hasUserScrolled.current = false;
+      // scroll immediately after opening conversation
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 50);
+    }
+  }, [conversation?.id]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      const topReached = container.scrollTop === 0;
+
+      if (topReached) {
+        loadMoreMessages();
+      }
+
+      const bottomReached =
+        container.scrollHeight - container.scrollTop === container.clientHeight;
+
+      if (!bottomReached) {
+        hasUserScrolled.current = true;
+      }
+    };
+
+    container.addEventListener("scroll", onScroll);
+
+    return () => container.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!hasUserScrolled.current) {
+      scrollRef.current?.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
   // ================== Initialize User ID ==================
   useEffect(() => {
     const token = localStorage.getItem("user-token");
@@ -92,7 +152,22 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       setCurrentUserId(payload.staffId || payload.id || payload.sub);
     }
   }, []);
+  ////fetch staff for hashtag
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}${
+          search ? `&search=${encodeURIComponent(search)}` : ""
+        }`;
+        const res = await Api.get(query);
+        setStaffList(res.data.data);
+      } catch (error) {
+        console.error("Error fetching staff:", error);
+      }
+    };
 
+    fetchStaff();
+  }, [page, limit, search]);
   // ================== Fetch Messages ==================
   const fetchMessages = async () => {
     if (!conversation?.id) return;
@@ -141,6 +216,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           firstName: m.author.firstName,
           photoUrl: m.author.photoUrl || null,
         },
+        edited: m.edited,
       }));
 
       setMessages(mapped.reverse());
@@ -193,6 +269,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         name: m.author.firstName + " " + m.author.lastName,
         authorFirstName: m.author.firstName,
         authorAvatarUrl: m.author.photoUrl,
+        edited: m.edited,
       }));
 
       setMessages((prev) => [...mapped.reverse(), ...prev]);
@@ -271,8 +348,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     const value = e.target.value;
     setText(value);
 
-    // Match hashtag trigger #
-    const match = value.match(/#(\w*)$/);
+    // Detect @mentions
+    const match = value.match(/@(\w*)$/);
     if (match) {
       const query = match[1].toLowerCase();
       const filtered = staffList.filter((s) =>
@@ -287,20 +364,20 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   };
 
   const handleSelectStaff = (staff: any) => {
+    // Replace last @mention with selected staff
     setText((prev) =>
-      prev.replace(/#\w*$/, `#${staff.firstName}${staff.lastName} `)
+      prev.replace(/@\w*$/, `@${staff.firstName}${staff.lastName} `)
     );
     setShowSuggestions(false);
     setSuggestions([]);
   };
-
-  const extractMentionedStaffIds = () => {
-    const ids: number[] = [];
-    staffList.forEach((staff) => {
-      const tag = `#${staff.firstName}${staff.lastName}`;
-      if (text.includes(tag)) ids.push(staff.id);
+  const extractMentionedStaffIds = (): number[] => {
+    const mentionedIds: number[] = [];
+    staffList.forEach((s) => {
+      const tag = `@${s.firstName}${s.lastName}`;
+      if (text.includes(tag)) mentionedIds.push(s.id);
     });
-    return ids;
+    return mentionedIds;
   };
 
   // ================== Post Message ==================
@@ -347,57 +424,32 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   };
   //////record voice
   const startRecording = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      alert("Browser does not support audio recording.");
-      return;
-    }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
 
-      // BEST cross browser MIME types
-      const supportedMimeTypes = [
-        "audio/webm;codecs=opus",
-        "audio/webm",
-        "audio/mp4",
-        "audio/ogg;codecs=opus",
-        "audio/ogg",
-      ];
-
-      let mimeType = "";
-
-      for (const type of supportedMimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          mimeType = type;
-          break;
-        }
-      }
-
-      const recorder = new MediaRecorder(
-        stream,
-        mimeType ? { mimeType } : undefined
-      );
-
-      const chunks: BlobPart[] = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: "audio/webm",
+        });
+        const url = URL.createObjectURL(audioBlob);
+        setAudioUrl(url);
+        audioChunksRef.current = [];
       };
 
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
+      mediaRecorder.start();
+      setRecording(true);
     } catch (err) {
-      console.error(err);
+      console.error("Error accessing microphone:", err);
       alert("Microphone permission denied or unsupported device.");
     }
   };
+
   const stopRecording = () => {
     if (!mediaRecorder) return;
     mediaRecorder.stop();
@@ -509,6 +561,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       return date.toLocaleDateString();
     }
   };
+  ////// Function to highlight @mentions
+  const renderHighlightedText = (text: string) => {
+    const parts = text.split(/(@\w+)/g); // Split text by @mentions
+    return parts.map((part, idx) =>
+      part.startsWith("@") ? (
+        <span key={idx} className="text-lime-500 font-bold">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   /////parse links in message text
 
@@ -615,9 +680,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
         <div className="flex-1 min-w-0">
           <div className="font-semibold truncate">{conversation?.name}</div>
-          {/* <div className="text-xs text-green-500">
-            {conversation ? "Active" : ""}
-          </div> */}
         </div>
         <div>
           <VerticalOptionsMenu
@@ -736,7 +798,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       <ChannelMessageBubble
                         text={
                           <>
-                            {parseLinks(m.text)}
+                            {parseMentions(parseLinks(m.text))}
                             {m.edited && (
                               <span className="text-xs text-gray-500">
                                 {" "}
@@ -885,81 +947,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         </div>
                       </div>
                     )}
-
-                    {/* {(m.attachments?.length ?? 0) > 0 && (
-                      <div
-                        className={`flex flex-col mt-2 ${
-                          m.me ? "items-end" : "items-start"
-                        }`}
-                      >
-                        <div className="flex flex-wrap gap-2">
-                          {(m.attachments ?? []).map((a) => {
-                            const ext = a.filename
-                              ?.split(".")
-                              .pop()
-                              ?.toLowerCase();
-                            const time = (
-                              <div className="text-xs text-gray-500 mt-1 text-right">
-                                {m.time}
-                              </div>
-                            );
-
-                            if (a.mimeType?.startsWith("audio/")) {
-                              return (
-                                <div key={a.id} className="relative">
-                                  <audio controls className="w-64">
-                                    <source src={a.url} type={a.mimeType} />
-                                  </audio>
-                                  {time}
-                                </div>
-                              );
-                            }
-
-                            if (
-                              ext &&
-                              ["png", "jpg", "jpeg", "gif"].includes(ext)
-                            ) {
-                              return (
-                                <div key={a.id} className="relative">
-                                  <img
-                                    src={a.url}
-                                    className="w-32 h-32 object-cover rounded"
-                                  />
-                                  {time}
-                                </div>
-                              );
-                            }
-
-                            if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                              return (
-                                <div key={a.id} className="relative">
-                                  <video
-                                    src={a.url}
-                                    controls
-                                    className="w-40 rounded"
-                                  />
-                                  {time}
-                                </div>
-                              );
-                            }
-
-                            return (
-                              <div key={a.id} className="relative">
-                                <a
-                                  href={a.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="underline text-blue-600"
-                                >
-                                  {a.filename || "Attachment"}
-                                </a>
-                                {time}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )} */}
                   </div>
                 </div>
               ) : (
@@ -970,7 +957,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
                       text={
                         <>
-                          {parseLinks(m.text)}
+                          {parseMentions(parseLinks(m.text))}
                           {m.edited && (
                             <span className="text-xs text-gray-500">
                               {" "}
@@ -1124,81 +1111,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       </div>
                     </div>
                   )}
-
-                  {/* {(m.attachments?.length ?? 0) > 0 && (
-                    <div
-                      className={`flex flex-col mt-1 ${
-                        m.me ? "items-end" : "items-start"
-                      }`}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {(m.attachments ?? []).map((a) => {
-                          const ext = a.filename
-                            ?.split(".")
-                            .pop()
-                            ?.toLowerCase();
-                          const time = (
-                            <div className="text-xs text-gray-500 mt-1 text-right">
-                              {m.time}
-                            </div>
-                          );
-
-                          if (a.mimeType?.startsWith("audio/")) {
-                            return (
-                              <div key={a.id} className="relative">
-                                <audio controls className="w-64">
-                                  <source src={a.url} type={a.mimeType} />
-                                </audio>
-                                {time}
-                              </div>
-                            );
-                          }
-
-                          if (
-                            ext &&
-                            ["png", "jpg", "jpeg", "gif"].includes(ext)
-                          ) {
-                            return (
-                              <div key={a.id} className="relative">
-                                <img
-                                  src={a.url}
-                                  className="w-32 h-32 object-cover rounded"
-                                />
-                                {time}
-                              </div>
-                            );
-                          }
-
-                          if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                            return (
-                              <div key={a.id} className="relative">
-                                <video
-                                  src={a.url}
-                                  controls
-                                  className="w-40 rounded"
-                                />
-                                {time}
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <div key={a.id} className="relative">
-                              <a
-                                href={a.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-600"
-                              >
-                                {a.filename || "Attachment"}
-                              </a>
-                              {time}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )} */}
                 </>
               )}
             </div>
@@ -1237,12 +1149,23 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* ////voice recording */}
-            <button
-              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
-              onClick={startRecording}
-            >
-              🎤
-            </button>
+
+            {recording ? (
+              <button
+                onClick={stopRecording}
+                className="px-2 py-1 bg-red-500 text-white rounded-md"
+              >
+                Stop
+              </button>
+            ) : (
+              <button
+                onClick={startRecording}
+                className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+              >
+                🎤
+              </button>
+            )}
+
             {/* /////voice recording playback */}
             {audioUrl && (
               <div className="p-2 border rounded bg-gray-100">
@@ -1295,33 +1218,28 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             )}
 
             {/* Message Input */}
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute bottom-16 left-4 bg-white border rounded shadow-lg max-h-40 overflow-y-auto z-50">
-                {suggestions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="px-3 py-1 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSelectStaff(s)}
-                  >
-                    {s.firstName} {s.lastName}
-                  </div>
-                ))}
+            <div className="relative w-full">
+              {/* Highlighted text layer */}
+              <div className="absolute inset-0 px-4 py-3 pointer-events-none whitespace-pre-wrap break-words">
+                {renderHighlightedText(text)}
               </div>
-            )}
 
-            <textarea
-              className="flex-1 min-w-0 rounded-full border px-4 py-3 resize-none focus:outline-none"
-              placeholder="Type a message..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={1} // auto expand? Tailwind can use h-auto
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  postMessage();
-                }
-              }}
-            />
+              {/* Actual textarea */}
+              <textarea
+                className="w-full rounded-full border border-black px-4 py-3 resize-none 
+               focus:outline-none bg-transparent text-transparent caret-black"
+                placeholder="Type a message..."
+                value={text}
+                onChange={handleTextChange}
+                rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    postMessage();
+                  }
+                }}
+              />
+            </div>
 
             {/* Send Button */}
 
@@ -1338,6 +1256,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             >
               {editMessage ? "Save" : "➤"}
             </button>
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute bottom-16 left-4 lg:left-[124px] bg-white border rounded shadow-lg max-h-40 overflow-y-auto z-50">
+                {suggestions.map((s) => (
+                  <div
+                    key={s.id}
+                    className="px-3 py-1 hover:bg-gray-200 cursor-pointer "
+                    onClick={() => handleSelectStaff(s)}
+                  >
+                    {s.firstName} {s.lastName}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
