@@ -411,8 +411,8 @@ const initialEdges: Edge[] = [
   ...[
     "graphics..",
     "copywriting..",
-    "digitalmarketing",
-    "social&content",
+    "digitalmarketing...",
+    "social&content..",
     "offlinemarketing.",
   ].map((id) => ({
     id: `m-${id}`,
