@@ -32,14 +32,34 @@ const HomePage = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
+  // useEffect(() => {
+  //   async function initNotifications() {
+  //     const result = await enableNotifications();
+  //     setNotificationsEnabled(result);
+
+  //     // Show toast for 8 seconds
+  //     setShowToast(true);
+  //     setTimeout(() => setShowToast(false), 8000);
+  //   }
+
+  //   initNotifications();
+  // }, []);
   useEffect(() => {
     async function initNotifications() {
-      const result = await enableNotifications();
-      setNotificationsEnabled(result);
+      // Check if toast was already shown before
+      const toastShown = localStorage.getItem("homepage_toast_shown");
 
-      // Show toast for 8 seconds
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 8000);
+      if (!toastShown) {
+        // First-time visit → run notification logic
+        const result = await enableNotifications();
+        setNotificationsEnabled(result);
+
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 8000);
+
+        // Mark as shown so it never displays again
+        localStorage.setItem("homepage_toast_shown", "true");
+      }
     }
 
     initNotifications();

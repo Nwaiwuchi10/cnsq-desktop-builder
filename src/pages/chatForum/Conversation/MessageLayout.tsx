@@ -223,11 +223,13 @@ const MessagesLayout: React.FC = () => {
       if (selected === msg.conversationId)
         markConversationAsRead(msg.conversationId);
     });
-    socketRef.current.on("channel:message:new", (msg: any) => {
+    socketRef.current.on("message:new", (msg: any) => {
       setChannels((prev) =>
         prev.map((c) => {
-          if (c.id !== msg.channelId) return c;
-          const isOpen = selected === msg.channelId;
+          if (c.id !== msg.conversationId) return c;
+
+          const isOpen = selected === msg.conversationId;
+
           return {
             ...c,
             preview: msg.text,
@@ -244,8 +246,11 @@ const MessagesLayout: React.FC = () => {
         })
       );
 
-      if (selected === msg.channelId) markConversationAsRead(msg.channelId);
+      if (selected === msg.conversationId) {
+        markConversationAsRead(msg.conversationId);
+      }
     });
+
     return () => {
       socketRef.current?.disconnect();
     };
@@ -481,15 +486,6 @@ const MessagesLayout: React.FC = () => {
 
             {selected && (
               <div className="bg-white h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
-                {/* <ConversationView
-                  conversation={
-                    activeTab === "channels"
-                      ? channels.find((c) => c.id === selected) || null
-                      : filteredConversations.find((c) => c.id === selected) ||
-                        null
-                  }
-                  onBack={() => setSelected(null)}
-                /> */}
                 {(() => {
                   const conv: any =
                     activeTab === "channels"
