@@ -9,7 +9,7 @@ import EmojiPicker from "emoji-picker-react";
 import ChannelMessageBubble from "./ChannelMessageBuble";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
-import { parseMentions } from "./utils/ParseMention";
+import { parseMentions } from "./ParseMention";
 
 type ConversationViewProps = {
   conversation: Msg | null;
