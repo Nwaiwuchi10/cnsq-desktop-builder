@@ -1,6 +1,6 @@
 import React, { ReactNode, ReactElement } from "react";
 
-export function parseMentions(content: ReactNode): ReactNode {
+export default function parseMentions(content: ReactNode): ReactNode {
   // 1. STRING
   if (typeof content === "string") {
     return content.split(/(@\w+)/g).map((part, idx) =>
