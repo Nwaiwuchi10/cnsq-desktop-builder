@@ -93,23 +93,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, [conversation?.id]);
 
-  // useEffect(() => {
-  //   const container = scrollRef.current;
-  //   if (!container) return;
-
-  //   const onScroll = () => {
-  //     const bottomReached =
-  //       container.scrollHeight - container.scrollTop === container.clientHeight;
-
-  //     if (!bottomReached) {
-  //       hasUserScrolled.current = true;
-  //     }
-  //   };
-
-  //   container.addEventListener("scroll", onScroll);
-
-  //   return () => container.removeEventListener("scroll", onScroll);
-  // }, []);
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
@@ -150,53 +133,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, []);
 
-  const fetchMessagesy = async () => {
-    if (!conversation?.id) return;
-    const token = localStorage.getItem("user-token");
-    if (!token) return;
-
-    try {
-      const res = await Api.get(
-        `/chat/conversations/${conversation?.id}/messages`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const messagesData = Array.isArray(res.data) ? res.data : [];
-
-      // Decode user ID from token
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const userId = payload.staffId || payload.id || payload.sub;
-      console.log("decoded userId:", userId);
-      setCurrentUserId(userId);
-      const mapped: Msg[] = messagesData.map((m: any) => ({
-        id: m.id,
-        text: m.text,
-        me: m.author.id === userId,
-        createdAt: m.createdAt,
-        time: new Date(m.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        attachments: m.attachments,
-        reactions: m.reactions,
-        parent: m.parent
-          ? {
-              id: m.parent.id,
-              text: m.parent.text,
-              attachments: m.parent.attachments,
-            }
-          : undefined, // <-- include attachments if needed
-        name: m.author.firstName + " " + m.author.lastName,
-      }));
-
-      setMessages(mapped.reverse());
-      //   scrollToBottom();
-    } catch (err) {
-      console.error("Failed to fetch messages:", err);
-    }
-  };
   const fetchMessages = async () => {
     if (!conversation?.id) return;
     const token = localStorage.getItem("user-token");
@@ -241,6 +177,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
+        edited: m.edited,
       }));
 
       // backend returns DESC, reverse to ASC for display
@@ -297,6 +234,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
+        edited: m.edited,
       }));
 
       // append to TOP (older messages)

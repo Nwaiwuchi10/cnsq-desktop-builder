@@ -145,7 +145,7 @@ const MessagesLayout: React.FC = () => {
                   minute: "2-digit",
                 })
               : "",
-            unread: c.unreadCount || 0,
+            unread: c.unreadCount ?? 0,
             isChannel: true,
           }));
           setChannels(mapped);
@@ -219,10 +219,33 @@ const MessagesLayout: React.FC = () => {
           };
         })
       );
+
       if (selected === msg.conversationId)
         markConversationAsRead(msg.conversationId);
     });
+    socketRef.current.on("channel:message:new", (msg: any) => {
+      setChannels((prev) =>
+        prev.map((c) => {
+          if (c.id !== msg.channelId) return c;
+          const isOpen = selected === msg.channelId;
+          return {
+            ...c,
+            preview: msg.text,
+            text: msg.text,
+            unread: isOpen ? 0 : (c.unread || 0) + 1,
+            createdAt: msg.createdAt || c.createdAt,
+            time: msg.createdAt
+              ? new Date(msg.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : c.time,
+          };
+        })
+      );
 
+      if (selected === msg.channelId) markConversationAsRead(msg.channelId);
+    });
     return () => {
       socketRef.current?.disconnect();
     };
@@ -399,24 +422,6 @@ const MessagesLayout: React.FC = () => {
                   <p>Select a conversation to start chatting 💬</p>
                 </div>
               )}
-
-              {/* {activeTab === "create" ? (
-                <CreateChannelForm />
-              ) : selected ? (
-                <ConversationView
-                  conversation={
-                    activeTab === "channels"
-                      ? channels.find((c) => c.id === selected) || null
-                      : filteredConversations.find((c) => c.id === selected) ||
-                        null
-                  }
-                  onBack={() => setSelected(null)}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-600">
-                  <p>Select a conversation to start chatting 💬</p>
-                </div>
-              )} */}
             </div>
           </div>
 

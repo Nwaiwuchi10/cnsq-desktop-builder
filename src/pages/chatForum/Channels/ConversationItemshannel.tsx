@@ -25,6 +25,7 @@ const ChannelConversationItem: React.FC<{
         </div>
         <div className="text-sm text-gray-500 mt-1 truncate">{preview}</div>
       </div>
+
       {item.unread ? (
         <div className="flex items-center">
           <div className="text-xs bg-orange-400 text-white rounded-full px-2 py-0.5">
