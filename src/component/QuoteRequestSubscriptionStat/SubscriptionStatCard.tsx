@@ -18,6 +18,10 @@ export default function SubscriptionStatsCards() {
   const [loading, setLoading] = useState(true);
 
   const CN_API_BASE = process.env.NEXT_PUBLIC_CN_API_BASE_URL;
+  console.log("CN API BASE URL", process.env.NEXT_PUBLIC_CN_API_BASE_URL);
+  useEffect(() => {
+    console.log("CN_API_BASE =", CN_API_BASE);
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {

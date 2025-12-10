@@ -971,7 +971,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                     <video
                                       src={a.url}
                                       controls
-                                      className="w-40 rounded"
+                                      className="w-40 h-32 rounded"
                                     />
                                     {time}
                                   </div>
@@ -1135,7 +1135,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                   <video
                                     src={a.url}
                                     controls
-                                    className="w-40 rounded"
+                                    className="w-40 h-32 rounded"
                                   />
                                   {time}
                                 </div>
@@ -1185,7 +1185,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
               <textarea
                 className="w-full rounded-xl border border-black px-4 py-3 resize-none 
-          focus:outline-none bg-transparent text-black min-h-[60px]"
+          focus:outline-none bg-transparent text-transparent caret-black min-h-[60px]"
                 placeholder="Type a message..."
                 value={text}
                 onChange={handleTextChange}
@@ -1233,20 +1233,36 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Voice recording */}
-            {recording ? (
-              <button
-                onClick={stopRecording}
-                className="px-2 py-1 bg-red-500 text-white rounded-md"
-              >
-                Stop
-              </button>
-            ) : (
-              <button
-                onClick={startRecording}
-                className="px-2 py-1 bg-green-600 text-white rounded"
-              >
-                🎤
-              </button>
+            <button
+              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+              onClick={startRecording}
+            >
+              🎤
+            </button>
+            {/* /////voice recording playback */}
+            {audioUrl && (
+              <div className="p-2 border rounded bg-gray-100">
+                <audio controls src={audioUrl} className="w-full" />
+
+                <div className="flex gap-3 mt-2">
+                  <button
+                    className="px-3 py-1 bg-red-500 text-white rounded"
+                    onClick={() => {
+                      setAudioUrl(null);
+                      setAudioBlob(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    className="px-3 py-1 bg-green-500 text-white rounded"
+                    onClick={sendVoiceNote}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* Emoji Button */}
@@ -1306,23 +1322,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </label>
 
           {/* Voice Recording */}
-          {recording ? (
-            <button
-              onClick={stopRecording}
-              className="px-2 py-1 bg-red-500 text-white rounded-md"
-            >
-              Stop
-            </button>
-          ) : (
-            <button
-              onClick={startRecording}
-              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
-            >
-              🎤
-            </button>
-          )}
-
-          {/* Voice playback */}
+          <button
+            className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+            onClick={startRecording}
+          >
+            🎤
+          </button>
+          {/* /////voice recording playback */}
           {audioUrl && (
             <div className="p-2 border rounded bg-gray-100">
               <audio controls src={audioUrl} className="w-full" />
@@ -1347,6 +1353,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               </div>
             </div>
           )}
+
+          {/* Voice playback */}
 
           {/* Emoji Button */}
           <button
