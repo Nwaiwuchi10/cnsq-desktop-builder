@@ -971,7 +971,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                     <video
                                       src={a.url}
                                       controls
-                                      className="w-40 rounded"
+                                      className="w-40 h-32 rounded"
                                     />
                                     {time}
                                   </div>
@@ -1135,7 +1135,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                   <video
                                     src={a.url}
                                     controls
-                                    className="w-40 rounded"
+                                    className="w-40 h-32 rounded"
                                   />
                                   {time}
                                 </div>
