@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef, ReactNode } from "react";
 import Api from "@/utils/api";
-// import { io, Socket } from "socket.io-client";
+
 import io from "socket.io-client";
 
 import EmojiPicker from "emoji-picker-react";
@@ -89,6 +89,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [staffList, setStaffList] = useState<any[]>([]);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const pageSize = 30;
   const hasUserScrolled = useRef(false);
@@ -150,8 +151,15 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     if (token) {
       const payload = JSON.parse(atob(token.split(".")[1]));
       setCurrentUserId(payload.staffId || payload.id || payload.sub);
+      setCurrentUser({
+        id: payload.staffId || payload.id || payload.sub,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        photoUrl: payload.photoUrl || null,
+      });
     }
   }, []);
+
   ////fetch staff for hashtag
   useEffect(() => {
     const fetchStaff = async () => {
@@ -293,6 +301,45 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     socketRef.current.emit("joinConversation", conversation?.id);
 
     fetchMessages();
+    // socketRef.current.on("message:new", (msg: any) => {
+    //   if (msg.conversationId !== conversation?.id) return;
+
+    //   // FIX: if backend does NOT send populated author, use current user
+    //   let author = msg.author;
+    //   if (!author) {
+    //     author = {
+    //       id: currentUserId,
+    //       firstName: currentUser?.firstName,
+    //       lastName: currentUser?.lastName,
+    //       photoUrl: currentUser?.photoUrl || null,
+    //     };
+    //   }
+
+    //   setMessages((prev: any) => [
+    //     ...prev,
+    //     {
+    //       id: msg.id,
+    //       text: msg.text,
+    //       me: author.id === currentUserId,
+    //       createdAt: msg.createdAt,
+    //       time: new Date(msg.createdAt).toLocaleTimeString([], {
+    //         hour: "2-digit",
+    //         minute: "2-digit",
+    //       }),
+    //       author: {
+    //         id: author.id,
+    //         firstName: author.firstName,
+    //         lastName: author.lastName,
+    //         photoUrl: author.photoUrl,
+    //       },
+    //       name: `${author.firstName} ${author.lastName}`,
+    //       avatar: author.photoUrl,
+    //       attachments: msg.attachments,
+    //       reactions: msg.reactions,
+    //       parent: msg.parent,
+    //     },
+    //   ]);
+    // });
 
     socketRef.current.on("message:new", (msg: any) => {
       if (msg.conversationId !== conversation?.id) return;
@@ -716,11 +763,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
           return (
-            <div key={m.id} className="mb-2">
+            <div key={m.id} className="mb-6">
               {/* DATE SEPARATOR */}
               {showDateSeparator && (
                 <div className="flex justify-center my-2">
-                  <div className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">
+                  <div className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full mb-4">
                     {msgDate}
                   </div>
                 </div>
@@ -1119,8 +1166,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t bg-white">
-        <div className="flex flex-col gap-2">
+      {/* ================= MOBILE & TABLET VIEW ================= */}
+      <div className="p-4 border-t bg-white md:hidden">
+        <div className="flex flex-col gap-3">
           {/* File Previews */}
           {files.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
@@ -1128,8 +1176,44 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
           )}
 
+          {/* Group 1: Textarea + Send button */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <div className="absolute inset-0 px-4 py-3 pointer-events-none whitespace-pre-wrap break-words">
+                {renderHighlightedText(text)}
+              </div>
+
+              <textarea
+                className="w-full rounded-xl border border-black px-4 py-3 resize-none 
+          focus:outline-none bg-transparent text-black min-h-[60px]"
+                placeholder="Type a message..."
+                value={text}
+                onChange={handleTextChange}
+                rows={2}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    postMessage();
+                  }
+                }}
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                if (editMessage) saveEdit(editMessage.id);
+                else postMessage();
+              }}
+              disabled={isSaving}
+              className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 cursor-pointer"
+            >
+              {editMessage ? "Save" : "➤"}
+            </button>
+          </div>
+
+          {/* Group 2: File picker, emoji, voice recording */}
           <div className="flex items-center gap-3">
-            {/* File Select Button */}
+            {/* File Button */}
             <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
               📎
               <input
@@ -1148,8 +1232,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               />
             </label>
 
-            {/* ////voice recording */}
-
+            {/* Voice recording */}
             {recording ? (
               <button
                 onClick={stopRecording}
@@ -1160,116 +1243,181 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             ) : (
               <button
                 onClick={startRecording}
-                className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+                className="px-2 py-1 bg-green-600 text-white rounded"
               >
                 🎤
               </button>
             )}
 
-            {/* /////voice recording playback */}
-            {audioUrl && (
-              <div className="p-2 border rounded bg-gray-100">
-                <audio controls src={audioUrl} className="w-full" />
-
-                <div className="flex gap-3 mt-2">
-                  <button
-                    className="px-3 py-1 bg-red-500 text-white rounded"
-                    onClick={() => {
-                      setAudioUrl(null);
-                      setAudioBlob(null);
-                    }}
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    className="px-3 py-1 bg-green-500 text-white rounded"
-                    onClick={sendVoiceNote}
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-            )}
-            {/* ////emoji send */}
             {/* Emoji Button */}
             <button
               onClick={() => setShowEmojiPicker((p) => !p)}
-              // onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
             >
               😀
             </button>
+          </div>
 
-            {showEmojiPicker && (
-              <div className="absolute bottom-12 left-2 z-50 bg-white shadow-lg rounded-lg">
-                {/* Header + Close Button */}
-                <div className="flex justify-between items-center px-2 py-1 border-b">
-                  <span className="text-sm font-semibold">Emoji</span>
-                  <button
-                    onClick={() => setShowEmojiPicker(false)}
-                    className="text-gray-500 hover:text-red-500 text-lg leading-none"
-                  >
-                    ✖
-                  </button>
-                </div>
-                <EmojiPicker onEmojiClick={handleEmojiSelect} />
+          {/* Emoji Picker Box */}
+          {showEmojiPicker && (
+            <div className="absolute bottom-20 left-4 z-50 bg-white shadow-lg rounded-lg">
+              <div className="flex justify-between items-center px-2 py-1 border-b">
+                <span className="text-sm font-semibold">Emoji</span>
+                <button
+                  onClick={() => setShowEmojiPicker(false)}
+                  className="text-gray-500 hover:text-red-500 text-lg leading-none"
+                >
+                  ✖
+                </button>
               </div>
-            )}
+              <EmojiPicker onEmojiClick={handleEmojiSelect} />
+            </div>
+          )}
+        </div>
+      </div>
 
-            {/* Message Input */}
-            <div className="relative w-full">
-              {/* Highlighted text layer */}
-              <div className="absolute inset-0 px-4 py-3 pointer-events-none whitespace-pre-wrap break-words">
-                {renderHighlightedText(text)}
+      {/* ================= DESKTOP VIEW (unchanged) ================= */}
+      <div className="p-4 border-t bg-white hidden md:flex flex-col gap-2">
+        {/* File Previews */}
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {files.map((f, idx) => renderFilePreview(f, idx))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          {/* File Select Button */}
+          <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
+            📎
+            <input
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+              className="hidden"
+              onChange={(e: any) => {
+                if (e.target.files) {
+                  setFiles((prev: any) => [
+                    ...prev,
+                    ...Array.from(e.target.files),
+                  ]);
+                }
+              }}
+            />
+          </label>
+
+          {/* Voice Recording */}
+          {recording ? (
+            <button
+              onClick={stopRecording}
+              className="px-2 py-1 bg-red-500 text-white rounded-md"
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              onClick={startRecording}
+              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+            >
+              🎤
+            </button>
+          )}
+
+          {/* Voice playback */}
+          {audioUrl && (
+            <div className="p-2 border rounded bg-gray-100">
+              <audio controls src={audioUrl} className="w-full" />
+
+              <div className="flex gap-3 mt-2">
+                <button
+                  className="px-3 py-1 bg-red-500 text-white rounded"
+                  onClick={() => {
+                    setAudioUrl(null);
+                    setAudioBlob(null);
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="px-3 py-1 bg-green-500 text-white rounded"
+                  onClick={sendVoiceNote}
+                >
+                  Send
+                </button>
               </div>
+            </div>
+          )}
 
-              {/* Actual textarea */}
-              <textarea
-                className="w-full rounded-full border border-black px-4 py-3 resize-none 
-               focus:outline-none bg-transparent text-transparent caret-black"
-                placeholder="Type a message..."
-                value={text}
-                onChange={handleTextChange}
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    postMessage();
-                  }
-                }}
-              />
+          {/* Emoji Button */}
+          <button
+            onClick={() => setShowEmojiPicker((p) => !p)}
+            className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
+          >
+            😀
+          </button>
+
+          {showEmojiPicker && (
+            <div className="absolute bottom-12 left-2 z-50 bg-white shadow-lg rounded-lg">
+              <div className="flex justify-between items-center px-2 py-1 border-b">
+                <span className="text-sm font-semibold">Emoji</span>
+                <button
+                  onClick={() => setShowEmojiPicker(false)}
+                  className="text-gray-500 hover:text-red-500 text-lg leading-none"
+                >
+                  ✖
+                </button>
+              </div>
+              <EmojiPicker onEmojiClick={handleEmojiSelect} />
+            </div>
+          )}
+
+          {/* Message Input */}
+          <div className="relative w-full">
+            <div className="absolute inset-0 px-4 py-3 pointer-events-none whitespace-pre-wrap break-words">
+              {renderHighlightedText(text)}
             </div>
 
-            {/* Send Button */}
-
-            <button
-              onClick={() => {
-                if (editMessage) {
-                  saveEdit(editMessage.id);
-                } else {
+            <textarea
+              className="w-full rounded-full border border-black px-4 py-3 resize-none 
+        focus:outline-none bg-transparent text-transparent caret-black"
+              placeholder="Type a message..."
+              value={text}
+              onChange={handleTextChange}
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
                   postMessage();
                 }
               }}
-              disabled={isSaving}
-              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
-            >
-              {editMessage ? "Save" : "➤"}
-            </button>
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute bottom-16 left-4 lg:left-[124px] bg-white border rounded shadow-lg max-h-40 overflow-y-auto z-50">
-                {suggestions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="px-3 py-1 hover:bg-gray-200 cursor-pointer "
-                    onClick={() => handleSelectStaff(s)}
-                  >
-                    {s.firstName} {s.lastName}
-                  </div>
-                ))}
-              </div>
-            )}
+            />
           </div>
+
+          {/* Send Button */}
+          <button
+            onClick={() => {
+              if (editMessage) saveEdit(editMessage.id);
+              else postMessage();
+            }}
+            disabled={isSaving}
+            className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+          >
+            {editMessage ? "Save" : "➤"}
+          </button>
+
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute bottom-16 left-4 lg:left-[124px] bg-white border rounded shadow-lg max-h-40 overflow-y-auto z-50">
+              {suggestions.map((s) => (
+                <div
+                  key={s.id}
+                  className="px-3 py-1 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => handleSelectStaff(s)}
+                >
+                  {s.firstName} {s.lastName}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
