@@ -1037,7 +1037,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           <div className="flex items-center gap-2">
             <textarea
               className="w-full rounded-xl border border-black px-4 py-3 resize-none 
-          focus:outline-none bg-transparent text-transparent caret-black min-h-[60px]"
+          focus:outline-none bg-transparent text-gray-700 caret-black min-h-[60px]"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
