@@ -301,45 +301,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     socketRef.current.emit("joinConversation", conversation?.id);
 
     fetchMessages();
-    // socketRef.current.on("message:new", (msg: any) => {
-    //   if (msg.conversationId !== conversation?.id) return;
-
-    //   // FIX: if backend does NOT send populated author, use current user
-    //   let author = msg.author;
-    //   if (!author) {
-    //     author = {
-    //       id: currentUserId,
-    //       firstName: currentUser?.firstName,
-    //       lastName: currentUser?.lastName,
-    //       photoUrl: currentUser?.photoUrl || null,
-    //     };
-    //   }
-
-    //   setMessages((prev: any) => [
-    //     ...prev,
-    //     {
-    //       id: msg.id,
-    //       text: msg.text,
-    //       me: author.id === currentUserId,
-    //       createdAt: msg.createdAt,
-    //       time: new Date(msg.createdAt).toLocaleTimeString([], {
-    //         hour: "2-digit",
-    //         minute: "2-digit",
-    //       }),
-    //       author: {
-    //         id: author.id,
-    //         firstName: author.firstName,
-    //         lastName: author.lastName,
-    //         photoUrl: author.photoUrl,
-    //       },
-    //       name: `${author.firstName} ${author.lastName}`,
-    //       avatar: author.photoUrl,
-    //       attachments: msg.attachments,
-    //       reactions: msg.reactions,
-    //       parent: msg.parent,
-    //     },
-    //   ]);
-    // });
 
     socketRef.current.on("message:new", (msg: any) => {
       if (msg.conversationId !== conversation?.id) return;
