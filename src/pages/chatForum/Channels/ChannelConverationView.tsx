@@ -426,7 +426,86 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     });
     return mentionedIds;
   };
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert("Browser does not support audio recording.");
+      return;
+    }
 
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // BEST cross browser MIME types
+      const supportedMimeTypes = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg",
+      ];
+
+      let mimeType = "";
+
+      for (const type of supportedMimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          mimeType = type;
+          break;
+        }
+      }
+
+      const recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined
+      );
+
+      const chunks: BlobPart[] = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    } catch (err) {
+      console.error(err);
+      alert("Microphone permission denied or unsupported device.");
+    }
+  };
+  const stopRecording = () => {
+    if (!mediaRecorder) return;
+    mediaRecorder.stop();
+    setIsRecording(false);
+  };
+  const sendVoiceNote = async () => {
+    if (!audioBlob) return;
+
+    const token = localStorage.getItem("user-token");
+
+    const formData = new FormData();
+    formData.append(
+      "dto",
+      JSON.stringify({ conversationId: conversation?.id, text: "" })
+    );
+
+    formData.append("file", audioBlob, "voice-note.webm");
+
+    await Api.post(`/chat/channels/${conversation?.id}/messages/`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    setAudioBlob(null);
+    setAudioUrl(null);
+  };
   // ================== Post Message ==================
   const postMessage = async () => {
     if (!text.trim() && files.length === 0) return;
@@ -470,7 +549,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     setShowEmojiPicker(false);
   };
   //////record voice
-  const startRecording = async () => {
+  const startRecordings = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -495,35 +574,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       console.error("Error accessing microphone:", err);
       alert("Microphone permission denied or unsupported device.");
     }
-  };
-  const stopRecording = () => {
-    if (!mediaRecorder) return;
-    mediaRecorder.stop();
-    setIsRecording(false);
-  };
-
-  const sendVoiceNote = async () => {
-    if (!audioBlob) return;
-
-    const token = localStorage.getItem("user-token");
-
-    const formData = new FormData();
-    formData.append(
-      "dto",
-      JSON.stringify({ conversationId: conversation?.id, text: "" })
-    );
-
-    formData.append("file", audioBlob, "voice-note.webm");
-
-    await Api.post(`/chat/channels/${conversation?.id}/messages/`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    setAudioBlob(null);
-    setAudioUrl(null);
   };
 
   ///// edit and delete conversation
@@ -1209,6 +1259,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             >
               {editMessage ? "Save" : "➤"}
             </button>
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute bottom-16 left-4 lg:left-[124px] bg-white border rounded shadow-lg max-h-40 overflow-y-auto z-50">
+                {suggestions.map((s) => (
+                  <div
+                    key={s.id}
+                    className="px-3 py-1 hover:bg-gray-200 cursor-pointer"
+                    onClick={() => handleSelectStaff(s)}
+                  >
+                    {s.firstName} {s.lastName}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Group 2: File picker, emoji, voice recording */}
