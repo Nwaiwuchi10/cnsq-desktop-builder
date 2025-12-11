@@ -93,23 +93,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, [conversation?.id]);
 
-  // useEffect(() => {
-  //   const container = scrollRef.current;
-  //   if (!container) return;
-
-  //   const onScroll = () => {
-  //     const bottomReached =
-  //       container.scrollHeight - container.scrollTop === container.clientHeight;
-
-  //     if (!bottomReached) {
-  //       hasUserScrolled.current = true;
-  //     }
-  //   };
-
-  //   container.addEventListener("scroll", onScroll);
-
-  //   return () => container.removeEventListener("scroll", onScroll);
-  // }, []);
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
@@ -150,53 +133,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   }, []);
 
-  const fetchMessagesy = async () => {
-    if (!conversation?.id) return;
-    const token = localStorage.getItem("user-token");
-    if (!token) return;
-
-    try {
-      const res = await Api.get(
-        `/chat/conversations/${conversation?.id}/messages`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const messagesData = Array.isArray(res.data) ? res.data : [];
-
-      // Decode user ID from token
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const userId = payload.staffId || payload.id || payload.sub;
-      console.log("decoded userId:", userId);
-      setCurrentUserId(userId);
-      const mapped: Msg[] = messagesData.map((m: any) => ({
-        id: m.id,
-        text: m.text,
-        me: m.author.id === userId,
-        createdAt: m.createdAt,
-        time: new Date(m.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        attachments: m.attachments,
-        reactions: m.reactions,
-        parent: m.parent
-          ? {
-              id: m.parent.id,
-              text: m.parent.text,
-              attachments: m.parent.attachments,
-            }
-          : undefined, // <-- include attachments if needed
-        name: m.author.firstName + " " + m.author.lastName,
-      }));
-
-      setMessages(mapped.reverse());
-      //   scrollToBottom();
-    } catch (err) {
-      console.error("Failed to fetch messages:", err);
-    }
-  };
   const fetchMessages = async () => {
     if (!conversation?.id) return;
     const token = localStorage.getItem("user-token");
@@ -241,6 +177,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
+        edited: m.edited,
       }));
 
       // backend returns DESC, reverse to ASC for display
@@ -297,6 +234,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
+        edited: m.edited,
       }));
 
       // append to TOP (older messages)
@@ -1085,8 +1023,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t bg-white">
-        <div className="flex flex-col gap-2">
+      {/* ================ MOBILE + TABLET VIEW ================ */}
+      <div className="p-4 border-t bg-white md:hidden">
+        <div className="flex flex-col gap-3">
           {/* File Previews */}
           {files.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
@@ -1094,8 +1033,38 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </div>
           )}
 
+          {/* TOP ROW — Textarea + Send Button */}
+          <div className="flex items-center gap-2">
+            <textarea
+              className="w-full rounded-xl border border-black px-4 py-3 resize-none 
+          focus:outline-none bg-transparent text-gray-700 caret-black min-h-[60px]"
+              placeholder="Type a message..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              rows={2}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  postMessage();
+                }
+              }}
+            />
+
+            <button
+              onClick={() => {
+                if (editMessage) saveEdit(editMessage.id);
+                else postMessage();
+              }}
+              disabled={isSaving}
+              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+            >
+              {editMessage ? "Save" : "➤"}
+            </button>
+          </div>
+
+          {/* BELOW — Attachments, Audio, Emoji */}
           <div className="flex items-center gap-3">
-            {/* File Select Button */}
+            {/* File Select */}
             <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
               📎
               <input
@@ -1114,18 +1083,18 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               />
             </label>
 
-            {/* ////voice recording */}
+            {/* Mic */}
             <button
               className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
               onClick={startRecording}
             >
               🎤
             </button>
-            {/* /////voice recording playback */}
-            {audioUrl && (
-              <div className="p-2 border rounded bg-gray-100">
-                <audio controls src={audioUrl} className="w-full" />
 
+            {/* Audio preview */}
+            {audioUrl && (
+              <div className="p-2 border rounded bg-gray-100 w-full">
+                <audio controls src={audioUrl} className="w-full" />
                 <div className="flex gap-3 mt-2">
                   <button
                     className="px-3 py-1 bg-red-500 text-white rounded"
@@ -1136,7 +1105,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   >
                     Cancel
                   </button>
-
                   <button
                     className="px-3 py-1 bg-green-500 text-white rounded"
                     onClick={sendVoiceNote}
@@ -1146,11 +1114,99 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 </div>
               </div>
             )}
-            {/* ////emoji send */}
-            {/* Emoji Button */}
+
+            {/* Emoji */}
             <button
               onClick={() => setShowEmojiPicker((p) => !p)}
-              // onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
+            >
+              😀
+            </button>
+          </div>
+
+          {/* Floating Emoji Picker */}
+          {showEmojiPicker && (
+            <div className="absolute bottom-24 left-4 z-50 bg-white shadow-lg rounded-lg">
+              <div className="flex justify-between items-center px-2 py-1 border-b">
+                <span className="text-sm font-semibold">Emoji</span>
+                <button
+                  onClick={() => setShowEmojiPicker(false)}
+                  className="text-gray-500 hover:text-red-500 text-lg leading-none"
+                >
+                  ✖
+                </button>
+              </div>
+              <EmojiPicker onEmojiClick={handleEmojiSelect} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ================ DESKTOP VIEW (UNCHANGED) ================ */}
+      <div className="p-4 border-t bg-white hidden md:block">
+        <div className="flex flex-col gap-2">
+          {/* File Previews */}
+          {files.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {files.map((f, idx) => renderFilePreview(f, idx))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            {/* File Select */}
+            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
+              📎
+              <input
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+                className="hidden"
+                onChange={(e: any) => {
+                  if (e.target.files) {
+                    setFiles((prev: any) => [
+                      ...prev,
+                      ...Array.from(e.target.files),
+                    ]);
+                  }
+                }}
+              />
+            </label>
+
+            {/* Mic */}
+            <button
+              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
+              onClick={startRecording}
+            >
+              🎤
+            </button>
+
+            {/* Audio Preview */}
+            {audioUrl && (
+              <div className="p-2 border rounded bg-gray-100">
+                <audio controls src={audioUrl} className="w-full" />
+                <div className="flex gap-3 mt-2">
+                  <button
+                    className="px-3 py-1 bg-red-500 text-white rounded"
+                    onClick={() => {
+                      setAudioUrl(null);
+                      setAudioBlob(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-3 py-1 bg-green-500 text-white rounded"
+                    onClick={sendVoiceNote}
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Emoji */}
+            <button
+              onClick={() => setShowEmojiPicker((p) => !p)}
               className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
             >
               😀
@@ -1158,7 +1214,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
             {showEmojiPicker && (
               <div className="absolute bottom-12 left-2 z-50 bg-white shadow-lg rounded-lg">
-                {/* Header + Close Button */}
                 <div className="flex justify-between items-center px-2 py-1 border-b">
                   <span className="text-sm font-semibold">Emoji</span>
                   <button
@@ -1173,13 +1228,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             )}
 
             {/* Message Input */}
-
             <textarea
               className="flex-1 min-w-0 rounded-full border px-4 py-3 resize-none focus:outline-none"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              rows={1} // auto expand? Tailwind can use h-auto
+              rows={1}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -1188,15 +1242,11 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               }}
             />
 
-            {/* Send Button */}
-
+            {/* Send */}
             <button
               onClick={() => {
-                if (editMessage) {
-                  saveEdit(editMessage.id);
-                } else {
-                  postMessage();
-                }
+                if (editMessage) saveEdit(editMessage.id);
+                else postMessage();
               }}
               disabled={isSaving}
               className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"

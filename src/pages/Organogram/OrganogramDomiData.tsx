@@ -410,10 +410,10 @@ const initialEdges: Edge[] = [
   // Marketing children
   ...[
     "graphics..",
-    "copywriting",
-    "digitalmarketing",
-    "social&content",
-    "offlinemarketing",
+    "copywriting..",
+    "digitalmarketing...",
+    "social&content.",
+    "offlinemarketing..",
   ].map((id) => ({
     id: `m-${id}`,
     source: "marketing",

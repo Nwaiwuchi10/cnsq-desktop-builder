@@ -1,9 +1,38 @@
 // types/task.ts
+
+import { StaticImageData } from "next/image";
+
 export interface Staff {
   id: number;
+  uuid: string;
   firstName: string;
   lastName: string;
-  photoUrl?: string | null;
+  email: string;
+  phone: string;
+  photoUrl: string | StaticImageData | null;
+  address?: {
+    city: string;
+    state: string;
+    country: string;
+  };
+  employment?: {
+    jobTitle: string[];
+    department?: {
+      name: string;
+    };
+    departmentalRole?: {
+      title: string;
+    };
+  };
+}
+
+// === Departmental Role Interface ===
+export interface DepartmentalRole {
+  id: number;
+  title: string;
+  department: {
+    name: string;
+  };
 }
 
 export interface TaskAssignment {
@@ -77,3 +106,122 @@ export const PROJECT_STATUSES = [
   "completed",
 ];
 export const PROJECT_PRIORITIES = ["low", "medium", "high", "critical"];
+
+export interface Member {
+  id: number;
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    photoUrl?: string | null;
+  };
+}
+
+export interface LastMessage {
+  text: string;
+  createdAt: string; // Backend now provides this field
+}
+
+export interface ConversationResponse {
+  id: string;
+  members: Member[];
+  lastMessage?: LastMessage;
+  unreadCount: number;
+}
+export interface StaffResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  photoUrl?: string | null;
+}
+
+export interface DMResponse {
+  currentUserId: number;
+  conversations: ConversationResponse[];
+  staffMatches: StaffResponse[];
+}
+export interface Attachment {
+  id: string;
+  url: string;
+  filename?: string;
+  mimeType?: string;
+}
+
+export interface Reaction {
+  id: string;
+  emoji: string;
+}
+
+export interface Msg {
+  id: string;
+
+  name: string;
+  avatar?: string;
+  text: string; // REQUIRED
+  me: boolean; // REQUIRED
+  preview: string;
+  createdAt: string;
+  time: string;
+
+  unread?: number;
+  online?: boolean;
+  attachments?: Attachment[];
+  reactions?: Reaction[];
+  parent?: Partial<Msg>;
+}
+export interface Message {
+  id: string;
+
+  name: string;
+  avatar?: string;
+  text: string; // REQUIRED
+  me: boolean; // REQUIRED
+  preview: string;
+  createdAt: string;
+  time: string;
+
+  unread?: number;
+  online?: boolean;
+  attachments?: Attachment[];
+  reactions?: Reaction[];
+  parent?: Partial<Msg>;
+}
+export enum MemberRole {
+  MEMBER = "member",
+  ADMIN = "admin",
+  OWNER = "owner",
+}
+
+export enum ConversationType {
+  CHANNEL = "channel",
+  PRIVATE = "private",
+  DM = "dm",
+  GROUP_DM = "group_dm",
+}
+
+export interface ConversationMember {
+  id: string;
+  conversation: Conversation | string; // for API you might get only id
+  user: Staff;
+  role: MemberRole;
+  notificationsEnabled: boolean;
+  unreadCount: number;
+  joinedAt: string;
+  updatedAt: string;
+}
+
+export interface Conversation {
+  id: string;
+  type: ConversationType;
+  name?: string;
+  description?: string;
+  slug?: string;
+  isArchived: boolean;
+  members: ConversationMember[];
+  messages?: Message[];
+  createdBy: Staff;
+  createdAt: string;
+  updatedAt: string;
+  lastMessageAt?: string;
+  lastMessage?: Message;
+}
