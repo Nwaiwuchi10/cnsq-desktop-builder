@@ -1036,8 +1036,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           {/* TOP ROW — Textarea + Send Button */}
           <div className="flex items-center gap-2">
             <textarea
-              className="flex-1 rounded-xl border border-black px-4 py-3 resize-none 
-        focus:outline-none text-transparent caret-black min-h-[70px]"
+              className="w-full rounded-xl border border-black px-4 py-3 resize-none 
+          focus:outline-none bg-transparent text-transparent caret-black min-h-[60px]"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}

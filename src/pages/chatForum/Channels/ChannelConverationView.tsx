@@ -496,12 +496,12 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       alert("Microphone permission denied or unsupported device.");
     }
   };
-
   const stopRecording = () => {
     if (!mediaRecorder) return;
     mediaRecorder.stop();
     setIsRecording(false);
   };
+
   const sendVoiceNote = async () => {
     if (!audioBlob) return;
 
@@ -515,7 +515,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
     formData.append("file", audioBlob, "voice-note.webm");
 
-    await Api.post("/chat/messages", formData, {
+    await Api.post(`/chat/channels/${conversation?.id}/messages/`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data",
