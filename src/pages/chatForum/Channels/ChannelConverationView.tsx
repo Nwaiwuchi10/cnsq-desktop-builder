@@ -10,6 +10,7 @@ import ChannelMessageBubble from "./ChannelMessageBuble";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
+import { ReactMediaRecorder } from "react-media-recorder";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -65,16 +66,10 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
     null
   );
-  const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
-  const [recording, setRecording] = useState(false);
-
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [uploadingVoice, setUploadingVoice] = useState(false);
 
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -387,86 +382,44 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     });
     return mentionedIds;
   };
-  const startRecording = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      alert("Browser does not support audio recording.");
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-      // BEST cross browser MIME types
-      const supportedMimeTypes = [
-        "audio/webm;codecs=opus",
-        "audio/webm",
-        "audio/mp4",
-        "audio/ogg;codecs=opus",
-        "audio/ogg",
-      ];
-
-      let mimeType = "";
-
-      for (const type of supportedMimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          mimeType = type;
-          break;
-        }
-      }
-
-      const recorder = new MediaRecorder(
-        stream,
-        mimeType ? { mimeType } : undefined
-      );
-
-      const chunks: BlobPart[] = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
-      };
-
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
-    } catch (err) {
-      console.error(err);
-      alert("Microphone permission denied or unsupported device.");
-    }
-  };
-  const stopRecording = () => {
-    if (!mediaRecorder) return;
-    mediaRecorder.stop();
-    setIsRecording(false);
-  };
   const sendVoiceNote = async () => {
-    if (!audioBlob) return;
+    if (!voiceBlob || !conversation?.id) return;
 
     const token = localStorage.getItem("user-token");
+    if (!token) return;
 
     const formData = new FormData();
     formData.append(
       "dto",
-      JSON.stringify({ conversationId: conversation?.id, text: "" })
+      JSON.stringify({
+        conversationId: conversation.id,
+        text: "",
+        parentId: replyingTo?.id ?? null,
+      })
     );
 
-    formData.append("file", audioBlob, "voice-note.webm");
+    formData.append("file", voiceBlob, "voice-note.webm");
 
-    await Api.post(`/chat/channels/${conversation?.id}/messages/`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    try {
+      setUploadingVoice(true);
+      await Api.post(`/chat/channels/${conversation?.id}/messages/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    setAudioBlob(null);
-    setAudioUrl(null);
+      // reset
+      setVoiceBlob(null);
+      setVoiceUrl(null);
+      setReplyingTo(null);
+    } catch (err) {
+      console.error("Voice upload failed", err);
+    } finally {
+      setUploadingVoice(false);
+    }
   };
+
   // ================== Post Message ==================
   const postMessage = async () => {
     if (!text.trim() && files.length === 0) return;
@@ -508,33 +461,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const handleEmojiSelect = (emoji: any) => {
     setText((prev) => prev + emoji.emoji);
     setShowEmojiPicker(false);
-  };
-  //////record voice
-  const startRecordings = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
-        const url = URL.createObjectURL(audioBlob);
-        setAudioUrl(url);
-        audioChunksRef.current = [];
-      };
-
-      mediaRecorder.start();
-      setRecording(true);
-    } catch (err) {
-      console.error("Error accessing microphone:", err);
-      alert("Microphone permission denied or unsupported device.");
-    }
   };
 
   ///// edit and delete conversation
@@ -702,14 +628,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           ✖
         </button>
         {/* ////voice recording preview */}
-        {isRecording && (
-          <button
-            className="px-2 py-1 bg-gray-600 text-white rounded"
-            onClick={stopRecording}
-          >
-            ⏹ Stop
-          </button>
-        )}
       </div>
     );
   };
@@ -1257,23 +1175,45 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Voice recording */}
-            <button
-              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
-              onClick={startRecording}
-            >
-              🎤
-            </button>
+            <ReactMediaRecorder
+              audio
+              mediaRecorderOptions={{ mimeType: "audio/webm" }}
+              onStop={(blobUrl) => {
+                fetch(blobUrl)
+                  .then((r) => r.blob())
+                  .then((blob) => {
+                    setVoiceBlob(blob);
+                    setVoiceUrl(blobUrl);
+                  });
+              }}
+              render={({ status, startRecording, stopRecording }) => (
+                <button
+                  onMouseDown={startRecording}
+                  onMouseUp={stopRecording}
+                  onTouchStart={startRecording}
+                  onTouchEnd={stopRecording}
+                  className={`px-2 py-1 rounded cursor-pointer ${
+                    status === "recording"
+                      ? "bg-red-600 text-white"
+                      : "bg-green-600 text-white"
+                  }`}
+                >
+                  🎤
+                </button>
+              )}
+            />
+
             {/* /////voice recording playback */}
-            {audioUrl && (
+            {voiceUrl && (
               <div className="p-2 border rounded bg-gray-100">
-                <audio controls src={audioUrl} className="w-full" />
+                <audio controls src={voiceUrl} className="w-full" />
 
                 <div className="flex gap-3 mt-2">
                   <button
                     className="px-3 py-1 bg-red-500 text-white rounded"
                     onClick={() => {
-                      setAudioUrl(null);
-                      setAudioBlob(null);
+                      setVoiceUrl(null);
+                      setVoiceBlob(null);
                     }}
                   >
                     Cancel
@@ -1281,9 +1221,10 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
                   <button
                     className="px-3 py-1 bg-green-500 text-white rounded"
+                    disabled={uploadingVoice}
                     onClick={sendVoiceNote}
                   >
-                    Send
+                    {uploadingVoice ? "Sending..." : "Send"}
                   </button>
                 </div>
               </div>
@@ -1346,33 +1287,56 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </label>
 
           {/* Voice Recording */}
-          <button
-            className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
-            onClick={startRecording}
-          >
-            🎤
-          </button>
+          <ReactMediaRecorder
+            audio
+            mediaRecorderOptions={{ mimeType: "audio/webm" }}
+            onStop={(blobUrl) => {
+              fetch(blobUrl)
+                .then((r) => r.blob())
+                .then((blob) => {
+                  setVoiceBlob(blob);
+                  setVoiceUrl(blobUrl);
+                });
+            }}
+            render={({ status, startRecording, stopRecording }) => (
+              <button
+                onMouseDown={startRecording}
+                onMouseUp={stopRecording}
+                onTouchStart={startRecording}
+                onTouchEnd={stopRecording}
+                className={`px-2 py-1 rounded cursor-pointer ${
+                  status === "recording"
+                    ? "bg-red-600 text-white"
+                    : "bg-green-600 text-white"
+                }`}
+              >
+                🎤
+              </button>
+            )}
+          />
+
           {/* /////voice recording playback */}
-          {audioUrl && (
+          {voiceUrl && (
             <div className="p-2 border rounded bg-gray-100">
-              <audio controls src={audioUrl} className="w-full" />
+              <audio controls src={voiceUrl} className="w-full" />
 
               <div className="flex gap-3 mt-2">
                 <button
                   className="px-3 py-1 bg-red-500 text-white rounded"
                   onClick={() => {
-                    setAudioUrl(null);
-                    setAudioBlob(null);
+                    setVoiceUrl(null);
+                    setVoiceBlob(null);
                   }}
                 >
                   Cancel
                 </button>
 
                 <button
-                  className="px-3 py-1 bg-green-500 text-white rounded"
+                  className="px-3 py-1 bg-green-500 text-white rounded cursor-pointer"
+                  disabled={uploadingVoice}
                   onClick={sendVoiceNote}
                 >
-                  Send
+                  {uploadingVoice ? "Sending..." : "Send"}
                 </button>
               </div>
             </div>
