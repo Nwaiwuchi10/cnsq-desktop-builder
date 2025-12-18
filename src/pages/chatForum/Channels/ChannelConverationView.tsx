@@ -71,7 +71,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [uploadingVoice, setUploadingVoice] = useState(false);
 
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const prevConversationId = useRef<string | null>(null);
   const [cursor, setCursor] = useState<string | null>(null);
