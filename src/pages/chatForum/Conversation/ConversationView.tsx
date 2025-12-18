@@ -332,7 +332,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
     try {
       setUploadingVoice(true);
-      await Api.post(`/chat/channels/${conversation?.id}/messages/`, formData, {
+      await Api.post(`/chat/messages`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
