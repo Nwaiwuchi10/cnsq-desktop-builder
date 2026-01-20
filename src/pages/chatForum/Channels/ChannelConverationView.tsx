@@ -10,7 +10,13 @@ import ChannelMessageBubble from "./ChannelMessageBuble";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
-import { ReactMediaRecorder } from "react-media-recorder";
+// import { ReactMediaRecorder } from "react-media-recorder";
+import dynamic from "next/dynamic";
+
+const VoiceRecorder = dynamic(
+  () => import("@/component/VoiceRecorder/VoiceRecorder"),
+  { ssr: false },
+);
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -61,10 +67,10 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
-    null
+    null,
   );
 
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
@@ -179,7 +185,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     try {
       const res = await Api.get(
         `/chat/conversations/${conversation.id}/messages?limit=${pageSize}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       const messagesData = Array.isArray(res.data.messages)
@@ -237,7 +243,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       setLoadingMore(true);
       const res = await Api.get(
         `/chat/conversations/${conversation.id}/messages?cursor=${cursor}&limit=${pageSize}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       const messagesData = Array.isArray(res.data.messages)
@@ -330,8 +336,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     socketRef.current.on("message:edit", (msg: any) => {
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m
-        )
+          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m,
+        ),
       );
     });
 
@@ -355,7 +361,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     if (match) {
       const query = match[1].toLowerCase();
       const filtered = staffList.filter((s) =>
-        `${s.firstName}${s.lastName}`.toLowerCase().includes(query)
+        `${s.firstName}${s.lastName}`.toLowerCase().includes(query),
       );
       setSuggestions(filtered);
       setShowSuggestions(true);
@@ -368,7 +374,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const handleSelectStaff = (staff: any) => {
     // Replace last @mention with selected staff
     setText((prev) =>
-      prev.replace(/@\w*$/, `@${staff.firstName}${staff.lastName} `)
+      prev.replace(/@\w*$/, `@${staff.firstName}${staff.lastName} `),
     );
     setShowSuggestions(false);
     setSuggestions([]);
@@ -394,7 +400,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         conversationId: conversation.id,
         text: "",
         parentId: replyingTo?.id ?? null,
-      })
+      }),
     );
 
     formData.append("file", voiceBlob, "voice-note.webm");
@@ -435,7 +441,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         text,
         mentions,
         parentId: replyingTo?.id ?? null,
-      })
+      }),
     );
     files.forEach((f) => formData.append("file", f));
 
@@ -475,7 +481,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         { text },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       // Clear edit state
       setEditMessage(null);
@@ -554,7 +560,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         </span>
       ) : (
         part
-      )
+      ),
     );
   };
 
@@ -575,7 +581,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         </a>
       ) : (
         part
-      )
+      ),
     );
   };
   let lastDate = "";
@@ -787,7 +793,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         selected={selectedMessageId === m.id}
                         onClick={() =>
                           setSelectedMessageId(
-                            selectedMessageId === m.id ? null : m.id
+                            selectedMessageId === m.id ? null : m.id,
                           )
                         }
                         authorName={m.author?.firstName}
@@ -884,7 +890,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                   </div>
                                 ) : ext &&
                                   ["png", "jpg", "jpeg", "gif"].includes(
-                                    ext
+                                    ext,
                                   ) ? (
                                   <div className="relative">
                                     <img
@@ -946,7 +952,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       selected={selectedMessageId === m.id}
                       onClick={() =>
                         setSelectedMessageId(
-                          selectedMessageId === m.id ? null : m.id
+                          selectedMessageId === m.id ? null : m.id,
                         )
                       }
                       authorName={m.author?.firstName}
@@ -1174,7 +1180,14 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Voice recording */}
-            <ReactMediaRecorder
+            <VoiceRecorder
+              onRecorded={(blob, url) => {
+                setVoiceBlob(blob);
+                setVoiceUrl(url);
+              }}
+            />
+
+            {/* <ReactMediaRecorder
               audio
               mediaRecorderOptions={{ mimeType: "audio/webm" }}
               onStop={(blobUrl) => {
@@ -1200,7 +1213,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   🎤
                 </button>
               )}
-            />
+            /> */}
 
             {/* /////voice recording playback */}
             {voiceUrl && (
@@ -1286,7 +1299,14 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </label>
 
           {/* Voice Recording */}
-          <ReactMediaRecorder
+          <VoiceRecorder
+            onRecorded={(blob, url) => {
+              setVoiceBlob(blob);
+              setVoiceUrl(url);
+            }}
+          />
+
+          {/* <ReactMediaRecorder
             audio
             mediaRecorderOptions={{ mimeType: "audio/webm" }}
             onStop={(blobUrl) => {
@@ -1312,7 +1332,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 🎤
               </button>
             )}
-          />
+          /> */}
 
           {/* /////voice recording playback */}
           {voiceUrl && (
