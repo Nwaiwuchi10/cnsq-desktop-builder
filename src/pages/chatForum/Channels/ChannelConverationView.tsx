@@ -10,13 +10,7 @@ import ChannelMessageBubble from "./ChannelMessageBuble";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
-// import { ReactMediaRecorder } from "react-media-recorder";
-// import dynamic from "next/dynamic";
 
-// const VoiceRecorder = dynamic(
-//   () => import("@/component/VoiceRecorder/VoiceRecorder"),
-//   { ssr: false },
-// );
 import NativeVoiceRecorder from "../../../component/VoiceRecorder/NativeVoiceRecorder";
 
 type ConversationViewProps = {
@@ -1188,41 +1182,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               }}
             />
 
-            {/* <VoiceRecorder
-              onRecorded={(blob, url) => {
-                setVoiceBlob(blob);
-                setVoiceUrl(url);
-              }}
-            /> */}
-
-            {/* <ReactMediaRecorder
-              audio
-              mediaRecorderOptions={{ mimeType: "audio/webm" }}
-              onStop={(blobUrl) => {
-                fetch(blobUrl)
-                  .then((r) => r.blob())
-                  .then((blob) => {
-                    setVoiceBlob(blob);
-                    setVoiceUrl(blobUrl);
-                  });
-              }}
-              render={({ status, startRecording, stopRecording }) => (
-                <button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onTouchStart={startRecording}
-                  onTouchEnd={stopRecording}
-                  className={`px-2 py-1 rounded cursor-pointer ${
-                    status === "recording"
-                      ? "bg-red-600 text-white"
-                      : "bg-green-600 text-white"
-                  }`}
-                >
-                  🎤
-                </button>
-              )}
-            /> */}
-
             {/* /////voice recording playback */}
             {voiceUrl && (
               <div className="p-2 border rounded bg-gray-100">
@@ -1313,41 +1272,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               setVoiceUrl(url);
             }}
           />
-
-          {/* <VoiceRecorder
-            onRecorded={(blob, url) => {
-              setVoiceBlob(blob);
-              setVoiceUrl(url);
-            }}
-          /> */}
-
-          {/* <ReactMediaRecorder
-            audio
-            mediaRecorderOptions={{ mimeType: "audio/webm" }}
-            onStop={(blobUrl) => {
-              fetch(blobUrl)
-                .then((r) => r.blob())
-                .then((blob) => {
-                  setVoiceBlob(blob);
-                  setVoiceUrl(blobUrl);
-                });
-            }}
-            render={({ status, startRecording, stopRecording }) => (
-              <button
-                onMouseDown={startRecording}
-                onMouseUp={stopRecording}
-                onTouchStart={startRecording}
-                onTouchEnd={stopRecording}
-                className={`px-2 py-1 rounded cursor-pointer ${
-                  status === "recording"
-                    ? "bg-red-600 text-white"
-                    : "bg-green-600 text-white"
-                }`}
-              >
-                🎤
-              </button>
-            )}
-          /> */}
 
           {/* /////voice recording playback */}
           {voiceUrl && (
