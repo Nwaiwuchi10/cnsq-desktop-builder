@@ -5,7 +5,8 @@ import Api from "@/utils/api";
 import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
 import EmojiPicker from "emoji-picker-react";
-import { ReactMediaRecorder } from "react-media-recorder";
+import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
+// import { ReactMediaRecorder } from "react-media-recorder";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -52,12 +53,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   console.log("currentUserId", currentUserId);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
-    null
+    null,
   );
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
@@ -141,7 +142,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         `/chat/conversations/${conversation.id}/messages?limit=${pageSize}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const messagesData = Array.isArray(res.data.messages)
@@ -198,7 +199,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         `/chat/conversations/${conversation.id}/messages?cursor=${cursor}&limit=${pageSize}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const messagesData = Array.isArray(res.data.messages)
@@ -291,8 +292,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     socketRef.current.on("message:edit", (msg: any) => {
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m
-        )
+          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m,
+        ),
       );
     });
     socketRef.current.on("message:delete", (msg: any) => {
@@ -325,7 +326,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         conversationId: conversation.id,
         text: "",
         parentId: replyingTo?.id ?? null,
-      })
+      }),
     );
 
     formData.append("file", voiceBlob, "voice-note.webm");
@@ -365,7 +366,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         conversationId: conversation?.id,
         text,
         parentId: replyingTo?.id ?? null, // <-- send parentId for reply
-      })
+      }),
     );
 
     files.forEach((f) => formData.append("file", f));
@@ -403,7 +404,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         { text },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       // Clear edit state
       setEditMessage(null);
@@ -490,7 +491,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         </a>
       ) : (
         part
-      )
+      ),
     );
   };
   let lastDate = "";
@@ -689,7 +690,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         selected={selectedMessageId === m.id}
                         onClick={() =>
                           setSelectedMessageId(
-                            selectedMessageId === m.id ? null : m.id
+                            selectedMessageId === m.id ? null : m.id,
                           )
                         }
                       />
@@ -833,7 +834,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       selected={selectedMessageId === m.id}
                       onClick={() =>
                         setSelectedMessageId(
-                          selectedMessageId === m.id ? null : m.id
+                          selectedMessageId === m.id ? null : m.id,
                         )
                       }
                     />
@@ -1029,7 +1030,13 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Mic */}
-            <ReactMediaRecorder
+            <NativeVoiceRecorder
+              onRecorded={(blob, url) => {
+                setVoiceBlob(blob);
+                setVoiceUrl(url);
+              }}
+            />
+            {/* <ReactMediaRecorder
               audio
               mediaRecorderOptions={{ mimeType: "audio/webm" }}
               onStop={(blobUrl) => {
@@ -1055,7 +1062,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   🎤
                 </button>
               )}
-            />
+            /> */}
 
             {/* Audio preview */}
             {voiceUrl && (
@@ -1142,7 +1149,13 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Mic */}
-            <ReactMediaRecorder
+            <NativeVoiceRecorder
+              onRecorded={(blob, url) => {
+                setVoiceBlob(blob);
+                setVoiceUrl(url);
+              }}
+            />
+            {/* <ReactMediaRecorder
               audio
               mediaRecorderOptions={{ mimeType: "audio/webm" }}
               onStop={(blobUrl) => {
@@ -1168,7 +1181,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   🎤
                 </button>
               )}
-            />
+            /> */}
 
             {/* Audio Preview */}
             {voiceUrl && (

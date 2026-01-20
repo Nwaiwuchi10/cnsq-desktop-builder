@@ -11,12 +11,13 @@ import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
 // import { ReactMediaRecorder } from "react-media-recorder";
-import dynamic from "next/dynamic";
+// import dynamic from "next/dynamic";
 
-const VoiceRecorder = dynamic(
-  () => import("@/component/VoiceRecorder/VoiceRecorder"),
-  { ssr: false },
-);
+// const VoiceRecorder = dynamic(
+//   () => import("@/component/VoiceRecorder/VoiceRecorder"),
+//   { ssr: false },
+// );
+import NativeVoiceRecorder from "../../../component/VoiceRecorder/NativeVoiceRecorder";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -1180,12 +1181,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Voice recording */}
-            <VoiceRecorder
+            <NativeVoiceRecorder
               onRecorded={(blob, url) => {
                 setVoiceBlob(blob);
                 setVoiceUrl(url);
               }}
             />
+
+            {/* <VoiceRecorder
+              onRecorded={(blob, url) => {
+                setVoiceBlob(blob);
+                setVoiceUrl(url);
+              }}
+            /> */}
 
             {/* <ReactMediaRecorder
               audio
@@ -1299,12 +1307,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </label>
 
           {/* Voice Recording */}
-          <VoiceRecorder
+          <NativeVoiceRecorder
             onRecorded={(blob, url) => {
               setVoiceBlob(blob);
               setVoiceUrl(url);
             }}
           />
+
+          {/* <VoiceRecorder
+            onRecorded={(blob, url) => {
+              setVoiceBlob(blob);
+              setVoiceUrl(url);
+            }}
+          /> */}
 
           {/* <ReactMediaRecorder
             audio
