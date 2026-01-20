@@ -32,18 +32,6 @@ const HomePage = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // useEffect(() => {
-  //   async function initNotifications() {
-  //     const result = await enableNotifications();
-  //     setNotificationsEnabled(result);
-
-  //     // Show toast for 8 seconds
-  //     setShowToast(true);
-  //     setTimeout(() => setShowToast(false), 8000);
-  //   }
-
-  //   initNotifications();
-  // }, []);
   useEffect(() => {
     async function initNotifications() {
       // Check if toast was already shown before

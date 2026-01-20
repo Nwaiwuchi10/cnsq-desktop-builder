@@ -5,6 +5,7 @@ import Api from "@/utils/api";
 import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
 import EmojiPicker from "emoji-picker-react";
+import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -51,19 +52,16 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   console.log("currentUserId", currentUserId);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
-    null
+    null,
   );
-  const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
+  const [uploadingVoice, setUploadingVoice] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const prevConversationId = useRef<string | null>(null);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -143,7 +141,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         `/chat/conversations/${conversation.id}/messages?limit=${pageSize}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const messagesData = Array.isArray(res.data.messages)
@@ -200,7 +198,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         `/chat/conversations/${conversation.id}/messages?cursor=${cursor}&limit=${pageSize}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const messagesData = Array.isArray(res.data.messages)
@@ -293,8 +291,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     socketRef.current.on("message:edit", (msg: any) => {
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m
-        )
+          m.id === msg.id ? { ...m, text: msg.text, edited: true } : m,
+        ),
       );
     });
     socketRef.current.on("message:delete", (msg: any) => {
@@ -314,62 +312,42 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     setShowEmojiPicker(false);
   };
   //////record voice
-  const startRecording = async () => {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      alert("Browser does not support audio recording.");
-      return;
-    }
+  const sendVoiceNote = async () => {
+    if (!voiceBlob || !conversation?.id) return;
+
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+
+    const formData = new FormData();
+    formData.append(
+      "dto",
+      JSON.stringify({
+        conversationId: conversation.id,
+        text: "",
+        parentId: replyingTo?.id ?? null,
+      }),
+    );
+
+    formData.append("file", voiceBlob, "voice-note.webm");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setUploadingVoice(true);
+      await Api.post(`/chat/messages`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      // BEST cross browser MIME types
-      const supportedMimeTypes = [
-        "audio/webm;codecs=opus",
-        "audio/webm",
-        "audio/mp4",
-        "audio/ogg;codecs=opus",
-        "audio/ogg",
-      ];
-
-      let mimeType = "";
-
-      for (const type of supportedMimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          mimeType = type;
-          break;
-        }
-      }
-
-      const recorder = new MediaRecorder(
-        stream,
-        mimeType ? { mimeType } : undefined
-      );
-
-      const chunks: BlobPart[] = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: mimeType || "audio/webm" });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
-      };
-
-      recorder.start();
-      setMediaRecorder(recorder);
-      setIsRecording(true);
+      // reset
+      setVoiceBlob(null);
+      setVoiceUrl(null);
+      setReplyingTo(null);
     } catch (err) {
-      console.error(err);
-      alert("Microphone permission denied or unsupported device.");
+      console.error("Voice upload failed", err);
+    } finally {
+      setUploadingVoice(false);
     }
-  };
-  const stopRecording = () => {
-    if (!mediaRecorder) return;
-    mediaRecorder.stop();
-    setIsRecording(false);
   };
 
   ///post message
@@ -387,7 +365,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         conversationId: conversation?.id,
         text,
         parentId: replyingTo?.id ?? null, // <-- send parentId for reply
-      })
+      }),
     );
 
     files.forEach((f) => formData.append("file", f));
@@ -412,30 +390,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
-  const sendVoiceNote = async () => {
-    if (!audioBlob) return;
-
-    const token = localStorage.getItem("user-token");
-
-    const formData = new FormData();
-    formData.append(
-      "dto",
-      JSON.stringify({ conversationId: conversation?.id, text: "" })
-    );
-
-    formData.append("file", audioBlob, "voice-note.webm");
-
-    await Api.post("/chat/messages", formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    setAudioBlob(null);
-    setAudioUrl(null);
-  };
-
   ///// edit and delete conversation
 
   const saveEdit = async (messageId: string) => {
@@ -449,7 +403,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         { text },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       // Clear edit state
       setEditMessage(null);
@@ -536,7 +490,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         </a>
       ) : (
         part
-      )
+      ),
     );
   };
   let lastDate = "";
@@ -587,15 +541,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         >
           ✖
         </button>
-        {/* ////voice recording preview */}
-        {isRecording && (
-          <button
-            className="px-2 py-1 bg-gray-600 text-white rounded"
-            onClick={stopRecording}
-          >
-            ⏹ Stop
-          </button>
-        )}
       </div>
     );
   };
@@ -744,7 +689,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         selected={selectedMessageId === m.id}
                         onClick={() =>
                           setSelectedMessageId(
-                            selectedMessageId === m.id ? null : m.id
+                            selectedMessageId === m.id ? null : m.id,
                           )
                         }
                       />
@@ -888,7 +833,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       selected={selectedMessageId === m.id}
                       onClick={() =>
                         setSelectedMessageId(
-                          selectedMessageId === m.id ? null : m.id
+                          selectedMessageId === m.id ? null : m.id,
                         )
                       }
                     />
@@ -1084,32 +1029,35 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Mic */}
-            <button
-              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
-              onClick={startRecording}
-            >
-              🎤
-            </button>
+            <NativeVoiceRecorder
+              onRecorded={(blob, url) => {
+                setVoiceBlob(blob);
+                setVoiceUrl(url);
+              }}
+            />
 
             {/* Audio preview */}
-            {audioUrl && (
-              <div className="p-2 border rounded bg-gray-100 w-full">
-                <audio controls src={audioUrl} className="w-full" />
+            {voiceUrl && (
+              <div className="p-2 border rounded bg-gray-100">
+                <audio controls src={voiceUrl} className="w-full" />
+
                 <div className="flex gap-3 mt-2">
                   <button
                     className="px-3 py-1 bg-red-500 text-white rounded"
                     onClick={() => {
-                      setAudioUrl(null);
-                      setAudioBlob(null);
+                      setVoiceUrl(null);
+                      setVoiceBlob(null);
                     }}
                   >
                     Cancel
                   </button>
+
                   <button
                     className="px-3 py-1 bg-green-500 text-white rounded"
+                    disabled={uploadingVoice}
                     onClick={sendVoiceNote}
                   >
-                    Send
+                    {uploadingVoice ? "Sending..." : "Send"}
                   </button>
                 </div>
               </div>
@@ -1173,32 +1121,35 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </label>
 
             {/* Mic */}
-            <button
-              className="px-2 py-1 bg-green-600 text-white rounded cursor-pointer"
-              onClick={startRecording}
-            >
-              🎤
-            </button>
+            <NativeVoiceRecorder
+              onRecorded={(blob, url) => {
+                setVoiceBlob(blob);
+                setVoiceUrl(url);
+              }}
+            />
 
             {/* Audio Preview */}
-            {audioUrl && (
+            {voiceUrl && (
               <div className="p-2 border rounded bg-gray-100">
-                <audio controls src={audioUrl} className="w-full" />
+                <audio controls src={voiceUrl} className="w-full" />
+
                 <div className="flex gap-3 mt-2">
                   <button
                     className="px-3 py-1 bg-red-500 text-white rounded"
                     onClick={() => {
-                      setAudioUrl(null);
-                      setAudioBlob(null);
+                      setVoiceUrl(null);
+                      setVoiceBlob(null);
                     }}
                   >
                     Cancel
                   </button>
+
                   <button
                     className="px-3 py-1 bg-green-500 text-white rounded"
+                    disabled={uploadingVoice}
                     onClick={sendVoiceNote}
                   >
-                    Send
+                    {uploadingVoice ? "Sending..." : "Send"}
                   </button>
                 </div>
               </div>

@@ -38,7 +38,7 @@ const orgData: Person = {
       image: "/images/technical.jpg",
     },
     {
-      name: "Ben Thompson",
+      name: "Ben Thompson Jay",
       title: "CTO",
       dept: "Technical",
       location: "Maryland, USA",
