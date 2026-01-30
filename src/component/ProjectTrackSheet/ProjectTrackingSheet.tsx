@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Api from "@/utils/api";
-import * as XLSX from "xlsx";
+
+// import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { TaskDTO } from "@/dataTypes/Data-Types";
 import TaskModal from "../DisplayTask/TaskDetailsModal";
@@ -114,7 +115,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         res = await Api.get(`/task/project/${projectId?.id}`);
       } else {
         res = await Api.get(
-          `/task/staff/${staffFilter}/project/${projectId?.id}`
+          `/task/staff/${staffFilter}/project/${projectId?.id}`,
         );
       }
       setTasks(res.data || []);
@@ -145,31 +146,31 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     fetchStaffList();
   }, [projectId]);
 
-  const exportToCSV = () => {
-    const data = tasks.map((t) => ({
-      // ID: t.id,
-      Sprint: t.sprint,
-      Title: t.title,
-      Description: t.description || "",
-      Status: t.status,
-      Priority: t.priority,
-      Urgency: t.urgency,
-      DueDate: t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "Not set",
-      Timeline: t.timeline || "",
-      Module: t.taskModule || "",
-      Project: t.project?.projectName,
-      AssignedTo: t.assignedTo
-        .map((a) => `${a.staff.firstName} ${a.staff.lastName} (${a.role})`)
-        .join(", "),
-      CreatedAt: new Date(t.createdAt).toLocaleDateString(),
-    }));
+  // const exportToCSV = () => {
+  //   const data = tasks.map((t) => ({
+  //     // ID: t.id,
+  //     Sprint: t.sprint,
+  //     Title: t.title,
+  //     Description: t.description || "",
+  //     Status: t.status,
+  //     Priority: t.priority,
+  //     Urgency: t.urgency,
+  //     DueDate: t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "Not set",
+  //     Timeline: t.timeline || "",
+  //     Module: t.taskModule || "",
+  //     Project: t.project?.projectName,
+  //     AssignedTo: t.assignedTo
+  //       .map((a) => `${a.staff.firstName} ${a.staff.lastName} (${a.role})`)
+  //       .join(", "),
+  //     CreatedAt: new Date(t.createdAt).toLocaleDateString(),
+  //   }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const csv = XLSX.utils.sheet_to_csv(ws);
+  //   const ws = XLSX.utils.json_to_sheet(data);
+  //   const csv = XLSX.utils.sheet_to_csv(ws);
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    saveAs(blob, "tasks.csv");
-  };
+  //   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  //   saveAs(blob, "tasks.csv");
+  // };
 
   if (loading) return <p>Loading...</p>;
 
@@ -181,7 +182,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   // ✅ Collect sprints for dropdown
   const uniqueSprints = Array.from(new Set(tasks.map((t) => t.sprint))).sort(
-    (a, b) => a - b
+    (a, b) => a - b,
   );
   // ✅ Status Colors
   const statusColors: Record<string, string> = {
@@ -229,7 +230,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               value={sprintFilter}
               onChange={(e) =>
                 setSprintFilter(
-                  e.target.value === "all" ? "all" : Number(e.target.value)
+                  e.target.value === "all" ? "all" : Number(e.target.value),
                 )
               }
             >
@@ -249,7 +250,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               value={staffFilter}
               onChange={(e) =>
                 setStaffFilter(
-                  e.target.value === "all" ? "all" : Number(e.target.value)
+                  e.target.value === "all" ? "all" : Number(e.target.value),
                 )
               }
             >
@@ -264,7 +265,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </select>
 
             <button
-              onClick={exportToCSV}
+              // onClick={exportToCSV}
               className="px-4 py-2 bg-[#95D700] text-white rounded-lg hover:opacity-90"
             >
               Export CSV
@@ -369,7 +370,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   {t.assignedTo
                     .map(
                       (a: any) =>
-                        `${a.staff.firstName} ${a.staff.lastName} (${a.role})`
+                        `${a.staff.firstName} ${a.staff.lastName} (${a.role})`,
                     )
                     .join(", ")}
                 </td>
