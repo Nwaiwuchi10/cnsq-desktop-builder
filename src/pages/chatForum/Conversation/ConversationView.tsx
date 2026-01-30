@@ -6,7 +6,6 @@ import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
 import EmojiPicker from "emoji-picker-react";
 import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
-// import { ReactMediaRecorder } from "react-media-recorder";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -1036,33 +1035,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 setVoiceUrl(url);
               }}
             />
-            {/* <ReactMediaRecorder
-              audio
-              mediaRecorderOptions={{ mimeType: "audio/webm" }}
-              onStop={(blobUrl) => {
-                fetch(blobUrl)
-                  .then((r) => r.blob())
-                  .then((blob) => {
-                    setVoiceBlob(blob);
-                    setVoiceUrl(blobUrl);
-                  });
-              }}
-              render={({ status, startRecording, stopRecording }) => (
-                <button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onTouchStart={startRecording}
-                  onTouchEnd={stopRecording}
-                  className={`px-2 py-1 rounded cursor-pointer ${
-                    status === "recording"
-                      ? "bg-red-600 text-white"
-                      : "bg-green-600 text-white"
-                  }`}
-                >
-                  🎤
-                </button>
-              )}
-            /> */}
 
             {/* Audio preview */}
             {voiceUrl && (
@@ -1155,33 +1127,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 setVoiceUrl(url);
               }}
             />
-            {/* <ReactMediaRecorder
-              audio
-              mediaRecorderOptions={{ mimeType: "audio/webm" }}
-              onStop={(blobUrl) => {
-                fetch(blobUrl)
-                  .then((r) => r.blob())
-                  .then((blob) => {
-                    setVoiceBlob(blob);
-                    setVoiceUrl(blobUrl);
-                  });
-              }}
-              render={({ status, startRecording, stopRecording }) => (
-                <button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onTouchStart={startRecording}
-                  onTouchEnd={stopRecording}
-                  className={`px-2 py-1 rounded cursor-pointer ${
-                    status === "recording"
-                      ? "bg-red-600 text-white"
-                      : "bg-green-600 text-white"
-                  }`}
-                >
-                  🎤
-                </button>
-              )}
-            /> */}
 
             {/* Audio Preview */}
             {voiceUrl && (
