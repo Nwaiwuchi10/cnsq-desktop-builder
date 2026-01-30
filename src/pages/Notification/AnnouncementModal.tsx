@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Api from "@/utils/api";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
+import { useRef } from "react";
 
 interface AnnouncementModalProps {
   notification: {
@@ -34,9 +35,12 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   onClose,
 }) => {
   const [details, setDetails] = useState<DemoData | AnnouncementData | null>(
-    null
+    null,
   );
   console.log("notification", notification);
+  const [isRead, setIsRead] = useState<boolean>(false);
+  const [isUpdatingRead, setIsUpdatingRead] = useState(false);
+  const autoReadDone = useRef(false);
 
   const renderTextWithLinks = (text: string) => {
     if (!text) return null;
@@ -57,7 +61,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         </a>
       ) : (
         <span key={i}>{part}</span>
-      )
+      ),
     );
   };
 
@@ -82,7 +86,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         if (!endpoint) {
           console.warn(
             "No valid related ID found for notification:",
-            notification
+            notification,
           );
           return;
         }
@@ -112,6 +116,79 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
     markAsRead();
   }, [notification?.id]);
+
+  useEffect(() => {
+    if (
+      autoReadDone.current ||
+      notification.type !== "announcement" ||
+      !notification?.relatedAnnouncement?.id
+    )
+      return;
+
+    const token = localStorage.getItem("user-token") || "";
+
+    const markAnnouncementAsRead = async () => {
+      try {
+        await Api.post(
+          `/announcement/${notification?.relatedAnnouncement?.id}/read`,
+          null, // no body
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        setIsRead(true);
+        autoReadDone.current = true;
+      } catch (err) {
+        console.error("Failed to mark announcement as read", err);
+      }
+    };
+
+    markAnnouncementAsRead();
+  }, [notification?.relatedAnnouncement?.id]);
+
+  const toggleReadStatus = async () => {
+    if (!notification?.relatedAnnouncement?.id) return;
+
+    setIsUpdatingRead(true);
+    const token = localStorage.getItem("user-token") || "";
+    try {
+      if (isRead) {
+        // MARK AS UNREAD
+        await Api.delete(
+          `/announcement/${notification.relatedAnnouncement.id}/unread`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        setIsRead(false);
+      } else {
+        // MARK AS READ
+        await Api.post(
+          `/announcement/${notification.relatedAnnouncement.id}/read`,
+          null, // no body needed
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        setIsRead(true);
+      }
+    } catch (err) {
+      console.error("Failed to toggle read status", err);
+    } finally {
+      setIsUpdatingRead(false);
+    }
+  };
+
+  const [openedAt] = useState(() => new Date().toLocaleTimeString());
 
   if (!details)
     return (
@@ -145,9 +222,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         <h2 className="text-lg font-semibold text-gray-800 mb-1">
           {notification.title}
         </h2>
-        <p className="text-xs text-gray-400 mb-4">
-          {new Date().toLocaleTimeString()}
-        </p>
+        <p className="text-xs text-gray-400 mb-4">{openedAt}</p>
 
         {/* Dynamic content */}
         {isDemo && (
@@ -202,6 +277,17 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               {/* {announcementDetails.description} */}
               {renderTextWithLinks(announcementDetails.description)}
             </p>
+
+            <div className="flex items-center gap-2 mb-4 mt-4">
+              <input
+                type="checkbox"
+                checked={isRead}
+                onChange={toggleReadStatus}
+                disabled={isUpdatingRead}
+                className="w-4 h-4 accent-lime-500 cursor-pointer"
+              />
+              <span className="text-sm text-gray-600">Mark as read</span>
+            </div>
           </>
         )}
 
