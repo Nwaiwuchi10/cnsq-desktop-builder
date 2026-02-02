@@ -30,7 +30,7 @@ const orgData: Person = {
       image: "/images/hiring.jpg",
     },
     {
-      name: "James William",
+      name: "James Williams",
       title: "Technical",
       dept: "Procurement",
       location: "Maryland, USA",
