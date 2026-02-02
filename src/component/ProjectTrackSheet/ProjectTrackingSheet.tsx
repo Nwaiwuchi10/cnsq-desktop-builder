@@ -106,8 +106,52 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const [sprintFilter, setSprintFilter] = useState<number | "all">("all");
   const [staffFilter, setStaffFilter] = useState<number | "all">("all");
 
+  const [selectedDate, setSelectedDate] = useState<string>("");
+
+  const [yearFilter, setYearFilter] = useState<number | "">("");
+  const [monthFilter, setMonthFilter] = useState<number | "">("");
+  const [dayFilter, setDayFilter] = useState<number | "">("");
+
   // ✅ Fetch tasks based on staff or project
   const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      let res;
+
+      // Build query params ONLY when staff is selected
+      const params = new URLSearchParams();
+
+      if (yearFilter) params.append("year", String(yearFilter));
+      if (monthFilter) params.append("month", String(monthFilter));
+      if (dayFilter) params.append("day", String(dayFilter));
+
+      if (staffFilter === "all") {
+        const query = params.toString();
+        res = await Api.get(
+          `/task/project/${projectId?.id}${query ? `?${query}` : ""}`,
+        );
+      } else {
+        const query = params.toString();
+        res = await Api.get(
+          `/task/staff/${staffFilter}/project/${projectId?.id}${
+            query ? `?${query}` : ""
+          }`,
+        );
+      }
+
+      setTasks(res.data || []);
+    } catch (err) {
+      console.error("Error fetching tasks", err);
+      setTasks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchTasks();
+  }, [projectId, staffFilter, yearFilter, monthFilter, dayFilter]);
+
+  const fetchTasksy = async () => {
     setLoading(true);
     try {
       let res;
@@ -263,6 +307,42 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 </option>
               ))}
             </select>
+
+            {/* date picker filter */}
+            {/* Date Picker */}
+            <input
+              type="date"
+              className="px-3 py-2 border rounded-lg border-gray-500 text-gray-600 cursor-pointer"
+              value={selectedDate}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedDate(value);
+
+                if (!value) {
+                  setYearFilter("");
+                  setMonthFilter("");
+                  setDayFilter("");
+                  return;
+                }
+
+                const date = new Date(value);
+                setYearFilter(date.getFullYear());
+                setMonthFilter(date.getMonth() + 1); // JS months = 0-based
+                setDayFilter(date.getDate());
+              }}
+            />
+
+            <button
+              onClick={() => {
+                setSelectedDate("");
+                setYearFilter("");
+                setMonthFilter("");
+                setDayFilter("");
+              }}
+              className="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 cursor-pointer"
+            >
+              Clear Date
+            </button>
 
             <button
               // onClick={exportToCSV}
