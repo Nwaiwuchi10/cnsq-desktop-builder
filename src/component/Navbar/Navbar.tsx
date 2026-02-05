@@ -55,7 +55,7 @@ export default function Navbar() {
 
     socket.on("chat:unreadCount", (data: { total: number }) => {
       setChatUnreadCount(
-        typeof data === "object" ? data.total ?? 0 : Number(data) ?? 0
+        typeof data === "object" ? (data.total ?? 0) : (Number(data) ?? 0),
       );
     });
 
@@ -157,7 +157,7 @@ export default function Navbar() {
     if (user?.photoUrl) {
       return (
         <Image
-          src={user.photoUrl}
+          src={user?.photoUrl}
           alt="profile"
           width={50}
           height={50}
@@ -366,7 +366,7 @@ export default function Navbar() {
                     <div className="flex items-center gap-3 mb-4">
                       {getAvatar()}
                       <span className="font-medium text-gray-700">
-                        {user.firstName} {user.lastName}
+                        {user?.firstName} {user?.lastName}
                       </span>
                     </div>
 
