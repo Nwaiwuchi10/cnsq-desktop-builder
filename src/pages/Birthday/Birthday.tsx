@@ -83,7 +83,7 @@ const Birthday = () => {
       setLoadingUpcoming(true);
       try {
         const res = await Api.get<PaginatedResult>(
-          `/staff-register/birthdays/all/upcoming?page=${pageUpcoming}&limit=${limit}`
+          `/staff-register/birthdays/all/upcoming?page=${pageUpcoming}&limit=${limit}`,
         );
         setUpcomingBirthdays(res.data.data);
         setTotalUpcoming(res.data.total);
@@ -101,7 +101,7 @@ const Birthday = () => {
     staff.filter((s) =>
       `${s.firstName} ${s.lastName}`
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        .includes(searchTerm.toLowerCase()),
     );
 
   const filteredTodays = filterBySearch(todaysBirthdays);
@@ -206,7 +206,7 @@ const Birthday = () => {
                         const start = Math.max(2, pageUpcoming - 1);
                         const end = Math.min(
                           totalPagesUpcoming - 1,
-                          pageUpcoming + 1
+                          pageUpcoming + 1,
                         );
                         for (let i = start; i <= end; i++) pages.push(i);
                         if (pageUpcoming < totalPagesUpcoming - 2)
@@ -231,7 +231,7 @@ const Birthday = () => {
                           >
                             {p}
                           </button>
-                        )
+                        ),
                       );
                     })()}
                   </div>
@@ -240,7 +240,7 @@ const Birthday = () => {
                   <button
                     onClick={() =>
                       setPageUpcoming((p) =>
-                        Math.min(p + 1, totalPagesUpcoming)
+                        Math.min(p + 1, totalPagesUpcoming),
                       )
                     }
                     disabled={pageUpcoming === totalPagesUpcoming}
@@ -266,7 +266,7 @@ const Birthday = () => {
 const BirthdayCard = ({ staff }: { staff: Staff }) => (
   <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
     <Image
-      src={staff.photoUrl || "/default-avatar.png"}
+      src={staff?.photoUrl || "/default-avatar.png"}
       alt={`${staff.firstName} ${staff.lastName}`}
       width={100}
       height={100}
@@ -323,7 +323,7 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
 const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
   <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
     <Image
-      src={staff.photoUrl || "/default-avatar.png"}
+      src={staff?.photoUrl || "/default-avatar.png"}
       alt={`${staff.firstName} ${staff.lastName}`}
       width={100}
       height={100}
