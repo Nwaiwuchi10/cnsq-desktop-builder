@@ -81,7 +81,7 @@ export default function TeamProfiles() {
             {/* Profile Picture + Name + Role */}
             <div className="flex items-center gap-4">
               <Image
-                src={hod.staff.photoUrl || "/default-avatar.png"}
+                src={hod?.staff?.photoUrl || "/default-avatar.png"}
                 alt={`${hod.staff.firstName} ${hod.staff.lastName}`}
                 width={50}
                 height={50}
