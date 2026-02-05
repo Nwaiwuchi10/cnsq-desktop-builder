@@ -85,7 +85,7 @@ export default function LatestBirthday() {
               "
                 >
                   <Image
-                    src={person.photoUrl || "/default-avatar.png"}
+                    src={person?.photoUrl || "/default-avatar.png"}
                     alt={`${person.firstName} ${person.lastName}`}
                     width={280}
                     height={280}

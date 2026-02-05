@@ -99,7 +99,7 @@ export default function StaffDirectoryModal({
                 {/* Profile Picture + Name + Role */}
                 <div className="flex items-center gap-4">
                   <Image
-                    src={person.photoUrl || "/default-avatar.png"}
+                    src={person?.photoUrl || "/default-avatar.png"}
                     alt={`${person.firstName} ${person.lastName}`}
                     width={50}
                     height={50}
@@ -119,7 +119,7 @@ export default function StaffDirectoryModal({
                             >
                               {title}
                             </span>
-                          )
+                          ),
                         )
                       ) : (
                         <span className="text-gray-500 text-sm">
@@ -167,7 +167,7 @@ export default function StaffDirectoryModal({
                           >
                             {title}
                           </span>
-                        )
+                        ),
                       )
                     ) : (
                       <span className="text-gray-500 text-sm">

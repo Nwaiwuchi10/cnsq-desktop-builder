@@ -85,7 +85,7 @@ export default function LatestAnniversary() {
               "
                 >
                   <Image
-                    src={person.photoUrl || "/default-avatar.png"}
+                    src={person?.photoUrl || "/default-avatar.png"}
                     alt={`${person.firstName} ${person.lastName}`}
                     width={280}
                     height={280}
@@ -108,7 +108,7 @@ export default function LatestAnniversary() {
                       day: "numeric",
                       year: "numeric",
                       timeZone: "Africa/Lagos",
-                    }
+                    },
                   )}
                 </span>
 
