@@ -90,7 +90,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     if (match) {
       const query = match[1].toLowerCase();
       const filtered = staffList.filter((s) =>
-        `${s.firstName} ${s.lastName}`.toLowerCase().includes(query)
+        `${s.firstName} ${s.lastName}`.toLowerCase().includes(query),
       );
       setSuggestions(filtered);
     } else {
@@ -101,7 +101,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   // Insert selected staff
   const handleSelectStaff = (staff: any) => {
     setCommentText((prev) =>
-      prev.replace(/@\w*$/, `@${staff.firstName} ${staff.lastName} `)
+      prev.replace(/@\w*$/, `@${staff.firstName} ${staff.lastName} `),
     );
     setMentionedStaff(staff);
     setSuggestions([]);
@@ -132,7 +132,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
       const res = await Api.patch(
         `/task/${task.id}/comments`,
         { text: commentText, mentionedStaffId: mentionedStaff?.id ?? null },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       // If file attached, upload it
@@ -169,7 +169,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           text: commentText || "",
           mentionedStaffId: mentionedStaff?.id ?? null,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       const commentId = res.data?.id;
@@ -219,7 +219,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     });
     return linkedText.replace(
       /@(\w+)/g,
-      '<span class="text-[#95D700] font-medium">@$1</span>'
+      '<span class="text-[#95D700] font-medium">@$1</span>',
     );
   };
 
@@ -349,7 +349,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
               >
                 {assign.staff.photoUrl ? (
                   <Image
-                    src={assign.staff.photoUrl}
+                    src={assign?.staff?.photoUrl}
                     alt={assign.staff.firstName}
                     width={40}
                     height={40}

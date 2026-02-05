@@ -64,7 +64,7 @@ const StaffCard = ({ data }: { data: StaffData }) => {
         {/* Avatar */}
         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow -mt-12">
           <Image
-            src={data.photo}
+            src={data?.photo}
             alt={data.name}
             width={64}
             height={64}
@@ -305,7 +305,7 @@ const initialNodes: OrgNode[] = [
         bgColor: "#FFFAEC",
         btnColor: "#FF990C",
       },
-    })
+    }),
   ),
 
   // ---- Marketing children ----
@@ -370,7 +370,7 @@ const initialEdges: Edge[] = [
       source: "coo",
       target: id,
       type: "smoothstep",
-    })
+    }),
   ),
 
   // Business Ops children
@@ -404,7 +404,7 @@ const initialEdges: Edge[] = [
       source: "product&marketing",
       target: id,
       type: "smoothstep",
-    })
+    }),
   ),
 
   // Marketing children
@@ -441,7 +441,7 @@ export default function OrgChartDemo() {
 
   const onConnect = useCallback(
     (params: any) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   // 🔹 Handle click on any department node
@@ -453,8 +453,8 @@ export default function OrgChartDemo() {
       try {
         const res = await Api.get(
           `/staff-register/all/staffs/by-department?name=${encodeURIComponent(
-            departmentName
-          )}`
+            departmentName,
+          )}`,
         );
         setStaffList(res.data || []);
         setShowModal(true);

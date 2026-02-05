@@ -91,7 +91,7 @@ const StaffCard = ({ data }: { data: StaffData }) => {
     >
       <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow -mt-12">
         <Image
-          src={data.photo || ceoImg}
+          src={data?.photo || ceoImg}
           alt={data.name}
           width={64}
           height={64}
@@ -282,7 +282,7 @@ export default function OrgChart() {
               // ---------- Fetch and Add Job Titles under Role ----------
               try {
                 const jobRes = await Api.get(
-                  `/departmental-role/${role.id}/job-titles`
+                  `/departmental-role/${role.id}/job-titles`,
                 );
                 const jobTitles: string[] = jobRes.data;
 
@@ -312,7 +312,7 @@ export default function OrgChart() {
               } catch (jobErr) {
                 console.warn(
                   `No job titles found for role ${role.title}:`,
-                  jobErr
+                  jobErr,
                 );
               }
             }
@@ -341,8 +341,8 @@ export default function OrgChart() {
       try {
         const res = await Api.get(
           `/staff-register/all/staffs/by-department?name=${encodeURIComponent(
-            departmentName
-          )}`
+            departmentName,
+          )}`,
         );
         setStaffList(res.data || []);
       } catch (err) {
@@ -353,7 +353,7 @@ export default function OrgChart() {
 
   const onConnect = useCallback(
     (params: any) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
+    [setEdges],
   );
 
   if (loading)
