@@ -84,7 +84,7 @@ export default function ProjectDetails() {
       } catch (err) {
         console.error("Failed to fetch project", err);
       } finally {
-        setLoadingProject(false);
+        // setLoadingProject(false);
       }
     };
     fetchProject();
@@ -93,16 +93,16 @@ export default function ProjectDetails() {
 
   useEffect(() => {
     if (!id) return;
+
     const fetchProject = async () => {
       try {
         const res = await Api.get(`/projects/${id}`);
-        setProject(res?.data);
-      } catch (err) {
-        console.error("Failed to fetch project", err);
+        setProject(res.data);
       } finally {
         setLoadingProject(false);
       }
     };
+
     fetchProject();
   }, [id]);
 
@@ -174,9 +174,12 @@ export default function ProjectDetails() {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
         <LoadingSpinner />
-        {/* <p className="text-gray-500">Loading staff details...</p> */}
       </div>
     );
+  }
+
+  if (!project) {
+    return <p className="p-6 text-red-600">Failed to load project.</p>;
   }
 
   return (
@@ -291,6 +294,33 @@ export default function ProjectDetails() {
           <h3 className="font-semibold text-gray-700 mb-2">Assigned Staff</h3>
           <div className="flex items-center mt-2">
             {project?.assignedTo
+              ?.filter((assign): assign is AssignedTo =>
+                Boolean(assign && assign.id && assign.staff),
+              )
+              .slice(0, 10)
+              .map((assign) => (
+                <div
+                  key={assign.id}
+                  className="w-15 h-15 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
+                >
+                  {assign.staff.photoUrl ? (
+                    <Image
+                      src={assign.staff.photoUrl}
+                      alt={assign.staff.firstName}
+                      width={50}
+                      height={50}
+                      className="object-cover w-full h-full"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="bg-gray-300 w-full h-full flex items-center justify-center text-xs text-white">
+                      {assign.staff.firstName?.[0] ?? "?"}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+            {/* {project?.assignedTo
               ?.slice(0, 10)
               .map((assign: AssignedTo, idx: number) => (
                 <div
@@ -312,7 +342,7 @@ export default function ProjectDetails() {
                     </div>
                   )}
                 </div>
-              ))}
+              ))} */}
             <button
               className="w-15 h-15 text-gray-600 rounded-full bg-gray-100 border flex items-center justify-center"
               style={{ cursor: "pointer" }}
@@ -328,7 +358,19 @@ export default function ProjectDetails() {
           <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
             <MessageCircle size={18} /> Comments ({project?.comments?.length})
           </h3>
-          {project?.comments?.length && project?.comments?.length > 0 ? (
+          {project?.comments
+            ?.filter((c) => c && c.id)
+            .map((c) => (
+              <div key={c.id} className="p-3 bg-white rounded-lg shadow-sm">
+                <p className="text-sm text-gray-800">{c.text}</p>
+                <span className="text-xs text-gray-500">
+                  {c.staff?.firstName} {c.staff?.lastName} •{" "}
+                  {new Date(c.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+
+          {/* {project?.comments?.length && project?.comments?.length > 0 ? (
             <div className="space-y-3">
               {project?.comments?.map((c) => (
                 <div key={c?.id} className="p-3 bg-white rounded-lg shadow-sm">
@@ -342,7 +384,7 @@ export default function ProjectDetails() {
             </div>
           ) : (
             <p className="text-gray-500 text-sm">No comments yet.</p>
-          )}
+          )} */}
         </div>
 
         {/* Add Comment */}
