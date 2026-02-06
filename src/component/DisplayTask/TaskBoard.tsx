@@ -54,7 +54,7 @@ const statusColumns = [
   // { key: "ALL", label: "All Tasks", color: "bg-blue-500" },
 ];
 interface DisplayTaskProps {
-  projectId: Project;
+  projectId: number;
 }
 const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
   // const params = useParams();
@@ -67,16 +67,20 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
   useEffect(() => {
+    if (!projectId) return;
+
     const fetchTasks = async () => {
       try {
-        const res = await Api.get(`/task/project/${projectId?.id}`);
-        setTasks(res?.data);
+        const res = await Api.get(`/task/project/${projectId}`);
+        setTasks(res?.data || []);
       } catch (error) {
         console.error("Error fetching tasks:", error);
+        setTasks([]);
       }
     };
+
     fetchTasks();
-  }, []);
+  }, [projectId]);
 
   if (!tasks.length)
     return <p className="p-6">No Task Found for this project.</p>;
