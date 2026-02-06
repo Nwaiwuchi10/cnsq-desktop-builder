@@ -90,7 +90,9 @@ export default function ProjectDetails() {
     fetchProject();
   }, [uuid]);
   const id = projectUuid?.id;
+
   useEffect(() => {
+    if (!id) return;
     const fetchProject = async () => {
       try {
         const res = await Api.get(`/projects/${id}`);
@@ -292,7 +294,7 @@ export default function ProjectDetails() {
               ?.slice(0, 10)
               .map((assign: AssignedTo, idx: number) => (
                 <div
-                  key={idx}
+                  key={assign?.id}
                   className="w-15 h-15 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
                 >
                   {assign?.staff?.photoUrl ? (
@@ -329,11 +331,11 @@ export default function ProjectDetails() {
           {project?.comments?.length && project?.comments?.length > 0 ? (
             <div className="space-y-3">
               {project?.comments?.map((c) => (
-                <div key={c.id} className="p-3 bg-white rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-800">{c.text}</p>
+                <div key={c?.id} className="p-3 bg-white rounded-lg shadow-sm">
+                  <p className="text-sm text-gray-800">{c?.text}</p>
                   <span className="text-xs text-gray-500">
                     {c?.staff?.firstName} {c?.staff?.lastName} •{" "}
-                    {new Date(c.createdAt).toLocaleDateString()}
+                    {new Date(c?.createdAt).toLocaleDateString()}
                   </span>
                 </div>
               ))}
