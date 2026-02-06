@@ -415,9 +415,9 @@ export default function ProjectDetails() {
           />
         )}
 
-        {/* <div className="mt-24">
-          <DisplayTask projectId={project} />
-        </div> */}
+        <div className="mt-24">
+          <DisplayTask project={project} />
+        </div>
       </div>
 
       <div>

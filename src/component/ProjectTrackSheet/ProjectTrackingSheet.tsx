@@ -61,10 +61,10 @@ interface TaskAssignment {
   role: string;
 }
 
-interface Project {
-  id: number;
-  projectName: string;
-}
+// interface Project {
+//   id: number;
+//   projectName: string;
+// }
 
 interface TaskComment {
   id: number;
@@ -94,7 +94,7 @@ interface Task {
 }
 
 interface DisplayTaskProps {
-  projectId: Project;
+  projectId: number;
 }
 
 const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
@@ -128,12 +128,12 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
       if (staffFilter === "all") {
         const query = params.toString();
         res = await Api.get(
-          `/task/project/${projectId?.id}${query ? `?${query}` : ""}`,
+          `/task/project/${projectId}${query ? `?${query}` : ""}`,
         );
       } else {
         const query = params.toString();
         res = await Api.get(
-          `/task/staff/${staffFilter}/project/${projectId?.id}${
+          `/task/staff/${staffFilter}/project/${projectId}${
             query ? `?${query}` : ""
           }`,
         );
@@ -147,20 +147,15 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchTasks();
-  }, [projectId, staffFilter, yearFilter, monthFilter, dayFilter]);
 
   const fetchTasksy = async () => {
     setLoading(true);
     try {
       let res;
       if (staffFilter === "all") {
-        res = await Api.get(`/task/project/${projectId?.id}`);
+        res = await Api.get(`/task/project/${projectId}`);
       } else {
-        res = await Api.get(
-          `/task/staff/${staffFilter}/project/${projectId?.id}`,
-        );
+        res = await Api.get(`/task/staff/${staffFilter}/project/${projectId}`);
       }
       setTasks(res?.data || []);
     } catch (err) {
@@ -174,7 +169,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   // ✅ Fetch staff list for dropdown (map response correctly)
   const fetchStaffList = async () => {
     try {
-      const res = await Api.get(`/projects/${projectId?.id}/staffs`);
+      const res = await Api.get(`/projects/${projectId}/staffs`);
       const staffOnly = (res?.data || []).map((item: any) => item?.staff); // 🔹 unwrap staff
       setStaffList(staffOnly);
     } catch (err) {
@@ -183,10 +178,12 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   };
 
   useEffect(() => {
+    if (!projectId) return;
     fetchTasks();
-  }, [projectId, staffFilter]);
+  }, [projectId, staffFilter, yearFilter, monthFilter, dayFilter]);
 
   useEffect(() => {
+    if (!projectId) return;
     fetchStaffList();
   }, [projectId]);
 
