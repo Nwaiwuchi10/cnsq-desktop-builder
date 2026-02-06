@@ -122,7 +122,7 @@ const HomePage = () => {
           : "Notifications Not Enabled ⚠️"}
       </div>
 
-      {/* <HeroSection /> */}
+      <HeroSection />
       <SubscriptionStatsCards />
       <StatsCards />
 
