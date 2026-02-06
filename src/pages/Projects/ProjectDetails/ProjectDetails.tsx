@@ -295,7 +295,7 @@ export default function ProjectDetails() {
                   key={idx}
                   className="w-15 h-15 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
                 >
-                  {assign.staff?.photoUrl ? (
+                  {assign?.staff?.photoUrl ? (
                     <Image
                       src={assign?.staff?.photoUrl}
                       alt={`${assign?.staff?.firstName}`}
@@ -326,13 +326,13 @@ export default function ProjectDetails() {
           <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
             <MessageCircle size={18} /> Comments ({project?.comments.length})
           </h3>
-          {project?.comments.length && project.comments.length > 0 ? (
+          {project?.comments?.length && project?.comments?.length > 0 ? (
             <div className="space-y-3">
-              {project?.comments.map((c) => (
+              {project?.comments?.map((c) => (
                 <div key={c.id} className="p-3 bg-white rounded-lg shadow-sm">
                   <p className="text-sm text-gray-800">{c.text}</p>
                   <span className="text-xs text-gray-500">
-                    {c.staff.firstName} {c.staff.lastName} •{" "}
+                    {c?.staff?.firstName} {c?.staff?.lastName} •{" "}
                     {new Date(c.createdAt).toLocaleDateString()}
                   </span>
                 </div>
@@ -370,18 +370,6 @@ export default function ProjectDetails() {
             onClose={() => setModal(null)}
           />
         )}
-        {/* <div className="mt-6 flex items-center gap-2 w-full max-w-md">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Add a comment"
-              className="w-full border rounded-lg px-3 py-2 pr-20" // add right padding so text doesn’t overlap button
-            />
-            <button className="absolute right-1 top-1 bottom-1 px-4 bg-[#78B500] text-white rounded-md hover:opacity-90">
-              Post
-            </button>
-          </div>
-        </div> */}
 
         <div className="mt-24">
           <DisplayTask projectId={project} />

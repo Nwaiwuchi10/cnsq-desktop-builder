@@ -70,7 +70,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
     const fetchTasks = async () => {
       try {
         const res = await Api.get(`/task/project/${projectId?.id}`);
-        setTasks(res.data);
+        setTasks(res?.data);
       } catch (error) {
         console.error("Error fetching tasks:", error);
       }
@@ -102,10 +102,10 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
             {/* Tasks in column */}
             <div className="flex flex-col gap-3">
               {tasks
-                .filter((t) => t.status === col.key)
-                .map((task) => (
+                ?.filter((t) => t.status === col.key)
+                ?.map((task) => (
                   <div
-                    key={task.id}
+                    key={task?.id}
                     className="bg-[#FAFAFA] rounded-xl p-3 shadow border border-[#FAFAFA] flex flex-col gap-2"
                   >
                     {/* Title + 3 dots */}
@@ -115,7 +115,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                         className="font-semibold text-base"
                         onClick={() => setSelectedTask(task)}
                       >
-                        {task.title}
+                        {task?.title}
                       </h3>{" "}
                       {/* ⬆️ Increased font */}
                       <span
@@ -146,10 +146,10 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
       col.key === "Not_started"
         ? "text-gray-600 bg-gray-100 border-gray-400"
         : col.key === "In_progress"
-        ? "text-yellow-700 bg-yellow-100 border-yellow-500"
-        : col.key === "Testing_In_Progress"
-        ? "text-orange-700 bg-orange-100 border-orange-500"
-        : "text-emerald-700 bg-emerald-100 border-emerald-500"
+          ? "text-yellow-700 bg-yellow-100 border-yellow-500"
+          : col.key === "Testing_In_Progress"
+            ? "text-orange-700 bg-orange-100 border-orange-500"
+            : "text-emerald-700 bg-emerald-100 border-emerald-500"
     }
 //   `}
                       //                     className={`text-xs px-2 py-1 rounded-lg ${col.color} text-white w-fit`}
@@ -161,14 +161,14 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     {/* Avatars + Created Date */}
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center">
-                        {task.assignedTo
+                        {task?.assignedTo
                           ?.slice(0, 4)
                           .map((assign, idx: number) => (
                             <div
                               key={idx}
                               className="w-8 h-8 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
                             >
-                              {assign.staff?.photoUrl ? (
+                              {assign?.staff?.photoUrl ? (
                                 <Image
                                   src={assign?.staff?.photoUrl}
                                   alt={`${assign?.staff?.firstName}`}
@@ -218,13 +218,13 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
         <h2 className="font-bold mb-4 flex items-center justify-between text-gray-600">
           All Tasks
           <span className="text-xs px-2 py-1 rounded bg-blue-500 text-white">
-            {tasks.length}
+            {tasks?.length}
           </span>
         </h2>
 
         {/* Tasks List */}
         <div className="flex flex-col gap-3">
-          {tasks.map((task) => (
+          {tasks?.map((task) => (
             <div
               key={task.id}
               className="bg-[#FAFAFA] rounded-xl p-3 shadow border border-[#FAFAFA] flex flex-col gap-2"
@@ -236,7 +236,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   className="font-semibold text-base text-gray-600"
                   onClick={() => setSelectedTask(task)}
                 >
-                  {task.title}
+                  {task?.title}
                 </h3>
                 <span
                   className="text-[#717680] text-2xl cursor-pointer"
@@ -264,10 +264,10 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
               task.status === "Not_started"
                 ? "text-gray-600 bg-gray-100 border-gray-400"
                 : task.status === "In_progress"
-                ? "text-yellow-700 bg-yellow-100 border-yellow-500"
-                : task.status === "Testing_In_Progress"
-                ? "text-orange-700 bg-orange-100 border-orange-500"
-                : "text-emerald-700 bg-emerald-100 border-emerald-500"
+                  ? "text-yellow-700 bg-yellow-100 border-yellow-500"
+                  : task.status === "Testing_In_Progress"
+                    ? "text-orange-700 bg-orange-100 border-orange-500"
+                    : "text-emerald-700 bg-emerald-100 border-emerald-500"
             }`}
               >
                 {task?.status?.replace("_", " ")}
@@ -278,12 +278,12 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
               {/* Avatars + Created Date */}
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center">
-                  {task.assignedTo?.slice(0, 4).map((assign, idx: number) => (
+                  {task?.assignedTo?.slice(0, 4).map((assign, idx: number) => (
                     <div
                       key={idx}
                       className="w-8 h-8 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
                     >
-                      {assign.staff?.photoUrl ? (
+                      {assign?.staff?.photoUrl ? (
                         <Image
                           src={assign?.staff?.photoUrl}
                           alt={assign?.staff?.firstName}
