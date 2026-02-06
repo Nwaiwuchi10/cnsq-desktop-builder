@@ -62,10 +62,10 @@ export default function LatestBirthday() {
           w-full max-w-7xl
         "
       >
-        {birthdays.map((person) => (
+        {birthdays?.map((person) => (
           <>
             <div
-              key={person.id}
+              key={person?.id}
               className="flex flex-col items-start text-left w-full"
             >
               <Link href={`/staff/${person?.uuid}`}>

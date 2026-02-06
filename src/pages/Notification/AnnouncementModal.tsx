@@ -92,7 +92,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         }
 
         const res = await Api.get(endpoint);
-        setDetails(res.data);
+        setDetails(res?.data);
       } catch (error) {
         console.error("Error loading details:", error);
       }

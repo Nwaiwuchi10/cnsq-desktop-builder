@@ -100,7 +100,7 @@ export default function Navbar() {
         const res = await Api.get("/notification/unread-count/recipient", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUnreadCount(res.data.unreadCount || 0);
+        setUnreadCount(res?.data?.unreadCount || 0);
       } catch (error) {
         console.error("Failed to fetch unread count", error);
       }

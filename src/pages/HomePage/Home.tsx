@@ -110,7 +110,7 @@ const HomePage = () => {
 
   return (
     <div>
-      {/* <Navbar /> */}
+      <Navbar />
       {/* Optional display for notification status */}
       <div
         className={`fixed top-16 right-4 p-3 rounded-md shadow-lg z-50 transition-opacity duration-500 ${
@@ -122,7 +122,7 @@ const HomePage = () => {
           : "Notifications Not Enabled ⚠️"}
       </div>
 
-      <HeroSection />
+      {/* <HeroSection /> */}
       <SubscriptionStatsCards />
       <StatsCards />
 
