@@ -79,13 +79,13 @@ export default function AssignedToStaffModal({
 
         const p: Project = projectRes.data;
         setAssignments(
-          p.assignedTo.map((a) => ({
-            staffId: a.staff.id,
-            role: a.role,
-          }))
+          p?.assignedTo?.map((a) => ({
+            staffId: a?.staff?.id,
+            role: a?.role,
+          })),
         );
 
-        setStaffs(staffRes.data || []);
+        setStaffs(staffRes?.data || []);
       } catch (err) {
         console.error("Failed to load project or staff", err);
         setModal({ type: "error", message: "Failed to load project." });
@@ -104,7 +104,7 @@ export default function AssignedToStaffModal({
       await Api.post(
         `/projects/${projectId}/assign`,
         { assignments },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setModal({ type: "success", message: "Project updated successfully!" });
       setTimeout(() => {
@@ -128,7 +128,7 @@ export default function AssignedToStaffModal({
   const filteredStaffs = staffs.filter((s) =>
     `${s.firstName} ${s.lastName} ${s.email}`
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(search.toLowerCase()),
   );
 
   return (
@@ -167,30 +167,30 @@ export default function AssignedToStaffModal({
                 {/* Dropdown results */}
                 {search && !selectedStaff && (
                   <ul className="absolute top-12 left-0 right-0 bg-white text-gray-600 border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
-                    {filteredStaffs.length === 0 && (
+                    {filteredStaffs?.length === 0 && (
                       <li className="px-3 py-2 text-gray-500">
                         No staff found
                       </li>
                     )}
-                    {filteredStaffs.map((s) => (
+                    {filteredStaffs?.map((s) => (
                       <li
                         key={s.id}
                         onClick={() => {
                           setSelectedStaff(s);
                           setSearch(
-                            `${s.firstName} ${s.lastName} (${s.email})`
+                            `${s?.firstName} ${s?.lastName} (${s?.email})`,
                           );
 
                           //  Auto-fill role from employment.jobTitle (first one if array)
-                          if (s.employment?.jobTitle?.length) {
-                            setRole(s.employment.jobTitle[0]);
+                          if (s?.employment?.jobTitle?.length) {
+                            setRole(s?.employment?.jobTitle[0]);
                           } else {
                             setRole("");
                           }
                         }}
                         className="px-3 py-2 text-gray-600 cursor-pointer hover:bg-gray-100"
                       >
-                        {s.firstName} {s.lastName} ({s.email})
+                        {s?.firstName} {s?.lastName} ({s?.email})
                       </li>
                     ))}
                   </ul>
@@ -225,20 +225,20 @@ export default function AssignedToStaffModal({
 
               {/* Assigned staff list */}
               <ul className="mt-3 space-y-2">
-                {assignments.map((a, idx) => {
-                  const staff = staffs.find((s) => s.id === a.staffId);
+                {assignments?.map((a, idx) => {
+                  const staff = staffs?.find((s) => s?.id === a?.staffId);
                   return (
                     <li
                       key={idx}
                       className="flex text-gray-600 justify-between items-center border p-2 rounded-lg bg-white"
                     >
                       <span>
-                        {staff?.firstName} {staff?.lastName} — <b>{a.role}</b>
+                        {staff?.firstName} {staff?.lastName} — <b>{a?.role}</b>
                       </span>
                       <button
                         onClick={() =>
                           setAssignments((prev) =>
-                            prev.filter((_, i) => i !== idx)
+                            prev.filter((_, i) => i !== idx),
                           )
                         }
                         className="text-red-500 text-sm"
