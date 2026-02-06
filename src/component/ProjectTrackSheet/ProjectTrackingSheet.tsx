@@ -139,7 +139,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         );
       }
 
-      setTasks(res.data || []);
+      setTasks(res?.data || []);
     } catch (err) {
       console.error("Error fetching tasks", err);
       setTasks([]);
@@ -162,7 +162,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
           `/task/staff/${staffFilter}/project/${projectId?.id}`,
         );
       }
-      setTasks(res.data || []);
+      setTasks(res?.data || []);
     } catch (err) {
       console.error("Error fetching tasks", err);
       setTasks([]);
@@ -175,7 +175,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   const fetchStaffList = async () => {
     try {
       const res = await Api.get(`/projects/${projectId?.id}/staffs`);
-      const staffOnly = (res.data || []).map((item: any) => item.staff); // 🔹 unwrap staff
+      const staffOnly = (res?.data || []).map((item: any) => item?.staff); // 🔹 unwrap staff
       setStaffList(staffOnly);
     } catch (err) {
       console.error("Error fetching staff list", err);
@@ -301,9 +301,9 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <option value="all" className="text-gray-600">
                 All Staff
               </option>
-              {staffList.map((s) => (
+              {staffList?.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.firstName} {s.lastName}
+                  {s?.firstName} {s?.lastName}
                 </option>
               ))}
             </select>
@@ -372,11 +372,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </tr>
           </thead>
           <tbody>
-            {displayedTasks.map((t: any) => (
+            {displayedTasks?.map((t: any) => (
               <tr
                 style={{ cursor: "pointer" }}
                 onClick={() => setSelectedTask(t)}
-                key={t.id}
+                key={t?.id}
                 className="odd:bg-white even:bg-gray-50 text-gray-600 hover:bg-green-100 transition-colors duration-150 cursor-pointer text-gray-600"
               >
                 <td className="p-2 border text-gray-600">{t?.sprint}</td>
@@ -384,17 +384,17 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   className="p-2 border cursor-pointer text-gray-600"
                   onClick={() => setSelectedTask(t)}
                 >
-                  {t.title}
+                  {t?.title}
                 </td>
                 {/* Status */}
                 <td className="p-2 border">
-                  {t.status ? (
+                  {t?.status ? (
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        statusColors[t.status] || "bg-gray-100 text-gray-600"
+                        statusColors[t?.status] || "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {formatLabel(t.status)}
+                      {formatLabel(t?.status)}
                     </span>
                   ) : (
                     "—"
@@ -403,7 +403,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
                 {/* Priority */}
                 <td className="p-2 border">
-                  {t.priority ? (
+                  {t?.priority ? (
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         priorityColors[t.priority] ||
@@ -441,16 +441,16 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     ? new Date(t.dueDate).toLocaleDateString()
                     : "Not set"}
                 </td>
-                <td className="p-2 border text-gray-600">{t.timeline}</td>
-                <td className="p-2 border text-gray-600">{t.taskModule}</td>
+                <td className="p-2 border text-gray-600">{t?.timeline}</td>
+                <td className="p-2 border text-gray-600">{t?.taskModule}</td>
                 <td className="p-2 border text-gray-600">
-                  {t.project?.projectName}
+                  {t?.project?.projectName}
                 </td>
                 <td className="p-2 border text-gray-600">
-                  {t.assignedTo
-                    .map(
+                  {t?.assignedTo
+                    ?.map(
                       (a: any) =>
-                        `${a.staff.firstName} ${a.staff.lastName} (${a.role})`,
+                        `${a?.staff?.firstName} ${a?.staff?.lastName} (${a?.role})`,
                     )
                     .join(", ")}
                 </td>
