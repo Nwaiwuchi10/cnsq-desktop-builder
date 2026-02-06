@@ -98,27 +98,27 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       {/* 🔹 Title + Priority */}
       <div className="flex justify-between items-start">
         <h2 className="text-lg font-bold text-gray-900">
-          {project.projectName}
+          {project?.projectName}
         </h2>
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${
-            priorityColors[project.priority]
+            priorityColors[project?.priority]
           }`}
         >
-          {project.priority}
+          {project?.priority}
         </span>
       </div>
 
       {/* 🔹 Description */}
-      <p className="text-gray-600 text-sm">{project.desc}</p>
+      <p className="text-gray-600 text-sm">{project?.desc}</p>
 
       {/* 🔹 Status */}
       <span
         className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
-          statusColors[project.status as ProjectStatus]
+          statusColors[project?.status as ProjectStatus]
         }`}
       >
-        {formatStatus(project.status)}
+        {formatStatus(project?.status)}
       </span>
 
       {/* 🔹 Progress bar */}
@@ -135,21 +135,21 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       {/* 🔹 Dates */}
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <Calendar size={16} />
-        {new Date(project.startDate).toLocaleDateString()} -{" "}
-        {new Date(project.endDate).toLocaleDateString()}
+        {new Date(project?.startDate).toLocaleDateString()} -{" "}
+        {new Date(project?.endDate).toLocaleDateString()}
       </div>
 
       {/* 🔹 Assigned Staff */}
       <div className="flex items-center mt-2">
-        {project.assignedTo?.slice(0, 4).map((assign, idx: number) => (
+        {project?.assignedTo?.slice(0, 4).map((assign, idx: number) => (
           <div
             key={idx}
             className="w-8 h-8 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
           >
-            {assign.staff?.photoUrl ? (
+            {assign?.staff?.photoUrl ? (
               <Image
-                src={assign.staff.photoUrl}
-                alt={`${assign.staff.firstName}`}
+                src={assign?.staff?.photoUrl}
+                alt={`${assign?.staff?.firstName}`}
                 width={32}
                 height={32}
                 className="object-cover w-full h-full"
@@ -157,7 +157,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               />
             ) : (
               <div className="bg-gray-300 w-full h-full flex items-center justify-center text-xs text-white">
-                {assign.staff?.firstName?.[0]}
+                {assign?.staff?.firstName?.[0]}
               </div>
             )}
           </div>
@@ -165,13 +165,13 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       </div>
 
       {/* 🔹 Most Recent Comment */}
-      {project.comments.length > 0 && (
+      {project?.comments?.length > 0 && (
         <p className="text-xs text-gray-500 mt-2">
           <span className="font-medium">
-            {project.comments[0].staff?.firstName}{" "}
-            {project.comments[0].staff?.lastName}
+            {project?.comments[0].staff?.firstName}{" "}
+            {project?.comments[0].staff?.lastName}
           </span>{" "}
-          – "{project.comments[0].content}"
+          – "{project?.comments[0].content}"
         </p>
       )}
 

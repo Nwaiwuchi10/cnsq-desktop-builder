@@ -324,7 +324,7 @@ export default function ProjectDetails() {
         {/* Comments */}
         <div className="mt-8">
           <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-            <MessageCircle size={18} /> Comments ({project?.comments.length})
+            <MessageCircle size={18} /> Comments ({project?.comments?.length})
           </h3>
           {project?.comments?.length && project?.comments?.length > 0 ? (
             <div className="space-y-3">
