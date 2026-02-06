@@ -208,7 +208,7 @@ const initialNodes: OrgNode[] = [
     type: "staffCard",
     position: { x: 900, y: 200 },
     data: {
-      name: "Ben Thompsons",
+      name: "Ben Thompson",
       role: "COO",
       department: "Operations",
       location: "Maryland, USA",
