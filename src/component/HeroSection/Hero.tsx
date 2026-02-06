@@ -62,7 +62,7 @@ export default function HeroSection() {
           Api.get<StaffAnniversary[]>("/staff-register/anniversaries/today"),
           Api.get<Quote[]>("/quote/all/today"),
         ]);
-        setTodaysBirthdays(birthdayRes.data || []);
+        setTodaysBirthdays(birthdayRes?.data || []);
         setTodaysAnniversaries(anniversaryRes?.data || []);
         setQuotes(quoteRes?.data || []);
       } catch (error) {
@@ -100,13 +100,13 @@ export default function HeroSection() {
   const anniversarySlides = useMemo(
     () =>
       todaysAnniversaries.map((staff) => {
-        const years = staff.yearsCompleted || 0;
+        const years = staff?.yearsCompleted || 0;
         const anniversaryText =
           years > 0
             ? ` Happy ${years} Year${years > 1 ? "s" : ""} Anniversary ${
                 staff?.firstName
               } ${staff?.lastName}!`
-            : ` Happy Anniversary ${staff.firstName} ${staff.lastName}!`;
+            : ` Happy Anniversary ${staff?.firstName} ${staff?.lastName}!`;
         return {
           image: staff?.photoUrl || defaultImages.defaultAnniversary,
           text: anniversaryText,
