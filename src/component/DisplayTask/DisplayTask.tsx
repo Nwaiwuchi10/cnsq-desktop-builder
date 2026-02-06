@@ -110,8 +110,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       {/* Toggle views */}
       <div className="mt-12 text-gray-600">
         {showTable ? (
-          <ProjectTasksSheet projectId={project?.id} />
+          <div>hi</div>
         ) : (
+          // <ProjectTasksSheet projectId={project?.id} />
           <TaskBoard projectId={project?.id} />
         )}
       </div>
