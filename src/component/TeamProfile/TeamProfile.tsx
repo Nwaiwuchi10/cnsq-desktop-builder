@@ -82,14 +82,14 @@ export default function TeamProfiles() {
             <div className="flex items-center gap-4">
               <Image
                 src={hod?.staff?.photoUrl || "/default-avatar.png"}
-                alt={`${hod.staff.firstName} ${hod.staff.lastName}`}
+                alt={`${hod?.staff?.firstName} ${hod?.staff?.lastName}`}
                 width={50}
                 height={50}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div className="flex flex-col">
                 <span className="text-gray-900 font-semibold">
-                  {hod.staff.firstName} {hod.staff.lastName}
+                  {hod?.staff?.firstName} {hod?.staff?.lastName}
                 </span>
                 <span className="text-gray-500 text-sm">
                   {hod.name || "Head of Department"}

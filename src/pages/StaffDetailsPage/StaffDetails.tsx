@@ -227,7 +227,7 @@ export default function StaffDetails() {
           <div className="w-28 h-28 rounded-full overflow-hidden border">
             <Image
               src={staff?.photoUrl}
-              alt={`${staff.firstName} ${staff.lastName}`}
+              alt={`${staff?.firstName} ${staff?.lastName}`}
               width={112}
               height={112}
               className="object-cover w-full h-full"
@@ -235,7 +235,7 @@ export default function StaffDetails() {
           </div>
           <div>
             <h2 className="text-xl text-gray-600 font-semibold">
-              {staff.firstName} {staff.lastName}
+              {staff?.firstName} {staff?.lastName}
             </h2>
             <p className="text-gray-600">
               {staff.address.state}, {staff.address.city}
