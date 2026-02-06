@@ -94,7 +94,7 @@ interface Task {
 }
 
 interface DisplayTaskProps {
-  projectId: number;
+  projectId?: number;
 }
 
 const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
@@ -114,6 +114,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   // ✅ Fetch tasks based on staff or project
   const fetchTasks = async () => {
+    if (!projectId) return;
+
     setLoading(true);
     try {
       let res;
@@ -148,26 +150,10 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     }
   };
 
-  const fetchTasksy = async () => {
-    setLoading(true);
-    try {
-      let res;
-      if (staffFilter === "all") {
-        res = await Api.get(`/task/project/${projectId}`);
-      } else {
-        res = await Api.get(`/task/staff/${staffFilter}/project/${projectId}`);
-      }
-      setTasks(res?.data || []);
-    } catch (err) {
-      console.error("Error fetching tasks", err);
-      setTasks([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // ✅ Fetch staff list for dropdown (map response correctly)
   const fetchStaffList = async () => {
+    if (!projectId) return;
+
     try {
       const res = await Api.get(`/projects/${projectId}/staffs`);
       const staffOnly = (res?.data || []).map((item: any) => item?.staff); // 🔹 unwrap staff
