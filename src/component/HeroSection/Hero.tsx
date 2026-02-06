@@ -63,8 +63,8 @@ export default function HeroSection() {
           Api.get<Quote[]>("/quote/all/today"),
         ]);
         setTodaysBirthdays(birthdayRes.data || []);
-        setTodaysAnniversaries(anniversaryRes.data || []);
-        setQuotes(quoteRes.data || []);
+        setTodaysAnniversaries(anniversaryRes?.data || []);
+        setQuotes(quoteRes?.data || []);
       } catch (error) {
         console.error("Error fetching hero data:", error);
       } finally {
@@ -90,7 +90,7 @@ export default function HeroSection() {
     () =>
       todaysBirthdays.map((staff) => ({
         image: staff?.photoUrl || defaultImages.defaultBirthday,
-        text: ` Happy Birthday ${staff.firstName} ${staff.lastName}!`,
+        text: ` Happy Birthday ${staff?.firstName} ${staff?.lastName}!`,
         type: "celebration",
       })),
     [todaysBirthdays, defaultImages],
@@ -104,8 +104,8 @@ export default function HeroSection() {
         const anniversaryText =
           years > 0
             ? ` Happy ${years} Year${years > 1 ? "s" : ""} Anniversary ${
-                staff.firstName
-              } ${staff.lastName}!`
+                staff?.firstName
+              } ${staff?.lastName}!`
             : ` Happy Anniversary ${staff.firstName} ${staff.lastName}!`;
         return {
           image: staff?.photoUrl || defaultImages.defaultAnniversary,

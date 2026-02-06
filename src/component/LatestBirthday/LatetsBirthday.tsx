@@ -25,7 +25,7 @@ export default function LatestBirthday() {
       try {
         // ✅ backend returns { data, total, page, limit }
         const res = await Api.get("/staff-register/birthdays/all/upcoming");
-        setBirthdays(res.data.data.slice(0, 4)); // ✅ only 4 records
+        setBirthdays(res?.data?.data.slice(0, 4)); // ✅ only 4 records
       } catch (error) {
         console.error("Error fetching staff:", error);
       } finally {
@@ -86,7 +86,7 @@ export default function LatestBirthday() {
                 >
                   <Image
                     src={person?.photoUrl || "/default-avatar.png"}
-                    alt={`${person.firstName} ${person.lastName}`}
+                    alt={`${person?.firstName} ${person?.lastName}`}
                     width={280}
                     height={280}
                     className="w-full h-full object-cover"
@@ -96,7 +96,7 @@ export default function LatestBirthday() {
 
                 {/* Name */}
                 <p className="mt-3 text-gray-900 font-semibold text-lg">
-                  {person.firstName} {person.lastName}
+                  {person?.firstName} {person?.lastName}
                 </p>
 
                 {/* Next Birthday (with Lagos timezone) */}
