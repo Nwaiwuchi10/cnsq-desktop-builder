@@ -156,7 +156,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
     try {
       const res = await Api.get(`/projects/${projectId}/staffs`);
-      const staffOnly = (res?.data || []).map((item: any) => item?.staff); // 🔹 unwrap staff
+
+      const staffOnly = (res?.data || [])
+        .map((item: any) => item?.staff)
+        .filter(Boolean); // ✅ remove null/undefined
+
       setStaffList(staffOnly);
     } catch (err) {
       console.error("Error fetching staff list", err);
@@ -284,11 +288,13 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <option value="all" className="text-gray-600">
                 All Staff
               </option>
-              {staffList?.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s?.firstName} {s?.lastName}
-                </option>
-              ))}
+              {staffList.map((s) =>
+                s ? (
+                  <option key={s?.id} value={s?.id}>
+                    {s?.firstName} {s?.lastName}
+                  </option>
+                ) : null,
+              )}
             </select>
 
             {/* date picker filter */}
@@ -431,9 +437,10 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 </td>
                 <td className="p-2 border text-gray-600">
                   {t?.assignedTo
-                    ?.map(
+                    ?.filter((a: any) => a?.staff) // ✅ guard
+                    .map(
                       (a: any) =>
-                        `${a?.staff?.firstName} ${a?.staff?.lastName} (${a?.role})`,
+                        `${a.staff.firstName} ${a.staff.lastName} (${a.role})`,
                     )
                     .join(", ")}
                 </td>
