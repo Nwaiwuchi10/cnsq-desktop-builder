@@ -27,7 +27,7 @@ export default function StatsCards() {
       try {
         const res = await Api.get("/staff-register/stats/dashboard"); // 🔹 replace with your API endpoint
         // Limit to 3 staff members
-        setStats(res.data);
+        setStats(res?.data || null);
       } catch (error) {
         console.error("Error fetching staff:", error);
       } finally {
@@ -84,7 +84,7 @@ export default function StatsCards() {
       </h1>
       <div className="flex items-center justify-center">
         <div className="flex flex-wrap gap-6 justify-center w-full max-w-7xl">
-          {statsView.map((stat) => (
+          {statsView?.map((stat) => (
             <div
               key={stat.id}
               className="flex flex-col items-start gap-3 border border-[#E5E7EB] bg-white rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%]"
@@ -93,7 +93,7 @@ export default function StatsCards() {
                 <div className="text-gray-600">{stat.icon}</div>
                 <p className="text-gray-900 font-medium">{stat.label}</p>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {stat.value}
+                  {stat?.value}
                 </h2>
               </Link>
             </div>

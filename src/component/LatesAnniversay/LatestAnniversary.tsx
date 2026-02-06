@@ -66,7 +66,7 @@ export default function LatestAnniversary() {
           <>
             <Link href={`/staff/${person?.uuid}`}>
               <div
-                key={person.id}
+                key={person?.id}
                 className="flex flex-col items-start text-left w-full"
               >
                 {/* Image */}
