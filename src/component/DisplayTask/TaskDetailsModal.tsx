@@ -49,6 +49,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   }, []);
   //   // Fetch staff for mentions
   useEffect(() => {
+    if (!task?.project?.id) return;
     const fetchProjectStaff = async () => {
       if (!task?.project?.id) return; // make sure projectId exists
 
@@ -66,6 +67,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   }, [task?.project?.id]);
   // 🔁 Fetch Task Details
   useEffect(() => {
+    if (!task?.project?.id) return;
     if (!task?.id || !token) return;
     const fetchTask = async () => {
       try {
@@ -125,38 +127,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     });
   };
   // 💬 Add new comment
-  const handleAddComments = async () => {
-    if (!commentText.trim() || !taskData) return;
-    setLoading(true);
-    try {
-      const res = await Api.patch(
-        `/task/${task.id}/comments`,
-        { text: commentText, mentionedStaffId: mentionedStaff?.id ?? null },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
 
-      // If file attached, upload it
-      if (file) {
-        await handleAttachFile(res.data.id);
-        setFile(null);
-      }
-
-      setCommentText("");
-      setMentionedStaff(null);
-
-      setModal({ type: "success", message: "Comment added successfully!" });
-      await refreshTask();
-      //       window.location.reload(); // or update state with new comment
-    } catch (e: unknown) {
-      const err = e as AxiosError<{ message: string }>;
-      setModal({
-        type: "error",
-        message: err.response?.data?.message || "Failed to add comment.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
   const handleAddComment = async () => {
     if ((!commentText.trim() && !file) || !taskData) return; // ⬅️ Allow either text or file
 
@@ -342,7 +313,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </div>
           {/* Assigned Staff */}
           <div className="flex items-center gap-2 mb-4">
-            {displayTask?.assignedTo?.map((assign) => (
+            {displayTask?.assignedTo?.filter(Boolean).map((assign) => (
               <div
                 key={assign?.id}
                 className="w-10 h-10 rounded-full overflow-hidden border"
@@ -396,7 +367,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           <h3 className="font-semibold mb-2">Comments</h3>
           <div className="bg-gray-100 rounded-lg p-3 mb-3">
             {displayTask?.comments?.length ? (
-              displayTask?.comments?.map((c) => (
+              displayTask?.comments?.filter(Boolean).map((c) => (
                 <div key={c.id} className="relative text-sm text-gray-600 mb-4">
                   <p>
                     <span className="font-semibold">{c?.staff?.firstName}</span>
@@ -484,7 +455,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             {/* Suggestions dropdown */}
             {suggestions?.length > 0 && (
               <ul className="border rounded-lg bg-white shadow-md mt-1 max-h-40 overflow-y-auto">
-                {suggestions?.map((s) => (
+                {suggestions?.filter(Boolean).map((s) => (
                   <li
                     key={s.id}
                     onClick={() => handleSelectStaff(s)}
