@@ -126,12 +126,13 @@ export default function TaskUpdateModal({
         setProjectId(t.project.id);
         setStartDate(t.startDate ? t.startDate.split("T")[0] : "");
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
-
         setAssignments(
-          t.assignedTo.map((a) => ({
-            staffId: a.staff.id,
-            role: a.role,
-          }))
+          t.assignedTo
+            ?.filter((a) => a && a.staff && a.staff.id)
+            .map((a) => ({
+              staffId: a.staff.id,
+              role: a.role,
+            })) || [],
         );
 
         // setStaffs(projectStaffs);
@@ -156,7 +157,7 @@ export default function TaskUpdateModal({
       const end = new Date(dueDate);
       if (end >= start) {
         const diffDays = Math.ceil(
-          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
         setTimeline(`${diffDays} days`);
       } else {
@@ -187,7 +188,7 @@ export default function TaskUpdateModal({
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       setModal({ type: "success", message: "Task updated successfully!" });
       setTimeout(() => {
@@ -331,11 +332,12 @@ export default function TaskUpdateModal({
 
                     if (selectedId) {
                       const selectedStaff = staffs.find(
-                        (s) => s.staff?.id === selectedId
+                        (s) => s && s.staff && s.staff.id === selectedId,
                       );
+
                       // Get the first job title of that staff
                       setRole(
-                        selectedStaff?.staff?.employment?.jobTitle?.[0] || ""
+                        selectedStaff?.staff?.employment?.jobTitle?.[0] || "",
                       );
                     } else {
                       setRole("");
@@ -344,12 +346,14 @@ export default function TaskUpdateModal({
                   className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
-                  {staffs.map((s) => (
-                    <option key={s.staff.id} value={s.staff.id}>
-                      {s?.staff?.firstName} {s?.staff?.lastName} (
-                      {s?.staff?.email})
-                    </option>
-                  ))}
+                  {staffs
+                    ?.filter((s) => s && s.staff && s.staff.id)
+                    .map((s) => (
+                      <option key={s.staff.id} value={s.staff.id}>
+                        {s?.staff?.firstName} {s?.staff?.lastName} (
+                        {s?.staff?.email})
+                      </option>
+                    ))}
                 </select>
                 <label className="block text-sm text-gray-700 mb-1">
                   Task Role
@@ -378,30 +382,34 @@ export default function TaskUpdateModal({
               </div>
 
               <ul className="mt-3 space-y-2">
-                {assignments.map((a, idx) => {
-                  const staff = staffs.find((s) => s?.staff?.id === a.staffId);
-                  return (
-                    <li
-                      key={idx}
-                      className="flex justify-between items-center border p-2 rounded-lg bg-white"
-                    >
-                      <span>
-                        {staff?.staff?.firstName} {staff?.staff?.lastName} —{" "}
-                        <b>{a.role}</b>
-                      </span>
-                      <button
-                        onClick={() =>
-                          setAssignments((prev) =>
-                            prev.filter((_, i) => i !== idx)
-                          )
-                        }
-                        className="text-red-500 text-sm"
+                {assignments
+                  ?.filter((a) => a && a.staffId)
+                  .map((a, idx) => {
+                    const staff = staffs.find(
+                      (s) => s?.staff?.id === a.staffId,
+                    );
+                    return (
+                      <li
+                        key={idx}
+                        className="flex justify-between items-center border p-2 rounded-lg bg-white"
                       >
-                        Remove
-                      </button>
-                    </li>
-                  );
-                })}
+                        <span>
+                          {staff?.staff?.firstName} {staff?.staff?.lastName} —{" "}
+                          <b>{a.role}</b>
+                        </span>
+                        <button
+                          onClick={() =>
+                            setAssignments((prev) =>
+                              prev.filter((_, i) => i !== idx),
+                            )
+                          }
+                          className="text-red-500 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    );
+                  })}
               </ul>
             </div>
           </div>

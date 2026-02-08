@@ -536,7 +536,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
       {/* Edit Task Modal */}
       <TaskUpdateModal
-        taskId={task.id}
+        taskId={task?.id}
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         onUpdated={refreshTask}
