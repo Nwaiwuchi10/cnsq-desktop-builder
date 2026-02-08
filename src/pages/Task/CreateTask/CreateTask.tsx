@@ -145,7 +145,7 @@ export default function CreateTaskForm() {
   useEffect(() => {
     if (!projectUuid?.id) return;
 
-    Api.get(`/projects/${projectUuid.id}/staffs`)
+    Api.get(`/projects/${projectUuid?.id}/staffs`)
       .then((res) => {
         const clean = (res.data || []).filter(
           (s: any) => s && s.staff && s.staff.id,
