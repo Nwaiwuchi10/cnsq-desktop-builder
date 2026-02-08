@@ -142,18 +142,35 @@ export default function CreateTaskForm() {
   }, [router]);
 
   // Load staffs assigned to this project
-
   useEffect(() => {
     if (!projectUuid?.id) return;
-    Api.get(`/projects/${projectUuid?.id}/staffs`)
-      .then((res) => setStaffs(res.data || []))
+
+    Api.get(`/projects/${projectUuid.id}/staffs`)
+      .then((res) => {
+        const clean = (res.data || []).filter(
+          (s: any) => s && s.staff && s.staff.id,
+        );
+        setStaffs(clean);
+      })
       .catch(() =>
         setModal({
           type: "error",
           message: "Failed to load project staff list.",
-        })
+        }),
       );
   }, [projectUuid?.id]);
+
+  // useEffect(() => {
+  //   if (!projectUuid?.id) return;
+  //   Api.get(`/projects/${projectUuid?.id}/staffs`)
+  //     .then((res) => setStaffs(res.data || []))
+  //     .catch(() =>
+  //       setModal({
+  //         type: "error",
+  //         message: "Failed to load project staff list.",
+  //       })
+  //     );
+  // }, [projectUuid?.id]);
 
   // Auto-calc timeline (days) when startDate & dueDate are set
   useEffect(() => {
@@ -162,7 +179,7 @@ export default function CreateTaskForm() {
       const end = new Date(dueDate);
       if (end >= start) {
         const diffDays = Math.ceil(
-          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
         );
         setTimeline(`${diffDays} days`);
       } else {
@@ -380,8 +397,9 @@ export default function CreateTaskForm() {
 
                 if (selectedId) {
                   const selectedStaff = staffs.find(
-                    (s) => s.staff.id === selectedId
+                    (s) => s && s.staff && s.staff.id === selectedId,
                   );
+
                   setRole(selectedStaff?.staff.employment?.jobTitle?.[0] || ""); // Auto-fill role
                 } else {
                   setRole("");
@@ -390,11 +408,13 @@ export default function CreateTaskForm() {
               className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900"
             >
               <option value="">-- Select Staff --</option>
-              {staffs.map((s) => (
-                <option key={s.staff.id} value={s.staff.id}>
-                  {s.staff.firstName} {s.staff.lastName} ({s.staff.email})
-                </option>
-              ))}
+              {staffs
+                ?.filter((s) => s && s.staff && s.staff.id)
+                .map((s) => (
+                  <option key={s.staff.id} value={s.staff.id}>
+                    {s.staff.firstName} {s.staff.lastName} ({s.staff.email})
+                  </option>
+                ))}
             </select>
 
             <input
@@ -428,30 +448,35 @@ export default function CreateTaskForm() {
 
             {/* List of assigned staff */}
             <ul className="mt-3 space-y-2">
-              {assignments.map((a, idx) => {
-                const staffObj = staffs.find((s) => s.staff.id === a.staffId);
-                return (
-                  <li
-                    key={idx}
-                    className="flex justify-between items-center border p-2 rounded-lg bg-white text-gray-600"
-                  >
-                    <span>
-                      {staffObj?.staff.firstName} {staffObj?.staff.lastName} (
-                      {staffObj?.staff.email}) — <b>{a.role}</b>
-                    </span>
-                    <button
-                      onClick={() =>
-                        setAssignments((prev) =>
-                          prev.filter((_, i) => i !== idx)
-                        )
-                      }
-                      className="text-red-500 hover:underline text-sm"
+              {assignments
+                ?.filter((a) => a && a.staffId)
+                .map((a, idx) => {
+                  const staffObj = staffs.find(
+                    (s) => s && s.staff && s.staff.id === a.staffId,
+                  );
+
+                  return (
+                    <li
+                      key={idx}
+                      className="flex justify-between items-center border p-2 rounded-lg bg-white text-gray-600"
                     >
-                      Remove
-                    </button>
-                  </li>
-                );
-              })}
+                      <span>
+                        {staffObj?.staff.firstName} {staffObj?.staff.lastName} (
+                        {staffObj?.staff.email}) — <b>{a.role}</b>
+                      </span>
+                      <button
+                        onClick={() =>
+                          setAssignments((prev) =>
+                            prev.filter((_, i) => i !== idx),
+                          )
+                        }
+                        className="text-red-500 hover:underline text-sm"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  );
+                })}
             </ul>
           </div>
 
