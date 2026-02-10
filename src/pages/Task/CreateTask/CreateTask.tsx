@@ -226,7 +226,7 @@ export default function CreateTaskForm() {
       assignedTo: assignments,
     };
 
-    console.log("Creating task with data:", data);
+    console.log("Creating task with data nfo:", data);
     try {
       await Api.post("/task", data, {
         headers: { Authorization: `Bearer ${token}` },
