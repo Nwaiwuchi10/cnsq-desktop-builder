@@ -62,10 +62,10 @@ export default function ViewProjects() {
       setLoading(true);
       try {
         const res = await Api.get(
-          `/projects/paginated/all?page=${page}&limit=${limit}&search=${search}&status=${selectedStatus}&sort=${sortOrder}`
+          `/projects/paginated/all?page=${page}&limit=${limit}&search=${search}&status=${selectedStatus}&sort=${sortOrder}`,
         );
-        setProjects(res.data.data);
-        setTotal(res.data.total);
+        setProjects(res?.data?.data);
+        setTotal(res?.data?.total);
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
@@ -161,7 +161,7 @@ export default function ViewProjects() {
                         >
                           {status.replace("_", " ")}
                         </li>
-                      )
+                      ),
                     )}
                   </ul>
                 </div>
@@ -257,7 +257,7 @@ export default function ViewProjects() {
                         >
                           {status.replace("_", " ")}
                         </li>
-                      )
+                      ),
                     )}
                   </ul>
                 </div>
@@ -315,11 +315,11 @@ export default function ViewProjects() {
 
         {/* 🗂 Project Grid */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-          {projects.length === 0 ? (
+          {projects?.length === 0 ? (
             <p className="text-gray-500">No projects found.</p>
           ) : (
-            projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+            projects?.map((project) => (
+              <ProjectCard key={project?.id} project={project} />
             ))
           )}
         </div>
@@ -356,7 +356,7 @@ export default function ViewProjects() {
                 >
                   {p}
                 </button>
-              )
+              ),
             )}
 
             <button

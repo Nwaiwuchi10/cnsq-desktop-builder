@@ -45,12 +45,12 @@ interface Project {
   };
 }
 interface DisplayTaskProps {
-  projectId: Project; // coming from ProjectDetails
+  project: Project; // coming from ProjectDetails
 }
 
-const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
+const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   const [showTable, setShowTable] = useState(true);
-  console.log("Project ID in DisplayTask:", projectId);
+  console.log("Project in DisplayTask:", project);
   return (
     <div>
       <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900">
@@ -79,7 +79,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <Filter size={16} />
             </button>
 
-            <Link href={`/project/${projectId?.uuid}/add-task`}>
+            <Link href={`/project/${project?.uuid}/add-task`}>
               <button className="flex items-center gap-2 px-3 py-1 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
                 Add New Task <Plus size={16} />
               </button>
@@ -99,7 +99,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
             <Filter size={16} />
           </button>
 
-          <Link href={`/project/${projectId?.uuid}/add-task`}>
+          <Link href={`/project/${project?.uuid}/add-task`}>
             <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
               Add New Task <Plus size={18} />
             </button>
@@ -110,9 +110,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ projectId }) => {
       {/* Toggle views */}
       <div className="mt-12 text-gray-600">
         {showTable ? (
-          <ProjectTasksSheet projectId={projectId} />
+          <ProjectTasksSheet projectId={project?.id} />
         ) : (
-          <TaskBoard projectId={projectId} />
+          <TaskBoard projectId={project?.id} />
         )}
       </div>
     </div>

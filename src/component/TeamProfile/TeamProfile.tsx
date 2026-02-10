@@ -37,7 +37,7 @@ export default function TeamProfiles() {
     const fetchHod = async () => {
       try {
         const res = await Api.get("/headofdepartment"); // ✅ correct API endpoint
-        setHodList(res.data.slice(0, 3)); // limit to 3 for homepage
+        setHodList(res?.data?.slice(0, 3)); // limit to 3 for homepage
       } catch (error) {
         console.error("Error fetching heads of departments:", error);
       } finally {
@@ -75,21 +75,21 @@ export default function TeamProfiles() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
         {hodList?.map((hod) => (
           <div
-            key={hod.id}
+            key={hod?.id}
             className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
           >
             {/* Profile Picture + Name + Role */}
             <div className="flex items-center gap-4">
               <Image
-                src={hod.staff.photoUrl || "/default-avatar.png"}
-                alt={`${hod.staff.firstName} ${hod.staff.lastName}`}
+                src={hod?.staff?.photoUrl || "/default-avatar.png"}
+                alt={`${hod?.staff?.firstName} ${hod?.staff?.lastName}`}
                 width={50}
                 height={50}
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div className="flex flex-col">
                 <span className="text-gray-900 font-semibold">
-                  {hod.staff.firstName} {hod.staff.lastName}
+                  {hod?.staff?.firstName} {hod?.staff?.lastName}
                 </span>
                 <span className="text-gray-500 text-sm">
                   {hod.name || "Head of Department"}
@@ -100,8 +100,8 @@ export default function TeamProfiles() {
             {/* Department Badge */}
             <div className="mt-4">
               <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
-                {hod.department?.name ||
-                  hod.staff.employment?.department?.name ||
+                {hod?.department?.name ||
+                  hod?.staff?.employment?.department?.name ||
                   "Department"}
               </span>
             </div>
@@ -109,26 +109,26 @@ export default function TeamProfiles() {
             {/* Email */}
             <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
               <Mail size={16} />
-              <span>{hod.staff.email}</span>
+              <span>{hod?.staff?.email}</span>
             </div>
 
             {/* Phone */}
             <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
               <Phone size={16} />
-              <span>{hod.staff.phone}</span>
+              <span>{hod?.staff?.phone}</span>
             </div>
 
             {/* Location */}
             <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
               <MapPin size={16} />
               <span>
-                {hod.staff.address?.city}, {hod.staff.address?.state},{" "}
-                {hod.staff.address?.country}
+                {hod?.staff?.address?.city}, {hod?.staff?.address?.state},{" "}
+                {hod?.staff?.address?.country}
               </span>
             </div>
 
             {/* View Profile Button */}
-            <Link href={`/staff/${hod.staff.id}`} className="w-full">
+            <Link href={`/staff/${hod?.staff?.id}`} className="w-full">
               <button
                 style={{ cursor: "pointer" }}
                 className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition"

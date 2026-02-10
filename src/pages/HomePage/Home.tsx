@@ -60,7 +60,7 @@ const HomePage = () => {
         if (!recipientId) return;
 
         const res = await Api.get(
-          `/notification/special/notice?recipientId=${recipientId}`
+          `/notification/special/notice?recipientId=${recipientId}`,
         );
         const notifications: Notification[] = res.data;
 
@@ -85,7 +85,7 @@ const HomePage = () => {
             Number(localStorage.getItem(`shown_count_${firstNotice.id}`)) || 0;
           localStorage.setItem(
             `shown_count_${firstNotice.id}`,
-            String(currentCount + 1)
+            String(currentCount + 1),
           );
 
           setActiveNotification(firstNotice);
@@ -102,7 +102,7 @@ const HomePage = () => {
     if (activeNotification) {
       localStorage.setItem(
         `closed_notification_${activeNotification.id}`,
-        "true"
+        "true",
       );
       setActiveNotification(null);
     }

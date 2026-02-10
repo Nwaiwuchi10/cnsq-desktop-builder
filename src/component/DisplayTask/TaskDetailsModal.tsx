@@ -49,13 +49,14 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   }, []);
   //   // Fetch staff for mentions
   useEffect(() => {
+    if (!task?.project?.id) return;
     const fetchProjectStaff = async () => {
       if (!task?.project?.id) return; // make sure projectId exists
 
       try {
         const res = await Api.get(`/projects/${task.project?.id}/staffs`);
         // Assuming your backend returns [{ staff: { id, firstName, lastName, ... }, role }]
-        const projectStaff = res.data.map((item: any) => item.staff);
+        const projectStaff = res?.data?.map((item: any) => item?.staff);
         setStaffList(projectStaff);
       } catch (err) {
         console.error("Error fetching project staff:", err);
@@ -66,13 +67,14 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   }, [task?.project?.id]);
   // 🔁 Fetch Task Details
   useEffect(() => {
+    if (!task?.project?.id) return;
     if (!task?.id || !token) return;
     const fetchTask = async () => {
       try {
         const res = await Api.get(`/task/${task.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTaskData(res.data);
+        setTaskData(res?.data);
       } catch (err) {
         console.error(err);
       }
@@ -90,7 +92,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     if (match) {
       const query = match[1].toLowerCase();
       const filtered = staffList.filter((s) =>
-        `${s.firstName} ${s.lastName}`.toLowerCase().includes(query)
+        `${s?.firstName} ${s?.lastName}`.toLowerCase().includes(query),
       );
       setSuggestions(filtered);
     } else {
@@ -101,7 +103,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   // Insert selected staff
   const handleSelectStaff = (staff: any) => {
     setCommentText((prev) =>
-      prev.replace(/@\w*$/, `@${staff.firstName} ${staff.lastName} `)
+      prev.replace(/@\w*$/, `@${staff?.firstName} ${staff?.lastName} `),
     );
     setMentionedStaff(staff);
     setSuggestions([]);
@@ -125,38 +127,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     });
   };
   // 💬 Add new comment
-  const handleAddComments = async () => {
-    if (!commentText.trim() || !taskData) return;
-    setLoading(true);
-    try {
-      const res = await Api.patch(
-        `/task/${task.id}/comments`,
-        { text: commentText, mentionedStaffId: mentionedStaff?.id ?? null },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
 
-      // If file attached, upload it
-      if (file) {
-        await handleAttachFile(res.data.id);
-        setFile(null);
-      }
-
-      setCommentText("");
-      setMentionedStaff(null);
-
-      setModal({ type: "success", message: "Comment added successfully!" });
-      await refreshTask();
-      //       window.location.reload(); // or update state with new comment
-    } catch (e: unknown) {
-      const err = e as AxiosError<{ message: string }>;
-      setModal({
-        type: "error",
-        message: err.response?.data?.message || "Failed to add comment.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
   const handleAddComment = async () => {
     if ((!commentText.trim() && !file) || !taskData) return; // ⬅️ Allow either text or file
 
@@ -169,7 +140,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           text: commentText || "",
           mentionedStaffId: mentionedStaff?.id ?? null,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       const commentId = res.data?.id;
@@ -203,7 +174,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
       const res = await Api.get(`/task/${task.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTaskData(res.data);
+      setTaskData(res?.data);
     } catch (err) {
       console.error(err);
     }
@@ -219,7 +190,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
     });
     return linkedText.replace(
       /@(\w+)/g,
-      '<span class="text-[#95D700] font-medium">@$1</span>'
+      '<span class="text-[#95D700] font-medium">@$1</span>',
     );
   };
 
@@ -292,26 +263,26 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           {/* Status + Priority */}
           <div className="flex items-center justify-between mb-4">
             <span className=" text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-              {task.status ? (
+              {task?.status ? (
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    statusColors[task.status] || "bg-gray-100 text-gray-600"
+                    statusColors[task?.status] || "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {task.status?.replace("_", " ")}
+                  {task?.status?.replace("_", " ")}
                 </span>
               ) : (
                 "—"
               )}
             </span>
             <span className="text-red-700 px-3 py-1 rounded-full text-xs font-medium mr-12">
-              {task.priority ? (
+              {task?.priority ? (
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                     priorityColors[task.priority] || "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {task.priority}
+                  {task?.priority}
                 </span>
               ) : (
                 "—"
@@ -338,19 +309,19 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             </div>
           </div>
           <div className="mb-4">
-            <h2 className="text-2xl font-bold">{displayTask.title}</h2>
+            <h2 className="text-2xl font-bold">{displayTask?.title}</h2>
           </div>
           {/* Assigned Staff */}
           <div className="flex items-center gap-2 mb-4">
-            {displayTask.assignedTo?.map((assign) => (
+            {displayTask?.assignedTo?.filter(Boolean).map((assign) => (
               <div
-                key={assign.id}
+                key={assign?.id}
                 className="w-10 h-10 rounded-full overflow-hidden border"
               >
-                {assign.staff.photoUrl ? (
+                {assign?.staff?.photoUrl ? (
                   <Image
-                    src={assign.staff.photoUrl}
-                    alt={assign.staff.firstName}
+                    src={assign?.staff?.photoUrl}
+                    alt={assign?.staff?.firstName}
                     width={40}
                     height={40}
                     className="object-cover w-full h-full"
@@ -358,7 +329,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                   />
                 ) : (
                   <div className="bg-gray-400 w-full h-full flex items-center justify-center text-white font-bold">
-                    {assign.staff.firstName[0]}
+                    {assign?.staff?.firstName[0]}
                   </div>
                 )}
               </div>
@@ -367,14 +338,14 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
           {/* Task Info */}
           <div className="text-sm text-gray-600 mb-2">
-            <p className="mb-2">Sprint: {displayTask.sprint || "—"}</p>
-            <p>Timeline: {displayTask.timeline || "—"}</p>
+            <p className="mb-2">Sprint: {displayTask?.sprint || "—"}</p>
+            <p>Timeline: {displayTask?.timeline || "—"}</p>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
             <Image src={imgIcon} alt="date icon" />
             <p>
               Due Date:{" "}
-              {displayTask.dueDate
+              {displayTask?.dueDate
                 ? new Date(displayTask.dueDate).toLocaleString()
                 : "No due date"}
             </p>
@@ -383,26 +354,26 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           {/* Description */}
           <h3 className="font-semibold mb-1">Description</h3>
           <p className="text-sm text-gray-700 mb-4">
-            {displayTask.description || "No description provided."}
+            {displayTask?.description || "No description provided."}
           </p>
 
           {/* Module */}
           <h3 className="font-semibold mb-1">Task Feature/Module</h3>
           <p className="text-sm text-gray-700 mb-4">
-            {displayTask.taskModule || "No Module/Feature provided."}
+            {displayTask?.taskModule || "No Module/Feature provided."}
           </p>
 
           {/* Comments */}
           <h3 className="font-semibold mb-2">Comments</h3>
           <div className="bg-gray-100 rounded-lg p-3 mb-3">
-            {displayTask.comments?.length ? (
-              displayTask.comments.map((c) => (
+            {displayTask?.comments?.length ? (
+              displayTask?.comments?.filter(Boolean).map((c) => (
                 <div key={c.id} className="relative text-sm text-gray-600 mb-4">
                   <p>
-                    <span className="font-semibold">{c.staff.firstName}</span>
-                    {c.mentionedStaff && (
+                    <span className="font-semibold">{c?.staff?.firstName}</span>
+                    {c?.mentionedStaff && (
                       <span className="text-blue-500">
-                        → @{c.mentionedStaff.firstName}
+                        → @{c?.mentionedStaff?.firstName}
                       </span>
                     )}
                     :
@@ -413,7 +384,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                       __html: renderCommentText(c.text),
                     }}
                   />
-                  {c.fileUrl && (
+                  {c?.fileUrl && (
                     <a
                       href={c.fileUrl}
                       target="_blank"
@@ -427,7 +398,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                     {new Date(c.createdAt).toLocaleString()}
                   </p>
 
-                  {c.staff?.id === currentUserId && (
+                  {c?.staff?.id === currentUserId && (
                     <div className="absolute top-2 right-2 flex gap-3 text-xs text-gray-500 z-20 ">
                       <button
                         onClick={() => setEditingComment(c)}
@@ -482,15 +453,15 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
               </div>
             )}
             {/* Suggestions dropdown */}
-            {suggestions.length > 0 && (
+            {suggestions?.length > 0 && (
               <ul className="border rounded-lg bg-white shadow-md mt-1 max-h-40 overflow-y-auto">
-                {suggestions.map((s) => (
+                {suggestions?.filter(Boolean).map((s) => (
                   <li
                     key={s.id}
                     onClick={() => handleSelectStaff(s)}
                     className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
                   >
-                    {s.firstName} {s.lastName}
+                    {s?.firstName} {s?.lastName}
                   </li>
                 ))}
               </ul>
@@ -565,7 +536,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
       {/* Edit Task Modal */}
       <TaskUpdateModal
-        taskId={task.id}
+        taskId={task?.id}
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         onUpdated={refreshTask}

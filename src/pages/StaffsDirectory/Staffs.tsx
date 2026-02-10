@@ -83,8 +83,8 @@ export default function StaffDirectory() {
           search ? `&search=${encodeURIComponent(search)}` : ""
         }`;
         const res = await Api.get<StaffResponse>(query);
-        setStaffList(res.data.data);
-        setTotalPages(res.data.totalPages);
+        setStaffList(res?.data?.data);
+        setTotalPages(res?.data?.totalPages);
       } catch (error) {
         console.error("Error fetching staff:", error);
       } finally {
@@ -256,8 +256,8 @@ export default function StaffDirectory() {
             <p className="text-gray-600">
               <LoadingSpinner />
             </p>
-          ) : filteredStaff.length > 0 ? (
-            filteredStaff.map((person) => (
+          ) : filteredStaff?.length > 0 ? (
+            filteredStaff?.map((person) => (
               <div
                 key={person.id}
                 className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
@@ -265,15 +265,15 @@ export default function StaffDirectory() {
                 {/* Profile Picture + Name + Role */}
                 <div className="flex items-center gap-4">
                   <Image
-                    src={person.photoUrl || "/default-avatar.png"}
-                    alt={`${person.firstName} ${person.lastName}`}
+                    src={person?.photoUrl || "/default-avatar.png"}
+                    alt={`${person?.firstName} ${person?.lastName}`}
                     width={50}
                     height={50}
                     className="w-14 h-14 rounded-full object-cover"
                   />
                   <div className="flex flex-col">
                     <span className="text-gray-900 font-semibold">
-                      {person.firstName} {person.lastName}
+                      {person?.firstName} {person?.lastName}
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {person?.employment?.jobTitle?.length ? (
@@ -285,7 +285,7 @@ export default function StaffDirectory() {
                             >
                               {title}
                             </span>
-                          )
+                          ),
                         )
                       ) : (
                         <span className="text-gray-500 text-sm">
@@ -365,7 +365,7 @@ export default function StaffDirectory() {
                   "...",
                   totalPages - 2,
                   totalPages - 1,
-                  totalPages
+                  totalPages,
                 );
               } else {
                 pages.push(
@@ -375,7 +375,7 @@ export default function StaffDirectory() {
                   page,
                   page + 1,
                   "...",
-                  totalPages
+                  totalPages,
                 );
               }
             }
@@ -396,7 +396,7 @@ export default function StaffDirectory() {
                 >
                   {p}
                 </button>
-              )
+              ),
             );
           })()}
 

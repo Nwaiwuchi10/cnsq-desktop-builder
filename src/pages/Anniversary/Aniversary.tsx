@@ -56,7 +56,7 @@ const Anniversary = () => {
       setLoadingMonth(true);
       try {
         const res = await Api.get<PaginatedResult<StaffAnniversary>>(
-          `/staff-register/anniversaries/month?page=${pageMonth}&limit=${limit}`
+          `/staff-register/anniversaries/month?page=${pageMonth}&limit=${limit}`,
         );
         setMonthAnniversaries(res.data.data);
         setTotalMonth(res.data.total);
@@ -74,7 +74,7 @@ const Anniversary = () => {
       setLoadingUpcoming(true);
       try {
         const res = await Api.get<PaginatedResult<StaffAnniversary>>(
-          `/staff-register/anniversaries/all/upcoming?page=${pageUpcoming}&limit=${limit}`
+          `/staff-register/anniversaries/all/upcoming?page=${pageUpcoming}&limit=${limit}`,
         );
         setUpcomingAnniversaries(res.data.data);
         setTotalUpcoming(res.data.total);
@@ -92,7 +92,7 @@ const Anniversary = () => {
       setLoadingRecent(true);
       try {
         const res = await Api.get<PaginatedResult<StaffAnniversary>>(
-          `/staff-register/anniversaries/all/recent?page=${pageRecent}&limit=${limit}`
+          `/staff-register/anniversaries/all/recent?page=${pageRecent}&limit=${limit}`,
         );
         setRecentAnniversaries(res.data.data);
         setTotalRecent(res.data.total);
@@ -110,7 +110,7 @@ const Anniversary = () => {
     list.filter((staff) =>
       `${staff.firstName} ${staff.lastName}`
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        .includes(searchTerm.toLowerCase()),
     );
 
   return (
@@ -235,7 +235,7 @@ const AnniversaryCard = ({ staff }: { staff: StaffAnniversary }) => {
     <div className="flex flex-col items-start text-left w-full">
       <div className="relative w-[315px] h-[315px] sm:w-[420px] sm:h-[250px] md:w-[380px] md:h-[260px] lg:w-[280px] lg:h-[280px] rounded-lg overflow-hidden shadow-sm">
         <Image
-          src={staff.photoUrl || "/default-avatar.png"}
+          src={staff?.photoUrl || "/default-avatar.png"}
           alt={`${staff.firstName} ${staff.lastName}`}
           width={280}
           height={280}
@@ -320,7 +320,7 @@ const Pagination = ({
           >
             {p}
           </button>
-        )
+        ),
       )}
 
       {/* Next */}

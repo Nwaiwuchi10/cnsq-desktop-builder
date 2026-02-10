@@ -25,7 +25,7 @@ export default function LatestAnniversary() {
       try {
         // ✅ backend returns { data, total, page, limit }
         const res = await Api.get("/staff-register/anniversaries/all/upcoming");
-        setAnniversaries(res.data.data.slice(0, 4)); // ✅ limit to 4
+        setAnniversaries(res?.data?.data.slice(0, 4)); // ✅ limit to 4
       } catch (error) {
         console.error("Error fetching anniversaries:", error);
       } finally {
@@ -62,11 +62,11 @@ export default function LatestAnniversary() {
           w-full max-w-7xl
         "
       >
-        {anniversaries.map((person) => (
+        {anniversaries?.map((person) => (
           <>
             <Link href={`/staff/${person?.uuid}`}>
               <div
-                key={person.id}
+                key={person?.id}
                 className="flex flex-col items-start text-left w-full"
               >
                 {/* Image */}
@@ -85,8 +85,8 @@ export default function LatestAnniversary() {
               "
                 >
                   <Image
-                    src={person.photoUrl || "/default-avatar.png"}
-                    alt={`${person.firstName} ${person.lastName}`}
+                    src={person?.photoUrl || "/default-avatar.png"}
+                    alt={`${person?.firstName} ${person?.lastName}`}
                     width={280}
                     height={280}
                     className="w-full h-full object-cover"
@@ -96,7 +96,7 @@ export default function LatestAnniversary() {
 
                 {/* Name */}
                 <p className="mt-3 text-gray-900 font-semibold text-lg">
-                  {person.firstName} {person.lastName}
+                  {person?.firstName} {person?.lastName}
                 </p>
 
                 {/* Anniversary Date with Lagos timezone */}
@@ -108,7 +108,7 @@ export default function LatestAnniversary() {
                       day: "numeric",
                       year: "numeric",
                       timeZone: "Africa/Lagos",
-                    }
+                    },
                   )}
                 </span>
 

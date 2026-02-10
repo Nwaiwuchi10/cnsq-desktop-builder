@@ -61,10 +61,10 @@ interface TaskAssignment {
   role: string;
 }
 
-interface Project {
-  id: number;
-  projectName: string;
-}
+// interface Project {
+//   id: number;
+//   projectName: string;
+// }
 
 interface TaskComment {
   id: number;
@@ -94,7 +94,7 @@ interface Task {
 }
 
 interface DisplayTaskProps {
-  projectId: Project;
+  projectId?: number;
 }
 
 const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
@@ -114,6 +114,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   // ✅ Fetch tasks based on staff or project
   const fetchTasks = async () => {
+    if (!projectId) return;
+
     setLoading(true);
     try {
       let res;
@@ -128,41 +130,18 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
       if (staffFilter === "all") {
         const query = params.toString();
         res = await Api.get(
-          `/task/project/${projectId?.id}${query ? `?${query}` : ""}`,
+          `/task/project/${projectId}${query ? `?${query}` : ""}`,
         );
       } else {
         const query = params.toString();
         res = await Api.get(
-          `/task/staff/${staffFilter}/project/${projectId?.id}${
+          `/task/staff/${staffFilter}/project/${projectId}${
             query ? `?${query}` : ""
           }`,
         );
       }
 
-      setTasks(res.data || []);
-    } catch (err) {
-      console.error("Error fetching tasks", err);
-      setTasks([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-  useEffect(() => {
-    fetchTasks();
-  }, [projectId, staffFilter, yearFilter, monthFilter, dayFilter]);
-
-  const fetchTasksy = async () => {
-    setLoading(true);
-    try {
-      let res;
-      if (staffFilter === "all") {
-        res = await Api.get(`/task/project/${projectId?.id}`);
-      } else {
-        res = await Api.get(
-          `/task/staff/${staffFilter}/project/${projectId?.id}`,
-        );
-      }
-      setTasks(res.data || []);
+      setTasks(res?.data || []);
     } catch (err) {
       console.error("Error fetching tasks", err);
       setTasks([]);
@@ -173,9 +152,15 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   // ✅ Fetch staff list for dropdown (map response correctly)
   const fetchStaffList = async () => {
+    if (!projectId) return;
+
     try {
-      const res = await Api.get(`/projects/${projectId?.id}/staffs`);
-      const staffOnly = (res.data || []).map((item: any) => item.staff); // 🔹 unwrap staff
+      const res = await Api.get(`/projects/${projectId}/staffs`);
+
+      const staffOnly = (res?.data || [])
+        .map((item: any) => item?.staff)
+        .filter(Boolean); // ✅ remove null/undefined
+
       setStaffList(staffOnly);
     } catch (err) {
       console.error("Error fetching staff list", err);
@@ -183,10 +168,12 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   };
 
   useEffect(() => {
+    if (!projectId) return;
     fetchTasks();
-  }, [projectId, staffFilter]);
+  }, [projectId, staffFilter, yearFilter, monthFilter, dayFilter]);
 
   useEffect(() => {
+    if (!projectId) return;
     fetchStaffList();
   }, [projectId]);
 
@@ -301,11 +288,13 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <option value="all" className="text-gray-600">
                 All Staff
               </option>
-              {staffList.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.firstName} {s.lastName}
-                </option>
-              ))}
+              {staffList.map((s) =>
+                s ? (
+                  <option key={s?.id} value={s?.id}>
+                    {s?.firstName} {s?.lastName}
+                  </option>
+                ) : null,
+              )}
             </select>
 
             {/* date picker filter */}
@@ -372,11 +361,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </tr>
           </thead>
           <tbody>
-            {displayedTasks.map((t: any) => (
+            {displayedTasks?.map((t: any) => (
               <tr
                 style={{ cursor: "pointer" }}
                 onClick={() => setSelectedTask(t)}
-                key={t.id}
+                key={t?.id}
                 className="odd:bg-white even:bg-gray-50 text-gray-600 hover:bg-green-100 transition-colors duration-150 cursor-pointer text-gray-600"
               >
                 <td className="p-2 border text-gray-600">{t?.sprint}</td>
@@ -384,17 +373,17 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   className="p-2 border cursor-pointer text-gray-600"
                   onClick={() => setSelectedTask(t)}
                 >
-                  {t.title}
+                  {t?.title}
                 </td>
                 {/* Status */}
                 <td className="p-2 border">
-                  {t.status ? (
+                  {t?.status ? (
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        statusColors[t.status] || "bg-gray-100 text-gray-600"
+                        statusColors[t?.status] || "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {formatLabel(t.status)}
+                      {formatLabel(t?.status)}
                     </span>
                   ) : (
                     "—"
@@ -403,7 +392,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
                 {/* Priority */}
                 <td className="p-2 border">
-                  {t.priority ? (
+                  {t?.priority ? (
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         priorityColors[t.priority] ||
@@ -441,13 +430,14 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     ? new Date(t.dueDate).toLocaleDateString()
                     : "Not set"}
                 </td>
-                <td className="p-2 border text-gray-600">{t.timeline}</td>
-                <td className="p-2 border text-gray-600">{t.taskModule}</td>
+                <td className="p-2 border text-gray-600">{t?.timeline}</td>
+                <td className="p-2 border text-gray-600">{t?.taskModule}</td>
                 <td className="p-2 border text-gray-600">
-                  {t.project?.projectName}
+                  {t?.project?.projectName}
                 </td>
                 <td className="p-2 border text-gray-600">
-                  {t.assignedTo
+                  {t?.assignedTo
+                    ?.filter((a: any) => a?.staff) // ✅ guard
                     .map(
                       (a: any) =>
                         `${a.staff.firstName} ${a.staff.lastName} (${a.role})`,

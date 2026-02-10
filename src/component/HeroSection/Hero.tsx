@@ -50,7 +50,7 @@ export default function HeroSection() {
       defaultAnniversary:
         "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760308208/DSC00139-Picsart-AiImageEnhancer_mcpt2r.jpg",
     }),
-    []
+    [],
   );
 
   // Fetch data
@@ -62,9 +62,9 @@ export default function HeroSection() {
           Api.get<StaffAnniversary[]>("/staff-register/anniversaries/today"),
           Api.get<Quote[]>("/quote/all/today"),
         ]);
-        setTodaysBirthdays(birthdayRes.data || []);
-        setTodaysAnniversaries(anniversaryRes.data || []);
-        setQuotes(quoteRes.data || []);
+        setTodaysBirthdays(birthdayRes?.data || []);
+        setTodaysAnniversaries(anniversaryRes?.data || []);
+        setQuotes(quoteRes?.data || []);
       } catch (error) {
         console.error("Error fetching hero data:", error);
       } finally {
@@ -82,38 +82,38 @@ export default function HeroSection() {
       image2: heroimgLogo,
       type: "welcome",
     }),
-    []
+    [],
   );
 
   // 🎂 Birthdays
   const birthdaySlides = useMemo(
     () =>
       todaysBirthdays.map((staff) => ({
-        image: staff.photoUrl || defaultImages.defaultBirthday,
-        text: ` Happy Birthday ${staff.firstName} ${staff.lastName}!`,
+        image: staff?.photoUrl || defaultImages.defaultBirthday,
+        text: ` Happy Birthday ${staff?.firstName} ${staff?.lastName}!`,
         type: "celebration",
       })),
-    [todaysBirthdays, defaultImages]
+    [todaysBirthdays, defaultImages],
   );
 
   // 🎉 Anniversaries
   const anniversarySlides = useMemo(
     () =>
       todaysAnniversaries.map((staff) => {
-        const years = staff.yearsCompleted || 0;
+        const years = staff?.yearsCompleted || 0;
         const anniversaryText =
           years > 0
             ? ` Happy ${years} Year${years > 1 ? "s" : ""} Anniversary ${
-                staff.firstName
-              } ${staff.lastName}!`
-            : ` Happy Anniversary ${staff.firstName} ${staff.lastName}!`;
+                staff?.firstName
+              } ${staff?.lastName}!`
+            : ` Happy Anniversary ${staff?.firstName} ${staff?.lastName}!`;
         return {
-          image: staff.photoUrl || defaultImages.defaultAnniversary,
+          image: staff?.photoUrl || defaultImages.defaultAnniversary,
           text: anniversaryText,
           type: "celebration",
         };
       }),
-    [todaysAnniversaries, defaultImages]
+    [todaysAnniversaries, defaultImages],
   );
 
   // 🖼️ Default gallery slides
@@ -150,7 +150,7 @@ export default function HeroSection() {
         type: "gallery",
       },
     ],
-    []
+    [],
   );
 
   const isImage = (url: string) => /\.(jpeg|jpg|png|gif|webp|svg)$/i.test(url);
@@ -164,16 +164,16 @@ export default function HeroSection() {
     } else if (quotes.length > 0) {
       const quote = quotes[0];
       if (quote.description) s.push({ type: "quote", quote });
-      if (quote.fileUrl?.length) {
+      if (quote?.fileUrl?.length) {
         quote.fileUrl.forEach((url) =>
           s.push({
             type: isImage(url)
               ? "imageQuote"
               : isVideo(url)
-              ? "videoQuote"
-              : "unsupported",
+                ? "videoQuote"
+                : "unsupported",
             url,
-          })
+          }),
         );
       }
     } else {
@@ -251,7 +251,7 @@ export default function HeroSection() {
       {/* Background / Media */}
       {currentSlide.type === "videoQuote" ? (
         <video
-          src={currentSlide.url}
+          src={currentSlide?.url}
           autoPlay
           loop
           muted
@@ -261,7 +261,7 @@ export default function HeroSection() {
         />
       ) : currentSlide.type === "imageQuote" || currentSlide.image ? (
         <Image
-          src={currentSlide.url || currentSlide.image}
+          src={currentSlide?.url || currentSlide?.image}
           alt="Slide Background"
           fill
           unoptimized={false}
@@ -286,7 +286,7 @@ export default function HeroSection() {
             {currentSlide.image2 && (
               <div className="mt-4 w-[200px] md:w-[300px]">
                 <Image
-                  src={currentSlide.image2}
+                  src={currentSlide?.image2}
                   alt="Logo"
                   className="w-full h-auto object-contain"
                   loading="lazy"
