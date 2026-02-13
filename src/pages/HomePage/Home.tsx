@@ -14,7 +14,7 @@ import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
 
 import SubscriptionStatsCards from "@/component/QuoteRequestSubscriptionStat/SubscriptionStatCard";
-import { enableNotifications } from "@/component/EnableNotificationButton/EnableNotificationsButton";
+import { pushNotificationService } from "@/utils/pushNotificationService";
 
 interface Notification {
   id: number;
@@ -29,30 +29,113 @@ interface Notification {
 const HomePage = () => {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<{
+    isEnabled: boolean | null;
+    isLoading: boolean;
+  }>({
+    isEnabled: null,
+    isLoading: true,
+  });
   const [showToast, setShowToast] = useState(false);
 
+  /**
+   * Initialize push notifications on first visit
+   * - Check if user is authenticated
+   * - Check if already subscribed
+   * - Attempt to subscribe if not already subscribed
+   */
   useEffect(() => {
     async function initNotifications() {
-      // Check if toast was already shown before
-      const toastShown = localStorage.getItem("homepage_toast_shown");
+      try {
+        // Check if user is authenticated
+        const token = localStorage.getItem("user-token");
+        if (!token) {
+          setNotificationStatus({
+            isEnabled: false,
+            isLoading: false,
+          });
+          return;
+        }
 
-      if (!toastShown) {
-        // First-time visit → run notification logic
-        const result = await enableNotifications();
-        setNotificationsEnabled(result);
+        // Check if we've already attempted notification setup
+        const notificationCheckDone = localStorage.getItem(
+          "notification_init_done",
+        );
 
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 8000);
+        if (notificationCheckDone) {
+          // Just restore status from last known state
+          const wasEnabled =
+            localStorage.getItem("notification_last_status") === "true";
+          setNotificationStatus({
+            isEnabled: wasEnabled,
+            isLoading: false,
+          });
+          return;
+        }
 
-        // Mark as shown so it never displays again
-        localStorage.setItem("homepage_toast_shown", "true");
+        // First time - check if already subscribed
+        const isSubscribed = await pushNotificationService.isSubscribed();
+
+        if (isSubscribed) {
+          setNotificationStatus({
+            isEnabled: true,
+            isLoading: false,
+          });
+          setShowToast(true);
+          localStorage.setItem("notification_last_status", "true");
+          localStorage.setItem("notification_init_done", "true");
+          return;
+        }
+
+        // Not subscribed - attempt to subscribe
+        try {
+          await pushNotificationService.subscribe();
+          setNotificationStatus({
+            isEnabled: true,
+            isLoading: false,
+          });
+          localStorage.setItem("notification_last_status", "true");
+          setShowToast(true);
+        } catch (subscribeError) {
+          // Subscription failed - could be due to:
+          // - User denied permission
+          // - Browser not supported
+          // - Network error
+          console.warn(
+            "Push notification subscription failed:",
+            subscribeError,
+          );
+          setNotificationStatus({
+            isEnabled: false,
+            isLoading: false,
+          });
+          localStorage.setItem("notification_last_status", "false");
+          setShowToast(true);
+        }
+
+        // Mark initialization as done
+        localStorage.setItem("notification_init_done", "true");
+      } catch (error) {
+        console.error("Notification initialization error:", error);
+        setNotificationStatus({
+          isEnabled: false,
+          isLoading: false,
+        });
       }
     }
 
     initNotifications();
   }, []);
 
+  // Auto-hide toast after 8 seconds
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  // Fetch special announcement notices
   useEffect(() => {
     const fetchSpecialNotices = async () => {
       try {
@@ -111,16 +194,41 @@ const HomePage = () => {
   return (
     <div>
       <Navbar />
-      {/* Optional display for notification status */}
-      <div
-        className={`fixed top-16 right-4 p-3 rounded-md shadow-lg z-50 transition-opacity duration-500 ${
-          showToast ? "opacity-100" : "opacity-0"
-        } ${notificationsEnabled ? "bg-lime-500" : "bg-red-500"} text-white`}
-      >
-        {notificationsEnabled
-          ? "Notifications Enabled ✅"
-          : "Notifications Not Enabled ⚠️"}
-      </div>
+
+      {/* Notification Status Toast */}
+      {showToast && notificationStatus.isEnabled !== null && (
+        <div
+          className={`fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 transition-opacity duration-500 ${
+            showToast ? "opacity-100" : "opacity-0 pointer-events-none"
+          } ${
+            notificationStatus.isEnabled ? "bg-green-500" : "bg-amber-500"
+          } text-white max-w-sm`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-2">
+            {notificationStatus.isLoading ? (
+              <>
+                <div className="animate-spin">⏳</div>
+                <span>Setting up notifications...</span>
+              </>
+            ) : notificationStatus.isEnabled ? (
+              <>
+                <span>✅</span>
+                <span>Push notifications enabled successfully!</span>
+              </>
+            ) : (
+              <>
+                <span>⚠️</span>
+                <span>
+                  Push notifications could not be enabled. You can enable them
+                  later in the menu.
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <HeroSection />
       <SubscriptionStatsCards />
