@@ -8,19 +8,27 @@ interface CalendarSidebarProps {
     currentDate: Date;
     onDateSelect: (date: Date) => void;
     onCreateEvent: () => void;
-    events: any[]; // Replace with proper type
+    onEventClick: (event: any) => void;
+    events: any[];
 }
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
     currentDate,
     onDateSelect,
     onCreateEvent,
+    onEventClick,
     events
 }) => {
     const month = currentDate.getMonth();
     const year = currentDate.getFullYear();
     const grid = getCalendarGrid(year, month);
     const today = new Date();
+
+    // Sort and limit events
+    const upcomingEvents = [...events]
+        .filter(event => new Date(event.startTime) >= new Date()) // Only future events
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        .slice(0, 5);
 
     return (
         <aside className="w-full md:w-64 border-r border-gray-200 bg-white h-full overflow-y-auto p-4 flex flex-col gap-6 shadow-sm md:shadow-none">
@@ -66,9 +74,13 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
             <div className="flex flex-col gap-4">
                 <h3 className="font-semibold text-gray-800 border-b pb-2">Upcoming</h3>
                 <div className="flex flex-col gap-4">
-                    {events.length > 0 ? (
-                        events.slice(0, 5).map(event => (
-                            <div key={event.id} className="flex flex-col gap-1.5 p-1">
+                    {upcomingEvents.length > 0 ? (
+                        upcomingEvents.map(event => (
+                            <div
+                                key={event.id}
+                                className="flex flex-col gap-1.5 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-100"
+                                onClick={() => onEventClick(event)}
+                            >
                                 <h4 className="font-medium text-sm text-gray-900 truncate">{event.title}</h4>
                                 <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                     <Clock size={12} />

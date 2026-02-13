@@ -5,6 +5,9 @@ import CalendarHeader from './components/CalendarHeader';
 import CalendarSidebar from './components/CalendarSidebar';
 import { MonthView, WeekView, DayView } from './components/CalendarViews';
 import EventModal from './components/EventModal';
+import CalendarDetails from './components/CalendarDetails';
+import EditEventModal from './components/EditEventModal';
+import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import Api from '@/utils/api';
 import Navbar from '@/component/Navbar/Navbar';
 import Footer from '@/component/Footer/Footer';
@@ -15,6 +18,9 @@ const Calender = () => {
     const [events, setEvents] = useState<any[]>([]);
     const [allEvents, setAllEvents] = useState<any[]>([]); // For sidebar
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -26,9 +32,7 @@ const Calender = () => {
             const allRes = await Api.get('/calender');
             setAllEvents(allRes.data);
 
-            // Fetch specific events for the current view if needed, 
-            // but for now, we'll use allEvents and filter on the frontend for simplicity,
-            // or use the month endpoint for the month view.
+            // Fetch specific events for the current view if needed
             if (view === 'month') {
                 const res = await Api.get(`/calender/month?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`);
                 setEvents(res.data);
@@ -65,11 +69,30 @@ const Calender = () => {
 
     const handleEventClick = (event: any) => {
         setSelectedEvent(event);
-        setIsModalOpen(true);
+        setIsDetailsModalOpen(true);
+    };
+
+    const handleEditClick = (event: any) => {
+        setSelectedEvent(event);
+        setIsDetailsModalOpen(false);
+        setIsEditModalOpen(true);
+    };
+
+    const handleDeleteClick = (event: any) => {
+        setSelectedEvent(event);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setIsDetailsModalOpen(false);
+        fetchEvents();
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
+        setIsDetailsModalOpen(false);
+        setIsEditModalOpen(false);
+        setIsDeleteModalOpen(false);
         setSelectedEvent(null);
     };
 
@@ -120,6 +143,7 @@ const Calender = () => {
                                 setIsModalOpen(true);
                                 if (window.innerWidth < 768) setIsSidebarOpen(false);
                             }}
+                            onEventClick={handleEventClick}
                             events={allEvents}
                         />
                     </div>
@@ -149,7 +173,29 @@ const Calender = () => {
                     onClose={closeModal}
                     onSave={fetchEvents}
                     initialDate={currentDate}
+                />
+
+                <CalendarDetails
+                    isOpen={isDetailsModalOpen}
+                    onClose={closeModal}
+                    event={selectedEvent}
+                    onEdit={handleEditClick}
+                    onDelete={handleDeleteClick}
+                />
+
+                <EditEventModal
+                    isOpen={isEditModalOpen}
+                    onClose={closeModal}
+                    onSave={fetchEvents}
                     eventToEdit={selectedEvent}
+                />
+
+                <DeleteConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={closeModal}
+                    onConfirm={handleConfirmDelete}
+                    eventId={selectedEvent?.id}
+                    eventTitle={selectedEvent?.title}
                 />
             </div>
             <Footer />
