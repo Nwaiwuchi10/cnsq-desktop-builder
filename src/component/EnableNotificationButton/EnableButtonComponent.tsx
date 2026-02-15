@@ -155,6 +155,7 @@ export default function EnableNotificationsButton() {
     <div className="w-full">
       <button
         onClick={handleToggleSubscription}
+        style={{ cursor: "pointer" }}
         disabled={status.isLoading}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 w-full ${
           status.isSubscribed

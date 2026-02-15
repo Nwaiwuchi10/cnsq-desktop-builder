@@ -9,6 +9,7 @@ import Api from "@/utils/api"; // axios wrapper
 import MessageCeoModal from "../MessageCEO/MessageCEO";
 import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
+import { pushNotificationService } from "@/utils/pushNotification";
 
 type User = {
   uuid: string;
@@ -145,6 +146,26 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const autoSubscribe = async () => {
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+
+      try {
+        const alreadySubscribed = await pushNotificationService.isSubscribed();
+
+        if (!alreadySubscribed) {
+          await pushNotificationService.subscribe();
+          console.log("Auto-subscribed to push");
+        }
+      } catch (err) {
+        console.error("Auto-subscribe failed", err);
+      }
+    };
+
+    autoSubscribe();
+  }, []);
+
   const handleLogout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("user-token");
@@ -272,7 +293,7 @@ export default function Navbar() {
                         >
                           Urgent Message to the CEO
                         </div>
-                        <div className="block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <div className="cursor-pointer block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
                           <EnableNotificationsButton />
                         </div>
                         <button
@@ -390,7 +411,7 @@ export default function Navbar() {
                     >
                       Urgent Message to the CEO
                     </div>
-                    <div className="block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                    <div className="cursor-pointer block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
                       <EnableNotificationsButton />
                     </div>
                     <button
