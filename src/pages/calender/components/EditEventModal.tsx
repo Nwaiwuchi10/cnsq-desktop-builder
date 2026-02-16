@@ -21,6 +21,7 @@ interface EditEventModalProps {
 }
 
 const EVENT_TYPES = ["MEETING", "SPRINT", "REVIEW", "PERSONAL", "PROJECT"];
+const RECURRENCE_FREQUENCIES = ["DAILY", "WEEKLY", "MONTHLY"];
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -52,6 +53,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     color: "#22c55e",
     type: "MEETING",
     attendees: [] as number[],
+    isRecurring: false,
+    recurrenceFrequency: "WEEKLY",
   });
 
   const [staffList, setStaffList] = useState<any[]>([]);
@@ -81,6 +84,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
           color: eventToEdit.color || "#22c55e",
           type: eventToEdit.type || "MEETING",
           attendees: eventToEdit.attendees?.map((s: any) => s.id) || [],
+          isRecurring: eventToEdit.isRecurring || false,
+          recurrenceFrequency: eventToEdit.recurrenceFrequency || "WEEKLY",
         });
       }
     }
@@ -110,6 +115,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       color: formData.color,
       type: formData.type,
       attendees: formData.attendees,
+      isRecurring: formData.isRecurring,
+      recurrenceFrequency: formData.isRecurring ? formData.recurrenceFrequency : null,
     };
 
     try {
@@ -285,6 +292,53 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                 ))}
               </div>
             </div>
+          </div>
+
+          {/* Recurrence */}
+          <div className="flex flex-col gap-1.5 border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isRecurring}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isRecurring: e.target.checked,
+                  }))
+                }
+                className="w-5 h-5 md:w-4 md:h-4 text-[#95D700] rounded focus:ring-[#95D700]"
+              />
+              <span className="text-sm font-semibold text-gray-600">
+                Recurring Event
+              </span>
+            </label>
+            {formData.isRecurring && (
+              <div className="mt-2 flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-600">
+                  Recurrence Frequency
+                </label>
+                <select
+                  value={formData.recurrenceFrequency}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      recurrenceFrequency: e.target.value,
+                    }))
+                  }
+                  className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base"
+                >
+                  {RECURRENCE_FREQUENCIES.map((freq) => (
+                    <option key={freq} value={freq}>
+                      {freq === "DAILY"
+                        ? "Every Day"
+                        : freq === "WEEKLY"
+                        ? "Every Week"
+                        : "Every Month"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Location & Link */}
