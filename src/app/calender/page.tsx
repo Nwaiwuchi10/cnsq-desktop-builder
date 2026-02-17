@@ -1,12 +1,11 @@
-import Calender from '@/pages/calender/Calender'
-
+import Calender from "@/pages/Calender/Calender";
 
 const page = () => {
-    return (
-        <div>
-            <Calender />
-        </div>
-    )
-}
+  return (
+    <div>
+      <Calender />
+    </div>
+  );
+};
 
-export default page
+export default page;

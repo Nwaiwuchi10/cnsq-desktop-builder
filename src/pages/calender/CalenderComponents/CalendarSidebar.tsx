@@ -7,7 +7,7 @@ import {
   getCalendarGrid,
   isSameDay,
   MONTHS,
-} from "../utils/dateUtils";
+} from "@/utils/calendarDateUtils";
 
 interface CalendarSidebarProps {
   currentDate: Date;
@@ -24,6 +24,13 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onEventClick,
   events,
 }) => {
+  if (!currentDate) {
+    return (
+      <aside className="w-full md:w-64 border-r border-gray-200 bg-white h-full overflow-y-auto p-4 flex flex-col gap-6 shadow-sm md:shadow-none items-center justify-center">
+        Loading...
+      </aside>
+    );
+  }
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
   const grid = getCalendarGrid(year, month);

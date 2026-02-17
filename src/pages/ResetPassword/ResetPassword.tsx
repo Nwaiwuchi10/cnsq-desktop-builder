@@ -91,7 +91,7 @@ export default function ResetPassword() {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full text-gray-900 border rounded-lg px-3 py-2"
             />
 
             <button
@@ -111,7 +111,7 @@ export default function ResetPassword() {
               type={showConfirmPassword ? "text" : "password"}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="w-full text-gray-900 border rounded-lg px-3 py-2"
             />
 
             <button
