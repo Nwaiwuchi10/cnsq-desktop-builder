@@ -53,7 +53,7 @@ const orgData: Person = {
       ],
     },
     {
-      name: "Ben Thompson",
+      name: "Ben Thompsons",
       title: "COO",
       dept: "Operations",
       location: "Maryland, USA",
