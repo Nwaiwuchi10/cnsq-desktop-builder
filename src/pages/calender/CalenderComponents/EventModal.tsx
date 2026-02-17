@@ -84,6 +84,16 @@ const EventModal: React.FC<EventModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if at least one attendee is selected
+    if (formData.attendees.length === 0) {
+      setModal({
+        type: "error",
+        message: "Please select at least one attendee.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const start = new Date(`${formData.startDate}T${formData.startTime}:00`);
@@ -100,7 +110,9 @@ const EventModal: React.FC<EventModalProps> = ({
       type: formData.type,
       attendees: formData.attendees,
       isRecurring: formData.isRecurring,
-      recurrenceFrequency: formData.isRecurring ? formData.recurrenceFrequency : null,
+      recurrenceFrequency: formData.isRecurring
+        ? formData.recurrenceFrequency
+        : null,
     };
 
     try {
@@ -318,8 +330,8 @@ const EventModal: React.FC<EventModalProps> = ({
                       {freq === "DAILY"
                         ? "Every Day"
                         : freq === "WEEKLY"
-                        ? "Every Week"
-                        : "Every Month"}
+                          ? "Every Week"
+                          : "Every Month"}
                     </option>
                   ))}
                 </select>
