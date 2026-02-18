@@ -60,12 +60,28 @@ const EventModal: React.FC<EventModalProps> = ({
   const [staffList, setStaffList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Clear any previous toast/modal when opening
+  useEffect(() => {
+    if (isOpen) setModal(null);
+  }, [isOpen]);
+
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+  const currentTime = now.toTimeString().split(" ")[0].substring(0, 5);
+
   useEffect(() => {
     if (isOpen) {
-      // Fetch staff for attendees
+      // Use userId from localStorage
+      const userIdStr = localStorage.getItem("userId");
+      const userId = userIdStr ? parseInt(userIdStr, 10) : null;
+
       Api.get("/staff-register")
         .then((res) => {
-          setStaffList(res.data);
+          setStaffList(
+            userId !== null
+              ? res.data.filter((staff: any) => staff.id !== userId)
+              : res.data,
+          );
         })
         .catch((err) => console.error("Error fetching staff", err));
 
@@ -99,6 +115,25 @@ const EventModal: React.FC<EventModalProps> = ({
     const start = new Date(`${formData.startDate}T${formData.startTime}:00`);
     const end = new Date(`${formData.endDate}T${formData.endTime}:00`);
 
+    // Prevent creating events in the past and ensure end > start
+    if (start < new Date()) {
+      setModal({
+        type: "error",
+        message: "Cannot create an event in the past.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (end <= start) {
+      setModal({
+        type: "error",
+        message: "End time must be after start time.",
+      });
+      setLoading(false);
+      return;
+    }
+
     const payload = {
       title: formData.title,
       description: formData.description,
@@ -121,13 +156,16 @@ const EventModal: React.FC<EventModalProps> = ({
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      onSave(res.data); // better than sending payload
+      onSave(res.data);
       setModal({
         type: "success",
         message: res.data.message || "Event saved successfully!",
       });
 
-      onClose();
+      // show success message briefly before closing modal
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error: any) {
       setModal({
         type: "error",
@@ -199,6 +237,7 @@ const EventModal: React.FC<EventModalProps> = ({
                     startDate: e.target.value,
                   }))
                 }
+                min={todayStr}
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
             </div>
@@ -216,6 +255,7 @@ const EventModal: React.FC<EventModalProps> = ({
                     startTime: e.target.value,
                   }))
                 }
+                min={formData.startDate === todayStr ? currentTime : undefined}
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
             </div>
@@ -233,6 +273,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, endDate: e.target.value }))
                 }
+                min={formData.startDate || todayStr}
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
             </div>
@@ -246,6 +287,11 @@ const EventModal: React.FC<EventModalProps> = ({
                 value={formData.endTime}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, endTime: e.target.value }))
+                }
+                min={
+                  formData.endDate === formData.startDate
+                    ? formData.startTime
+                    : undefined
                 }
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />

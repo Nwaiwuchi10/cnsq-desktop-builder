@@ -60,12 +60,28 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const [staffList, setStaffList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Clear any previous toast/modal when opening
+  useEffect(() => {
+    if (isOpen) setModal(null);
+  }, [isOpen]);
+
+  const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
+  const currentTime = now.toTimeString().split(" ")[0].substring(0, 5);
+
   useEffect(() => {
     if (isOpen) {
-      // Fetch staff for attendees
+      // Use userId from localStorage
+      const userIdStr = localStorage.getItem("userId");
+      const userId = userIdStr ? parseInt(userIdStr, 10) : null;
+
       Api.get("/staff-register")
         .then((res) => {
-          setStaffList(res.data);
+          setStaffList(
+            userId !== null
+              ? res.data.filter((staff: any) => staff.id !== userId)
+              : res.data,
+          );
         })
         .catch((err) => console.error("Error fetching staff", err));
 
@@ -100,6 +116,25 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     const start = new Date(`${formData.startDate}T${formData.startTime}:00`);
     const end = new Date(`${formData.endDate}T${formData.endTime}:00`);
 
+    // Prevent setting event into the past and ensure end > start
+    if (start < new Date()) {
+      setModal({
+        type: "error",
+        message: "Cannot set an event start in the past.",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (end <= start) {
+      setModal({
+        type: "error",
+        message: "End time must be after start time.",
+      });
+      setLoading(false);
+      return;
+    }
+
     // const payload = {
     //     ...formData,
     //     startTime: start.toISOString(),
@@ -116,7 +151,9 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       type: formData.type,
       attendees: formData.attendees,
       isRecurring: formData.isRecurring,
-      recurrenceFrequency: formData.isRecurring ? formData.recurrenceFrequency : null,
+      recurrenceFrequency: formData.isRecurring
+        ? formData.recurrenceFrequency
+        : null,
     };
 
     try {
@@ -131,7 +168,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
         message: res.data.message || "Event updated successfully!",
       });
 
-      onClose();
+      // show success message briefly before closing modal
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error: any) {
       setModal({
         type: "error",
@@ -201,6 +241,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                     startDate: e.target.value,
                   }))
                 }
+                min={todayStr}
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
             </div>
@@ -218,6 +259,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                     startTime: e.target.value,
                   }))
                 }
+                min={formData.startDate === todayStr ? currentTime : undefined}
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
             </div>
@@ -235,6 +277,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, endDate: e.target.value }))
                 }
+                min={formData.startDate || todayStr}
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
             </div>
@@ -248,6 +291,11 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                 value={formData.endTime}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, endTime: e.target.value }))
+                }
+                min={
+                  formData.endDate === formData.startDate
+                    ? formData.startTime
+                    : undefined
                 }
                 className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
               />
@@ -332,8 +380,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                       {freq === "DAILY"
                         ? "Every Day"
                         : freq === "WEEKLY"
-                        ? "Every Week"
-                        : "Every Month"}
+                          ? "Every Week"
+                          : "Every Month"}
                     </option>
                   ))}
                 </select>
