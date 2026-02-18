@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlertCircle, X } from "lucide-react";
 import Api from "@/utils/api";
 import CustomModal from "@/component/Message/Message";
@@ -26,6 +26,10 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
     message: string;
   } | null>(null);
 
+  useEffect(() => {
+    if (isOpen) setModal(null);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleDelete = async () => {
@@ -35,8 +39,11 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
       await Api.delete(`/calender/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      setModal({ type: "success", message: "Event deleted successfully." });
       onConfirm();
-      onClose();
+
+      // keep success message visible briefly before closing
+      setTimeout(() => onClose(), 1500);
     } catch (error: any) {
       setModal({
         type: "error",
