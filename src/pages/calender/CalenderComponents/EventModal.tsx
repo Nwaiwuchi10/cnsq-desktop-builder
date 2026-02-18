@@ -186,8 +186,8 @@ const EventModal: React.FC<EventModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-none md:rounded-xl shadow-2xl w-full max-w-lg h-full md:h-auto md:max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-2 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-none sm:rounded-lg md:rounded-xl shadow-2xl w-full sm:max-w-full md:max-w-lg h-full sm:h-auto md:h-auto sm:max-h-[95vh] md:max-h-[90vh] flex flex-col overflow-y-auto sm:overflow-x-hidden">
         <div className="p-4 border-b border-b-gray-200 flex justify-between items-center bg-white flex-shrink-0">
           <h2 className="text-xl font-bold text-gray-800">
             Create New Meeting
