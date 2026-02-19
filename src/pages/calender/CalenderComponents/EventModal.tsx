@@ -85,13 +85,40 @@ const EventModal: React.FC<EventModalProps> = ({
         })
         .catch((err) => console.error("Error fetching staff", err));
 
+      // Reset formData to default values, and set date fields if initialDate is provided
       if (initialDate) {
         const dateStr = initialDate.toISOString().split("T")[0];
-        setFormData((prev) => ({
-          ...prev,
+        setFormData({
+          title: "",
+          description: "",
           startDate: dateStr,
+          startTime: "09:00",
           endDate: dateStr,
-        }));
+          endTime: "10:00",
+          location: "",
+          meetingLink: "",
+          color: "#22c55e",
+          type: "MEETING",
+          attendees: [],
+          isRecurring: false,
+          recurrenceFrequency: "WEEKLY",
+        });
+      } else {
+        setFormData({
+          title: "",
+          description: "",
+          startDate: "",
+          startTime: "09:00",
+          endDate: "",
+          endTime: "10:00",
+          location: "",
+          meetingLink: "",
+          color: "#22c55e",
+          type: "MEETING",
+          attendees: [],
+          isRecurring: false,
+          recurrenceFrequency: "WEEKLY",
+        });
       }
     }
   }, [isOpen, initialDate]);
@@ -207,7 +234,8 @@ const EventModal: React.FC<EventModalProps> = ({
           {/* Title */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
-              <Type size={16} /> Title
+              {/* <Type size={16} />  */}
+              Title
             </label>
             <input
               required
