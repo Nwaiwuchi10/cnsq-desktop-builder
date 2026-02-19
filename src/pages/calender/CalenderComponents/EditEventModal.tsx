@@ -103,6 +103,23 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
           isRecurring: eventToEdit.isRecurring || false,
           recurrenceFrequency: eventToEdit.recurrenceFrequency || "WEEKLY",
         });
+      } else {
+        // Reset to default values when creating a new event
+        setFormData({
+          title: "",
+          description: "",
+          startDate: "",
+          startTime: "09:00",
+          endDate: "",
+          endTime: "10:00",
+          location: "",
+          meetingLink: "",
+          color: "#22c55e",
+          type: "MEETING",
+          attendees: [],
+          isRecurring: false,
+          recurrenceFrequency: "WEEKLY",
+        });
       }
     }
   }, [isOpen, eventToEdit]);
@@ -211,7 +228,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
           {/* Title */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
-              <Type size={16} /> Title
+              {/* <Type size={16} />  */}
+              Title
             </label>
             <input
               required
