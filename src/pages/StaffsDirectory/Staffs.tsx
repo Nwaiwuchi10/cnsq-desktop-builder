@@ -116,6 +116,30 @@ export default function StaffDirectory() {
     return matchesRole;
   });
 
+  const generateVCard = (person: Staff) => {
+    return `BEGIN:VCARD
+VERSION:3.0
+FN:${person.firstName} ${person.lastName}
+EMAIL:${person?.email}
+TEL:${person?.phone}
+ORG:${person.employment?.department?.name || ""}
+TITLE:${person.employment?.jobTitle?.join(", ") || ""}
+ADR:;;${person.address?.city || ""};${person.address?.state || ""};;${person.address?.country || ""}
+END:VCARD`;
+  };
+  const downloadAllContacts = () => {
+    const vCards = filteredStaff
+      .map((person) => generateVCard(person))
+      .join("\n");
+
+    const blob = new Blob([vCards], { type: "text/vcard;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `staff-directory.vcf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
       <div className="max-w-[95%] mx-auto px-4 sm:px-8">
@@ -192,10 +216,17 @@ export default function StaffDirectory() {
                   </ul>
                 </div>
               )}
+              {/* download card button */}
+              <button
+                onClick={downloadAllContacts}
+                className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition"
+              >
+                Download Contacts
+              </button>
 
               {/* Add Staff (MOBILE) */}
               <Link href="/add-staff" style={{ cursor: "pointer" }}>
-                <button className="flex items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
+                <button className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
                   <Plus size={14} /> Add New Staff
                 </button>
               </Link>
@@ -240,10 +271,17 @@ export default function StaffDirectory() {
                 </ul>
               </div>
             )}
+            {/* download card button */}
+            <button
+              onClick={downloadAllContacts}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition"
+            >
+              Download Contacts
+            </button>
 
             {/* Add Staff */}
             <Link href="/add-staff" style={{ cursor: "pointer" }}>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
+              <button className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
                 Add New Staff <Plus size={18} />
               </button>
             </Link>
