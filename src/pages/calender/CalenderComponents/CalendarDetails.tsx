@@ -33,12 +33,28 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
   const startTime = new Date(event.startTime);
   const endTime = new Date(event.endTime);
 
-  const formatEventDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
+  const formatEventDate = (start: Date, end: Date) => {
+    const isSameDay =
+      start.toLocaleDateString() === end.toLocaleDateString();
+
+    if (isSameDay) {
+      return start.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      });
+    }
+
+    const startStr = start.toLocaleDateString("en-US", {
+      month: "short",
       day: "numeric",
     });
+    const endStr = end.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+
+    return `${startStr} – ${endStr}`;
   };
 
   const formatEventTime = (start: Date, end: Date) => {
@@ -111,20 +127,32 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
           <div className="flex flex-col gap-1 text-gray-600">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">
-                {formatEventDate(startTime)} •{" "}
+                {formatEventDate(startTime, endTime)} •{" "}
                 {formatEventTime(startTime, endTime)}
               </span>
             </div>
             {event.isRecurring && event.recurrenceFrequency && (
-              <div className="text-sm text-gray-500 flex items-center gap-2">
-                <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
-                  {event.recurrenceFrequency === "DAILY"
-                    ? "Daily"
-                    : event.recurrenceFrequency === "WEEKLY"
-                      ? "Weekly"
-                      : "Monthly"}
-                </span>
-                Recurring
+              <div className="flex flex-col gap-1">
+                <div className="text-sm text-gray-500 flex items-center gap-2">
+                  <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                    {event.recurrenceFrequency === "DAILY"
+                      ? "Daily"
+                      : event.recurrenceFrequency === "WEEKLY"
+                        ? "Weekly"
+                        : "Monthly"}
+                  </span>
+                  Recurring
+                </div>
+                {event.recurrenceEndDate && (
+                  <span className="text-xs text-gray-400">
+                    Repeats until{" "}
+                    {new Date(event.recurrenceEndDate).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                )}
               </div>
             )}
           </div>

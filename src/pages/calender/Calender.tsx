@@ -74,9 +74,17 @@ const Calender = () => {
     setCurrentDate(newDate);
   };
 
-  const handleEventClick = (event: any) => {
-    setSelectedEvent(event);
-    setIsDetailsModalOpen(true);
+  const handleEventClick = async (event: any) => {
+    try {
+      const res = await Api.get(`/calender/${event.id}`);
+      setSelectedEvent(res.data);
+      setIsDetailsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching event details", error);
+      // Fallback to the passed event if fetch fails
+      setSelectedEvent(event);
+      setIsDetailsModalOpen(true);
+    }
   };
 
   const handleEditClick = (event: any) => {
