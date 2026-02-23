@@ -55,6 +55,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     attendees: [] as number[],
     isRecurring: false,
     recurrenceFrequency: "WEEKLY",
+    recurrenceEndDate: "",
   });
 
   const [staffList, setStaffList] = useState<any[]>([]);
@@ -99,9 +100,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
           meetingLink: eventToEdit.meetingLink || "",
           color: eventToEdit.color || "#22c55e",
           type: eventToEdit.type || "MEETING",
-          attendees: eventToEdit.attendees?.map((s: any) => s.id) || [],
+          attendees: eventToEdit.attendees?.map((s: any) => Number(s.id)) || [],
           isRecurring: eventToEdit.isRecurring || false,
           recurrenceFrequency: eventToEdit.recurrenceFrequency || "WEEKLY",
+          recurrenceEndDate: eventToEdit.recurrenceEndDate
+            ? new Date(eventToEdit.recurrenceEndDate).toISOString().split("T")[0]
+            : "",
         });
       } else {
         // Reset to default values when creating a new event
@@ -119,6 +123,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
           attendees: [],
           isRecurring: false,
           recurrenceFrequency: "WEEKLY",
+          recurrenceEndDate: "",
         });
       }
     }
@@ -152,6 +157,16 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       return;
     }
 
+    // Recurrence only allowed for same-day events
+    if (formData.isRecurring && formData.startDate !== formData.endDate) {
+      setModal({
+        type: "error",
+        message: "Recurring events must start and end on the same day.",
+      });
+      setLoading(false);
+      return;
+    }
+
     // const payload = {
     //     ...formData,
     //     startTime: start.toISOString(),
@@ -171,6 +186,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       recurrenceFrequency: formData.isRecurring
         ? formData.recurrenceFrequency
         : null,
+      recurrenceEndDate:
+        formData.isRecurring && formData.recurrenceEndDate
+          ? new Date(formData.recurrenceEndDate).toISOString()
+          : undefined,
     };
 
     try {
@@ -199,12 +218,13 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     }
   };
 
-  const toggleAttendee = (staffId: number) => {
+  const toggleAttendee = (staffId: any) => {
+    const id = Number(staffId);
     setFormData((prev) => ({
       ...prev,
-      attendees: prev.attendees.includes(staffId)
-        ? prev.attendees.filter((id: number) => id !== staffId)
-        : [...prev.attendees, staffId],
+      attendees: prev.attendees.includes(id)
+        ? prev.attendees.filter((aId: any) => Number(aId) !== id)
+        : [...prev.attendees, id],
     }));
   };
 
@@ -366,43 +386,70 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
               <input
                 type="checkbox"
                 checked={formData.isRecurring}
+                disabled={!!formData.startDate && !!formData.endDate && formData.startDate !== formData.endDate}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
                     isRecurring: e.target.checked,
+                    recurrenceEndDate: e.target.checked ? prev.recurrenceEndDate : "",
                   }))
                 }
-                className="w-5 h-5 md:w-4 md:h-4 text-[#95D700] rounded focus:ring-[#95D700]"
+                className="w-5 h-5 md:w-4 md:h-4 text-[#95D700] rounded focus:ring-[#95D700] disabled:opacity-40 disabled:cursor-not-allowed"
               />
               <span className="text-sm font-semibold text-gray-600">
                 Recurring Event
               </span>
             </label>
+            {formData.startDate && formData.endDate && formData.startDate !== formData.endDate && (
+              <p className="text-xs text-amber-600 mt-1">
+                Recurrence is only available when the event starts and ends on the same day.
+              </p>
+            )}
             {formData.isRecurring && (
-              <div className="mt-2 flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-gray-600">
-                  Recurrence Frequency
-                </label>
-                <select
-                  value={formData.recurrenceFrequency}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      recurrenceFrequency: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base"
-                >
-                  {RECURRENCE_FREQUENCIES.map((freq) => (
-                    <option key={freq} value={freq}>
-                      {freq === "DAILY"
-                        ? "Every Day"
-                        : freq === "WEEKLY"
-                          ? "Every Week"
-                          : "Every Month"}
-                    </option>
-                  ))}
-                </select>
+              <div className="mt-2 flex flex-col gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Recurrence Frequency
+                  </label>
+                  <select
+                    value={formData.recurrenceFrequency}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        recurrenceFrequency: e.target.value,
+                      }))
+                    }
+                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base"
+                  >
+                    {RECURRENCE_FREQUENCIES.map((freq) => (
+                      <option key={freq} value={freq}>
+                        {freq === "DAILY"
+                          ? "Every Day"
+                          : freq === "WEEKLY"
+                            ? "Every Week"
+                            : "Every Month"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                    <Calendar size={14} /> Recurrence End Date
+                    <span className="font-normal text-gray-400">(optional)</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.recurrenceEndDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        recurrenceEndDate: e.target.value,
+                      }))
+                    }
+                    min={formData.startDate || todayStr}
+                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                  />
+                </div>
               </div>
             )}
           </div>
