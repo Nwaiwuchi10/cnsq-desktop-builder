@@ -145,8 +145,8 @@ export default function MonthView({
                 )}
               </div>
               <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                {/* Source Events first (max 2 for space) */}
-                {sourceEvents.slice(0, 2).map((event) => (
+                {/* Display up to 5 source events as blocks */}
+                {sourceEvents.slice(0, 5).map((event) => (
                   <div key={event.id} className="hidden md:block">
                     <EventCard
                       event={event}
@@ -155,25 +155,33 @@ export default function MonthView({
                   </div>
                 ))}
 
-                {/* Recurring Events as dots (max 4) */}
-                <div className="flex flex-col gap-0.5 mt-auto">
-                  {recurringEvents.slice(0, 4).map((event) => (
-                    <div key={`${event.id}-rec`} className="hidden md:block">
-                      <EventDot
-                        event={event}
-                        onClick={() => onEventClick(event)}
-                      />
-                    </div>
-                  ))}
-                </div>
+                {/* Display recurring dots only if we haven't reached 5 blocks */}
+                {sourceEvents.length < 5 && (
+                  <div className="flex flex-col gap-0.5 mt-auto">
+                    {recurringEvents
+                      .slice(0, 5 - sourceEvents.length)
+                      .map((event) => (
+                        <div key={`${event.id}-rec`} className="hidden md:block">
+                          <EventDot
+                            event={event}
+                            onClick={() => onEventClick(event)}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                )}
 
-                {/* Mobile view dots combine both */}
+                {/* Mobile view dots combine both, now clickable */}
                 {dayEvents.length > 0 && (
                   <div className="md:hidden flex flex-wrap gap-0.5 justify-center mt-1">
                     {dayEvents.slice(0, 4).map((event) => (
                       <div
                         key={event.id}
-                        className="w-1.5 h-1.5 rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEventClick(event);
+                        }}
+                        className="w-1.5 h-1.5 rounded-full cursor-pointer active:scale-125 transition-transform"
                         style={{ backgroundColor: event.color || "#22C55E" }}
                       />
                     ))}
