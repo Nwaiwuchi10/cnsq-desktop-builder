@@ -229,21 +229,21 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-0 sm:p-2 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-none sm:rounded-lg md:rounded-xl shadow-2xl w-full sm:max-w-full md:max-w-lg h-full sm:h-auto md:h-auto sm:max-h-[95vh] md:max-h-[90vh] flex flex-col overflow-y-auto sm:overflow-x-hidden">
-        <div className="p-4 border-b border-b-gray-200 flex justify-between items-center bg-white flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-800">Edit Meeting</h2>
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-2 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-lg md:rounded-xl shadow-2xl w-[95%] sm:max-w-full md:max-w-lg h-auto max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="p-3 md:p-4 border-b border-b-gray-200 flex justify-between items-center bg-white flex-shrink-0">
+          <h2 className="text-lg md:text-xl font-bold text-gray-800">Edit Meeting</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+            className="p-1.5 md:p-2 hover:bg-gray-200 rounded-full transition-colors"
           >
-            <X size={24} className="text-gray-500" />
+            <X size={20} className="md:w-6 md:h-6 text-gray-500" />
           </button>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="p-4 md:p-6 flex flex-col gap-4 md:gap-6 overflow-y-auto flex-1"
+          className="p-4 md:p-6 flex flex-col gap-3 md:gap-6 overflow-y-auto flex-1"
         >
           {/* Title */}
           <div className="flex flex-col gap-1.5">
