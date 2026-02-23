@@ -100,3 +100,39 @@ export const isSameDay = (date1: Date, date2: Date) => {
     date1.getDate() === date2.getDate()
   );
 };
+
+export const isEventVisibleOnDate = (event: any, date: Date) => {
+  const eventStart = new Date(event.startTime);
+  const checkDate = new Date(date);
+  checkDate.setHours(0, 0, 0, 0);
+
+  const startDay = new Date(eventStart);
+  startDay.setHours(0, 0, 0, 0);
+
+  // If the check date is before the event starts, it's not visible
+  if (checkDate < startDay) return false;
+
+  // If an end date for recurrence exists, check if we're past it
+  if (event.isRecurring && event.recurrenceEndDate) {
+    const endDay = new Date(event.recurrenceEndDate);
+    endDay.setHours(23, 59, 59, 999);
+    if (checkDate > endDay) return false;
+  }
+
+  // Non-recurring events
+  if (!event.isRecurring) {
+    return isSameDay(eventStart, date);
+  }
+
+  // Recurring events
+  switch (event.recurrenceFrequency) {
+    case "DAILY":
+      return true;
+    case "WEEKLY":
+      return eventStart.getDay() === checkDate.getDay();
+    case "MONTHLY":
+      return eventStart.getDate() === checkDate.getDate();
+    default:
+      return isSameDay(eventStart, date);
+  }
+};

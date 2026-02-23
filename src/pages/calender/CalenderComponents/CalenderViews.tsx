@@ -5,6 +5,7 @@ import {
   formatDate,
   formatTime,
   isSameDay,
+  isEventVisibleOnDate,
 } from "@/utils/calendarDateUtils";
 import React from "react";
 
@@ -34,14 +35,14 @@ const EventCard: React.FC<EventCardProps> = ({ event, style, onClick }) => {
     <div
       onClick={onClick}
       style={{
-        backgroundColor: event.color || "#22c55e",
+        backgroundColor: event.color || "#22C55E",
         ...style,
       }}
-      className="text-white text-[10px] p-1 rounded-sm shadow-sm cursor-pointer overflow-hidden whitespace-nowrap group transition-all hover:brightness-95 z-10"
+      className="text-white text-[11px] md:text-xs px-2 py-1.5 rounded shadow-sm cursor-pointer overflow-hidden whitespace-nowrap group transition-all hover:brightness-95 z-10 border-l-[4px] border-black/10"
       title={event.title}
     >
-      <div className="font-semibold truncate">{event.title}</div>
-      <div className="opacity-80">
+      <div className="font-bold truncate leading-tight">{event.title}</div>
+      <div className="opacity-90 font-medium mt-0.5">
         {new Date(event.startTime).toLocaleTimeString([], {
           hour: "numeric",
           minute: "2-digit",
@@ -72,20 +73,19 @@ export default function DayView({
     <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
       <div className="flex border-b border-gray-200 sticky top-0 bg-white z-20">
         <div className="w-12 md:w-20 border-r border-gray-200 bg-gray-50" />
-        <div className="flex-1 p-4 md:p-6">
+        <div className="flex-1 p-4 md:p-6 bg-gradient-to-r from-white to-gray-50/50">
           <div className="flex items-center gap-4">
             <div
-              className={`text-2xl md:text-4xl font-bold flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full ${
-                isToday ? "bg-blue-600 text-white" : "text-gray-700"
-              }`}
+              className={`text-2xl md:text-4xl font-bold flex items-center justify-center w-12 h-12 md:w-20 md:h-20 rounded-full transition-transform shadow-sm transform hover:scale-105 ${isToday ? "bg-[#95D700] text-white" : "bg-gray-100 text-gray-700"
+                }`}
             >
               {currentDate.getDate()}
             </div>
             <div>
-              <div className="text-sm md:text-lg font-bold text-gray-500 uppercase tracking-widest">
+              <div className="text-sm md:text-xl font-bold text-gray-800 uppercase tracking-widest">
                 {DAYS_OF_WEEK[currentDate.getDay()]}
               </div>
-              <div className="text-xs md:text-sm text-gray-400">
+              <div className="text-xs md:text-base text-gray-500 font-medium">
                 {formatDate(currentDate)}
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function DayView({
             {hours.map((hour) => (
               <div
                 key={hour}
-                className="h-16 text-[10px] md:text-xs text-gray-400 text-right pr-2 md:pr-4 -mt-2.5"
+                className="h-16 text-[10px] md:text-xs text-gray-400 text-right pr-2 md:pr-4 -mt-2.5 font-medium"
               >
                 {hour === 0 ? "" : formatTime(new Date(2024, 0, 1, hour))}
               </div>
@@ -117,7 +117,7 @@ export default function DayView({
             </div>
 
             {events
-              .filter((e) => isSameDay(new Date(e.startTime), currentDate))
+              .filter((e) => isEventVisibleOnDate(e, currentDate))
               .map((event) => {
                 const start = new Date(event.startTime);
                 const end = new Date(event.endTime);

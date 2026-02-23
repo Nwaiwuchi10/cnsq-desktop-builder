@@ -3,6 +3,7 @@ import {
   formatTime,
   getWeekDays,
   isSameDay,
+  isEventVisibleOnDate,
 } from "@/utils/calendarDateUtils";
 interface Event {
   id: string;
@@ -30,14 +31,14 @@ const EventCard: React.FC<EventCardProps> = ({ event, style, onClick }) => {
     <div
       onClick={onClick}
       style={{
-        backgroundColor: event.color || "#22c55e",
+        backgroundColor: event.color || "#22C55E",
         ...style,
       }}
-      className="text-white text-[10px] p-1 rounded-sm shadow-sm cursor-pointer overflow-hidden whitespace-nowrap group transition-all hover:brightness-95 z-10"
+      className="text-white text-[10px] p-1.5 rounded shadow-sm cursor-pointer overflow-hidden whitespace-nowrap group transition-all hover:brightness-95 z-10 border-l-[3px] border-black/10"
       title={event.title}
     >
-      <div className="font-semibold truncate">{event.title}</div>
-      <div className="opacity-80">
+      <div className="font-bold truncate leading-tight">{event.title}</div>
+      <div className="opacity-90 text-[9px]">
         {new Date(event.startTime).toLocaleTimeString([], {
           hour: "numeric",
           minute: "2-digit",
@@ -83,11 +84,10 @@ export default function WeekView({
                 </span>
               </div>
               <div
-                className={`mt-1 text-sm md:text-xl font-semibold inline-flex items-center justify-center w-7 h-7 md:w-10 md:h-10 rounded-full ${
-                  isSameDay(day, today)
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700"
-                }`}
+                className={`mt-1 text-sm md:text-xl font-semibold inline-flex items-center justify-center w-7 h-7 md:w-10 md:h-10 rounded-full transition-colors ${isSameDay(day, today)
+                    ? "bg-[#95D700] text-white shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100"
+                  }`}
               >
                 {day.getDate()}
               </div>
@@ -125,7 +125,7 @@ export default function WeekView({
                 className="relative border-r border-gray-100 last:border-r-0"
               >
                 {events
-                  .filter((e) => isSameDay(new Date(e.startTime), day))
+                  .filter((e) => isEventVisibleOnDate(e, day))
                   .map((event) => {
                     const start = new Date(event.startTime);
                     const end = new Date(event.endTime);
