@@ -37,13 +37,11 @@ const EventCard: React.FC<EventCardProps> = ({ event, style, onClick }) => {
         backgroundColor: event.color || "#22C55E",
         ...style,
       }}
-      className="text-white text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm cursor-pointer overflow-hidden whitespace-nowrap group transition-all duration-200 hover:brightness-105 hover:scale-[1.02] hover:z-50 hover:shadow-md border-l-[3px] border-black/10 relative"
+      className="text-white text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shadow-sm cursor-pointer overflow-hidden whitespace-nowrap group transition-all hover:brightness-95 z-10 border-l-[3px] border-black/10"
       title={event.title}
     >
-      <div className="font-bold truncate group-hover:whitespace-normal group-hover:overflow-visible transition-all leading-tight">
-        {event.title}
-      </div>
-      <div className="opacity-95 font-medium text-[9px]">
+      <div className="font-bold truncate leading-tight">{event.title}</div>
+      <div className="opacity-90 font-medium text-[9px]">
         {new Date(event.startTime).toLocaleTimeString([], {
           hour: "numeric",
           minute: "2-digit",
@@ -147,8 +145,8 @@ export default function MonthView({
                 )}
               </div>
               <div className="flex-1 flex flex-col gap-1 overflow-hidden">
-                {/* Display up to 5 source events as blocks */}
-                {sourceEvents.slice(0, 5).map((event) => (
+                {/* Source Events first (max 2 for space) */}
+                {sourceEvents.slice(0, 2).map((event) => (
                   <div key={event.id} className="hidden md:block">
                     <EventCard
                       event={event}
@@ -157,23 +155,19 @@ export default function MonthView({
                   </div>
                 ))}
 
-                {/* Display recurring dots only if we haven't reached 5 blocks */}
-                {sourceEvents.length < 5 && (
-                  <div className="flex flex-col gap-0.5 mt-auto">
-                    {recurringEvents
-                      .slice(0, 5 - sourceEvents.length)
-                      .map((event) => (
-                        <div key={`${event.id}-rec`} className="hidden md:block">
-                          <EventDot
-                            event={event}
-                            onClick={() => onEventClick(event)}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                )}
+                {/* Recurring Events as dots (max 4) */}
+                <div className="flex flex-col gap-0.5 mt-auto">
+                  {recurringEvents.slice(0, 4).map((event) => (
+                    <div key={`${event.id}-rec`} className="hidden md:block">
+                      <EventDot
+                        event={event}
+                        onClick={() => onEventClick(event)}
+                      />
+                    </div>
+                  ))}
+                </div>
 
-                {/* Mobile view dots combine both, up to 4 dots */}
+                {/* Mobile view dots combine both */}
                 {dayEvents.length > 0 && (
                   <div className="md:hidden flex flex-wrap gap-0.5 justify-center mt-1">
                     {dayEvents.slice(0, 4).map((event) => (
