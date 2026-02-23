@@ -31,19 +31,22 @@ const Calender = () => {
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
+      const userIdStr = localStorage.getItem("userId");
+      const userId = userIdStr ? parseInt(userIdStr, 10) : null;
+
       // Fetch all events for sidebar
       const allRes = await Api.get("/calender");
-      setAllEvents(allRes.data);
+      let filteredAll = allRes.data;
 
-      // Fetch specific events for the current view if needed
-      if (view === "month") {
-        const res = await Api.get(
-          `/calender/month?year=${currentDate.getFullYear()}&month=${currentDate.getMonth() + 1}`,
-        );
-        setEvents(res.data);
-      } else {
-        setEvents(allRes.data);
+      if (userId !== null) {
+        filteredAll = allRes.data.filter((event: any) => {
+          const isCreator = event.createdBy?.id === userId || event.creatorId === userId;
+          const isAttendee = event.attendees?.some((a: any) => (a.id === userId || a === userId));
+          return isCreator || isAttendee;
+        });
       }
+      setAllEvents(filteredAll);
+      setEvents(filteredAll);
     } catch (error) {
       console.error("Error fetching events", error);
     } finally {
