@@ -33,12 +33,32 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
   const startTime = new Date(event.startTime);
   const endTime = new Date(event.endTime);
 
-  const formatEventDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
+  const userIdStr = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+  const userId = userIdStr ? parseInt(userIdStr, 10) : null;
+  const isCreator = userId !== null && (event.createdBy?.id === userId || event.creatorId === userId || event.createdBy === userId);
+
+  const formatEventDate = (start: Date, end: Date) => {
+    const isSameDay =
+      start.toLocaleDateString() === end.toLocaleDateString();
+
+    if (isSameDay) {
+      return start.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      });
+    }
+
+    const startStr = start.toLocaleDateString("en-US", {
+      month: "short",
       day: "numeric",
     });
+    const endStr = end.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+
+    return `${startStr} – ${endStr}`;
   };
 
   const formatEventTime = (start: Date, end: Date) => {
@@ -78,21 +98,25 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
 
           {/* RIGHT SIDE — Action Icons */}
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => onEdit(event)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
-              title="Edit"
-            >
-              <Edit2 size={18} />
-            </button>
+            {isCreator && (
+              <>
+                <button
+                  onClick={() => onEdit(event)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+                  title="Edit"
+                >
+                  <Edit2 size={18} />
+                </button>
 
-            <button
-              onClick={() => onDelete(event)}
-              className="p-2 hover:bg-red-50 rounded-full transition-colors text-red-500"
-              title="Delete"
-            >
-              <Trash2 size={18} />
-            </button>
+                <button
+                  onClick={() => onDelete(event)}
+                  className="p-2 hover:bg-red-50 rounded-full transition-colors text-red-500"
+                  title="Delete"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </>
+            )}
 
             <button
               onClick={onClose}
@@ -111,20 +135,32 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
           <div className="flex flex-col gap-1 text-gray-600">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">
-                {formatEventDate(startTime)} •{" "}
+                {formatEventDate(startTime, endTime)} •{" "}
                 {formatEventTime(startTime, endTime)}
               </span>
             </div>
             {event.isRecurring && event.recurrenceFrequency && (
-              <div className="text-sm text-gray-500 flex items-center gap-2">
-                <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
-                  {event.recurrenceFrequency === "DAILY"
-                    ? "Daily"
-                    : event.recurrenceFrequency === "WEEKLY"
-                      ? "Weekly"
-                      : "Monthly"}
-                </span>
-                Recurring
+              <div className="flex flex-col gap-1">
+                <div className="text-sm text-gray-500 flex items-center gap-2">
+                  <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                    {event.recurrenceFrequency === "DAILY"
+                      ? "Daily"
+                      : event.recurrenceFrequency === "WEEKLY"
+                        ? "Weekly"
+                        : "Monthly"}
+                  </span>
+                  Recurring
+                </div>
+                {event.recurrenceEndDate && (
+                  <span className="text-xs text-gray-400">
+                    Repeats until{" "}
+                    {new Date(event.recurrenceEndDate).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                )}
               </div>
             )}
           </div>
