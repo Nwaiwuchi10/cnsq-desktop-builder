@@ -183,19 +183,21 @@ export default function NotificationModal({
           <p className="text-sm text-gray-800">
             <span className="font-semibold">
               {notification.triggeredByStaff
-                ? `${notification.triggeredByStaff.firstName} ${notification.triggeredByStaff.lastName}`
+                ? `${notification.triggeredByStaff?.firstName || "User"} ${notification.triggeredByStaff?.lastName || ""
+                }`
                 : notification.triggeredByAdmin
-                ? "Admin"
-                : project?.createdBy
-                ? `${project.createdBy.firstName} ${project.createdBy.lastName}`
-                : "Project Manager"}
+                  ? "Admin"
+                  : project?.createdBy
+                    ? `${project.createdBy?.firstName || "Project Manager"} ${project.createdBy?.lastName || ""
+                    }`
+                    : "Project Manager"}
             </span>
             <span className="ml-1">
               {notification.type?.includes("task")
                 ? "assigned a task"
                 : notification.type?.includes("project")
-                ? "assigned a project"
-                : "sent you a notification"}
+                  ? "assigned a project"
+                  : "sent you a notification"}
             </span>
           </p>
           <h2 className="text-2xl font-semibold text-gray-900 mt-1">
@@ -231,7 +233,7 @@ export default function NotificationModal({
                         {assign.staff?.photoUrl ? (
                           <Image
                             src={assign.staff.photoUrl}
-                            alt={assign.staff.firstName}
+                            alt={assign.staff?.firstName || "Staff"}
                             width={40}
                             height={40}
                             className="object-cover w-full h-full"
@@ -239,7 +241,7 @@ export default function NotificationModal({
                           />
                         ) : (
                           <div className="bg-gray-400 w-full h-full flex items-center justify-center text-white font-bold">
-                            {assign.staff.firstName?.[0]}
+                            {assign.staff?.firstName?.[0] || "?"}
                           </div>
                         )}
                       </div>
@@ -286,9 +288,9 @@ export default function NotificationModal({
             className="bg-[#95D700] hover:bg-[#80C400] text-white font-medium text-sm px-6 py-2.5 rounded-md"
           >
             {notification.type?.toLowerCase().includes("task") ||
-            notification.type?.toLowerCase() === "deadline" ||
-            taskData ||
-            relatedTask
+              notification.type?.toLowerCase() === "deadline" ||
+              taskData ||
+              relatedTask
               ? "Open Task"
               : "Open Project"}
           </button>
