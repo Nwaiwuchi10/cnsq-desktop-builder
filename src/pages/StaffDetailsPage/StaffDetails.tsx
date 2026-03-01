@@ -132,9 +132,12 @@ export default function StaffDetails() {
       try {
         const res = await Api.get(`/staff-register/data/${uuid}`);
         setStaffUUid(res.data);
+        // If we don't have an ID, we won't trigger the second fetch, so stop loading here
+        if (!res.data?.id) {
+          setLoadingStaff(false);
+        }
       } catch (err) {
         console.error(err);
-      } finally {
         setLoadingStaff(false);
       }
     };
