@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Api from "@/utils/api";
@@ -223,28 +223,36 @@ export default function StaffDetails() {
         </div>
 
         {/* Profile Section */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col sm:flex-row items-center gap-6 mb-6">
-          <div className="w-28 h-28 rounded-full overflow-hidden border">
-            <Image
-              src={staff?.photoUrl}
-              alt={`${staff?.firstName} ${staff?.lastName}`}
-              width={112}
-              height={112}
-              className="object-cover w-full h-full"
-            />
+        <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-28 h-28 flex-shrink-0 rounded-full overflow-hidden border">
+              <Image
+                src={staff?.photoUrl || "/default-avatar.png"}
+                alt={`${staff?.firstName} ${staff?.lastName}`}
+                width={112}
+                height={112}
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl text-gray-800 font-semibold">
+                {staff?.firstName} {staff?.lastName}
+              </h2>
+              <p className="text-gray-500 font-medium">
+                {staff.address.state}, {staff.address.city}
+              </p>
+              <button className="mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium text-[#95D700] bg-[#FAFAFA] rounded-full">
+                <span className="w-2 h-2 rounded-full bg-[#95D700]"></span>
+                {staff.employment?.status}
+              </button>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl text-gray-600 font-semibold">
-              {staff?.firstName} {staff?.lastName}
-            </h2>
-            <p className="text-gray-600">
-              {staff.address.state}, {staff.address.city}
-            </p>
-            <button className="mt-2 flex items-center gap-2 px-3 py-1 text-sm font-medium text-[#95D700] bg-[#FAFAFA] rounded-full">
-              <span className="w-2 h-2 rounded-full bg-[#95D700]"></span>
-              {staff.employment?.status}
+
+          <Link href={`/staff/${uuid}/task`}>
+            <button className="px-6 py-2 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition h-11">
+              View Task
             </button>
-          </div>
+          </Link>
         </div>
 
         {/* Bio Section */}
