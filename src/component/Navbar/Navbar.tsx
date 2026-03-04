@@ -24,6 +24,7 @@ const navLinks = [
   { name: "Birthday", href: "/birthday" },
   { name: "Anniversary", href: "/anniversary" },
   { name: "Organogram", href: "/organogram" },
+  { name: "Calender", href: "/calender" },
   { name: "Chat", href: "/chat" },
   { name: "Project", href: "/project" },
 ];
@@ -216,7 +217,7 @@ export default function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex flex-1 justify-center">
-              <div className="flex space-x-11 justify-end w-full max-w-2xl items-center ml-24">
+              <div className="flex space-x-8 justify-end w-full max-w-2xl items-center ml-24">
                 {navLinks.map((link) => (
                   <div key={link.name} className="relative inline-block">
                     <Link
@@ -237,7 +238,7 @@ export default function Navbar() {
                 <div>
                   {" "}
                   {user && (
-                    <Link href="/notifications" className="relative left-9">
+                    <Link href="/notifications" className="relative left-4">
                       <Bell
                         className="text-gray-700 hover:text-[#95D700]"
                         size={22}
@@ -245,7 +246,7 @@ export default function Navbar() {
                       {unreadCount > 0 && (
                         <span
                           className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                          // style={{ backgroundColor: "#FF990C" }}
+                        // style={{ backgroundColor: "#FF990C" }}
                         >
                           {unreadCount}
                         </span>
@@ -341,7 +342,7 @@ export default function Navbar() {
                   {unreadCount > 0 && (
                     <span
                       className="bg-[#FF990C] absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                      // style={{ backgroundColor: "#FF990C" }}
+                    // style={{ backgroundColor: "#FF990C" }}
                     >
                       {unreadCount}
                     </span>

@@ -37,6 +37,9 @@ const AnnouncementList: React.FC = () => {
   const [selected, setSelected] = useState<Notification | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Notification | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
@@ -61,6 +64,7 @@ const AnnouncementList: React.FC = () => {
     // const interval = setInterval(fetchAnnouncements, 2000);
     // return () => clearInterval(interval);
   }, []);
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -80,6 +84,7 @@ const AnnouncementList: React.FC = () => {
 
       // Update local state after successful deletion
       setAnnouncements((prev) => prev.filter((n) => n.id !== deleteTarget.id));
+      setSelectedIds((prev) => prev.filter((id) => id !== deleteTarget.id));
       setDeleteTarget(null);
       setModal({ type: "success", message: "Message deleted successfully!" });
     } catch (e: unknown) {
@@ -90,6 +95,67 @@ const AnnouncementList: React.FC = () => {
       });
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem("user-token");
+      if (!token) throw new Error("No authorization token found");
+
+      await Promise.all(
+        selectedIds.map((id) =>
+          Api.delete(`/notification/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      );
+
+      setAnnouncements((prev) =>
+        prev.filter((n) => !selectedIds.includes(n.id))
+      );
+      setSelectedIds([]);
+      setShowBulkDeleteConfirm(false);
+      setModal({
+        type: "success",
+        message: "Selected announcements deleted successfully!",
+      });
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message:
+          err.response?.data?.message ||
+          "Failed to delete selected announcements.",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleToggleSelect = (id: number, isRead: boolean) => {
+    if (!isRead) {
+      setModal({
+        type: "error",
+        message: "Only read announcements can be selected for deletion.",
+      });
+      return;
+    }
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (items: Notification[]) => {
+    const readItems = items.filter((n) => n.isRead);
+    const readIds = readItems.map((n) => n.id);
+
+    if (selectedIds.length === readIds.length && readIds.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(readIds);
     }
   };
 
@@ -107,45 +173,90 @@ const AnnouncementList: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col divide-y divide-gray-100">
-        {announcements.map((n) => (
-          <div className="flex items-center gap-8 py-3">
+      <div className="flex flex-col">
+        {announcements.length > 0 && (
+          <div className="flex items-center justify-between py-2 px-2 bg-gray-50 rounded-lg mb-2">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                onChange={() => handleSelectAll(announcements)}
+                checked={
+                  selectedIds.length ===
+                  announcements.filter((n) => n.isRead).length &&
+                  selectedIds.length > 0
+                }
+                className="w-4 h-4 rounded border-gray-300 text-[#FF990C] focus:ring-[#FF990C]"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                Select All Read
+              </span>
+            </div>
+            {selectedIds.length > 0 && (
+              <button
+                onClick={() => setShowBulkDeleteConfirm(true)}
+                className="text-sm font-semibold text-red-500 hover:text-red-600 transition-colors"
+              >
+                Delete Selected ({selectedIds.length})
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="divide-y divide-gray-100">
+          {announcements.map((n) => (
             <div
               key={n.id}
-              onClick={() => setSelected(n)}
-              className="flex items-start gap-3 py-3 hover:bg-gray-50 cursor-pointer transition-colors rounded-lg px-2"
+              className="flex items-center gap-2 py-3 hover:bg-gray-50 transition-colors rounded-lg px-2"
             >
-              <div className="mt-1">
-                {iconMap[n.type] ?? (
-                  <Package className="text-gray-400" size={18} />
-                )}
-              </div>
-              <div>
-                <p
-                  className={`text-sm ${
-                    n.isRead ? "text-gray-600" : "text-gray-800 font-medium"
-                  }`}
-                >
-                  {n.title}
-                </p>
-                {/* <p className="text-xs text-gray-500 mt-1">{n.message}</p> */}
-                <span className="text-xs text-gray-400 mt-1 block">
-                  {new Date(n.createdAt).toLocaleString()}
-                </span>
-              </div>
-            </div>
-            {/* Delete Button */}
-            <div>
-              <button
-                onClick={() => setDeleteTarget(n)}
-                className="text-red-500 hover:text-red-600 p-2"
-                title="Delete notification"
+              <div
+                onClick={() => setSelected(n)}
+                className="flex flex-1 items-start gap-3 cursor-pointer"
               >
-                <Trash2 size={16} />
-              </button>
+                <div className="flex items-center h-5 mt-0.5">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(n.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => handleToggleSelect(n.id, n.isRead)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#FF990C] focus:ring-[#FF990C] cursor-pointer"
+                  />
+                </div>
+
+                <div className="mt-1">
+                  {iconMap[n.type] ?? (
+                    <Package className="text-gray-400" size={18} />
+                  )}
+                </div>
+
+                <div className="flex-1">
+                  <p
+                    className={`text-sm ${n.isRead ? "text-gray-400 font-normal" : "text-black font-lighter"
+                      }`}
+                  >
+                    {n.title}
+                  </p>
+                  <span
+                    className={`text-xs mt-1 block ${n.isRead ? "text-gray-300" : "text-gray-500 font-medium"
+                      }`}
+                  >
+                    {new Date(n.createdAt).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Delete Button */}
+              <div>
+                <button
+                  onClick={() => setDeleteTarget(n)}
+                  className="text-red-400 hover:text-red-500 p-2 transition-colors"
+                  title="Delete notification"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {modal && (
@@ -168,6 +279,16 @@ const AnnouncementList: React.FC = () => {
         <DeleteConfirmModal
           onCancel={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
+          loading={deleting}
+        />
+      )}
+
+      {showBulkDeleteConfirm && (
+        <DeleteConfirmModal
+          title="Delete Selected Announcements"
+          message={`Are you sure you want to delete ${selectedIds.length} announcements? This action cannot be undone.`}
+          onCancel={() => setShowBulkDeleteConfirm(false)}
+          onConfirm={handleBulkDelete}
           loading={deleting}
         />
       )}

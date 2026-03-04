@@ -22,7 +22,7 @@ const orgData: Person = {
   image: "/images/ceo.jpg",
   children: [
     {
-      name: "Sarah Johnsons",
+      name: "Sarah Johnson",
       title: "Hiring Manager",
       dept: "HR",
       location: "Maryland, USA",
@@ -53,7 +53,7 @@ const orgData: Person = {
       ],
     },
     {
-      name: "Ben Thompsons",
+      name: "Ben Thompson",
       title: "COO",
       dept: "Operations",
       location: "Maryland, USA",

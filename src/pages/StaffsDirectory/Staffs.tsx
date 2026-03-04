@@ -10,6 +10,8 @@ import {
   Mail,
   Phone,
   MapPin,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import Link from "next/link";
 import Api from "@/utils/api";
@@ -18,6 +20,7 @@ import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 
 // === Staff Interface ===
+// ... (keep interface as is)
 interface Staff {
   id: number;
   uuid: string;
@@ -73,15 +76,15 @@ export default function StaffDirectory() {
 
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Fetch staff data (with search + pagination)
   useEffect(() => {
     const fetchStaff = async () => {
       setLoading(true);
       try {
-        const query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}${
-          search ? `&search=${encodeURIComponent(search)}` : ""
-        }`;
+        const query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}${search ? `&search=${encodeURIComponent(search)}` : ""
+          }`;
         const res = await Api.get<StaffResponse>(query);
         setStaffList(res?.data?.data);
         setTotalPages(res?.data?.totalPages);
@@ -116,6 +119,30 @@ export default function StaffDirectory() {
     return matchesRole;
   });
 
+  const generateVCard = (person: Staff) => {
+    return `BEGIN:VCARD
+VERSION:3.0
+FN:${person.firstName} ${person.lastName}
+EMAIL:${person?.email}
+TEL:${person?.phone}
+ORG:${person.employment?.department?.name || ""}
+TITLE:${person.employment?.jobTitle?.join(", ") || ""}
+ADR:;;${person.address?.city || ""};${person.address?.state || ""};;${person.address?.country || ""}
+END:VCARD`;
+  };
+  const downloadAllContacts = () => {
+    const vCards = filteredStaff
+      .map((person) => generateVCard(person))
+      .join("\n");
+
+    const blob = new Blob([vCards], { type: "text/vcard;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `staff-directory.vcf`;
+    link.click();
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
       <div className="max-w-[95%] mx-auto px-4 sm:px-8">
@@ -128,10 +155,15 @@ export default function StaffDirectory() {
           <span className="font-medium">Back</span>
         </div>
 
-        {/* 🏷️ Title */}
-        <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900">
-          Staff Directory
-        </h1>
+        {/* 🏷️ Title & Toggle */}
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Staff Directory
+          </h1>
+
+
+
+        </div>
 
         {/* 📄 Subtitle */}
         <p className="mt-6 text-gray-900 text-base sm:text-lg">
@@ -156,6 +188,29 @@ export default function StaffDirectory() {
 
             {/* 📱 Mobile-only buttons */}
             <div className="flex sm:hidden gap-2 ml-2">
+              {/* view toggle */}
+              <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === "grid"
+                    ? "bg-gray-100 text-black shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                    }`}
+                  title="Grid View"
+                >
+                  <LayoutGrid size={22} />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-lg transition-colors ${viewMode === "list"
+                    ? "bg-gray-100 text-black shadow-sm"
+                    : "text-gray-400 hover:text-gray-600"
+                    }`}
+                  title="List View"
+                >
+                  <List size={22} />
+                </button>
+              </div>
               {/* Filter Dropdown */}
               <button
                 onClick={() => setShowDropdown((prev) => !prev)}
@@ -192,10 +247,17 @@ export default function StaffDirectory() {
                   </ul>
                 </div>
               )}
+              {/* download card button */}
+              {/* <button
+                onClick={downloadAllContacts}
+                className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition"
+              >
+                Download Contacts
+              </button> */}
 
               {/* Add Staff (MOBILE) */}
               <Link href="/add-staff" style={{ cursor: "pointer" }}>
-                <button className="flex items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
+                <button className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
                   <Plus size={14} /> Add New Staff
                 </button>
               </Link>
@@ -204,6 +266,28 @@ export default function StaffDirectory() {
 
           {/* 💻 Desktop-only Filter + Add Staff */}
           <div className="hidden sm:flex items-center gap-3 relative">
+            <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 rounded-lg transition-colors ${viewMode === "grid"
+                  ? "bg-gray-100 text-black shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+                  }`}
+                title="Grid View"
+              >
+                <LayoutGrid size={22} />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 rounded-lg transition-colors ${viewMode === "list"
+                  ? "bg-gray-100 text-black shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+                  }`}
+                title="List View"
+              >
+                <List size={22} />
+              </button>
+            </div>
             {/* Filter Dropdown */}
             <button
               onClick={() => setShowDropdown((prev) => !prev)}
@@ -240,99 +324,188 @@ export default function StaffDirectory() {
                 </ul>
               </div>
             )}
+            {/* download card button */}
+            {/* <button
+              onClick={downloadAllContacts}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition"
+            >
+              Download Contacts
+            </button> */}
 
             {/* Add Staff */}
             <Link href="/add-staff" style={{ cursor: "pointer" }}>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
+              <button className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
                 Add New Staff <Plus size={18} />
               </button>
             </Link>
           </div>
         </div>
 
-        {/* 👥 People Grid */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+        {/* 👥 People View */}
+        <div className="mt-8 w-full">
           {loading ? (
-            <p className="text-gray-600">
+            <div className="flex justify-center py-12">
               <LoadingSpinner />
-            </p>
+            </div>
           ) : filteredStaff?.length > 0 ? (
-            filteredStaff?.map((person) => (
-              <div
-                key={person.id}
-                className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
-              >
-                {/* Profile Picture + Name + Role */}
-                <div className="flex items-center gap-4">
-                  <Image
-                    src={person?.photoUrl || "/default-avatar.png"}
-                    alt={`${person?.firstName} ${person?.lastName}`}
-                    width={50}
-                    height={50}
-                    className="w-14 h-14 rounded-full object-cover"
-                  />
-                  <div className="flex flex-col">
-                    <span className="text-gray-900 font-semibold">
-                      {person?.firstName} {person?.lastName}
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {person?.employment?.jobTitle?.length ? (
-                        person.employment.jobTitle.map(
-                          (title: string, i: number) => (
-                            <span
-                              key={i}
-                              className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
-                            >
-                              {title}
-                            </span>
-                          ),
-                        )
-                      ) : (
-                        <span className="text-gray-500 text-sm">
-                          Not Assigned
+            viewMode === "grid" ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredStaff.map((person) => (
+                  <div
+                    key={person.id}
+                    className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
+                  >
+                    {/* Profile Picture + Name + Role */}
+                    <div className="flex items-center gap-4">
+                      <Image
+                        src={person?.photoUrl || "/default-avatar.png"}
+                        alt={`${person?.firstName} ${person?.lastName}`}
+                        width={50}
+                        height={50}
+                        className="w-14 h-14 rounded-full object-cover"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-gray-900 font-semibold">
+                          {person?.firstName} {person?.lastName}
                         </span>
-                      )}
+                        <div className="flex flex-wrap gap-2">
+                          {person?.employment?.jobTitle?.length ? (
+                            person.employment.jobTitle.map(
+                              (title: string, i: number) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                                >
+                                  {title}
+                                </span>
+                              ),
+                            )
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              Not Assigned
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Department */}
+                    <div className="mt-4">
+                      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+                        {person?.employment?.department?.name ||
+                          "No Department"}
+                      </span>
+                    </div>
+
+                    {/* Email */}
+                    <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
+                      <Mail size={16} />
+                      <span>{person?.email}</span>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
+                      <Phone size={16} />
+                      <span>{person?.phone}</span>
+                    </div>
+
+                    {/* Location */}
+                    <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
+                      <MapPin size={16} />
+                      <span>
+                        {person.address?.city}, {person.address?.state}
+                      </span>
+                    </div>
+
+                    {/* View Profile */}
+                    <Link href={`/staff/${person.uuid}`} className="w-full">
+                      <button className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
+                        View Profile
+                      </button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* --- Detailed Column (List) View --- */
+              <div className="flex flex-col gap-6">
+                {filteredStaff.map((person) => (
+                  <div
+                    key={person.id}
+                    className="bg-white border border-[#F1F1F1] rounded-2xl p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow"
+                  >
+                    {/* Top Row: Avatar, Info, Link */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src={person?.photoUrl || "/default-avatar.png"}
+                          alt={`${person?.firstName} ${person?.lastName}`}
+                          width={48}
+                          height={48}
+                          className="w-14 h-14 rounded-full object-cover shadow-sm"
+                        />
+                        <div className="flex flex-col">
+                          <h3 className="text-gray-900 font-bold text-lg">
+                            {person?.firstName} {person?.lastName}
+                          </h3>
+                          <span className="text-gray-500 text-sm font-medium">
+                            {person?.employment?.jobTitle?.join(", ") ||
+                              "Not Assigned"}
+                          </span>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/staff/${person.uuid}`}
+                        className="text-[#95D700] font-bold text-sm hover:underline"
+                      >
+                        View Profile
+                      </Link>
+                    </div>
+
+                    {/* Horizontal Divider */}
+                    <div className="h-[1px] w-full bg-gray-200" />
+
+                    {/* Bottom Row: 4 Columns */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-gray-900 font-bold text-sm">
+                          Department
+                        </span>
+                        <span className="text-gray-600 text-sm">
+                          {person?.employment?.department?.name || "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-gray-900 font-bold text-sm">
+                          Email
+                        </span>
+                        <span className="text-gray-600 text-sm break-all">
+                          {person?.email}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-gray-900 font-bold text-sm">
+                          Phone
+                        </span>
+                        <span className="text-gray-600 text-sm">
+                          {person?.phone}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-gray-900 font-bold text-sm">
+                          Location
+                        </span>
+                        <span className="text-gray-600 text-sm">
+                          {person.address?.city}, {person.address?.state}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Department */}
-                <div className="mt-4">
-                  <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
-                    {person?.employment?.department?.name || "No Department"}
-                  </span>
-                </div>
-
-                {/* Email */}
-                <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
-                  <Mail size={16} />
-                  <span>{person?.email}</span>
-                </div>
-
-                {/* Phone */}
-                <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
-                  <Phone size={16} />
-                  <span>{person?.phone}</span>
-                </div>
-
-                {/* Location */}
-                <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
-                  <MapPin size={16} />
-                  <span>
-                    {person.address?.city}, {person.address?.state}
-                  </span>
-                </div>
-
-                {/* View Profile */}
-                <Link href={`/staff/${person.uuid}`} className="w-full">
-                  <button className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition">
-                    View Profile
-                  </button>
-                </Link>
+                ))}
               </div>
-            ))
+            )
           ) : (
-            <p className="text-gray-600">No staff found.</p>
+            <p className="text-gray-600 text-center py-12">No staff found.</p>
           )}
         </div>
 
@@ -342,11 +515,10 @@ export default function StaffDirectory() {
           <button
             onClick={() => setPage(page - 1)}
             disabled={page === 1}
-            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
-              page === 1
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-[#95D700] text-white"
-            }`}
+            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === 1
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-[#95D700] text-white"
+              }`}
           >
             <ArrowLeft size={16} /> Prev
           </button>
@@ -388,11 +560,10 @@ export default function StaffDirectory() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${
-                    page === p
-                      ? "bg-[#95D700] text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
+                  className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${page === p
+                    ? "bg-[#95D700] text-white"
+                    : "bg-gray-200 text-gray-700"
+                    }`}
                 >
                   {p}
                 </button>
@@ -404,11 +575,10 @@ export default function StaffDirectory() {
           <button
             onClick={() => setPage(page + 1)}
             disabled={page === totalPages}
-            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
-              page === totalPages
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-[#95D700] text-white"
-            }`}
+            className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === totalPages
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-[#95D700] text-white"
+              }`}
           >
             Next <ArrowRight size={16} />
           </button>
