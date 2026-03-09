@@ -24,17 +24,19 @@ interface PaginationData {
 }
 
 interface OpenTasksListProps {
-  tasks: OpenTask[];
-  pagination: PaginationData;
-  onPageChange: (page: number) => void;
-  loading: boolean;
+  tasks?: OpenTask[];
+  pagination?: PaginationData;
+  onPageChange?: (page: number) => void;
+  loading?: boolean;
+  onTaskClick?: (task: { id: number; projectId: number | null }) => void;
 }
 
 const OpenTasksList = ({
-  tasks,
-  pagination,
-  onPageChange,
-  loading,
+  tasks = [],
+  pagination = { currentPage: 1, pageSize: 10, totalCount: 0, totalPages: 0 },
+  onPageChange = () => {},
+  loading = false,
+  onTaskClick,
 }: OpenTasksListProps) => {
   if (loading) {
     return (
@@ -65,7 +67,11 @@ const OpenTasksList = ({
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="border border-gray-200 rounded-xl p-4 bg-white flex justify-between items-center hover:shadow-md transition-shadow"
+              className="border border-gray-200 rounded-xl p-4 bg-white flex justify-between items-center hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() =>
+                onTaskClick &&
+                onTaskClick({ id: task.id, projectId: task.projectId })
+              }
             >
               <div className="flex items-center gap-3 flex-1">
                 <CheckCircle2
@@ -73,10 +79,11 @@ const OpenTasksList = ({
                   size={18}
                   strokeWidth={2}
                 />
-                <div className="flex-1">
-                  <span className="text-sm font-medium text-gray-800 block">
+                <div className="flex-1 min-w-0">
+                  <span className="block text-sm font-medium text-gray-800 line-clamp-2">
                     {task.title}
                   </span>
+
                   <span className="text-xs text-gray-500 mt-1 block">
                     {task.project} • Sprint {task.sprint}
                   </span>

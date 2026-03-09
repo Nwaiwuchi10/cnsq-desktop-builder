@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Api from "@/utils/api";
+import { TaskDTO } from "@/dataTypes/Data-Types";
 import TaskHeader from "./TaskHeader";
 import CompletedTasksList from "./CompletedTasksList";
 import OpenTasksList from "./OpenTasksList";
 import ProductivityDashboard from "./ProductivityDashboard";
 import CurrentWork from "./CurrentWork";
 import ActiveTasksList from "./ActiveTasksList";
+import TaskAnalysisTaskDetailsModal from "./TaskAnalysisTaskDetails";
 import Navbar from "@/component/Navbar/Navbar";
 import Footer from "@/component/Footer/Footer";
 
@@ -32,7 +34,7 @@ interface CompletedTask {
   id: number;
   title: string;
   status: string;
-  completedDate: string;
+  dueDate: string;
   project: string;
   projectId: number | null;
 }
@@ -108,11 +110,16 @@ interface TaskAnalysisMainProps {
 }
 
 const TaskAnalysisMain = ({ staffId }: TaskAnalysisMainProps) => {
-
   // Dashboard state
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null,
   );
+
+  // Modal state for task details; we only populate minimal fields, modal will fetch rest
+  const [selectedTask, setSelectedTask] = useState<Partial<TaskDTO> | null>(
+    null,
+  );
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
 
   // Active tasks state
@@ -194,7 +201,7 @@ const TaskAnalysisMain = ({ staffId }: TaskAnalysisMainProps) => {
       try {
         setLoadingCompleted(true);
         const response = await Api.get<TaskByStatusResponse>(
-          `/tasks/staff/${staffId}/tasks-by-status?completedPageNum=${completedPagination.currentPage}&completedPageSize=${completedPagination.pageSize}`,
+          `/task/staff/${staffId}/tasks-by-status?completedPageNum=${completedPagination.currentPage}&completedPageSize=${completedPagination.pageSize}`,
         );
         setCompletedTasks(response.data.completedTasks.data);
         setCompletedPagination(response.data.completedTasks.pagination);
@@ -216,7 +223,7 @@ const TaskAnalysisMain = ({ staffId }: TaskAnalysisMainProps) => {
       try {
         setLoadingOpen(true);
         const response = await Api.get<TaskByStatusResponse>(
-          `/tasks/staff/${staffId}/tasks-by-status?openPageNum=${openPagination.currentPage}&openPageSize=${openPagination.pageSize}`,
+          `/task/staff/${staffId}/tasks-by-status?openPageNum=${openPagination.currentPage}&openPageSize=${openPagination.pageSize}`,
         );
         setOpenTasks(response.data.openTasks.data);
         setOpenPagination(response.data.openTasks.pagination);
@@ -260,21 +267,57 @@ const TaskAnalysisMain = ({ staffId }: TaskAnalysisMainProps) => {
             pagination={activePagination}
             onPageChange={handleActivePageChange}
             loading={loadingActive}
+            onTaskClick={(task) => {
+              const projectField =
+                task.projectId !== null ? { id: task.projectId } : undefined;
+              setSelectedTask({
+                id: task.id,
+                project: projectField,
+              } as Partial<TaskDTO>);
+              setShowTaskModal(true);
+            }}
           />
           <CompletedTasksList
             tasks={completedTasks}
             pagination={completedPagination}
             onPageChange={handleCompletedPageChange}
             loading={loadingCompleted}
+            onTaskClick={(task) => {
+              const projectField =
+                task.projectId !== null ? { id: task.projectId } : undefined;
+              setSelectedTask({
+                id: task.id,
+                project: projectField,
+              } as Partial<TaskDTO>);
+              setShowTaskModal(true);
+            }}
           />
           <OpenTasksList
             tasks={openTasks}
             pagination={openPagination}
             onPageChange={handleOpenPageChange}
             loading={loadingOpen}
+            onTaskClick={(task) => {
+              const projectField =
+                task.projectId !== null ? { id: task.projectId } : undefined;
+              setSelectedTask({
+                id: task.id,
+                project: projectField,
+              } as Partial<TaskDTO>);
+              setShowTaskModal(true);
+            }}
           />
         </div>
       </div>
+      {showTaskModal && selectedTask && (
+        <TaskAnalysisTaskDetailsModal
+          task={selectedTask as TaskDTO}
+          onClose={() => {
+            setShowTaskModal(false);
+            setSelectedTask(null);
+          }}
+        />
+      )}
       <Footer />
     </div>
   );

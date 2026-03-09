@@ -7,7 +7,7 @@ interface CompletedTask {
   id: number;
   title: string;
   status: string;
-  completedDate: string;
+  dueDate: string;
   project: string;
   projectId: number | null;
 }
@@ -20,17 +20,19 @@ interface PaginationData {
 }
 
 interface CompletedTasksListProps {
-  tasks: CompletedTask[];
-  pagination: PaginationData;
-  onPageChange: (page: number) => void;
-  loading: boolean;
+  tasks?: CompletedTask[];
+  pagination?: PaginationData;
+  onPageChange?: (page: number) => void;
+  loading?: boolean;
+  onTaskClick?: (task: { id: number; projectId: number | null }) => void;
 }
 
 const CompletedTasksList = ({
-  tasks,
-  pagination,
-  onPageChange,
-  loading,
+  tasks = [],
+  pagination = { currentPage: 1, pageSize: 10, totalCount: 0, totalPages: 0 },
+  onPageChange = () => {},
+  loading = false,
+  onTaskClick,
 }: CompletedTasksListProps) => {
   if (loading) {
     return (
@@ -61,7 +63,11 @@ const CompletedTasksList = ({
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="border border-gray-200 rounded-xl p-4 bg-white flex justify-between items-center hover:shadow-md transition-shadow"
+              className="border border-gray-200 rounded-xl p-4 bg-white flex justify-between items-center hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() =>
+                onTaskClick &&
+                onTaskClick({ id: task.id, projectId: task.projectId })
+              }
             >
               <div className="flex items-center gap-3 flex-1">
                 <CheckCircle2
@@ -79,7 +85,7 @@ const CompletedTasksList = ({
                 </div>
               </div>
               <span className="text-xs text-gray-500 font-medium whitespace-nowrap ml-2">
-                {new Date(task.completedDate).toLocaleDateString()}
+                {new Date(task.dueDate).toLocaleDateString()}
               </span>
             </div>
           ))}

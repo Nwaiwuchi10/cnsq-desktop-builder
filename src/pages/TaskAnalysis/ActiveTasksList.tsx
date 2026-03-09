@@ -27,17 +27,19 @@ interface PaginationData {
 }
 
 interface ActiveTasksListProps {
-  tasks: Task[];
-  pagination: PaginationData;
-  onPageChange: (page: number) => void;
-  loading: boolean;
+  tasks?: Task[];
+  pagination?: PaginationData;
+  onPageChange?: (page: number) => void;
+  loading?: boolean;
+  onTaskClick?: (task: { id: number; projectId: number | null }) => void;
 }
 
 const ActiveTasksList = ({
-  tasks,
-  pagination,
-  onPageChange,
-  loading,
+  tasks = [],
+  pagination = { currentPage: 1, pageSize: 10, totalCount: 0, totalPages: 0 },
+  onPageChange = () => {},
+  loading = false,
+  onTaskClick,
 }: ActiveTasksListProps) => {
   if (loading) {
     return (
@@ -68,7 +70,11 @@ const ActiveTasksList = ({
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="border border-gray-200 rounded-xl p-4 bg-white hover:shadow-md transition-shadow"
+              className="border border-gray-200 rounded-xl p-4 bg-white hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() =>
+                onTaskClick &&
+                onTaskClick({ id: task.id, projectId: task.projectId })
+              }
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
@@ -89,7 +95,7 @@ const ActiveTasksList = ({
                   style={{ width: `${task.progress}%` }}
                 ></div>
               </div>
-              <div className="flex gap-2 flex-wrap text-xs">
+              {/* <div className="flex gap-2 flex-wrap text-xs">
                 <span
                   className={`px-2 py-1 rounded ${
                     task.priority === "High"
@@ -109,7 +115,7 @@ const ActiveTasksList = ({
                     Due: {new Date(task.dueDate).toLocaleDateString()}
                   </span>
                 )}
-              </div>
+              </div> */}
             </div>
           ))}
         </div>
