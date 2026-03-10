@@ -1,5 +1,5 @@
 import React from "react";
-import { Briefcase, Clock, CheckCircle2 } from "lucide-react";
+import { Briefcase, Clock, CheckCircle2, CheckCircleIcon } from "lucide-react";
 
 interface CurrentWorkData {
   activeTasks: number;
@@ -31,7 +31,7 @@ const CurrentWork = ({ currentWork }: CurrentWorkProps) => {
       <h3 className="text-[#95D700] text-xs font-bold uppercase tracking-wider mb-4">
         CURRENT WORK
       </h3>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 wrap">
         <div className="border border-gray-200 rounded-xl p-4 flex flex-col items-start bg-white">
           <Briefcase
             className="text-gray-400 mb-3"
@@ -67,6 +67,19 @@ const CurrentWork = ({ currentWork }: CurrentWorkProps) => {
           </span>
           <span className="text-xs text-gray-500 font-medium mt-1">
             Completed Tasks
+          </span>
+        </div>
+        <div className="border border-gray-200 rounded-xl p-4 flex flex-col items-start bg-white">
+          <CheckCircleIcon
+            className="text-[#95D700] mb-3"
+            size={20}
+            strokeWidth={1.5}
+          />
+          <span className="font-bold text-xl text-[#95D700] leading-none">
+            {currentWork.totalTasks}
+          </span>
+          <span className="text-xs text-gray-500 font-medium mt-1">
+            Total Tasks
           </span>
         </div>
       </div>
