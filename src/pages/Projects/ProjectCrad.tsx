@@ -9,6 +9,8 @@ export interface Project {
   uuid: string;
   projectName: string;
   desc?: string;
+  derivedStatus?: string; // 🔹 New field for derived status
+  projectProgress?: number; // 🔹 New field for progress percentage
   status: string;
   department: {
     id: number;
@@ -75,7 +77,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         return 0;
     }
   };
-  const progress = progressValue();
+  // const progress = progressValue();
+  const progress = project.projectProgress ?? 0;
   // const progress = 75; // 🔹 Placeholder: you can compute this from your data
   const priorityColors: Record<string, string> = {
     critical: "text-red-700 border border-red-500",
@@ -91,8 +94,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   };
 
   // 🔹 Capitalize and transform
-  const formatStatus = (status: string) =>
-    status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const formatStatus = (derivedStatus: string) =>
+    derivedStatus?.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return (
     <div className="bg-white shadow rounded-2xl p-6 border border-gray-200 flex flex-col gap-4">
       {/* 🔹 Title + Priority */}
@@ -115,10 +118,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       {/* 🔹 Status */}
       <span
         className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
-          statusColors[project?.status as ProjectStatus]
+          statusColors[project?.derivedStatus as ProjectStatus]
         }`}
       >
-        {formatStatus(project?.status)}
+        {formatStatus(project?.derivedStatus || project?.status)}
       </span>
 
       {/* 🔹 Progress bar */}
