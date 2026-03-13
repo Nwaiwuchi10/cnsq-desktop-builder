@@ -10,6 +10,7 @@ import ProjectCard from "../Projects/ProjectCrad";
 import editIcon from "../../assests/images/Button.png";
 import UpdateProfileModal from "../UpdateStaffProfile/UpdateStaffProfileModal";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
+import StaffCompletionModal from "@/component/StaffCompletionModal/StaffCompletionModal";
 interface Project {
   id: number;
   uuid: string;
@@ -104,6 +105,19 @@ interface Staff {
   employment: Employment;
 }
 
+interface CompletionData {
+  staffId: number;
+  staffName: string;
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+  performance: {
+    level: "GREEN" | "YELLOW" | "RED";
+    colorCode: string;
+    label: "Excellent" | "Moderate" | "Needs Attention";
+  };
+}
+
 export default function StaffDetails() {
   const params = useParams();
   const uuid = params?.uuid as string;
@@ -116,6 +130,11 @@ export default function StaffDetails() {
   const [loadingStaff, setLoadingStaff] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
+  const [completionData, setCompletionData] = useState<CompletionData | null>(
+    null,
+  );
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [loadingCompletion, setLoadingCompletion] = useState(false);
 
   useEffect(() => {
     const Id = localStorage.getItem("userId");
@@ -183,6 +202,25 @@ export default function StaffDetails() {
     fetchProjects();
   }, [id]);
 
+  // ✅ Fetch staff completion level
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchCompletionLevel = async () => {
+      try {
+        setLoadingCompletion(true);
+        const res = await Api.get(`/task/staff/${id}/completion-level`);
+        setCompletionData(res.data);
+      } catch (err) {
+        console.error("Error fetching completion level:", err);
+      } finally {
+        setLoadingCompletion(false);
+      }
+    };
+
+    fetchCompletionLevel();
+  }, [id]);
+
   // ✅ Handle loading state safely
   if (loadingStaff) {
     return (
@@ -228,14 +266,34 @@ export default function StaffDetails() {
         {/* Profile Section */}
         <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="w-28 h-28 flex-shrink-0 rounded-full overflow-hidden border">
-              <Image
-                src={staff?.photoUrl || "/default-avatar.png"}
-                alt={`${staff?.firstName} ${staff?.lastName}`}
-                width={112}
-                height={112}
-                className="object-cover w-full h-full"
-              />
+            <div className="relative w-28 h-28 flex-shrink-0">
+              <div className="w-28 h-28 rounded-full overflow-hidden border">
+                <Image
+                  src={staff?.photoUrl || "/default-avatar.png"}
+                  alt={`${staff?.firstName} ${staff?.lastName}`}
+                  width={112}
+                  height={112}
+                  className="object-cover w-full h-full"
+                />
+              </div>
+              {/* Completion Indicator */}
+              {completionData && (
+                <div
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full border-4 border-white shadow-lg cursor-pointer hover:scale-125 transition-transform duration-200"
+                  style={{
+                    backgroundColor: completionData.performance.colorCode,
+                  }}
+                  onClick={() => setShowCompletionModal(true)}
+                  title="Click to view workload status"
+                  role="button"
+                  tabIndex={0}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setShowCompletionModal(true);
+                    }
+                  }}
+                />
+              )}
             </div>
             <div className="text-center sm:text-left">
               <h2 className="text-xl text-gray-800 font-semibold">
@@ -431,6 +489,12 @@ export default function StaffDetails() {
             }}
           />
         )}
+
+        <StaffCompletionModal
+          isOpen={showCompletionModal}
+          onClose={() => setShowCompletionModal(false)}
+          data={completionData}
+        />
       </div>
     </>
   );

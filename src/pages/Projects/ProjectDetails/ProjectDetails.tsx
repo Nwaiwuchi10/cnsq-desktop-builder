@@ -22,6 +22,8 @@ interface Project {
   projectName: string;
   desc?: string;
   status: string;
+  derivedStatus?: string;
+  projectProgress?: number;
   startDate: string;
   endDate: string;
   priority: string;
@@ -126,7 +128,7 @@ export default function ProjectDetails() {
         return 0;
     }
   };
-  const progress = progressValue();
+  const progress = project.projectProgress;
   // const progress = 25; // replace with actual if available
   ///// to comment on a project
 
@@ -168,8 +170,8 @@ export default function ProjectDetails() {
   };
 
   // 🔹 Capitalize and transform
-  const formatStatus = (status: string) =>
-    status.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const formatStatus = (derivedStatus: string) =>
+    derivedStatus.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   if (loadingProject) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
@@ -209,10 +211,10 @@ export default function ProjectDetails() {
         </div>
         <div
           className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
-            statusColors[project?.status as ProjectStatus]
+            statusColors[project?.derivedStatus as ProjectStatus]
           }`}
         >
-          {formatStatus(project.status)}
+          {formatStatus(project?.derivedStatus || project?.status)}
         </div>
 
         {/* Dates */}
