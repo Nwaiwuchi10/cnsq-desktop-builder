@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { X } from "lucide-react";
 
 interface CompletionData {
@@ -10,9 +9,9 @@ interface CompletionData {
   completedTasks: number;
   completionRate: number;
   performance: {
-    level: "GREEN" | "YELLOW" | "RED";
+    level: "GREEN" | "YELLOW" | "RED" | "PINK";
     colorCode: string;
-    label: "Excellent" | "Moderate" | "Needs Attention";
+    label: "Excellent" | "Moderate" | "Needs Attention" | "Available";
   };
 }
 
@@ -37,6 +36,8 @@ export default function StaffCompletionModal({
         return `${data.staffName} is slightly busy. Currently at ${data.completionRate}% task completion. Support may be available if needed.`;
       case "RED":
         return `${data.staffName} is currently busy with multiple tasks. At ${data.completionRate}% completion rate. Approach with caution.`;
+      case "PINK":
+        return `${data.staffName} is available for new tasks. At ${data.completionRate}% completion rate.`;
       default:
         return "";
     }
@@ -50,6 +51,8 @@ export default function StaffCompletionModal({
         return "Slightly Busy";
       case "RED":
         return "Currently Busy";
+      case "PINK":
+        return "Available";
       default:
         return "Unknown";
     }
