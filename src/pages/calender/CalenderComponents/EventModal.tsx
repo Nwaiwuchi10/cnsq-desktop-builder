@@ -301,7 +301,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   }))
                 }
                 min={formData.startDate === todayStr ? currentTime : undefined}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900"
               />
             </div>
           </div>
@@ -319,7 +319,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   setFormData((prev) => ({ ...prev, endDate: e.target.value }))
                 }
                 min={formData.startDate || todayStr}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900"
               />
             </div>
             <div className="flex flex-col gap-1.5">
