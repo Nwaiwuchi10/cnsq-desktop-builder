@@ -42,6 +42,8 @@ interface CalendarLayoutProps {
   events: any[];
   selectedStaffIds?: number[];
   onStaffSelectionChange?: (staffIds: number[]) => void;
+  showOnlyMine?: boolean;
+  onToggleShowOnlyMine?: () => void;
 }
 
 const CalendarLayout: React.FC<CalendarLayoutProps> = ({
@@ -56,6 +58,8 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   events,
   selectedStaffIds = [],
   onStaffSelectionChange,
+  showOnlyMine = false,
+  onToggleShowOnlyMine,
 }) => {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -96,6 +100,8 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
         onViewChange={onViewChange}
         onToggleSidebar={toggleSidebar}
         onGoBack={handleGoBack}
+        showOnlyMine={showOnlyMine}
+        onToggleShowOnlyMine={onToggleShowOnlyMine}
       />
 
       <div className="flex flex-1 overflow-hidden relative">
