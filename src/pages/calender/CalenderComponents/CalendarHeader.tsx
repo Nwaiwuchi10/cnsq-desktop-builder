@@ -11,6 +11,8 @@ interface CalendarHeaderProps {
   onViewChange: (view: "day" | "week" | "month") => void;
   onToggleSidebar?: () => void;
   onGoBack?: () => void;
+  showOnlyMine?: boolean;
+  onToggleShowOnlyMine?: () => void;
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
@@ -20,6 +22,8 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onViewChange,
   onToggleSidebar,
   onGoBack,
+  showOnlyMine = false,
+  onToggleShowOnlyMine,
 }) => {
   return (
     <header className="flex items-center justify-between px-4 md:px-6 py-3 bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -76,20 +80,45 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center bg-gray-100 p-1 rounded-lg">
-        {(["day", "week", "month"] as const).map((v) => (
+      <div className="flex items-center gap-4">
+        <div className="flex items-center bg-gray-100 p-1 rounded-lg mr-2">
           <button
-            key={v}
-            onClick={() => onViewChange(v)}
-            className={`px-3 md:px-4 py-1 rounded-md text-[10px] md:text-sm font-semibold capitalize transition-all ${
-              view === v
+            onClick={() => showOnlyMine && onToggleShowOnlyMine?.()}
+            className={`px-3 md:px-4 py-1 rounded-md text-[10px] md:text-sm font-semibold transition-all ${
+              !showOnlyMine
                 ? "bg-white shadow-sm text-gray-900"
                 : "text-gray-500 hover:text-gray-800 focus:outline-none"
             }`}
           >
-            {v}
+            All Staff
           </button>
-        ))}
+          <button
+            onClick={() => !showOnlyMine && onToggleShowOnlyMine?.()}
+            className={`px-3 md:px-4 py-1 rounded-md text-[10px] md:text-sm font-semibold transition-all ${
+              showOnlyMine
+                ? "bg-white shadow-sm text-gray-900"
+                : "text-gray-500 hover:text-gray-800 focus:outline-none"
+            }`}
+          >
+            My Meetings
+          </button>
+        </div>
+
+        <div className="flex items-center bg-gray-100 p-1 rounded-lg">
+          {(["day", "week", "month"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => onViewChange(v)}
+              className={`px-3 md:px-4 py-1 rounded-md text-[10px] md:text-sm font-semibold capitalize transition-all ${
+                view === v
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-500 hover:text-gray-800 focus:outline-none"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
       </div>
     </header>
   );

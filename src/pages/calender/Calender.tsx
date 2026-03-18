@@ -26,6 +26,7 @@ const Calender = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [selectedStaffIds, setSelectedStaffIds] = useState<number[]>([]);
+  const [showOnlyMine, setShowOnlyMine] = useState(false);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -37,7 +38,8 @@ const Calender = () => {
       const allRes = await Api.get("/calender");
       let filteredAll = allRes.data;
 
-      if (userId !== null) {
+      // If showOnlyMine is true, filter by current user
+      if (showOnlyMine && userId !== null) {
         filteredAll = allRes.data.filter((event: any) => {
           const isCreator =
             event.createdBy?.id === userId || event.creatorId === userId;
@@ -49,7 +51,7 @@ const Calender = () => {
       }
       setAllEvents(filteredAll);
 
-      // Fetch events based on selected staffs using staff endpoint
+      // Fetch events based on selected staffs or show all
       let displayEvents = filteredAll;
       if (selectedStaffIds.length > 0) {
         try {
@@ -81,7 +83,7 @@ const Calender = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentDate, view, selectedStaffIds]);
+  }, [currentDate, view, selectedStaffIds, showOnlyMine]);
 
   useEffect(() => {
     fetchEvents();
@@ -179,6 +181,8 @@ const Calender = () => {
         events={allEvents}
         selectedStaffIds={selectedStaffIds}
         onStaffSelectionChange={handleStaffSelectionChange}
+        showOnlyMine={showOnlyMine}
+        onToggleShowOnlyMine={() => setShowOnlyMine(!showOnlyMine)}
       >
         {loading && (
           <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center">
