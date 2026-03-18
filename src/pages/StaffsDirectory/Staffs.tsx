@@ -18,6 +18,21 @@ import Api from "@/utils/api";
 import Image, { StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
+import StaffCompletionModal from "@/component/StaffCompletionModal/StaffCompletionModal";
+
+// === Completion Data Interface ===
+interface CompletionData {
+  staffId: number;
+  staffName: string;
+  totalTasks: number;
+  completedTasks: number;
+  completionRate: number;
+  performance: {
+    level: "GREEN" | "YELLOW" | "RED" | "PINK";
+    colorCode: string;
+    label: "Excellent" | "Moderate" | "Needs Attention" | "Available";
+  };
+}
 
 // === Staff Interface ===
 // ... (keep interface as is)
@@ -41,6 +56,16 @@ interface Staff {
     };
     departmentalRole?: {
       title: string;
+    };
+  };
+  taskPerformance?: {
+    totalTasks: number;
+    completedTasks: number;
+    completionRate: number;
+    performance: {
+      level: string;
+      colorCode: string;
+      label: string;
     };
   };
 }
@@ -77,6 +102,24 @@ export default function StaffDirectory() {
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [selectedCompletionData, setSelectedCompletionData] =
+    useState<CompletionData | null>(null);
+
+  const handleShowCompletion = (person: Staff) => {
+    if (person.taskPerformance) {
+      setSelectedCompletionData({
+        staffId: person.id,
+        staffName: `${person.firstName} ${person.lastName}`,
+        totalTasks: person.taskPerformance.totalTasks,
+        completedTasks: person.taskPerformance.completedTasks,
+        completionRate: person.taskPerformance.completionRate,
+        performance: person.taskPerformance.performance as any,
+      });
+      setShowCompletionModal(true);
+    }
+  };
 
   // Fetch staff data (with search + pagination)
   useEffect(() => {
@@ -357,13 +400,28 @@ END:VCARD`;
                   >
                     {/* Profile Picture + Name + Role */}
                     <div className="flex items-center gap-4">
-                      <Image
-                        src={person?.photoUrl || "/default-avatar.png"}
-                        alt={`${person?.firstName} ${person?.lastName}`}
-                        width={50}
-                        height={50}
-                        className="w-14 h-14 rounded-full object-cover"
-                      />
+                      <div className="relative w-14 h-14 flex-shrink-0">
+                        <Image
+                          src={person?.photoUrl || "/default-avatar.png"}
+                          alt={`${person?.firstName} ${person?.lastName}`}
+                          width={56}
+                          height={56}
+                          className="w-14 h-14 rounded-full object-cover border"
+                        />
+                        {/* Completion Indicator */}
+                        {person.taskPerformance && (
+                          <div
+                            className="absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white shadow-sm cursor-pointer hover:scale-125 transition-transform duration-200"
+                            style={{
+                              backgroundColor:
+                                person.taskPerformance.performance.colorCode,
+                            }}
+                            onClick={() => handleShowCompletion(person)}
+                            title="Click to view workload status"
+                            role="button"
+                          />
+                        )}
+                      </div>
                       <div className="flex flex-col">
                         <span className="text-gray-900 font-semibold">
                           {person?.firstName} {person?.lastName}
@@ -437,13 +495,28 @@ END:VCARD`;
                     {/* Top Row: Avatar, Info, Link */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <Image
-                          src={person?.photoUrl || "/default-avatar.png"}
-                          alt={`${person?.firstName} ${person?.lastName}`}
-                          width={48}
-                          height={48}
-                          className="w-14 h-14 rounded-full object-cover shadow-sm"
-                        />
+                        <div className="relative w-14 h-14 flex-shrink-0">
+                          <Image
+                            src={person?.photoUrl || "/default-avatar.png"}
+                            alt={`${person?.firstName} ${person?.lastName}`}
+                            width={56}
+                            height={56}
+                            className="w-14 h-14 rounded-full object-cover shadow-sm border"
+                          />
+                          {/* Completion Indicator */}
+                          {person.taskPerformance && (
+                            <div
+                              className="absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white shadow-sm cursor-pointer hover:scale-125 transition-transform duration-200"
+                              style={{
+                                backgroundColor:
+                                  person.taskPerformance.performance.colorCode,
+                              }}
+                              onClick={() => handleShowCompletion(person)}
+                              title="Click to view workload status"
+                              role="button"
+                            />
+                          )}
+                        </div>
                         <div className="flex flex-col">
                           <h3 className="text-gray-900 font-bold text-lg">
                             {person?.firstName} {person?.lastName}
@@ -584,6 +657,11 @@ END:VCARD`;
           </button>
         </div>
       </div>
+      <StaffCompletionModal
+        isOpen={showCompletionModal}
+        onClose={() => setShowCompletionModal(false)}
+        data={selectedCompletionData}
+      />
     </div>
   );
 }
