@@ -19,9 +19,11 @@ interface Project {
   uuid: string;
   projectName: string;
   desc?: string;
+  derivedStatus?: string; // 🔹 New field for derived status
   status: string;
   startDate: string;
   endDate: string;
+  projectProgress?: number; // 🔹 New field for progress percentage
   department: { id: number; name: string };
   priority: "critical" | "high" | "medium" | "low";
   timeLine: string;

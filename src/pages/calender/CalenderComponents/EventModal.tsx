@@ -262,7 +262,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 setFormData((prev) => ({ ...prev, title: e.target.value }))
               }
               placeholder="Event Title"
-              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] focus:border-transparent outline-none transition-all text-base"
+              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] focus:border-transparent outline-none transition-all text-base text-gray-900 bg-white"
             />
           </div>
 
@@ -283,7 +283,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   }))
                 }
                 min={todayStr}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -301,7 +301,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   }))
                 }
                 min={formData.startDate === todayStr ? currentTime : undefined}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900"
               />
             </div>
           </div>
@@ -319,7 +319,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   setFormData((prev) => ({ ...prev, endDate: e.target.value }))
                 }
                 min={formData.startDate || todayStr}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -338,7 +338,7 @@ const EventModal: React.FC<EventModalProps> = ({
                     ? formData.startTime
                     : undefined
                 }
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
               />
             </div>
           </div>
@@ -354,7 +354,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, type: e.target.value }))
                 }
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base text-gray-900"
               >
                 {EVENT_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -389,12 +389,18 @@ const EventModal: React.FC<EventModalProps> = ({
               <input
                 type="checkbox"
                 checked={formData.isRecurring}
-                disabled={!!formData.startDate && !!formData.endDate && formData.startDate !== formData.endDate}
+                disabled={
+                  !!formData.startDate &&
+                  !!formData.endDate &&
+                  formData.startDate !== formData.endDate
+                }
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
                     isRecurring: e.target.checked,
-                    recurrenceEndDate: e.target.checked ? prev.recurrenceEndDate : "",
+                    recurrenceEndDate: e.target.checked
+                      ? prev.recurrenceEndDate
+                      : "",
                   }))
                 }
                 className="w-5 h-5 md:w-4 md:h-4 text-[#95D700] rounded focus:ring-[#95D700] disabled:opacity-40 disabled:cursor-not-allowed"
@@ -403,11 +409,14 @@ const EventModal: React.FC<EventModalProps> = ({
                 Recurring Event
               </span>
             </label>
-            {formData.startDate && formData.endDate && formData.startDate !== formData.endDate && (
-              <p className="text-xs text-amber-600 mt-1">
-                Recurrence is only available when the event starts and ends on the same day.
-              </p>
-            )}
+            {formData.startDate &&
+              formData.endDate &&
+              formData.startDate !== formData.endDate && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Recurrence is only available when the event starts and ends on
+                  the same day.
+                </p>
+              )}
             {formData.isRecurring && (
               <div className="mt-2 flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
@@ -438,7 +447,9 @@ const EventModal: React.FC<EventModalProps> = ({
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
                     <Calendar size={14} /> Recurrence End Date
-                    <span className="font-normal text-gray-400">(optional)</span>
+                    <span className="font-normal text-gray-400">
+                      (optional)
+                    </span>
                   </label>
                   <input
                     type="date"
@@ -450,7 +461,7 @@ const EventModal: React.FC<EventModalProps> = ({
                       }))
                     }
                     min={formData.startDate || todayStr}
-                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
                   />
                 </div>
               </div>
@@ -470,7 +481,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   setFormData((prev) => ({ ...prev, location: e.target.value }))
                 }
                 placeholder="Office, Room 402, etc."
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -487,7 +498,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   }))
                 }
                 placeholder="https://zoom.us/j/..."
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
               />
             </div>
           </div>
@@ -537,7 +548,7 @@ const EventModal: React.FC<EventModalProps> = ({
               }
               placeholder="Optional notes..."
               rows={3}
-              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none resize-none text-base"
+              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none resize-none text-base text-gray-900 bg-white"
             />
           </div>
 

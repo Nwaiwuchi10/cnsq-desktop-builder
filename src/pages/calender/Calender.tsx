@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 
 import Api from "@/utils/api";
 
@@ -8,8 +8,7 @@ import Footer from "@/component/Footer/Footer";
 import DayView from "./CalenderComponents/CalenderViews";
 import WeekView from "./CalenderComponents/WeeklyView";
 import MonthView from "./CalenderComponents/MonthView";
-import CalendarHeader from "./CalenderComponents/CalendarHeader";
-import CalendarSidebar from "./CalenderComponents/CalendarSidebar";
+import CalendarLayout from "./CalenderComponents/CalendarLayout";
 import EventModal from "./CalenderComponents/EventModal";
 import CalendarDetails from "./CalenderComponents/CalendarDetails";
 import EditEventModal from "./CalenderComponents/EditEventModal";
@@ -24,9 +23,10 @@ const Calender = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedStaffIds, setSelectedStaffIds] = useState<number[]>([]);
+  const [showOnlyMine, setShowOnlyMine] = useState(false);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -38,21 +38,52 @@ const Calender = () => {
       const allRes = await Api.get("/calender");
       let filteredAll = allRes.data;
 
-      if (userId !== null) {
+      // If showOnlyMine is true, filter by current user
+      if (showOnlyMine && userId !== null) {
         filteredAll = allRes.data.filter((event: any) => {
-          const isCreator = event.createdBy?.id === userId || event.creatorId === userId;
-          const isAttendee = event.attendees?.some((a: any) => (a.id === userId || a === userId));
+          const isCreator =
+            event.createdBy?.id === userId || event.creatorId === userId;
+          const isAttendee = event.attendees?.some(
+            (a: any) => a.id === userId || a === userId,
+          );
           return isCreator || isAttendee;
         });
       }
       setAllEvents(filteredAll);
-      setEvents(filteredAll);
+
+      // Fetch events based on selected staffs or show all
+      let displayEvents = filteredAll;
+      if (selectedStaffIds.length > 0) {
+        try {
+          const staffIdsParam = selectedStaffIds.join(",");
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth() + 1;
+          const staffRes = await Api.get(
+            `/calender/staff?staffIds=${staffIdsParam}&year=${year}&month=${month}`,
+          );
+          displayEvents = staffRes.data || [];
+        } catch (error) {
+          console.error("Error fetching staff calendar events", error);
+          // Fallback to local filtering if API fails
+          displayEvents = filteredAll.filter((event: any) => {
+            const creatorMatch =
+              event.createdBy?.id &&
+              selectedStaffIds.includes(event.createdBy.id);
+            const attendeeMatch = event.attendees?.some((attendee: any) =>
+              selectedStaffIds.includes(attendee.id || attendee),
+            );
+            return creatorMatch || attendeeMatch;
+          });
+        }
+      }
+
+      setEvents(displayEvents);
     } catch (error) {
       console.error("Error fetching events", error);
     } finally {
       setLoading(false);
     }
-  }, [currentDate, view]);
+  }, [currentDate, view, selectedStaffIds, showOnlyMine]);
 
   useEffect(() => {
     fetchEvents();
@@ -114,8 +145,6 @@ const Calender = () => {
     setSelectedEvent(null);
   };
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
   const renderView = () => {
     const props = {
       currentDate,
@@ -135,91 +164,63 @@ const Calender = () => {
     }
   };
 
+  const handleStaffSelectionChange = (staffIds: number[]) => {
+    setSelectedStaffIds(staffIds);
+  };
+
   return (
     <div>
-      {/* <main className='pb-18'>  <Navbar /></main> */}
-
-      <div className="flex flex-col h-screen bg-white">
-        <CalendarHeader
-          currentDate={currentDate}
-          onNavigate={handleNavigate}
-          view={view}
-          onViewChange={setView}
-          onToggleSidebar={toggleSidebar}
-        />
-
-        <div className="flex flex-1 overflow-hidden relative">
-          {/* Sidebar with mobile drawer behavior */}
-          <div
-            className={`
-          absolute inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out bg-white md:relative md:translate-x-0
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          shadow-xl md:shadow-none
-        `}
-          >
-            <CalendarSidebar
-              currentDate={currentDate}
-              onDateSelect={(date) => {
-                setCurrentDate(date);
-                if (window.innerWidth < 768) setIsSidebarOpen(false);
-              }}
-              onCreateEvent={() => {
-                setIsModalOpen(true);
-                if (window.innerWidth < 768) setIsSidebarOpen(false);
-              }}
-              onEventClick={handleEventClick}
-              events={allEvents}
-            />
+      <CalendarLayout
+        currentDate={currentDate}
+        onNavigate={handleNavigate}
+        view={view}
+        onViewChange={setView}
+        onDateSelect={setCurrentDate}
+        onCreateEvent={() => setIsModalOpen(true)}
+        onEventClick={handleEventClick}
+        events={allEvents}
+        selectedStaffIds={selectedStaffIds}
+        onStaffSelectionChange={handleStaffSelectionChange}
+        showOnlyMine={showOnlyMine}
+        onToggleShowOnlyMine={() => setShowOnlyMine(!showOnlyMine)}
+      >
+        {loading && (
+          <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-[#95D700] border-t-transparent rounded-full animate-spin"></div>
           </div>
+        )}
+        <div className="flex-1 overflow-auto">{renderView()}</div>
+      </CalendarLayout>
 
-          {/* Mobile Sidebar Overlay */}
-          {isSidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black/30 z-30 md:hidden animate-in fade-in duration-300"
-              onClick={() => setIsSidebarOpen(false)}
-            />
-          )}
+      <EventModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={fetchEvents}
+        initialDate={currentDate}
+      />
 
-          <main className="flex-1 relative overflow-hidden flex flex-col">
-            {loading && (
-              <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-[#95D700] border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            )}
-            <div className="flex-1 overflow-auto">{renderView()}</div>
-          </main>
-        </div>
+      <CalendarDetails
+        isOpen={isDetailsModalOpen}
+        onClose={closeModal}
+        event={selectedEvent}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteClick}
+      />
 
-        <EventModal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          onSave={fetchEvents}
-          initialDate={currentDate}
-        />
+      <EditEventModal
+        isOpen={isEditModalOpen}
+        onClose={closeModal}
+        onSave={fetchEvents}
+        eventToEdit={selectedEvent}
+      />
 
-        <CalendarDetails
-          isOpen={isDetailsModalOpen}
-          onClose={closeModal}
-          event={selectedEvent}
-          onEdit={handleEditClick}
-          onDelete={handleDeleteClick}
-        />
-
-        <EditEventModal
-          isOpen={isEditModalOpen}
-          onClose={closeModal}
-          onSave={fetchEvents}
-          eventToEdit={selectedEvent}
-        />
-
-        <DeleteConfirmationModal
-          isOpen={isDeleteModalOpen}
-          onClose={closeModal}
-          onConfirm={handleConfirmDelete}
-          eventId={selectedEvent?.id}
-          eventTitle={selectedEvent?.title}
-        />
-      </div>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={closeModal}
+        onConfirm={handleConfirmDelete}
+        eventId={selectedEvent?.id}
+        eventTitle={selectedEvent?.title}
+      />
       <Footer />
     </div>
   );
