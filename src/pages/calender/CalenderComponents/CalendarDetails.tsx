@@ -224,6 +224,29 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
               </div>
             </div>
           )}
+          {/* Creator of event */}
+          {event.createdBy && (
+            <div className="flex items-start gap-3">
+              <Users size={20} className="text-gray-400" />
+              <div className="flex-1 flex flex-col">
+                <span className="text-sm font-medium text-gray-700">
+                  CreatedBy
+                </span>
+                <div className="flex items-center gap-2">
+                  <p
+
+                    className="text-sm font-medium text-gray-600"
+                  >
+                    {event?.createdBy?.firstName} {event?.createdBy?.lastName}
+                  </p>
+
+                </div>
+              </div>
+            </div>
+          )}
+
+
+
 
           {/* Attendees */}
           {event.attendees && event.attendees.length > 0 && (
