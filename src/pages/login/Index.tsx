@@ -8,9 +8,9 @@ import Footer from "@/component/Footer/Footer";
 const Index = () => {
   return (
     <div>
-      <Navbar />
+
       <Login />
-      <Footer />
+
     </div>
   );
 };

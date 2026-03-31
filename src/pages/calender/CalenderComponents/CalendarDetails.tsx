@@ -224,7 +224,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
               </div>
             </div>
           )}
-          {/* Creator of event */}
+          {/* Creator of event /createdby */}
           {event.createdBy && (
             <div className="flex items-start gap-3">
               <Users size={20} className="text-gray-400" />

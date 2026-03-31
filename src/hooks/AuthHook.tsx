@@ -21,7 +21,7 @@ export function useAuth() {
     //   return;
     // }
     //  Allow login, forgot-password, and reset-password pages
-    const allowedRoutes = ["/login", "/forgot-password", "/reset-password"];
+    const allowedRoutes = ["/presignin", "/login", "/forgot-password", "/reset-password"];
 
     // If current page is under an allowed route, don't block it
     if (allowedRoutes.includes(pathname)) {
@@ -31,7 +31,7 @@ export function useAuth() {
 
     if (!token) {
       setIsAuthenticated(false);
-      router.push("/login");
+      router.push("/presignin");
     } else {
       setIsAuthenticated(true);
     }
