@@ -10,6 +10,7 @@ import LatestAnniversary from "@/component/LatesAnniversay/LatestAnniversary";
 import LatestBirthday from "@/component/LatestBirthday/LatetsBirthday";
 import TeamProfiles from "@/component/TeamProfile/TeamProfile";
 import QuickActions from "@/component/QuickActions/QuickActions";
+import QuickNavigation from "@/component/QuickNavigation/QuickNavigation";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
 
@@ -198,11 +199,9 @@ const HomePage = () => {
       {/* Notification Status Toast */}
       {showToast && notificationStatus.isEnabled !== null && (
         <div
-          className={`fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 transition-opacity duration-500 ${
-            showToast ? "opacity-100" : "opacity-0 pointer-events-none"
-          } ${
-            notificationStatus.isEnabled ? "bg-green-500" : "bg-amber-500"
-          } text-white max-w-sm`}
+          className={`fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50 transition-opacity duration-500 ${showToast ? "opacity-100" : "opacity-0 pointer-events-none"
+            } ${notificationStatus.isEnabled ? "bg-green-500" : "bg-amber-500"
+            } text-white max-w-sm`}
           role="status"
           aria-live="polite"
         >
@@ -231,10 +230,11 @@ const HomePage = () => {
       )}
 
       <HeroSection />
-      <SubscriptionStatsCards />
-      <StatsCards />
+      {/* <SubscriptionStatsCards /> */}
+      {/* <StatsCards /> */}
 
-      <QuickActions />
+      {/* <QuickActions /> */}
+      <QuickNavigation />
       <LatestBirthday />
       <TeamProfiles />
       <LatestAnniversary />

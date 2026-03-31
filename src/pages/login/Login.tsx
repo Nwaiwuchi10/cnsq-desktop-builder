@@ -6,6 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
+import Image from "next/image";
 
 export default function Login() {
   const router = useRouter();
