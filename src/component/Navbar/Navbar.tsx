@@ -172,7 +172,7 @@ export default function Navbar() {
       localStorage.removeItem("user-token");
     }
     setUser(null);
-    window.location.href = "/login";
+    window.location.href = "/presignin";
   };
 
   const getAvatar = () => {
