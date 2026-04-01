@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ProtectedLayout from "@/hooks/AuthGuard";
 import ClientRoot from "./ClientRoot";
+import { ThemeProvider } from "@/hooks/ThemeContext";
 // import ScrollToTop from "@/component/ScrollToTop/ScrollToTop";
 
 const geistSans = Geist({
@@ -26,14 +27,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* <ScrollToTop /> */}
-        <ProtectedLayout>
-          <ClientRoot>{children}</ClientRoot>
-        </ProtectedLayout>
+        <ThemeProvider>
+          <ProtectedLayout>
+            <ClientRoot>{children}</ClientRoot>
+          </ProtectedLayout>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -219,7 +219,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center justify-end space-x-6">
 
               {/* Grid Icon */}
-              <Link href="/staff" className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2">
+              <Link href="/StaffDashboard" className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
@@ -236,7 +236,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Button + Grid Icon */}
             <div className="md:hidden flex items-center gap-4">
-              <Link href="/staff" className="flex items-center justify-center">
+              <Link href="/StaffDashboard" className="flex items-center justify-center">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />

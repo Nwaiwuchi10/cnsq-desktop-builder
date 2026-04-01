@@ -77,9 +77,15 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         return 0;
     }
   };
-  // const progress = progressValue();
   const progress = project.projectProgress ?? 0;
-  // const progress = 75; // 🔹 Placeholder: you can compute this from your data
+  
+  const getProgressColor = (prog: number) => {
+    if (prog >= 90) return "bg-[#10b981]";
+    if (prog >= 75) return "bg-[#86CD23]";
+    if (prog >= 60) return "bg-[#3b82f6]";
+    return "bg-[#f97316]";
+  };
+  const barColor = getProgressColor(progress);
   const priorityColors: Record<string, string> = {
     critical: "text-red-700 border border-red-500",
     high: "text-red-500 border border-red-500",
@@ -125,14 +131,17 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       </span>
 
       {/* 🔹 Progress bar */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 bg-gray-200 rounded-full h-2">
+      <div>
+        <div className="flex justify-between items-end mb-2">
+           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+           <span className={`text-sm font-bold ${barColor.replace('bg-', 'text-')}`}>{progress}%</span>
+        </div>
+        <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
           <div
-            className="bg-lime-500 h-2 rounded-full"
+            className={`${barColor} h-2 rounded-full`}
             style={{ width: `${progress}%` }}
           />
         </div>
-        <span className="text-sm font-medium text-gray-700">{progress}%</span>
       </div>
 
       {/* 🔹 Dates */}
