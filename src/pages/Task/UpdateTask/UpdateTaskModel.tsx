@@ -85,6 +85,11 @@ export default function TaskUpdateModal({
   const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
   const [projectId, setProjectId] = useState<number | "">("");
+  const [selectedDeptName, setSelectedDeptName] = useState<string | "">("");
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>(
+    [],
+  );
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "">("");
   const [token, setToken] = useState<string | null>(null);
 
   const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
@@ -123,9 +128,15 @@ export default function TaskUpdateModal({
         setUrgency(t.urgency);
         setTimeline(t.timeline || "");
         setSprint(t.sprint || "");
-        setProjectId(t.project.id);
+        setProjectId(t.project?.id || "");
         setStartDate(t.startDate ? t.startDate.split("T")[0] : "");
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
+        
+        const initialDept = (t as any).departmentName || "";
+        const initialDeptId = (t as any).departmentId || "";
+        setSelectedDeptName(initialDept);
+        setSelectedDeptId(initialDeptId);
+
         setAssignments(
           t.assignedTo
             ?.filter((a) => a && a.staff && a.staff.id)
@@ -135,11 +146,32 @@ export default function TaskUpdateModal({
             })) || [],
         );
 
-        // setStaffs(projectStaffs);
-        const projectRes = await Api.get(`/projects/${t.project.id}/staffs`);
-        const projectStaffs: Staff[] = projectRes.data;
+        // Step 2: Fetch departments
+        const deptRes = await Api.get("/departments");
+        setDepartments(deptRes.data || []);
 
-        setStaffs(projectStaffs);
+        // Step 3: Handle staff fetching
+        if (t.project && t.project.id) {
+          const projectRes = await Api.get(`/projects/${t.project.id}/staffs`);
+          setStaffs(projectRes.data || []);
+        } else if (initialDept) {
+          const staffRes = await Api.get(
+            `/staff-register/all/staffs/by-department?name=${encodeURIComponent(initialDept)}`,
+          );
+          const clean = (staffRes.data || [])
+            .filter((s: any) => s && s.id)
+            .map((s: any) => ({
+              staff: {
+                id: s.id,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                email: s.email,
+                employment: s.employment || { jobTitle: [] },
+              },
+              role: s.employment?.departmentalRole?.title || "Staff Member",
+            }));
+          setStaffs(clean);
+        }
       } catch (err) {
         console.error("Failed to load task or staff", err);
         setModal({ type: "error", message: "Failed to load task or staff." });
@@ -150,6 +182,36 @@ export default function TaskUpdateModal({
 
     fetchData();
   }, [isOpen, taskId]);
+
+  // Load staffs when department changes (only for non-project tasks)
+  useEffect(() => {
+    if (projectId || !selectedDeptName || !isOpen) return;
+
+    Api.get(
+      `/staff-register/all/staffs/by-department?name=${encodeURIComponent(selectedDeptName)}`,
+    )
+      .then((res) => {
+        const clean = (res.data || [])
+          .filter((s: any) => s && s.id)
+          .map((s: any) => ({
+            staff: {
+              id: s.id,
+              firstName: s.firstName,
+              lastName: s.lastName,
+              email: s.email,
+              employment: s.employment || { jobTitle: [] },
+            },
+            role: s.employment?.departmentalRole?.title || "Staff Member",
+          }));
+        setStaffs(clean);
+      })
+      .catch(() =>
+        setModal({
+          type: "error",
+          message: "Failed to load departmental staff list.",
+        }),
+      );
+  }, [selectedDeptName, projectId, isOpen]);
 
   useEffect(() => {
     if (startDate && dueDate) {
@@ -165,6 +227,7 @@ export default function TaskUpdateModal({
       }
     }
   }, [startDate, dueDate]);
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
@@ -180,7 +243,9 @@ export default function TaskUpdateModal({
           timeline,
           startDate,
           dueDate,
-          projectId,
+          projectId: projectId || null,
+          departmentId: selectedDeptId || undefined,
+          departmentName: selectedDeptName || undefined,
           sprint: sprint ? Number(sprint) : undefined,
           assignedTo: assignments,
         },
@@ -224,6 +289,34 @@ export default function TaskUpdateModal({
           <p>Loading...</p>
         ) : (
           <div className="space-y-4">
+            {/* Department Selection (only if no project) */}
+            {!projectId && (
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  Task Department
+                </label>
+                <select
+                  value={selectedDeptId}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setSelectedDeptId(val);
+                    const dept = departments.find((d) => d.id === val);
+                    setSelectedDeptName(dept?.name || "");
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+                >
+                  <option value="">-- Choose Department --</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1 italic">
+                  Changing department will refresh the staff selection list below.
+                </p>
+              </div>
+            )}
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Task Title
             </label>

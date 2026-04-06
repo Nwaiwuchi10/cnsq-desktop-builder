@@ -64,18 +64,65 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
   console.log("projectId", projectId);
   const [tasks, setTasks] = useState<TaskDTO[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
+  const [userDeptName, setUserDeptName] = useState<string | null>(null);
+  const [userDeptId, setUserDeptId] = useState<number | null>(null);
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "all">("all");
+  const [allDepartments, setAllDepartments] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+      try {
+        const res = await Api.get("/staff-register/staff/viewProfile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const deptId = res.data?.employment?.department?.id || null;
+        setUserDeptName(res.data?.employment?.department?.name || null);
+        setUserDeptId(deptId);
+        if (deptId) setSelectedDeptId(deptId);
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    if (!projectId) {
+      fetchUserProfile();
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await Api.get("/departments");
+        setAllDepartments(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch departments", err);
+      }
+    };
+    if (!projectId) {
+      fetchDepartments();
+    }
+  }, [projectId]);
+
+  useEffect(() => {
     const staffId = localStorage.getItem("userId");
-    
+
     const fetchTasks = async () => {
       try {
         let res;
         if (projectId) {
           res = await Api.get(`/task/project/${projectId}`);
+        } else if (selectedDeptId !== "all") {
+          res = await Api.get(`/task/department/${selectedDeptId}`);
+        } else if (userDeptId) {
+          res = await Api.get(`/task/department/${userDeptId}`);
         } else if (staffId) {
-          res = await Api.get(`/task/staff/${staffId}/tasks-by-status?openPageNum=1&openPageSize=100`);
+          res = await Api.get(
+            `/task/staff/${staffId}/tasks-by-status?openPageNum=1&openPageSize=100`,
+          );
         }
         setTasks(res?.data?.openTasks || res?.data || []);
       } catch (error) {
@@ -84,14 +131,42 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
       }
     };
 
-    fetchTasks();
-  }, [projectId]);
+    if (projectId || userDeptId || selectedDeptId !== "all" || !projectId) {
+      fetchTasks();
+    }
+  }, [projectId, userDeptId, selectedDeptId]);
 
   if (!tasks.length)
     return <p className="p-6">No Task Found for this project.</p>;
 
   return (
     <>
+      {/* Department Filter (Global only) */}
+      <div className="px-6 pt-4">
+        {!projectId && (
+          <div className="flex flex-col gap-1 w-full md:w-64">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Filter by Department
+            </label>
+            <select
+              className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500 bg-white dark:bg-[#1a1a1a]"
+              value={selectedDeptId}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedDeptId(val === "all" ? "all" : Number(val));
+              }}
+            >
+              <option value="all">All Departments</option>
+              {allDepartments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-col md:flex-row gap-6 p-4 md:p-6 overflow-x-auto">
         {statusColumns.map((col) => (
           <div
@@ -207,7 +282,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </div>
 
             {/* Add task button */}
-            <Link href="/project/create">
+            <Link href={projectId ? `/project/${projectId}/add-task` : "/add-task"}>
               {" "}
               <button className="mt-4 text-green-600 text-sm">
                 + New Task
@@ -320,7 +395,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
         </div>
 
         {/* Add task button */}
-        <Link href="/project/create">
+        <Link href={projectId ? `/project/${projectId}/add-task` : "/add-task"}>
           {" "}
           <button className="mt-4 text-green-600 text-sm">+ New Task</button>
         </Link>

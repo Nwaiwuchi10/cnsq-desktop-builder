@@ -109,6 +109,13 @@ export default function CreateTaskForm() {
   const [urgency, setUrgency] = useState("Short_Term");
   const [loadingProject, setLoadingProject] = useState(true);
   const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [userDepartment, setUserDepartment] = useState<string | null>(null);
+  const [userDepartmentId, setUserDepartmentId] = useState<number | null>(null);
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>(
+    [],
+  );
+  const [selectedDeptName, setSelectedDeptName] = useState<string | "">("");
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "">("");
 
   // === AssignedTo ===
   const [assignments, setAssignments] = useState<
@@ -135,20 +142,41 @@ export default function CreateTaskForm() {
     fetchProject();
   }, [projectId]);
 
-  // Load all projects if no projectId is provided
+  // Load all projects and departments if no projectId is provided
   useEffect(() => {
     if (projectId) return;
 
-    const fetchAllProjects = async () => {
+    const fetchInitialData = async () => {
       try {
-        const res = await Api.get("/projects");
-        setAllProjects(res.data || []);
+        const [projRes, deptRes] = await Promise.all([
+          Api.get("/projects"),
+          Api.get("/departments"),
+        ]);
+        setAllProjects(projRes.data || []);
+        setDepartments(deptRes.data || []);
       } catch (err) {
-        console.error("Failed to fetch all projects", err);
+        console.error("Failed to fetch initial data", err);
       }
     };
-    fetchAllProjects();
+    fetchInitialData();
   }, [projectId]);
+  // Load user profile to get department
+  useEffect(() => {
+    if (!token) return;
+    const fetchProfile = async () => {
+      try {
+        const res = await Api.get("/staff-register/staff/viewProfile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserDepartment(res.data?.employment?.department?.name || null);
+        setUserDepartmentId(res.data?.employment?.department?.id || null);
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchProfile();
+  }, [token]);
+
   // Load token
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -161,24 +189,54 @@ export default function CreateTaskForm() {
     }
   }, [router]);
 
-  // Load staffs assigned to this project
+  // Load staffs (either project-specific or departmental)
   useEffect(() => {
-    if (!projectUuid?.id) return;
-
-    Api.get(`/projects/${projectUuid?.id}/staffs`)
-      .then((res) => {
-        const clean = (res.data || []).filter(
-          (s: any) => s && s.staff && s.staff.id,
+    if (projectId) {
+      if (!projectUuid?.id) return;
+      Api.get(`/projects/${projectUuid?.id}/staffs`)
+        .then((res) => {
+          const clean = (res.data || []).filter(
+            (s: any) => s && s.staff && s.staff.id,
+          );
+          setStaffs(clean);
+        })
+        .catch(() =>
+          setModal({
+            type: "error",
+            message: "Failed to load project staff list.",
+          }),
         );
-        setStaffs(clean);
-      })
-      .catch(() =>
-        setModal({
-          type: "error",
-          message: "Failed to load project staff list.",
-        }),
-      );
-  }, [projectUuid?.id]);
+    } else {
+      // Use selectedDeptName if set, otherwise fallback to userDepartment
+      const deptToFetch = selectedDeptName || userDepartment;
+      if (deptToFetch) {
+        Api.get(
+          `/staff-register/all/staffs/by-department?name=${encodeURIComponent(deptToFetch)}`,
+        )
+          .then((res) => {
+            const clean = (res.data || [])
+              .filter((s: any) => s && s.id)
+              .map((s: any) => ({
+                staff: {
+                  id: s.id,
+                  firstName: s.firstName,
+                  lastName: s.lastName,
+                  email: s.email,
+                  employment: s.employment || { jobTitle: [] },
+                },
+                role: s.employment?.departmentalRole?.title || "Staff Member",
+              }));
+            setStaffs(clean);
+          })
+          .catch(() =>
+            setModal({
+              type: "error",
+              message: "Failed to load departmental staff list.",
+            }),
+          );
+      }
+    }
+  }, [projectId, projectUuid?.id, userDepartment, selectedDeptName]);
 
   // useEffect(() => {
   //   if (!projectUuid?.id) return;
@@ -209,7 +267,7 @@ export default function CreateTaskForm() {
   }, [startDate, dueDate]);
 
   const handleCreateTask = async () => {
-    if (!projectUuid?.id) {
+    if (projectId && !projectUuid?.id) {
       setModal({
         type: "error",
         message: "Project not loaded yet. Try again.",
@@ -242,7 +300,9 @@ export default function CreateTaskForm() {
       // startDate: new Date(startDate).toISOString(),
       // dueDate: new Date(dueDate).toISOString(),
       timeline,
-      projectId: projectUuid?.id,
+      projectId: projectUuid?.id || null, // allow null for departmental tasks
+      departmentId: selectedDeptId || userDepartmentId,
+      departmentName: selectedDeptName || userDepartment,
       assignedTo: assignments,
     };
 
@@ -252,7 +312,13 @@ export default function CreateTaskForm() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setModal({ type: "success", message: "Task created successfully!" });
-      setTimeout(() => router.push(`/project/${projectId}`), 1200);
+      setTimeout(() => {
+        if (projectId) {
+          router.push(`/project/${projectId}`);
+        } else {
+          router.push("/task");
+        }
+      }, 1200);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -266,7 +332,7 @@ export default function CreateTaskForm() {
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-16">
-      <div className="max-w-xl mx-auto px-4 mb-8 mt-14">
+      <div className="max-w-xl mx-auto px-4 mb-8 mt-2">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
@@ -284,9 +350,37 @@ export default function CreateTaskForm() {
 
       <div className="max-w-xl mx-auto">
         <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
-          
-          {/* Project Selection (only if no projectId in URL) */}
+          {/* Department Selection (only if no projectId in URL) */}
           {!projectId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Select Department <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedDeptId}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedDeptId(Number(val));
+                  const dept = departments.find((d) => d.id === Number(val));
+                  setSelectedDeptName(dept?.name || "");
+                }}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
+              >
+                <option value="">-- Choose Department --</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1 italic">
+                Select a department to filter the assignment staff list.
+              </p>
+            </div>
+          )}
+
+          {/* Project Selection (only if no projectId in URL) */}
+          {/* {!projectId && (
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 Select Project <span className="text-red-500">*</span>
@@ -305,7 +399,7 @@ export default function CreateTaskForm() {
                 ))}
               </select>
             </div>
-          )}
+          )} */}
 
           {/* Title */}
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">

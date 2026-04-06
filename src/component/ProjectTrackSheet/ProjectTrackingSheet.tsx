@@ -105,6 +105,12 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   const [sprintFilter, setSprintFilter] = useState<number | "all">("all");
   const [staffFilter, setStaffFilter] = useState<number | "all">("all");
+  const [userDeptName, setUserDeptName] = useState<string | null>(null);
+  const [userDeptId, setUserDeptId] = useState<number | null>(null);
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "all">("all");
+  const [allDepartments, setAllDepartments] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   const [selectedDate, setSelectedDate] = useState<string>("");
 
@@ -139,17 +145,25 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             }`,
           );
         }
+      } else if (selectedDeptId !== "all") {
+        // Selected department view
+        const query = params.toString();
+        res = await Api.get(
+          `/task/department/${selectedDeptId}${query ? `?${query}` : ""}`,
+        );
+      } else if (userDeptId) {
+        // Default departmental view
+        const query = params.toString();
+        res = await Api.get(
+          `/task/department/${userDeptId}${query ? `?${query}` : ""}`,
+        );
       } else if (staffId) {
-         // Global mode: fetch all tasks for this staff across all projects
-         // If staffFilter is "all", we use the logged in user's ID
-         const targetStaff = staffFilter === "all" ? staffId : staffFilter;
-         const query = params.toString();
-         res = await Api.get(
-           `/task/staff/${targetStaff}/tasks-by-status?openPageNum=1&openPageSize=100${query ? `&${query}` : ""}`
-         );
-         // NOTE: The backend format for global tasks might differ. 
-         // For now, mapping res.data.openTasks or similar if it's the dashboard endpoint.
-         // If it's a simple list, res.data is fine.
+        // Global mode fallback: fetch all tasks for this staff
+        const targetStaff = staffFilter === "all" ? staffId : staffFilter;
+        const query = params.toString();
+        res = await Api.get(
+          `/task/staff/${targetStaff}/tasks-by-status?openPageNum=1&openPageSize=100${query ? `&${query}` : ""}`,
+        );
       }
 
       setTasks(res?.data?.openTasks || res?.data || []);
@@ -163,30 +177,86 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   // ✅ Fetch staff list for dropdown (map response correctly)
   const fetchStaffList = async () => {
-    if (!projectId) return;
-
     try {
-      const res = await Api.get(`/projects/${projectId}/staffs`);
+      let res;
+      if (projectId) {
+        res = await Api.get(`/projects/${projectId}/staffs`);
+        const staffOnly = (res?.data || [])
+          .map((item: any) => item?.staff)
+          .filter(Boolean);
+        setStaffList(staffOnly);
+      } else {
+        const deptToUse =
+          selectedDeptId !== "all"
+            ? allDepartments.find((d) => d.id === selectedDeptId)?.name
+            : userDeptName;
 
-      const staffOnly = (res?.data || [])
-        .map((item: any) => item?.staff)
-        .filter(Boolean); // ✅ remove null/undefined
-
-      setStaffList(staffOnly);
+        if (deptToUse) {
+          res = await Api.get(
+            `/staff-register/all/staffs/by-department?name=${encodeURIComponent(deptToUse)}`,
+          );
+          setStaffList(res.data || []);
+        }
+      }
     } catch (err) {
       console.error("Error fetching staff list", err);
     }
   };
 
   useEffect(() => {
-    if (!projectId) return;
-    fetchTasks();
-  }, [projectId, staffFilter, yearFilter, monthFilter, dayFilter]);
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+      try {
+        const res = await Api.get("/staff-register/staff/viewProfile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const deptId = res.data?.employment?.department?.id || null;
+        setUserDeptName(res.data?.employment?.department?.name || null);
+        setUserDeptId(deptId);
+        if (deptId) setSelectedDeptId(deptId);
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    if (!projectId) {
+      fetchUserProfile();
+    }
+  }, [projectId]);
 
   useEffect(() => {
-    if (!projectId) return;
-    fetchStaffList();
+    const fetchDepartments = async () => {
+      try {
+        const res = await Api.get("/departments");
+        setAllDepartments(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch departments", err);
+      }
+    };
+    if (!projectId) {
+      fetchDepartments();
+    }
   }, [projectId]);
+
+  useEffect(() => {
+    if (projectId || userDeptId || selectedDeptId !== "all") {
+      fetchTasks();
+    }
+  }, [
+    projectId,
+    userDeptId,
+    selectedDeptId,
+    staffFilter,
+    yearFilter,
+    monthFilter,
+    dayFilter,
+  ]);
+
+  useEffect(() => {
+    if (projectId || userDeptName || selectedDeptId !== "all") {
+      fetchStaffList();
+    }
+  }, [projectId, userDeptName, selectedDeptId]);
 
   // const exportToCSV = () => {
   //   const data = tasks.map((t) => ({
@@ -266,6 +336,24 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         <div className="flex justify-between items-center mb-4 flex-wrap gap-3 ">
           <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-400">Project Tasks</h2>
           <div className="flex flex-wrap gap-3 items-center">
+            {/* Department Filter (Global only) */}
+            {!projectId && (
+              <select
+                className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500 bg-white dark:bg-[#1a1a1a]"
+                value={selectedDeptId}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedDeptId(val === "all" ? "all" : Number(val));
+                }}
+              >
+                <option value="all">All Departments</option>
+                {allDepartments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            )}
             {/* Sprint Dropdown */}
             <select
               className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500"
