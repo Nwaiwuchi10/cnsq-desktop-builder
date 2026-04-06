@@ -8,9 +8,9 @@ import Footer from "@/component/Footer/Footer";
 const Main = () => {
   return (
     <div>
-      <Navbar />
+
       <StaffOnboardingForm />
-      <Footer />
+
     </div>
   );
 };

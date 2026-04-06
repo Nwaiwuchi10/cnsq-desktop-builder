@@ -45,7 +45,7 @@ interface Project {
   };
 }
 interface DisplayTaskProps {
-  project: Project; // coming from ProjectDetails
+  project?: Project; // optional now
 }
 
 const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
@@ -53,18 +53,18 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   console.log("Project in DisplayTask:", project);
   return (
     <div>
-      <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900">
-        To-Do
+      <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+        {project ? `To-Do for ${project.projectName}` : "All My Tasks"}
       </h1>
 
       {/* Search + Actions */}
       <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
-          <Search className="text-gray-500" size={18} />
+        <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] transition-colors border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2">
+          <Search className="text-gray-500 dark:text-gray-400" size={18} />
           <input
             type="text"
             placeholder="Search by staff name, position, role..."
-            className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
+            className="ml-2 w-full outline-none text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400"
           />
 
           {/* Mobile buttons */}
@@ -72,14 +72,13 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
             <button
               style={{ cursor: "pointer" }}
               onClick={() => setShowTable((prev) => !prev)}
-              className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg text-gray-600 text-sm hover:bg-gray-100"
+              className="flex items-center gap-1 px-3 py-1 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
             >
               {showTable ? "View Board" : "View Task Table"}
-              {/* {showTable ? "View Board" : "View Task Table"} */}
               <Filter size={16} />
             </button>
 
-            <Link href={`/project/${project?.uuid}/add-task`}>
+            <Link href={project ? `/project/${project?.uuid}/add-task` : "/add-task"}>
               <button className="flex items-center gap-2 px-3 py-1 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:bg-green-600 transition">
                 Add New Task <Plus size={16} />
               </button>
@@ -92,14 +91,13 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           <button
             style={{ cursor: "pointer" }}
             onClick={() => setShowTable((prev) => !prev)}
-            className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="flex items-center gap-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
           >
-            {/* {showTable ? "View Board" : "View Task Table"} */}
             {showTable ? "View Board" : "View Task Table"}
             <Filter size={16} />
           </button>
 
-          <Link href={`/project/${project?.uuid}/add-task`}>
+          <Link href={project ? `/project/${project?.uuid}/add-task` : "/add-task"}>
             <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
               Add New Task <Plus size={18} />
             </button>
@@ -108,7 +106,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       </div>
 
       {/* Toggle views */}
-      <div className="mt-12 text-gray-600">
+      <div className="mt-12 text-gray-600 dark:text-gray-400">
         {showTable ? (
           <ProjectTasksSheet projectId={project?.id} />
         ) : (

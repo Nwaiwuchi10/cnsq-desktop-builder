@@ -114,34 +114,45 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
 
   // ✅ Fetch tasks based on staff or project
   const fetchTasks = async () => {
-    if (!projectId) return;
-
     setLoading(true);
     try {
       let res;
-
-      // Build query params ONLY when staff is selected
+      const staffId = localStorage.getItem("userId");
+      
+      // Build query params
       const params = new URLSearchParams();
-
       if (yearFilter) params.append("year", String(yearFilter));
       if (monthFilter) params.append("month", String(monthFilter));
       if (dayFilter) params.append("day", String(dayFilter));
 
-      if (staffFilter === "all") {
-        const query = params.toString();
-        res = await Api.get(
-          `/task/project/${projectId}${query ? `?${query}` : ""}`,
-        );
-      } else {
-        const query = params.toString();
-        res = await Api.get(
-          `/task/staff/${staffFilter}/project/${projectId}${
-            query ? `?${query}` : ""
-          }`,
-        );
+      if (projectId) {
+        if (staffFilter === "all") {
+          const query = params.toString();
+          res = await Api.get(
+            `/task/project/${projectId}${query ? `?${query}` : ""}`,
+          );
+        } else {
+          const query = params.toString();
+          res = await Api.get(
+            `/task/staff/${staffFilter}/project/${projectId}${
+              query ? `?${query}` : ""
+            }`,
+          );
+        }
+      } else if (staffId) {
+         // Global mode: fetch all tasks for this staff across all projects
+         // If staffFilter is "all", we use the logged in user's ID
+         const targetStaff = staffFilter === "all" ? staffId : staffFilter;
+         const query = params.toString();
+         res = await Api.get(
+           `/task/staff/${targetStaff}/tasks-by-status?openPageNum=1&openPageSize=100${query ? `&${query}` : ""}`
+         );
+         // NOTE: The backend format for global tasks might differ. 
+         // For now, mapping res.data.openTasks or similar if it's the dashboard endpoint.
+         // If it's a simple list, res.data is fine.
       }
 
-      setTasks(res?.data || []);
+      setTasks(res?.data?.openTasks || res?.data || []);
     } catch (err) {
       console.error("Error fetching tasks", err);
       setTasks([]);
@@ -253,11 +264,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     <>
       <div className="p-6 w-full overflow-x-auto ">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-3 ">
-          <h2 className="text-lg font-semibold text-gray-600">Project Tasks</h2>
+          <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-400">Project Tasks</h2>
           <div className="flex flex-wrap gap-3 items-center">
             {/* Sprint Dropdown */}
             <select
-              className="px-3 py-2 border rounded-lg text-gray-600 border-gray-500"
+              className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500"
               value={sprintFilter}
               onChange={(e) =>
                 setSprintFilter(
@@ -265,7 +276,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 )
               }
             >
-              <option value="all" className="text-gray-600">
+              <option value="all" className="text-gray-600 dark:text-gray-400">
                 All Sprints
               </option>
               {uniqueSprints.map((s) => (
@@ -285,7 +296,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 )
               }
             >
-              <option value="all" className="text-gray-600">
+              <option value="all" className="text-gray-600 dark:text-gray-400">
                 All Staff
               </option>
               {staffList.map((s) =>
@@ -301,7 +312,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
             {/* Date Picker */}
             <input
               type="date"
-              className="px-3 py-2 border rounded-lg border-gray-500 text-gray-600 cursor-pointer"
+              className="px-3 py-2 border rounded-lg border-gray-500 text-gray-600 dark:text-gray-400 cursor-pointer"
               value={selectedDate}
               onChange={(e) => {
                 const value = e.target.value;
@@ -328,7 +339,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 setMonthFilter("");
                 setDayFilter("");
               }}
-              className="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 cursor-pointer"
+              className="px-3 py-2 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-300 cursor-pointer"
             >
               Clear Date
             </button>
@@ -343,21 +354,21 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         </div>
 
         {/* Tasks Table */}
-        <table className="min-w-full border border-gray-700 rounded-lg text-sm text-gray-600">
-          <thead className="bg-gray-100 text-left text-gray-600">
-            <tr className="text-gray-600">
-              <th className="p-2 border text-gray-600">Sprint</th>
-              <th className="p-2 border text-gray-600">Title</th>
-              <th className="p-2 border text-gray-600">Status</th>
-              <th className="p-2 border text-gray-600">Priority</th>
-              <th className="p-2 border text-gray-600">Urgency</th>
-              <th className="p-2 border text-gray-600">Start Date</th>
-              <th className="p-2 border text-gray-600">Due Date</th>
-              <th className="p-2 border text-gray-600">Timeline</th>
-              <th className="p-2 border text-gray-600">Module</th>
-              <th className="p-2 border text-gray-600">Project</th>
-              <th className="p-2 border text-gray-600">Assigned To</th>
-              <th className="p-2 border text-gray-600">Created At</th>
+        <table className="min-w-full border border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400">
+          <thead className="bg-gray-100 dark:bg-gray-800 transition-colors text-left text-gray-600 dark:text-gray-400">
+            <tr className="text-gray-600 dark:text-gray-400">
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Sprint</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Title</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Status</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Priority</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Urgency</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Start Date</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Due Date</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Timeline</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Module</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Project</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Assigned To</th>
+              <th className="p-2 border text-gray-600 dark:text-gray-400">Created At</th>
             </tr>
           </thead>
           <tbody>
@@ -366,11 +377,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 style={{ cursor: "pointer" }}
                 onClick={() => setSelectedTask(t)}
                 key={t?.id}
-                className="odd:bg-white even:bg-gray-50 text-gray-600 hover:bg-green-100 transition-colors duration-150 cursor-pointer text-gray-600"
+                className="odd:bg-white dark:bg-[#141414] transition-colors even:bg-gray-50 dark:bg-[#1a1a1a] transition-colors text-gray-600 dark:text-gray-400 hover:bg-green-100 duration-150 cursor-pointer text-gray-600 dark:text-gray-400"
               >
-                <td className="p-2 border text-gray-600">{t?.sprint}</td>
+                <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.sprint}</td>
                 <td
-                  className="p-2 border cursor-pointer text-gray-600"
+                  className="p-2 border cursor-pointer text-gray-600 dark:text-gray-400"
                   onClick={() => setSelectedTask(t)}
                 >
                   {t?.title}
@@ -380,7 +391,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   {t?.status ? (
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        statusColors[t?.status] || "bg-gray-100 text-gray-600"
+                        statusColors[t?.status] || "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {formatLabel(t?.status)}
@@ -396,7 +407,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         priorityColors[t.priority] ||
-                        "bg-gray-100 text-gray-600"
+                        "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {formatLabel(t.priority)}
@@ -411,7 +422,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   {t.urgency ? (
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        urgencyColors[t.urgency] || "bg-gray-100 text-gray-600"
+                        urgencyColors[t.urgency] || "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {formatLabel(t.urgency)}
@@ -420,22 +431,22 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     "—"
                   )}
                 </td>
-                <td className="p-2 border text-gray-600">
+                <td className="p-2 border text-gray-600 dark:text-gray-400">
                   {t.startDate
                     ? new Date(t?.startDate).toLocaleDateString()
                     : "Not set"}
                 </td>
-                <td className="p-2 border text-gray-600">
+                <td className="p-2 border text-gray-600 dark:text-gray-400">
                   {t.dueDate
                     ? new Date(t.dueDate).toLocaleDateString()
                     : "Not set"}
                 </td>
-                <td className="p-2 border text-gray-600">{t?.timeline}</td>
-                <td className="p-2 border text-gray-600">{t?.taskModule}</td>
-                <td className="p-2 border text-gray-600">
+                <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.timeline}</td>
+                <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.taskModule}</td>
+                <td className="p-2 border text-gray-600 dark:text-gray-400">
                   {t?.project?.projectName}
                 </td>
-                <td className="p-2 border text-gray-600">
+                <td className="p-2 border text-gray-600 dark:text-gray-400">
                   {t?.assignedTo
                     ?.filter((a: any) => a?.staff) // ✅ guard
                     .map(
@@ -444,7 +455,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     )
                     .join(", ")}
                 </td>
-                <td className="p-2 border text-gray-600">
+                <td className="p-2 border text-gray-600 dark:text-gray-400">
                   {new Date(t.createdAt).toLocaleDateString()}
                 </td>
               </tr>

@@ -48,15 +48,15 @@ const ConversationItem: React.FC<{ item?: Msg; onClick: () => void }> = ({
   return (
     <div
       onClick={onClick}
-      className="bg-white text-gray-600 rounded-xl mb-4 p-3 flex gap-4 items-start shadow-md cursor-pointer border border-transparent hover:border-lime-500 transition-shadow transition-colors"
+      className="bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400 rounded-xl mb-4 p-3 flex gap-4 items-start shadow-md cursor-pointer border border-transparent hover:border-lime-500 transition-shadow"
     >
       <Avatar name={name} online={item.online} src={item.avatar} />
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="font-semibold text-gray-800">{name}</div>
+          <div className="font-semibold text-gray-800 dark:text-gray-200">{name}</div>
           <div className="text-xs text-gray-400">{time}</div>
         </div>
-        <div className="text-sm text-gray-500 mt-1 truncate">{preview}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">{preview}</div>
       </div>
       {item.unread ? (
         <div className="flex items-center">

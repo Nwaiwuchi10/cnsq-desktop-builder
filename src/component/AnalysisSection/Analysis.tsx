@@ -44,25 +44,15 @@ export default function StatsCards() {
     },
     {
       id: 2,
-      label: "Active Projects",
-      value: stats?.activeProjects ?? 24,
-      subtitle: "+2 new last month",
-      subtitleColor: "text-[#86CD23]",
-      icon: <FolderKanban className="w-5 h-5 text-[#86CD23]" />,
-      href: "/projects",
-    },
-    {
-      id: 3,
-      label: "Tasks In Progress",
-      value: stats?.tasksInProgress ?? 148,
-      subtitle: "6 due today",
-      subtitleColor: "text-amber-500",
-      icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
-      href: "/tasks",
+      label: "Departments",
+      value: stats?.totalDepartments ?? 10,
+      subtitle: "",
+      icon: <Building2 className="w-5 h-5 text-[#86CD23]" />,
+      href: "/heads-of-departments",
     },
     {
       id: 4,
-      label: "Upcoming Birthdays",
+      label: "Birthday this month",
       value: stats?.birthdays ?? 6,
       subtitle: "Next 7 days",
       subtitleColor: "text-[#86CD23]",
@@ -70,13 +60,25 @@ export default function StatsCards() {
       href: "/birthday",
     },
     {
-      id: 5,
-      label: "Departments",
-      value: stats?.totalDepartments ?? 10,
-      subtitle: "",
-      icon: <Building2 className="w-5 h-5 text-[#86CD23]" />,
-      href: "/heads-of-departments",
+      id: 4,
+      label: "Anniversaries this Quarter",
+      value: stats?.tasksInProgress ?? 148,
+      subtitle: "6 due today",
+      subtitleColor: "text-amber-500",
+      icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
+      href: "/anniversary",
     },
+    {
+      id: 4,
+      label: "Anniversaries",
+      value: stats?.tasksInProgress ?? 148,
+      subtitle: "6 due today",
+      subtitleColor: "text-amber-500",
+      icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
+      href: "/anniversary",
+    },
+
+
   ];
 
   if (loading) {

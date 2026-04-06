@@ -60,7 +60,7 @@ const VoiceRecorder: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-2 p-4 border rounded-lg bg-gray-50">
+    <div className="flex flex-col items-center space-y-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors">
       {recording ? (
         <button
           onClick={stopRecording}

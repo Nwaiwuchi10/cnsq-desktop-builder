@@ -29,5 +29,9 @@ body {
 
 /* Ensure text is always visible on inputs when typing (fixes iOS text blending) */
 input, textarea, select {
-  color: #171717;
+  color: inherit;
+}
+
+.dark input, .dark textarea, .dark select {
+  color: #ededed;
 }

@@ -92,7 +92,7 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-[#141414] transition-colors">
       <CalendarHeader
         currentDate={currentDate}
         onNavigate={onNavigate}
@@ -108,7 +108,7 @@ const CalendarLayout: React.FC<CalendarLayoutProps> = ({
         {/* Sidebar with mobile drawer behavior */}
         <div
           className={`
-          absolute inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out bg-white md:relative md:translate-x-0
+          absolute inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out bg-white dark:bg-[#141414] md:relative md:translate-x-0
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
           shadow-xl md:shadow-none
         `}

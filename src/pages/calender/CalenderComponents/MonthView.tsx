@@ -62,14 +62,14 @@ const EventDot: React.FC<{ event: Event; onClick: () => void }> = ({
         e.stopPropagation();
         onClick();
       }}
-      className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-gray-100 rounded transition-colors cursor-pointer group"
+      className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors cursor-pointer group"
       title={`${event.title} (Recurring)`}
     >
       <div
         className="w-2 h-2 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform"
         style={{ backgroundColor: event.color || "#22C55E" }}
       />
-      <span className="text-[10px] text-gray-500 font-semibold truncate hidden md:inline">
+      <span className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold truncate hidden md:inline">
         {event.title}
       </span>
     </div>
@@ -82,7 +82,7 @@ export default function MonthView({
 }: ViewProps) {
   if (!currentDate) {
     return (
-      <div className="flex-1 flex flex-col h-full bg-white items-center justify-center">
+      <div className="flex-1 flex flex-col h-full bg-white dark:bg-[#141414] items-center justify-center transition-colors">
         Loading...
       </div>
     );
@@ -94,19 +94,19 @@ export default function MonthView({
   const today = new Date();
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white">
-      <div className="grid grid-cols-7 border-b border-gray-200 sticky top-0 bg-gray-50 z-10">
+    <div className="flex-1 flex flex-col h-full bg-white dark:bg-[#141414] transition-colors">
+      <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-gray-50 dark:bg-[#1a1a1a] z-10">
         {DAYS_OF_WEEK.map((day) => (
           <div
             key={day}
-            className="py-2 text-center text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-200 last:border-r-0"
+            className="py-2 text-center text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-r border-gray-200 dark:border-gray-700 last:border-r-0"
           >
             <span className="md:hidden">{day[0]}</span>
             <span className="hidden md:inline">{day}</span>
           </div>
         ))}
       </div>
-      <div className="flex-1 grid grid-cols-7 grid-rows-6 auto-rows-fr bg-gray-200 gap-[1px] overflow-auto">
+      <div className="flex-1 grid grid-cols-7 grid-rows-6 auto-rows-fr bg-gray-200 dark:bg-gray-700 gap-[1px] overflow-auto">
         {grid.map((item, idx) => {
           const dayEvents = events.filter((e) =>
             isEventVisibleOnDate(e, item.date),
@@ -125,15 +125,15 @@ export default function MonthView({
           return (
             <div
               key={idx}
-              className={`bg-white p-0.5 md:p-1 min-h-[100px] md:min-h-[140px] flex flex-col gap-0.5 md:gap-1.5 ${!item.isCurrentMonth ? "bg-gray-50/50 opacity-60" : ""}`}
+              className={`bg-white dark:bg-[#141414] p-0.5 md:p-1 min-h-[100px] md:min-h-[140px] flex flex-col gap-0.5 md:gap-1.5 ${!item.isCurrentMonth ? "bg-gray-50/50 dark:bg-[#1a1a1a]/50 opacity-60" : ""}`}
             >
               <div className="flex justify-between items-center mb-0.5">
                 <span
                   className={`text-[10px] md:text-sm font-bold w-5 h-5 md:w-8 md:h-8 flex items-center justify-center rounded-full transition-colors ${isToday
                     ? "bg-[#95D700] text-white shadow-sm"
                     : item.isCurrentMonth
-                      ? "text-gray-700 hover:bg-gray-100"
-                      : "text-gray-300"
+                      ? "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      : "text-gray-300 dark:text-gray-600"
                     }`}
                 >
                   {item.date.getDate()}

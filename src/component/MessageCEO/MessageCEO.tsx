@@ -14,6 +14,7 @@ import {
 import { AxiosError } from "axios";
 import Api from "@/utils/api";
 import CustomModal from "../Message/Message";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 interface MessageCeoModalProps {
   isOpen: boolean;
@@ -110,34 +111,34 @@ export default function MessageCeoModal({
   };
 
   return (
-    <>
-      {/* MAIN MODAL */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-fadeIn">
+    <StaffLayout>
+      {/* MAIN CONTAINER */}
+      <div className="flex items-center justify-center min-h-[85vh] px-4 w-full">
+        <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 w-full max-w-2xl overflow-hidden animate-fadeIn">
           {/* Header Toolbar */}
           <div className="flex items-center justify-between px-4 py-2 border-b">
             <div className="flex items-center gap-3">
-              <button className="p-1 rounded hover:bg-gray-100">
+              <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors">
                 <Type size={16} />
               </button>
-              <button className="p-1 rounded hover:bg-gray-100">
+              <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors">
                 <Bold size={16} />
               </button>
-              <button className="p-1 rounded hover:bg-gray-100">
+              <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors">
                 <Italic size={16} />
               </button>
-              <button className="p-1 rounded hover:bg-gray-100">
+              <button className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors">
                 <List size={16} />
               </button>
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 Urgent Message to the CEO
               </span>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-400 p-1 rounded"
               >
                 <X size={18} />
               </button>
@@ -147,7 +148,7 @@ export default function MessageCeoModal({
           {/* Form */}
           <form onSubmit={(e) => e.preventDefault()} className="p-4">
             <div className="mb-3">
-              <label className="text-xs text-gray-500 font-medium">
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                 Subject
               </label>
               <input
@@ -156,7 +157,7 @@ export default function MessageCeoModal({
                 onChange={(e) => setSubject(e.target.value)}
                 required
                 placeholder="Enter subject..."
-                className="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#95D700] focus:outline-none"
+                className="mt-1 w-full border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#95D700] focus:outline-none"
               />
             </div>
 
@@ -165,11 +166,10 @@ export default function MessageCeoModal({
               onDragOver={onDragOver}
               onDragLeave={onDragLeave}
               onDrop={onDrop}
-              className={`relative rounded-xl border ${
-                isDragging
+              className={`relative rounded-xl border ${isDragging
                   ? "border-dashed border-[#95D700]/80 bg-[#f7fff0]"
-                  : "border-gray-200"
-              } p-4 min-h-[150px]`}
+                  : "border-gray-200 dark:border-gray-800"
+                } p-4 min-h-[150px]`}
             >
               <textarea
                 value={content}
@@ -180,12 +180,12 @@ export default function MessageCeoModal({
               />
 
               {file && (
-                <div className="absolute left-8 bottom-2 flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full text-xs text-gray-600 shadow-sm">
+                <div className="absolute left-8 bottom-2 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 transition-colors px-3 py-1 rounded-full text-xs text-gray-600 dark:text-gray-400 shadow-sm">
                   <span className="max-w-[160px] truncate">{file.name}</span>
                   <button
                     type="button"
                     onClick={() => setFile(null)}
-                    className="ml-1 text-gray-500 hover:text-gray-800"
+                    className="ml-1 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200"
                   >
                     ✕
                   </button>
@@ -193,7 +193,7 @@ export default function MessageCeoModal({
               )}
 
               <div className="absolute left-4 bottom-3 flex items-center gap-3">
-                <label className="cursor-pointer text-gray-600 hover:text-gray-800">
+                <label className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:text-gray-200">
                   <Paperclip size={18} />
                   <input
                     ref={inputFileRef}
@@ -249,19 +249,19 @@ export default function MessageCeoModal({
       {/*  Confirmation Modal */}
       {showConfirm && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-[90%] max-w-sm shadow-xl text-center animate-fadeIn">
+          <div className="bg-white dark:bg-[#141414] transition-colors rounded-xl p-6 w-[90%] max-w-sm shadow-xl text-center animate-fadeIn">
             <AlertTriangle className="mx-auto text-yellow-500 mb-3" size={36} />
-            <h2 className="text-lg font-semibold mb-1 text-gray-600">
+            <h2 className="text-lg font-semibold mb-1 text-gray-600 dark:text-gray-400">
               Do you really want to send this message?
             </h2>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               This <strong>Message cannot be undone</strong> once sent to the
               CEO.
             </p>
             <div className="flex justify-center gap-4">
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm"
+                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-sm"
               >
                 Cancel
               </button>
@@ -285,6 +285,6 @@ export default function MessageCeoModal({
           onClose={() => setModal(null)}
         />
       )}
-    </>
+    </StaffLayout>
   );
 }

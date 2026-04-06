@@ -133,14 +133,14 @@ export default function AssignedToStaffModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-600">
+          <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-400">
             Update Project Assigned Staffs
           </h2>
           <button onClick={onClosed}>
-            <X size={20} className="text-gray-600" />
+            <X size={20} className="text-gray-600 dark:text-gray-400" />
           </button>
         </div>
 
@@ -149,8 +149,8 @@ export default function AssignedToStaffModal({
         ) : (
           <div className="space-y-4">
             {/* Assign Staff */}
-            <div className="border p-3 rounded-lg bg-gray-50">
-              <h3 className="font-medium mb-2 text-gray-600">Assign Staff</h3>
+            <div className="border p-3 rounded-lg bg-gray-50 dark:bg-[#1f1f1f]">
+              <h3 className="font-medium mb-2 text-gray-600 dark:text-gray-400">Assign Staff</h3>
               <div className="flex flex-col gap-3 relative">
                 {/* Search input */}
                 <input
@@ -161,14 +161,14 @@ export default function AssignedToStaffModal({
                     setSearch(e.target.value);
                     setSelectedStaff(null);
                   }}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400"
                 />
 
                 {/* Dropdown results */}
                 {search && !selectedStaff && (
-                  <ul className="absolute top-12 left-0 right-0 bg-white text-gray-600 border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
+                  <ul className="absolute top-12 left-0 right-0 bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400 border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
                     {filteredStaffs?.length === 0 && (
-                      <li className="px-3 py-2 text-gray-500">
+                      <li className="px-3 py-2 text-gray-500 dark:text-gray-400">
                         No staff found
                       </li>
                     )}
@@ -188,7 +188,7 @@ export default function AssignedToStaffModal({
                             setRole("");
                           }
                         }}
-                        className="px-3 py-2 text-gray-600 cursor-pointer hover:bg-gray-100"
+                        className="px-3 py-2 text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-100 dark:bg-gray-800"
                       >
                         {s?.firstName} {s?.lastName} ({s?.email})
                       </li>
@@ -201,7 +201,7 @@ export default function AssignedToStaffModal({
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400"
                 />
 
                 {/* Add button */}
@@ -230,7 +230,7 @@ export default function AssignedToStaffModal({
                   return (
                     <li
                       key={idx}
-                      className="flex text-gray-600 justify-between items-center border p-2 rounded-lg bg-white"
+                      className="flex text-gray-600 dark:text-gray-400 justify-between items-center border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors"
                     >
                       <span>
                         {staff?.firstName} {staff?.lastName} — <b>{a?.role}</b>

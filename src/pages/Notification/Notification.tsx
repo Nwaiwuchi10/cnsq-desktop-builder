@@ -99,10 +99,10 @@ export default function Notification() {
     );
 
   return (
-    <div className="mt-24 mb-16 max-w-3xl mx-auto bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
+    <div className="mt-8 mb-16 max-w-3xl mx-auto bg-white dark:bg-[#141414] shadow-sm rounded-2xl p-6 border border-gray-100 dark:border-gray-800 transition-colors">
       {/* Header */}
       <div className="flex items-center gap-2 mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800">Notifications</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Notifications</h2>
         <span
           className="text-sm font-medium text-white rounded-full px-2 py-0.5"
           style={{ backgroundColor: "#FF990C" }}
@@ -112,24 +112,22 @@ export default function Notification() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-gray-200 mb-4">
+      <div className="flex items-center border-b border-gray-200 dark:border-gray-800 mb-4">
         <button
           onClick={() => setActiveTab("all")}
-          className={`mr-6 pb-2 text-sm font-medium transition-colors ${
-            activeTab === "all"
+          className={`mr-6 pb-2 text-sm font-medium transition-colors ${activeTab === "all"
               ? "text-[#FF990C] border-b-2 border-[#FF990C]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
         >
           All Notifications
         </button>
         <button
           onClick={() => setActiveTab("unread")}
-          className={`pb-2 text-sm font-medium flex items-center gap-1 transition-colors ${
-            activeTab === "unread"
+          className={`pb-2 text-sm font-medium flex items-center gap-1 transition-colors ${activeTab === "unread"
               ? "text-[#FF990C] border-b-2 border-[#FF990C]"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
+              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
         >
           Announcements
           <span

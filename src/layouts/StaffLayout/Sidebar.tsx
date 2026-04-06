@@ -50,28 +50,28 @@ const navSections = [
   {
     title: "CELEBRATIONS",
     items: [
-      { name: "Birthdays", href: "#", icon: Cake },
-      { name: "Anniversaries", href: "#", icon: Medal },
-      { name: "New Hires", href: "#", icon: UserPlus },
+      { name: "Birthdays", href: "/birthday", icon: Cake },
+      { name: "Anniversaries", href: "/anniversary", icon: Medal },
+      { name: "New Hires", href: "/add-staff", icon: UserPlus },
     ],
   },
   {
     title: "WORK",
     items: [
-      { name: "Projects", href: "#", icon: Briefcase },
-      { name: "Tasks", href: "#", icon: ClipboardList },
+      { name: "Projects", href: "/project", icon: Briefcase },
+      { name: "Tasks", href: "/task", icon: ClipboardList },
     ],
   },
   {
     title: "COMMUNICATION",
     items: [
-      { name: "Chat", href: "#", icon: MessageSquare },
-      { name: "CEO's Corner", href: "#", icon: Mail },
+      { name: "Chat", href: "/chat", icon: MessageSquare },
+      { name: "CEO's Corner", href: "/ceos-corner", icon: Mail },
     ],
   },
   {
     title: "PLANNING",
-    items: [{ name: "Calendar", href: "#", icon: Calendar }],
+    items: [{ name: "Calendar", href: "/calender", icon: Calendar }],
   },
 ];
 
@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
     <>
       {/* Mobile Overlay */}
       {isMobileOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
@@ -98,16 +98,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
         {/* Logo and Toggle Header */}
         <div className="h-20 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
           <div className={`flex items-center overflow-hidden transition-opacity duration-300 ${isCollapsed ? "lg:opacity-0 lg:w-0" : "opacity-100"}`}>
-             <Link href="/">
-               <Image src={imgHome} alt="logo" width={110} height={50} unoptimized />
-             </Link>
+            <Link href="/">
+              <Image src={imgHome} alt="logo" width={110} height={50} unoptimized />
+            </Link>
           </div>
 
           <button onClick={toggleCollapse} className="hidden lg:flex p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
-             {isCollapsed ? <PanelRightClose className="w-5 h-5"/> : <PanelLeftClose className="w-5 h-5" />}
+            {isCollapsed ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
           </button>
           <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
-             <X className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -127,11 +127,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
                     <li key={itemIdx}>
                       <Link
                         href={item.href}
-                        className={`flex items-center px-6 py-2 transition-colors ${
-                          isActive
-                            ? "text-[#86CD23] font-medium"
-                            : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
-                        }`}
+                        className={`flex items-center px-6 py-2 transition-colors ${isActive
+                          ? "text-[#86CD23] font-medium"
+                          : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
+                          }`}
                         title={isCollapsed ? item.name : undefined}
                       >
                         <item.icon className={`w-5 h-5 shrink-0 ${isActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400"}`} />
@@ -176,7 +175,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
                 </p>
               </div>
             )}
-           </div>
+          </div>
         </div>
       </aside>
     </>

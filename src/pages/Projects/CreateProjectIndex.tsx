@@ -1,18 +1,18 @@
 "use client";
 
-import Navbar from "@/component/Navbar/Navbar";
-import React from "react";
+
 import ProjectWizardForm from "./CreateProject";
-import Footer from "@/component/Footer/Footer";
+
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 const CreateProjectIndex = () => {
   return (
-    <div>
-      <Navbar />
+    <StaffLayout>
+
       <ProjectWizardForm />
 
-      <Footer />
-    </div>
+
+    </StaffLayout>
   );
 };
 

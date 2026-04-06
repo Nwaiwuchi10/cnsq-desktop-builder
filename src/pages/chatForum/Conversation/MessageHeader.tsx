@@ -3,7 +3,7 @@ import React from "react";
 
 export const Header: React.FC = () => {
   return (
-    <header className="w-full bg-transparent p-4 text-gray-600">
+    <header className="w-full bg-transparent p-4 text-gray-600 dark:text-gray-400">
       <div className="max-w-6xl mx-auto flex items-center gap-3">
         <button className="p-2 rounded-md">◀</button>
         <div className="flex items-center gap-3">

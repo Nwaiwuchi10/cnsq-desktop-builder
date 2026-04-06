@@ -17,7 +17,7 @@ const ConversationList: React.FC<{
   }
 
   return (
-    <div className="space-y-3 text-gray-600">
+    <div className="space-y-3 text-gray-600 dark:text-gray-400">
       <div className="mt-4 space-y-3">
         {items.map((it) => (
           <ConversationItem

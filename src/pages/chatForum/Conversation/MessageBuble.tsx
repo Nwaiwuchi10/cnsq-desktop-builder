@@ -24,14 +24,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       ${
         me
           ? "bg-[#10b981] text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
-          : "bg-[#E6EEF7] text-gray-800 rounded-br-xl rounded-tr-xl rounded-tl-xl"
+          : "bg-[#E6EEF7] dark:bg-gray-800 transition-colors text-gray-800 dark:text-gray-200 rounded-br-xl rounded-tr-xl rounded-tl-xl"
       }`}
       >
         <div className="text-sm leading-relaxed">{text}</div>
         {time && (
           <div
             className={`text-xs mt-2 ${
-              me ? "text-green-50/80" : "text-gray-500"
+              me ? "text-green-50/80" : "text-gray-500 dark:text-gray-400"
             }`}
           >
             {time}

@@ -101,12 +101,12 @@ export default function ConversationMembersManager({
   );
 
   return (
-    <div className="fixed inset-0 bg-[#FAFAFA] bg-opacity-40 flex items-center justify-center z-50 px-4">
-      <div className="bg-white p-6 rounded-xl w-full max-w-lg shadow-lg space-y-4">
+    <div className="fixed inset-0 bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors bg-opacity-40 flex items-center justify-center z-50 px-4">
+      <div className="bg-white dark:bg-[#141414] transition-colors p-6 rounded-xl w-full max-w-lg shadow-lg space-y-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-bold text-xl capitalize">{mode} Member</h2>
-          <button onClick={onClose} className="text-gray-600 hover:text-black">
+          <button onClick={onClose} className="text-gray-600 dark:text-gray-400 hover:text-black dark:text-white">
             ✕
           </button>
         </div>
@@ -124,7 +124,7 @@ export default function ConversationMembersManager({
             />
 
             {/* Staff List */}
-            <div className="max-h-60 overflow-y-auto border rounded-lg p-2 bg-gray-50 mt-2">
+            <div className="max-h-60 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800 transition-colors mt-2">
               {filteredStaff.map((s) => (
                 <label
                   key={s.id}
@@ -140,30 +140,30 @@ export default function ConversationMembersManager({
                     <p className="font-medium">
                       {s.firstName} {s.lastName}
                     </p>
-                    <p className="text-sm text-gray-500">{s.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{s.email}</p>
                   </div>
                 </label>
               ))}
 
               {filteredStaff.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No staff found</p>
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">No staff found</p>
               )}
             </div>
 
             {/* Selected members preview */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-600 mt-4 mb-2">
+              <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-4 mb-2">
                 Selected Members
               </h3>
 
               {selectedMembers.length === 0 ? (
-                <p className="text-gray-500 text-sm">None selected.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">None selected.</p>
               ) : (
                 <ul className="space-y-2">
                   {selectedMembers.map((s) => (
                     <li
                       key={s.id}
-                      className="border p-2 rounded-lg bg-white flex justify-between"
+                      className="border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors flex justify-between"
                     >
                       <span>
                         {s.firstName} {s.lastName} ({s.email})
@@ -202,7 +202,7 @@ export default function ConversationMembersManager({
                 <div>
                   {m.user.firstName} {m.user.lastName}
                 </div>
-                <div className="text-sm text-gray-500">{m.role}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">{m.role}</div>
               </div>
             ))}
           </div>
@@ -233,7 +233,7 @@ export default function ConversationMembersManager({
         {/* Footer Close Button */}
         <button
           onClick={onClose}
-          className="w-full py-2 bg-gray-200 rounded mt-4"
+          className="w-full py-2 bg-gray-200 dark:bg-gray-800 transition-colors rounded mt-4"
         >
           Close
         </button>

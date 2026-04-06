@@ -9,8 +9,8 @@ export interface Project {
   uuid: string;
   projectName: string;
   desc?: string;
-  derivedStatus?: string; // 🔹 New field for derived status
-  projectProgress?: number; // 🔹 New field for progress percentage
+  derivedStatus?: string;
+  projectProgress?: number;
   status: string;
   department: {
     id: number;
@@ -58,7 +58,7 @@ interface ProjectCardProps {
 export default function ProjectCard({ project }: ProjectCardProps) {
   if (!project) {
     return (
-      <div className="p-6 border rounded-lg text-gray-500">
+      <div className="p-6 border dark:border-gray-700 rounded-lg text-gray-500 dark:text-gray-400">
         No project data available
       </div>
     );
@@ -78,7 +78,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     }
   };
   const progress = project.projectProgress ?? 0;
-  
+
   const getProgressColor = (prog: number) => {
     if (prog >= 90) return "bg-[#10b981]";
     if (prog >= 75) return "bg-[#86CD23]";
@@ -93,20 +93,20 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     low: "text-green-500 border border-green-500",
   };
   const statusColors: Record<ProjectStatus, string> = {
-    not_started: "bg-red-100 text-red-600",
-    in_progress: "bg-yellow-100 text-yellow-600",
-    testing: "bg-blue-100 text-blue-600",
-    completed: "bg-green-100 text-green-600",
+    not_started: "bg-red-100 dark:bg-red-900/30 text-red-600",
+    in_progress: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600",
+    testing: "bg-blue-100 dark:bg-blue-900/30 text-blue-600",
+    completed: "bg-green-100 dark:bg-green-900/30 text-green-600",
   };
 
-  // 🔹 Capitalize and transform
   const formatStatus = (derivedStatus: string) =>
     derivedStatus?.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
   return (
-    <div className="bg-white shadow rounded-2xl p-6 border border-gray-200 flex flex-col gap-4">
-      {/* 🔹 Title + Priority */}
+    <div className="bg-white dark:bg-[#141414] shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700 flex flex-col gap-4 transition-colors">
+      {/* Title + Priority */}
       <div className="flex justify-between items-start">
-        <h2 className="text-lg font-bold text-gray-900">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
           {project?.projectName}
         </h2>
         <span
@@ -118,10 +118,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </span>
       </div>
 
-      {/* 🔹 Description */}
-      <p className="text-gray-600 text-sm">{project?.desc}</p>
+      {/* Description */}
+      <p className="text-gray-600 dark:text-gray-400 text-sm">{project?.desc}</p>
 
-      {/* 🔹 Status */}
+      {/* Status */}
       <span
         className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
           statusColors[project?.derivedStatus as ProjectStatus]
@@ -130,11 +130,11 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         {formatStatus(project?.derivedStatus || project?.status)}
       </span>
 
-      {/* 🔹 Progress bar */}
+      {/* Progress bar */}
       <div>
         <div className="flex justify-between items-end mb-2">
-           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
-           <span className={`text-sm font-bold ${barColor.replace('bg-', 'text-')}`}>{progress}%</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+          <span className={`text-sm font-bold ${barColor.replace('bg-', 'text-')}`}>{progress}%</span>
         </div>
         <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
           <div
@@ -144,19 +144,19 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </div>
       </div>
 
-      {/* 🔹 Dates */}
-      <div className="flex items-center gap-2 text-sm text-gray-600">
+      {/* Dates */}
+      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
         <Calendar size={16} />
         {new Date(project?.startDate).toLocaleDateString()} -{" "}
         {new Date(project?.endDate).toLocaleDateString()}
       </div>
 
-      {/* 🔹 Assigned Staff */}
+      {/* Assigned Staff */}
       <div className="flex items-center mt-2">
         {project?.assignedTo?.slice(0, 4).map((assign, idx: number) => (
           <div
             key={idx}
-            className="w-8 h-8 rounded-full overflow-hidden border-2 border-white -ml-2 first:ml-0"
+            className="w-8 h-8 rounded-full overflow-hidden border-2 border-white dark:border-gray-800 -ml-2 first:ml-0"
           >
             {assign?.staff?.photoUrl ? (
               <Image
@@ -168,7 +168,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
                 unoptimized
               />
             ) : (
-              <div className="bg-gray-300 w-full h-full flex items-center justify-center text-xs text-white">
+              <div className="bg-gray-300 dark:bg-gray-600 w-full h-full flex items-center justify-center text-xs text-white">
                 {assign?.staff?.firstName?.[0]}
               </div>
             )}
@@ -176,9 +176,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         ))}
       </div>
 
-      {/* 🔹 Most Recent Comment */}
+      {/* Most Recent Comment */}
       {project?.comments?.length > 0 && (
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
           <span className="font-medium">
             {project?.comments[0].staff?.firstName}{" "}
             {project?.comments[0].staff?.lastName}
@@ -187,7 +187,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </p>
       )}
 
-      {/* 🔹 Footer */}
+      {/* Footer */}
       <div className="flex justify-between items-center mt-3">
         <span className="text-sm text-lime-600 font-medium">
           {project?.department?.name || "—"}

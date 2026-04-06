@@ -1,17 +1,16 @@
 "use client";
-import Footer from "@/component/Footer/Footer";
-import Navbar from "@/component/Navbar/Navbar";
-import React from "react";
+
 import Notification from "./Notification";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 const Index = () => {
   return (
-    <div>
-      <Navbar />
+    <StaffLayout>
+
 
       <Notification />
-      <Footer />
-    </div>
+
+    </StaffLayout>
   );
 };
 
