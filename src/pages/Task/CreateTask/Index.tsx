@@ -4,14 +4,15 @@ import Navbar from "@/component/Navbar/Navbar";
 import React from "react";
 import CreateTaskForm from "./CreateTask";
 import UploadTasksPage from "./UploadCSV";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 const Index = () => {
   return (
     <div>
-      <Navbar />
-    
-      <CreateTaskForm />
-      <Footer />
+      <StaffLayout>
+
+        <CreateTaskForm />
+      </StaffLayout>
     </div>
   );
 };

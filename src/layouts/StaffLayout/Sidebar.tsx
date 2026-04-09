@@ -1,0 +1,185 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Cake,
+  Medal,
+  UserPlus,
+  Briefcase,
+  ClipboardList,
+  MessageSquare,
+  Mail,
+  Calendar,
+  Settings,
+  Menu,
+  X,
+  PanelLeftClose,
+  PanelRightClose
+} from "lucide-react";
+import Image from "next/image";
+import imgHome from "../../assests/images/CNSQ.png";
+
+type User = {
+  uuid: string;
+  firstName: string;
+  lastName: string;
+  photoUrl?: string;
+  employment?: {
+    departmentalRole?: {
+      title?: string;
+    };
+  };
+};
+
+interface SidebarProps {
+  isCollapsed: boolean;
+  toggleCollapse: () => void;
+  isMobileOpen: boolean;
+  setMobileOpen: (open: boolean) => void;
+  user?: User | null;
+}
+
+const navSections = [
+  {
+    title: "OVERVIEW",
+    items: [{ name: "Dashboard", href: "/StaffDashboard", icon: LayoutDashboard }],
+  },
+  {
+    title: "CELEBRATIONS",
+    items: [
+      { name: "Birthdays", href: "/birthday", icon: Cake },
+      { name: "Anniversaries", href: "/anniversary", icon: Medal },
+      { name: "New Hires", href: "/new-hire", icon: UserPlus },
+    ],
+  },
+  {
+    title: "WORK",
+    items: [
+      { name: "Projects", href: "/project", icon: Briefcase },
+      { name: "Tasks", href: "/task", icon: ClipboardList },
+    ],
+  },
+  {
+    title: "COMMUNICATION",
+    items: [
+      { name: "Chat", href: "/chat", icon: MessageSquare },
+      { name: "CEO's Corner", href: "/ceos-corner", icon: Mail },
+    ],
+  },
+  {
+    title: "PLANNING",
+    items: [{ name: "Calendar", href: "/calender", icon: Calendar }],
+  },
+];
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen, user }) => {
+  // Using a mock path for this implementation since it will be mounted somewhere
+  const pathname = "/StaffDashboard";
+
+  return (
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <aside
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-[#141414] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isCollapsed ? "lg:w-[80px]" : "lg:w-[260px]"} w-[260px]`}
+      >
+        {/* Logo and Toggle Header */}
+        <div className="h-20 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
+          <div className={`flex items-center overflow-hidden transition-opacity duration-300 ${isCollapsed ? "lg:opacity-0 lg:w-0" : "opacity-100"}`}>
+            <Link href="/">
+              <Image src={imgHome} alt="logo" width={110} height={50} unoptimized />
+            </Link>
+          </div>
+
+          <button onClick={toggleCollapse} className="hidden lg:flex p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
+            {isCollapsed ? <PanelRightClose className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
+          <button onClick={() => setMobileOpen(false)} className="lg:hidden p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
+          {navSections.map((section, idx) => (
+            <div key={idx} className="mb-6">
+              {!isCollapsed && (
+                <h3 className="px-6 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-wider">
+                  {section.title}
+                </h3>
+              )}
+              <ul className="space-y-1">
+                {section.items.map((item, itemIdx) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <li key={itemIdx}>
+                      <Link
+                        href={item.href}
+                        className={`flex items-center px-6 py-2 transition-colors ${isActive
+                          ? "text-[#86CD23] font-medium"
+                          : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
+                          }`}
+                        title={isCollapsed ? item.name : undefined}
+                      >
+                        <item.icon className={`w-5 h-5 shrink-0 ${isActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400"}`} />
+                        {!isCollapsed && (
+                          <span className="ml-3 truncate">{item.name}</span>
+                        )}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer Area */}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
+          <Link
+            href="#"
+            className={`flex items-center px-2 py-2 mb-4 text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 rounded-md transition-colors`}
+            title={isCollapsed ? "Settings" : undefined}
+          >
+            <Settings className="w-5 h-5 shrink-0 text-gray-500 dark:text-gray-400" />
+            {!isCollapsed && <span className="ml-3">Settings</span>}
+          </Link>
+
+          <div className="flex items-center border-t border-gray-200 dark:border-gray-800 pt-4 px-2">
+            {user?.photoUrl ? (
+              <Image src={user.photoUrl} alt="profile" width={40} height={40} className="rounded-full object-cover shrink-0 h-10 w-10" unoptimized />
+            ) : (
+              <div className="flex items-center justify-center h-10 w-10 shrink-0 rounded-full bg-[#a1e508] text-black font-semibold uppercase">
+                {user ? `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}` : "U"}
+              </div>
+            )}
+            {!isCollapsed && (
+              <div className="ml-3 overflow-hidden">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                  {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  {user?.employment?.departmentalRole?.title || "Staff"}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+};
+
+export default Sidebar;

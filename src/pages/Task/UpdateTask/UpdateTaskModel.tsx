@@ -85,6 +85,11 @@ export default function TaskUpdateModal({
   const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
   const [projectId, setProjectId] = useState<number | "">("");
+  const [selectedDeptName, setSelectedDeptName] = useState<string | "">("");
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>(
+    [],
+  );
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "">("");
   const [token, setToken] = useState<string | null>(null);
 
   const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
@@ -123,9 +128,15 @@ export default function TaskUpdateModal({
         setUrgency(t.urgency);
         setTimeline(t.timeline || "");
         setSprint(t.sprint || "");
-        setProjectId(t.project.id);
+        setProjectId(t.project?.id || "");
         setStartDate(t.startDate ? t.startDate.split("T")[0] : "");
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
+        
+        const initialDept = (t as any).departmentName || "";
+        const initialDeptId = (t as any).departmentId || "";
+        setSelectedDeptName(initialDept);
+        setSelectedDeptId(initialDeptId);
+
         setAssignments(
           t.assignedTo
             ?.filter((a) => a && a.staff && a.staff.id)
@@ -135,11 +146,32 @@ export default function TaskUpdateModal({
             })) || [],
         );
 
-        // setStaffs(projectStaffs);
-        const projectRes = await Api.get(`/projects/${t.project.id}/staffs`);
-        const projectStaffs: Staff[] = projectRes.data;
+        // Step 2: Fetch departments
+        const deptRes = await Api.get("/departments");
+        setDepartments(deptRes.data || []);
 
-        setStaffs(projectStaffs);
+        // Step 3: Handle staff fetching
+        if (t.project && t.project.id) {
+          const projectRes = await Api.get(`/projects/${t.project.id}/staffs`);
+          setStaffs(projectRes.data || []);
+        } else if (initialDept) {
+          const staffRes = await Api.get(
+            `/staff-register/all/staffs/by-department?name=${encodeURIComponent(initialDept)}`,
+          );
+          const clean = (staffRes.data || [])
+            .filter((s: any) => s && s.id)
+            .map((s: any) => ({
+              staff: {
+                id: s.id,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                email: s.email,
+                employment: s.employment || { jobTitle: [] },
+              },
+              role: s.employment?.departmentalRole?.title || "Staff Member",
+            }));
+          setStaffs(clean);
+        }
       } catch (err) {
         console.error("Failed to load task or staff", err);
         setModal({ type: "error", message: "Failed to load task or staff." });
@@ -150,6 +182,36 @@ export default function TaskUpdateModal({
 
     fetchData();
   }, [isOpen, taskId]);
+
+  // Load staffs when department changes (only for non-project tasks)
+  useEffect(() => {
+    if (projectId || !selectedDeptName || !isOpen) return;
+
+    Api.get(
+      `/staff-register/all/staffs/by-department?name=${encodeURIComponent(selectedDeptName)}`,
+    )
+      .then((res) => {
+        const clean = (res.data || [])
+          .filter((s: any) => s && s.id)
+          .map((s: any) => ({
+            staff: {
+              id: s.id,
+              firstName: s.firstName,
+              lastName: s.lastName,
+              email: s.email,
+              employment: s.employment || { jobTitle: [] },
+            },
+            role: s.employment?.departmentalRole?.title || "Staff Member",
+          }));
+        setStaffs(clean);
+      })
+      .catch(() =>
+        setModal({
+          type: "error",
+          message: "Failed to load departmental staff list.",
+        }),
+      );
+  }, [selectedDeptName, projectId, isOpen]);
 
   useEffect(() => {
     if (startDate && dueDate) {
@@ -165,6 +227,7 @@ export default function TaskUpdateModal({
       }
     }
   }, [startDate, dueDate]);
+
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
@@ -180,7 +243,9 @@ export default function TaskUpdateModal({
           timeline,
           startDate,
           dueDate,
-          projectId,
+          projectId: projectId || null,
+          departmentId: selectedDeptId || undefined,
+          departmentName: selectedDeptName || undefined,
           sprint: sprint ? Number(sprint) : undefined,
           assignedTo: assignments,
         },
@@ -211,7 +276,7 @@ export default function TaskUpdateModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Update Task</h2>
@@ -224,34 +289,62 @@ export default function TaskUpdateModal({
           <p>Loading...</p>
         ) : (
           <div className="space-y-4">
-            <label className="block text-sm text-gray-700 mb-1">
+            {/* Department Selection (only if no project) */}
+            {!projectId && (
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  Task Department
+                </label>
+                <select
+                  value={selectedDeptId}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    setSelectedDeptId(val);
+                    const dept = departments.find((d) => d.id === val);
+                    setSelectedDeptName(dept?.name || "");
+                  }}
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+                >
+                  <option value="">-- Choose Department --</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1 italic">
+                  Changing department will refresh the staff selection list below.
+                </p>
+              </div>
+            )}
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Task Title
             </label>
             <input
               placeholder="Task Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Description
             </label>
             <textarea
               placeholder="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
               Task Module/Feature <span className="text-red-500"></span>
             </label>
             <input
               value={taskModule}
               onChange={(e) => setTaskModule(e.target.value)}
               placeholder="e.g. Task on Authentication, Dashboard etc"
-              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+              className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
             />
-            <label className="block text-sm font-medium mb-1 text-gray-700">
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
               Task Sprint
             </label>
             <input
@@ -259,67 +352,67 @@ export default function TaskUpdateModal({
               value={sprint}
               onChange={(e) => setSprint(Number(e.target.value))}
               placeholder="Sprint 1"
-              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Task Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {TASK_STATUSES.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
-            <label className="block text-sm text-gray-700 mb-1">Priority</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Priority</label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>
-            <label className="block text-sm text-gray-700 mb-1">Urgency</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Urgency</label>
             <select
               value={urgency}
               onChange={(e) => setUrgency(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {URGENCIES.map((u) => (
                 <option key={u}>{u}</option>
               ))}
             </select>
             {/* Start Date */}
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
               Start Date
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+              className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
             />
-            <label className="block text-sm text-gray-700 mb-1">Due Date</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Due Date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm text-gray-700 mb-1">Timeline</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Timeline</label>
             <input
               placeholder="Timeline"
               value={timeline}
               onChange={(e) => setTimeline(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
 
             {/* Assign Staff */}
-            <div className="border p-3 rounded-lg bg-gray-50 text-gray-600">
+            <div className="border p-3 rounded-lg bg-gray-50 dark:bg-[#1f1f1f] text-gray-600 dark:text-gray-400">
               <h3 className="font-medium mb-2">Assign Staff</h3>
               <div className="flex flex-col gap-3">
                 <select
@@ -343,7 +436,7 @@ export default function TaskUpdateModal({
                       setRole("");
                     }
                   }}
-                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs
@@ -355,14 +448,14 @@ export default function TaskUpdateModal({
                       </option>
                     ))}
                 </select>
-                <label className="block text-sm text-gray-700 mb-1">
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                   Task Role
                 </label>
                 <input
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 />
                 <button
                   type="button"
@@ -391,7 +484,7 @@ export default function TaskUpdateModal({
                     return (
                       <li
                         key={idx}
-                        className="flex justify-between items-center border p-2 rounded-lg bg-white"
+                        className="flex justify-between items-center border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors"
                       >
                         <span>
                           {staff?.staff?.firstName} {staff?.staff?.lastName} —{" "}

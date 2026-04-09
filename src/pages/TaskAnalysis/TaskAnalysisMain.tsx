@@ -252,10 +252,10 @@ const TaskAnalysisMain = ({ staffId }: TaskAnalysisMainProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col">
+    <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] flex flex-col transition-colors">
       <Navbar />
       <div className="flex-1 mt-20 py-12 px-4 sm:px-8">
-        <div className="max-w-[480px] mx-auto bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 sm:p-8">
+        <div className="max-w-[480px] mx-auto bg-white dark:bg-[#141414] rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 p-6 sm:p-8 transition-colors">
           <TaskHeader staffData={dashboardData?.staff ?? null} />
           <ProductivityDashboard
             staffId={staffId}

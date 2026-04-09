@@ -26,7 +26,7 @@ const MessagesTabs: React.FC<MessagesTabsProps> = ({
             ${
               activeTab === tab.key
                 ? "bg-lime-500 text-white"
-                : "bg-gray-100 text-gray-600"
+                : "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
             }`}
         >
           {tab.label}
@@ -66,7 +66,7 @@ export default MessagesTabs;
 //             ${
 //               activeTab === tab.key
 //                 ? "bg-lime-500 text-white"
-//                 : "bg-gray-100 text-gray-600"
+//                 : "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
 //             }`}
 //         >
 //           {tab.label}

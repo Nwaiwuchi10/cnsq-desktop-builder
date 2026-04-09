@@ -44,7 +44,7 @@ const OpenTasksList = ({
         <h3 className="text-[#95D700] text-xs font-bold uppercase tracking-wider mb-4">
           OPEN TASKS (Loading...)
         </h3>
-        <div className="p-4 text-center text-gray-500 text-sm">
+        <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
           Loading tasks...
         </div>
       </div>
@@ -59,7 +59,7 @@ const OpenTasksList = ({
 
       {/* Tasks List */}
       {tasks.length === 0 ? (
-        <div className="p-4 text-center text-gray-500 text-sm">
+        <div className="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
           No open tasks found
         </div>
       ) : (
@@ -67,7 +67,7 @@ const OpenTasksList = ({
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="border border-gray-200 rounded-xl p-4 bg-white flex justify-between items-center hover:shadow-md transition-shadow cursor-pointer"
+              className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 bg-white dark:bg-[#1a1a1a] flex justify-between items-center hover:shadow-md transition-colors cursor-pointer"
               onClick={() =>
                 onTaskClick &&
                 onTaskClick({ id: task.id, projectId: task.projectId })
@@ -80,17 +80,17 @@ const OpenTasksList = ({
                   strokeWidth={2}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="block text-sm font-medium text-gray-800 line-clamp-2">
+                  <span className="block text-sm font-medium text-gray-800 dark:text-gray-100 line-clamp-2">
                     {task.title}
                   </span>
 
-                  <span className="text-xs text-gray-500 mt-1 block">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
                     {task.project} • Sprint {task.sprint}
                   </span>
                 </div>
               </div>
               <div className="flex gap-2 items-center ml-2 flex-shrink-0">
-                <span className="px-3 py-1 bg-[#F7FEE7] text-[#95D700] text-xs font-bold rounded-full whitespace-nowrap">
+                <span className="px-3 py-1 bg-[#F7FEE7] dark:bg-gray-800 text-[#95D700] text-xs font-bold rounded-full whitespace-nowrap">
                   Not Started
                 </span>
               </div>
@@ -110,7 +110,7 @@ const OpenTasksList = ({
             disabled={pagination.currentPage === 1}
             className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm ${
               pagination.currentPage === 1
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                ? "bg-gray-300 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed"
                 : "bg-[#95D700] text-white hover:bg-green-600"
             }`}
           >
@@ -118,7 +118,7 @@ const OpenTasksList = ({
           </button>
 
           {/* Mobile: simplified */}
-          <span className="block sm:hidden px-3 py-2 text-gray-700 font-medium text-sm">
+          <span className="block sm:hidden px-3 py-2 text-gray-700 dark:text-gray-300 font-medium text-sm">
             {pagination.currentPage} / {pagination.totalPages}
           </span>
 
@@ -144,7 +144,7 @@ const OpenTasksList = ({
 
               return pages.map((p, i) =>
                 typeof p === "string" ? (
-                  <span key={i} className="px-3 py-2 text-gray-500 text-sm">
+                  <span key={i} className="px-3 py-2 text-gray-500 dark:text-gray-400 text-sm">
                     {p}
                   </span>
                 ) : (
@@ -154,7 +154,7 @@ const OpenTasksList = ({
                     className={`px-4 py-2 rounded-lg font-medium text-sm ${
                       pagination.currentPage === p
                         ? "bg-[#95D700] text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700"
                     }`}
                   >
                     {p}
@@ -174,7 +174,7 @@ const OpenTasksList = ({
             disabled={pagination.currentPage === pagination.totalPages}
             className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm ${
               pagination.currentPage === pagination.totalPages
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                ? "bg-gray-300 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed"
                 : "bg-[#95D700] text-white hover:bg-green-600"
             }`}
           >

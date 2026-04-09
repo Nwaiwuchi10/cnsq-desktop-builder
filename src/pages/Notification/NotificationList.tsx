@@ -181,7 +181,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
 
   if (loading)
     return (
-      <div className="p-4 text-sm text-gray-500">Loading notifications...</div>
+      <div className="p-4 text-sm text-gray-500 dark:text-gray-400">Loading notifications...</div>
     );
 
   const filtered =
@@ -197,7 +197,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
     <>
       <div className="flex flex-col">
         {nonAnnouncement.length > 0 && (
-          <div className="flex items-center justify-between py-2 px-2 bg-gray-50 rounded-lg mb-2">
+          <div className="flex items-center justify-between py-2 px-2 bg-gray-50 dark:bg-[#1a1a1a] rounded-lg mb-2 transition-colors">
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -209,7 +209,7 @@ const NotificationList: React.FC<NotificationListProps> = ({
                 }
                 className="w-4 h-4 rounded border-gray-300 text-[#FF990C] focus:ring-[#FF990C]"
               />
-              <span className="text-sm font-medium text-gray-700">Select All Read</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Select All Read</span>
             </div>
             {selectedIds.length > 0 && (
               <button
@@ -223,16 +223,16 @@ const NotificationList: React.FC<NotificationListProps> = ({
         )}
 
         {nonAnnouncement.length === 0 && (
-          <p className="text-sm text-gray-500 p-3 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400 p-3 text-center">
             No notifications found.
           </p>
         )}
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800 transition-colors">
           {nonAnnouncement.map((n) => (
             <div
               key={n.id}
-              className="flex items-center gap-2 py-3 hover:bg-gray-50 transition-colors rounded-lg px-2"
+              className="flex items-center gap-2 py-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors rounded-lg px-2"
             >
               <div
                 onClick={() => handleOpenNotification(n)}
@@ -254,13 +254,13 @@ const NotificationList: React.FC<NotificationListProps> = ({
 
                 <div className="flex-1">
                   <p
-                    className={`text-sm ${n.isRead ? "text-gray-400 font-normal" : "text-black font-lighter"
+                    className={`text-sm transition-colors ${n.isRead ? "text-gray-400 font-normal" : "text-black dark:text-white font-lighter"
                       }`}
                   >
                     {n.title.replace("_", " ")}
                   </p>
                   <span
-                    className={`text-xs mt-1 block ${n.isRead ? "text-gray-300" : "text-gray-500 font-medium"
+                    className={`text-xs mt-1 block transition-colors ${n.isRead ? "text-gray-300 dark:text-gray-600" : "text-gray-500 dark:text-gray-400 font-medium"
                       }`}
                   >
                     {new Date(n.createdAt).toLocaleString()}

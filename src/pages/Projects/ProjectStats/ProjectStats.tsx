@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Api from "@/utils/api";
 
-// ✅ Import icons for projects
 import totalIcon from "../../../assests/imageIcons/file.png";
 import activeIcon from "../../../assests/imageIcons/clock.png";
 import completedIcon from "../../../assests/imageIcons/check-circle.png";
@@ -66,22 +65,22 @@ export default function ProjectStatsCards() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh]">
-        <p>Loading project stats...</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading project stats...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[45vh] flex items-center justify-center">
-      <div className="flex flex-wrap gap-6 justify-center w-full ">
+    <div className="bg-[#FAFAFA] dark:bg-[#0d0d0d] flex items-center justify-center transition-colors">
+      <div className="flex flex-wrap gap-6 justify-center w-full">
         {statsView.map((stat) => (
           <div
             key={stat.id}
-            className="flex flex-col items-start gap-3 border border-[#E5E7EB] bg-white rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%]"
+            className="flex flex-col items-start gap-3 border border-[#E5E7EB] dark:border-gray-700 bg-white dark:bg-[#141414] rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%] transition-colors"
           >
-            <div className="text-gray-600">{stat.icon}</div>
-            <p className="text-gray-900 font-medium">{stat.label}</p>
-            <h2 className="text-2xl font-bold text-gray-900">{stat.value}</h2>
+            <div className="text-gray-600 dark:text-gray-300">{stat.icon}</div>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">{stat.label}</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</h2>
           </div>
         ))}
       </div>

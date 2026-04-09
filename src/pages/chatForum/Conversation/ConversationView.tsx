@@ -528,7 +528,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           />
         )}
         {!isImage && !isVideo && (
-          <div className="w-20 h-20 flex items-center justify-center bg-gray-100 text-xs text-gray-700 rounded">
+          <div className="w-20 h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-800 transition-colors text-xs text-gray-700 dark:text-gray-300 rounded">
             {ext?.toUpperCase() || "FILE"}
           </div>
         )}
@@ -537,7 +537,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
         <button
           onClick={() => setFiles((prev) => prev.filter((_, i) => i !== idx))}
-          className="absolute -top-2 -right-2 text-red-500 bg-white rounded-full px-1 text-sm cursor-pointer"
+          className="absolute -top-2 -right-2 text-red-500 bg-white dark:bg-[#141414] transition-colors rounded-full px-1 text-sm cursor-pointer"
         >
           ✖
         </button>
@@ -547,41 +547,52 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   ////
 
   return (
-    <div className="flex flex-col w-full h-full text-gray-600">
+    <div className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400">
       {/* Header */}
-      <div className="flex items-center gap-4 px-4 py-3 border-b">
-        <button onClick={onBack} className="md:hidden p-2">
-          ◀
-        </button>
-        <div className="w-10 h-10 rounded-full overflow-hidden">
-          {conversation?.avatar ? (
-            <img
-              src={conversation.avatar}
-              alt={conversation.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-              {conversation?.name?.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors">
+        <div className="flex items-center gap-3 flex-1">
+          <button
+            onClick={onBack}
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            ◀
+          </button>
+          <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-blue-400 to-blue-600">
+            {conversation?.avatar ? (
+              <img
+                src={conversation.avatar}
+                alt={conversation.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
+                {conversation?.name?.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+          </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="font-semibold truncate">{conversation?.name}</div>
-          {/* <div className="text-xs text-green-500">
-            {conversation ? "Active" : ""}
-          </div> */}
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+              {conversation?.name}
+            </div>
+            {/* <div className="text-xs text-green-500 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              Online
+            </div> */}
+          </div>
         </div>
+        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400">
+          ⋮
+        </button>
       </div>
 
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-4 bg-white/5"
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-3 bg-white dark:bg-[#141414] transition-colors"
       >
         {loadingMore && (
-          <div className="text-center text-gray-500 text-sm py-2">
+          <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
             Loading more...
           </div>
         )}
@@ -596,8 +607,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             <div key={m.id} className="mb-2">
               {/* DATE SEPARATOR */}
               {showDateSeparator && (
-                <div className="flex justify-center my-2">
-                  <div className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">
+                <div className="flex justify-center my-4">
+                  <div className="px-4 py-2 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full border border-gray-200 dark:border-gray-800">
                     {msgDate}
                   </div>
                 </div>
@@ -611,7 +622,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   <div className="font-semibold text-sm">Replying to:</div>
 
                   {/* Text */}
-                  <div className="text-gray-700 text-sm">{replyingTo.text}</div>
+                  <div className="text-gray-700 dark:text-gray-300 text-sm">
+                    {replyingTo.text}
+                  </div>
 
                   {/* Attachments */}
                   {(replyingTo.attachments?.length ?? 0) > 0 && (
@@ -644,13 +657,15 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 ====================================================== */}
               {m.parent ? (
                 <div className="max-w-[85%] mb-2 ml-2 mb-6">
-                  <div className="border border-lime-500 bg-gray-100 rounded-xl p-3 text-xs shadow-sm">
+                  <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-3 text-xs shadow-sm">
                     {/* ---------- PARENT (replied-to message) ---------- */}
-                    <div className="font-semibold text-gray-700 mb-1">
+                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
                       Replying to:
                     </div>
 
-                    <div className="text-gray-700 mb-2">{m.parent.text}</div>
+                    <div className="text-gray-700 dark:text-gray-300 mb-2">
+                      {m.parent.text}
+                    </div>
 
                     {(m.parent.attachments?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
@@ -668,7 +683,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       </div>
                     )}
 
-                    <hr className="border-gray-300 my-2" />
+                    <hr className="border-gray-300 dark:border-gray-700 my-2" />
 
                     {/* ---------- CHILD MESSAGE TEXT ---------- */}
                     {m.text && (
@@ -677,7 +692,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                           <>
                             {parseLinks(m.text)}
                             {m.edited && (
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {" "}
                                 (edited)
                               </span>
@@ -728,7 +743,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         {/* Reply button */}
                         <button
                           onClick={() => setReplyingTo(m)}
-                          className="text-gray-600 text-sm hover:underline"
+                          className="text-gray-600 dark:text-gray-400 text-sm hover:underline"
                         >
                           Reply
                         </button>
@@ -748,7 +763,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                               .pop()
                               ?.toLowerCase();
                             const time = (
-                              <div className="text-xs text-gray-500 mt-1 text-right">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                                 {m.time}
                               </div>
                             );
@@ -821,7 +836,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         <>
                           {parseLinks(m.text)}
                           {m.edited && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {" "}
                               (edited)
                             </span>
@@ -876,7 +891,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       {/* Reply button */}
                       <button
                         onClick={() => setReplyingTo(m)}
-                        className="text-gray-600 text-sm hover:underline"
+                        className="text-gray-600 dark:text-gray-400 text-sm hover:underline"
                       >
                         Reply
                       </button>
@@ -899,7 +914,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                             .pop()
                             ?.toLowerCase();
                           const time = (
-                            <div className="text-xs text-gray-500 mt-1 text-right">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                               {m.time}
                             </div>
                           );
@@ -969,7 +984,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
       {/* Input */}
       {/* ================ MOBILE + TABLET VIEW ================ */}
-      <div className="p-4 border-t bg-white md:hidden">
+      <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors md:hidden">
         <div className="flex flex-col gap-3">
           {/* File Previews */}
           {files.length > 0 && (
@@ -979,14 +994,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           )}
 
           {/* TOP ROW — Textarea + Send Button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-2">
             <textarea
-              className="w-full rounded-xl border border-black px-4 py-3 resize-none 
-          focus:outline-none bg-transparent text-gray-700 caret-black min-h-[60px]"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 resize-none 
+          focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[44px] max-h-[120px]"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              rows={2}
+              rows={1}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -1001,16 +1016,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 else postMessage();
               }}
               disabled={isSaving}
-              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+              className="p-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg cursor-pointer transition-colors flex-shrink-0"
+              title="Send message"
             >
-              {editMessage ? "Save" : "➤"}
+              {editMessage ? "✓" : "➤"}
             </button>
           </div>
 
           {/* BELOW — Attachments, Audio, Emoji */}
           <div className="flex items-center gap-3">
             {/* File Select */}
-            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
+            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-gray-700 dark:text-gray-300">
               📎
               <input
                 type="file"
@@ -1038,7 +1054,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
             {/* Audio preview */}
             {voiceUrl && (
-              <div className="p-2 border rounded bg-gray-100">
+              <div className="p-2 border rounded bg-gray-100 dark:bg-gray-800 transition-colors">
                 <audio controls src={voiceUrl} className="w-full" />
 
                 <div className="flex gap-3 mt-2">
@@ -1066,7 +1082,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             {/* Emoji */}
             <button
               onClick={() => setShowEmojiPicker((p) => !p)}
-              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
+              className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-xl"
             >
               😀
             </button>
@@ -1074,12 +1090,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
           {/* Floating Emoji Picker */}
           {showEmojiPicker && (
-            <div className="absolute bottom-24 left-4 z-50 bg-white shadow-lg rounded-lg">
+            <div className="absolute bottom-24 left-4 z-50 bg-white dark:bg-[#141414] transition-colors shadow-lg rounded-lg">
               <div className="flex justify-between items-center px-2 py-1 border-b">
                 <span className="text-sm font-semibold">Emoji</span>
                 <button
                   onClick={() => setShowEmojiPicker(false)}
-                  className="text-gray-500 hover:text-red-500 text-lg leading-none"
+                  className="text-gray-500 dark:text-gray-400 hover:text-red-500 text-lg leading-none"
                 >
                   ✖
                 </button>
@@ -1091,7 +1107,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       </div>
 
       {/* ================ DESKTOP VIEW (UNCHANGED) ================ */}
-      <div className="p-4 border-t bg-white hidden md:block">
+      <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors hidden md:block">
         <div className="flex flex-col gap-2">
           {/* File Previews */}
           {files.length > 0 && (
@@ -1102,7 +1118,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
           <div className="flex items-center gap-3">
             {/* File Select */}
-            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">
+            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-gray-700 dark:text-gray-300">
               📎
               <input
                 type="file"
@@ -1130,7 +1146,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
             {/* Audio Preview */}
             {voiceUrl && (
-              <div className="p-2 border rounded bg-gray-100">
+              <div className="p-2 border rounded bg-gray-100 dark:bg-gray-800 transition-colors">
                 <audio controls src={voiceUrl} className="w-full" />
 
                 <div className="flex gap-3 mt-2">
@@ -1158,18 +1174,18 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             {/* Emoji */}
             <button
               onClick={() => setShowEmojiPicker((p) => !p)}
-              className="px-2 py-1 rounded bg-gray-200 hover:bg-gray-300 text-xl"
+              className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-xl"
             >
               😀
             </button>
 
             {showEmojiPicker && (
-              <div className="absolute bottom-12 left-2 z-50 bg-white shadow-lg rounded-lg">
+              <div className="absolute bottom-12 left-2 z-50 bg-white dark:bg-[#141414] transition-colors shadow-lg rounded-lg">
                 <div className="flex justify-between items-center px-2 py-1 border-b">
                   <span className="text-sm font-semibold">Emoji</span>
                   <button
                     onClick={() => setShowEmojiPicker(false)}
-                    className="text-gray-500 hover:text-red-500 text-lg leading-none"
+                    className="text-gray-500 dark:text-gray-400 hover:text-red-500 text-lg leading-none"
                   >
                     ✖
                   </button>
@@ -1180,7 +1196,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
             {/* Message Input */}
             <textarea
-              className="flex-1 min-w-0 rounded-full border px-4 py-3 resize-none focus:outline-none"
+              className="flex-1 min-w-0 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -1200,9 +1216,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 else postMessage();
               }}
               disabled={isSaving}
-              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+              className="p-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg cursor-pointer transition-colors flex-shrink-0"
+              title="Send message"
             >
-              {editMessage ? "Save" : "➤"}
+              {editMessage ? "✓" : "➤"}
             </button>
           </div>
         </div>

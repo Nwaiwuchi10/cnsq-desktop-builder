@@ -56,17 +56,17 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-[#141414] rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
         <div className="p-6 flex flex-col items-center text-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400">
             <AlertCircle size={24} />
           </div>
 
           <div className="flex flex-col gap-2">
-            <h3 className="text-xl font-bold text-gray-900">Delete Meeting?</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Delete Meeting?</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Are you sure you want to delete{" "}
-              <span className="font-semibold text-gray-700">
+              <span className="font-semibold text-gray-700 dark:text-gray-300">
                 "{eventTitle}"
               </span>
               ? This action cannot be undone.
@@ -76,7 +76,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
           <div className="flex gap-3 w-full mt-2">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               Cancel
             </button>

@@ -12,6 +12,7 @@ import { Msg } from "./ConversationItems";
 import io from "socket.io-client";
 import ChannelConversationList from "../Channels/ConversationList";
 import ChannelConversationView from "../Channels/ChannelConverationView";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 interface Member {
   id: number;
@@ -85,9 +86,9 @@ const MessagesLayout: React.FC = () => {
           createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
           time: c.lastMessage?.createdAt
             ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+              hour: "2-digit",
+              minute: "2-digit",
+            })
             : "",
           unread: c.unreadCount,
           isChannel: false,
@@ -141,9 +142,9 @@ const MessagesLayout: React.FC = () => {
             createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
             time: c.lastMessage?.createdAt
               ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "",
             unread: c.unreadCount ?? 0,
             isChannel: true,
@@ -189,9 +190,9 @@ const MessagesLayout: React.FC = () => {
           createdAt: conv.lastMessage?.createdAt || new Date().toISOString(),
           time: conv.lastMessage?.createdAt
             ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+              hour: "2-digit",
+              minute: "2-digit",
+            })
             : "",
           unread: conv.unreadCount ?? 0,
         };
@@ -212,9 +213,9 @@ const MessagesLayout: React.FC = () => {
             createdAt: msg.createdAt || c.createdAt,
             time: msg.createdAt
               ? new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : c.time,
           };
         })
@@ -238,9 +239,9 @@ const MessagesLayout: React.FC = () => {
             createdAt: msg.createdAt || c.createdAt,
             time: msg.createdAt
               ? new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : c.time,
           };
         })
@@ -332,24 +333,24 @@ const MessagesLayout: React.FC = () => {
   });
 
   return (
-    <>
-      <Navbar />
+    <StaffLayout>
 
-      <div className="min-h-screen bg-[#FAFAFA] text-gray-600 p-0 pt-20 md:p-8 md:pt-32">
+
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors dark:bg-[#0d0d0d] text-gray-600 dark:text-gray-400 p-0 pt-4 md:p-8 md:pt-10">
         <div className="mx-auto max-w-full sm:max-w-full md:max-w-5xl lg:max-w-6xl">
           {/* Desktop */}
           <div className="hidden md:grid grid-cols-3 gap-8">
             <div className="col-span-1">
-              <h1 className="text-3xl font-semibold text-gray-700">
+              <h1 className="text-3xl font-semibold text-gray-700 dark:text-gray-300">
                 Your Messages
               </h1>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 Manage your conversations and connect with fellow members.
               </p>
 
               <div className="mt-6">
                 <input
-                  className="placeholder-gray-400 block w-full rounded-lg border border-gray-200 bg-white p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
+                  className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
                   placeholder="Search all staff and conversations..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -375,7 +376,7 @@ const MessagesLayout: React.FC = () => {
 
                 {staffMatches.length > 0 && (
                   <div className="mt-6">
-                    <h2 className="text-gray-500 text-sm mb-2">
+                    <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
                       Search Results
                     </h2>
                     <ConversationList
@@ -388,9 +389,8 @@ const MessagesLayout: React.FC = () => {
             </div>
 
             <div
-              className={`col-span-3 md:col-span-2 bg-white rounded-lg overflow-hidden shadow-sm ${
-                activeTab === "create" ? "h-auto" : "h-[80vh]"
-              }`}
+              className={`col-span-3 md:col-span-2 bg-white dark:bg-[#141414] transition-colors rounded-lg overflow-hidden shadow-sm ${activeTab === "create" ? "h-auto" : "h-[80vh]"
+                }`}
             >
               {activeTab === "create" ? (
                 <CreateChannelForm />
@@ -400,11 +400,11 @@ const MessagesLayout: React.FC = () => {
                     activeTab === "channels"
                       ? channels.find((c: any) => c.id === selected) || null
                       : filteredConversations.find((c) => c.id === selected) ||
-                        null;
+                      null;
 
                   if (!conv) {
                     return (
-                      <div className="flex flex-col items-center justify-center h-full text-gray-600">
+                      <div className="flex flex-col items-center justify-center h-full text-gray-600 dark:text-gray-400">
                         <p>Conversation not found</p>
                       </div>
                     );
@@ -423,7 +423,7 @@ const MessagesLayout: React.FC = () => {
                   );
                 })()
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-600">
+                <div className="flex flex-col items-center justify-center h-full text-gray-600 dark:text-gray-400">
                   <p>Select a conversation to start chatting 💬</p>
                 </div>
               )}
@@ -437,10 +437,10 @@ const MessagesLayout: React.FC = () => {
             ) : (
               !selected && (
                 <div className="p-8">
-                  <h1 className="text-2xl font-semibold text-gray-700">
+                  <h1 className="text-2xl font-semibold text-gray-700 dark:text-gray-300">
                     Your Messages
                   </h1>
-                  <p className="text-sm text-gray-500 mt-1 mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
                     Tap to open a conversation.
                   </p>
                   <MessagesTabs
@@ -449,7 +449,7 @@ const MessagesLayout: React.FC = () => {
                   />
 
                   <input
-                    className="placeholder-gray-400 block w-full rounded-lg border border-gray-200 bg-white p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
+                    className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
                     placeholder="Search all staff and conversations..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -471,7 +471,7 @@ const MessagesLayout: React.FC = () => {
 
                   {staffMatches.length > 0 && (
                     <div className="mt-6">
-                      <h2 className="text-gray-500 text-sm mb-2">
+                      <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
                         Search Results
                       </h2>
                       <ConversationList
@@ -485,13 +485,13 @@ const MessagesLayout: React.FC = () => {
             )}
 
             {selected && (
-              <div className="bg-white h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-white dark:bg-[#141414] transition-colors h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
                 {(() => {
                   const conv: any =
                     activeTab === "channels"
                       ? channels.find((c) => c.id === selected) || null
                       : filteredConversations.find((c) => c.id === selected) ||
-                        null;
+                      null;
 
                   if (!conv) return null;
 
@@ -512,8 +512,8 @@ const MessagesLayout: React.FC = () => {
           </div>
         </div>
       </div>
-      <Footer />
-    </>
+
+    </StaffLayout>
   );
 };
 

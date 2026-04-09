@@ -224,29 +224,29 @@ export default function StaffDetails() {
   // ✅ Handle loading state safely
   if (loadingStaff) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
+      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
         <LoadingSpinner />
-        {/* <p className="text-gray-500">Loading staff details...</p> */}
+        {/* <p className="text-gray-500 dark:text-gray-400">Loading staff details...</p> */}
       </div>
     );
   }
 
   if (!staffUUid || !staff) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
+      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
         <p className="text-red-500">Staff not found.</p>
       </div>
     );
   }
   return (
     <>
-      <div className="min-h-screen bg-[#FAFAFA] p-4 sm:p-8">
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] p-4 sm:p-8 transition-colors">
         {/* Back Button */}
         <div className="flex justify-between items-center mt-16 mb-6">
           {/* Back button */}
           <button
             onClick={() => router.back()}
-            className="flex items-center text-gray-600 hover:text-black"
+            className="flex items-center text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
@@ -264,10 +264,10 @@ export default function StaffDetails() {
         </div>
 
         {/* Profile Section */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
+        <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-6 transition-colors">
           <div className="flex flex-col sm:flex-row items-center gap-6">
             <div className="relative w-28 h-28 flex-shrink-0">
-              <div className="w-28 h-28 rounded-full overflow-hidden border">
+              <div className="w-28 h-28 rounded-full overflow-hidden border dark:border-gray-700">
                 <Image
                   src={staff?.photoUrl || "/default-avatar.png"}
                   alt={`${staff?.firstName} ${staff?.lastName}`}
@@ -296,13 +296,13 @@ export default function StaffDetails() {
               )}
             </div>
             <div className="text-center sm:text-left">
-              <h2 className="text-xl text-gray-800 font-semibold">
+              <h2 className="text-xl text-gray-800 dark:text-gray-100 font-semibold">
                 {staff?.firstName} {staff?.lastName}
               </h2>
-              <p className="text-gray-500 font-medium">
+              <p className="text-gray-500 dark:text-gray-400 font-medium">
                 {staff.address.state}, {staff.address.city}
               </p>
-              <button className="mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium text-[#95D700] bg-[#FAFAFA] rounded-full">
+              <button className="mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium text-[#95D700] bg-[#FAFAFA] dark:bg-[#1a1a1a] rounded-full">
                 <span className="w-2 h-2 rounded-full bg-[#95D700]"></span>
                 {staff.employment?.status}
               </button>
@@ -317,55 +317,55 @@ export default function StaffDetails() {
         </div>
 
         {/* Bio Section */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg text-gray-600 font-semibold mb-2">Bio</h3>
-          <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
-          <p className="text-gray-600">
+        <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 p-6 mb-6 transition-colors">
+          <h3 className="text-lg text-gray-600 dark:text-gray-300 font-semibold mb-2">Bio</h3>
+          <div className="w-full h-[1px] bg-gray-200 dark:bg-gray-800 mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">
             {staff.description || "No bio available."}
           </p>
         </div>
 
         {/* Personal Information */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-600">
+        <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 p-6 mb-6 transition-colors">
+          <h3 className="text-lg font-semibold mb-4 text-gray-600 dark:text-gray-300">
             Personal Information
           </h3>
-          <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
-          <div className="grid sm:grid-cols-2 gap-4 text-gray-600">
+          <div className="w-full h-[1px] bg-gray-200 dark:bg-gray-800 mb-4"></div>
+          <div className="grid sm:grid-cols-2 gap-4 text-gray-600 dark:text-gray-400">
             <p>
-              <span className="font-medium">Date of Birth:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Date of Birth:</span>{" "}
               {staff.dateOfBirth
                 ? staff.dateOfBirth.replace(/^\d{4}/, "****")
                 : "N/A"}
             </p>
 
             <p>
-              <span className="font-medium">Gender:</span> {staff.gender}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Gender:</span> {staff.gender}
             </p>
             <p>
-              <span className="font-medium">Marital Status:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Marital Status:</span>{" "}
               {staff.maritalStatus}
             </p>
             <p>
-              <span className="font-medium">Email:</span> {staff.email}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Email:</span> {staff.email}
             </p>
             <p>
-              <span className="font-medium">Phone:</span> {staff.phone}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Phone:</span> {staff.phone}
             </p>
             <p>
-              <span className="font-medium">Hobbies:</span>{" "}
-              <div className="flex flex-wrap gap-2">
+              <span className="font-medium text-gray-900 dark:text-gray-200">Hobbies:</span>{" "}
+              <div className="flex flex-wrap gap-2 mt-1">
                 {staff?.hobbies?.length ? (
                   staff.hobbies.map((title: string, i: number) => (
                     <span
                       key={i}
-                      className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs"
                     >
                       {title}
                     </span>
                   ))
                 ) : (
-                  <span className="text-gray-500 text-sm"></span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm"></span>
                 )}
               </div>
               {/* {staff.employment.jobTitle} */}
@@ -374,82 +374,82 @@ export default function StaffDetails() {
         </div>
 
         {/* Address Section */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-600">Address</h3>
-          <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
-          <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
+        <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 p-6 mb-6 transition-colors">
+          <h3 className="text-lg font-semibold mb-4 text-gray-600 dark:text-gray-300">Address</h3>
+          <div className="w-full h-[1px] bg-gray-200 dark:bg-gray-800 mb-4"></div>
+          <div className="grid sm:grid-cols-2 gap-4 text-gray-700 dark:text-gray-400">
             <p>
-              <span className="font-medium">City:</span> {staff.address.city}
+              <span className="font-medium text-gray-900 dark:text-gray-200">City:</span> {staff.address.city}
             </p>
             <p>
-              <span className="font-medium">State:</span> {staff.address.state}
+              <span className="font-medium text-gray-900 dark:text-gray-200">State:</span> {staff.address.state}
             </p>
             <p>
-              <span className="font-medium">Country:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Country:</span>{" "}
               {staff.address.country}
             </p>
           </div>
         </div>
 
         {/* Organization Section */}
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-600">
+        <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 p-6 transition-colors">
+          <h3 className="text-lg font-semibold mb-4 text-gray-600 dark:text-gray-300">
             Organization
           </h3>
-          <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
-          <div className="grid sm:grid-cols-2 gap-4 text-gray-700">
+          <div className="w-full h-[1px] bg-gray-200 dark:bg-gray-800 mb-4"></div>
+          <div className="grid sm:grid-cols-2 gap-4 text-gray-700 dark:text-gray-400">
             <p>
-              <span className="font-medium">Employee Code:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Employee Code:</span>{" "}
               {staff.employment.employeeCode}
             </p>
             <p>
-              <span className="font-medium">Job Title:</span>{" "}
-              <div className="flex flex-wrap gap-2">
+              <span className="font-medium text-gray-900 dark:text-gray-200">Job Title:</span>{" "}
+              <div className="flex flex-wrap gap-2 mt-1">
                 {staff?.employment?.jobTitle?.length ? (
                   staff.employment.jobTitle.map((title: string, i: number) => (
                     <span
                       key={i}
-                      className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs"
                     >
                       {title}
                     </span>
                   ))
                 ) : (
-                  <span className="text-gray-500 text-sm">Not Assigned</span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">Not Assigned</span>
                 )}
               </div>
               {/* {staff.employment.jobTitle} */}
             </p>
             <p>
-              <span className="font-medium">Employment Type:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Employment Type:</span>{" "}
               {staff.employment.employmentType}
             </p>
             <p>
-              <span className="font-medium">Work Mode:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Work Mode:</span>{" "}
               {staff.employment.workMode}
             </p>
             <p>
-              <span className="font-medium">Hire Date:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Hire Date:</span>{" "}
               {staff.employment.hireDate}
             </p>
             <p>
-              <span className="font-medium">Status:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Status:</span>{" "}
               {staff.employment.status}
             </p>
             <p>
-              <span className="font-medium">Reporting Manager:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Reporting Manager:</span>{" "}
               {staff.employment.reportingManager}
             </p>
             <p>
-              <span className="font-medium">Direct Report:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Direct Report:</span>{" "}
               {staff.employment.directReport}
             </p>
             <p>
-              <span className="font-medium">Department:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Department:</span>{" "}
               {staff.employment.department.name}
             </p>
             <p>
-              <span className="font-medium">Departmental Unit:</span>{" "}
+              <span className="font-medium text-gray-900 dark:text-gray-200">Departmental Unit:</span>{" "}
               {staff.employment.departmentalRole.title}
             </p>
           </div>
@@ -457,11 +457,11 @@ export default function StaffDetails() {
 
         {/* projects */}
 
-        <div className="bg-white rounded-2xl shadow-sm mt-6 p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-600">Projects</h3>
-          <div className="w-full h-[1px] bg-gray-200 mb-4"></div>
+        <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 mt-6 p-6 transition-colors">
+          <h3 className="text-lg font-semibold mb-4 text-gray-600 dark:text-gray-300">Projects</h3>
+          <div className="w-full h-[1px] bg-gray-200 dark:bg-gray-800 mb-4"></div>
           {projects.length === 0 ? (
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
               No project found for this staff.
             </p>
           ) : (

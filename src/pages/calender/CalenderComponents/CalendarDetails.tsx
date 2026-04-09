@@ -82,7 +82,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-[#141414] rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 transition-colors">
         {/* Header Actions */}
         <div className="flex items-start justify-between p-4 flex-shrink-0">
           {/* LEFT SIDE — Color + Title */}
@@ -91,7 +91,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
               className="w-4 h-4 rounded-full flex-shrink-0"
               style={{ backgroundColor: event.color || "#22c55e" }}
             />
-            <h2 className="text-xl font-medium text-gray-900 leading-tight">
+            <h2 className="text-xl font-medium text-gray-900 dark:text-white leading-tight">
               {event.title}
             </h2>
           </div>
@@ -102,7 +102,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
               <>
                 <button
                   onClick={() => onEdit(event)}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-300"
                   title="Edit"
                 >
                   <Edit2 size={18} />
@@ -110,7 +110,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
 
                 <button
                   onClick={() => onDelete(event)}
-                  className="p-2 hover:bg-red-50 rounded-full transition-colors text-red-500"
+                  className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors text-red-500"
                   title="Delete"
                 >
                   <Trash2 size={18} />
@@ -120,19 +120,19 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-600 dark:text-gray-300"
             >
               <X size={18} />
             </button>
           </div>
         </div>
-        <hr className="mb-0 border-gray-400 flex-shrink-0" />
+        <hr className="mb-0 border-gray-400 dark:border-gray-700 flex-shrink-0" />
 
         <div className="px-6 py-8 flex flex-col gap-6 overflow-y-auto flex-1">
           {/* Title and Color Circle */}
 
           {/* Time Info */}
-          <div className="flex flex-col gap-1 text-gray-600">
+          <div className="flex flex-col gap-1 text-gray-600 dark:text-gray-300">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">
                 {formatEventDate(startTime, endTime)} •{" "}
@@ -142,7 +142,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
             {event.isRecurring && event.recurrenceFrequency && (
               <div className="flex flex-col gap-1">
                 <div className="text-sm text-gray-500 flex items-center gap-2">
-                  <span className="inline-block px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                  <span className="inline-block px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium">
                     {event.recurrenceFrequency === "DAILY"
                       ? "Daily"
                       : event.recurrenceFrequency === "WEEKLY"
@@ -152,7 +152,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
                   Recurring
                 </div>
                 {event.recurrenceEndDate && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
                     Repeats until{" "}
                     {new Date(event.recurrenceEndDate).toLocaleDateString("en-US", {
                       month: "long",
@@ -172,10 +172,10 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
                 <div className="flex items-start gap-3">
                   <MapPin size={20} className="text-gray-400 mt-0.5" />
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Location
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {event.location}
                     </span>
                   </div>
@@ -185,7 +185,7 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
                 <div className="flex items-start gap-3">
                   <LinkIcon size={20} className="text-gray-400 mt-0.5" />
                   <div className="flex-1 flex flex-col">
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Video call link
                     </span>
                     <div className="flex items-center gap-2">
@@ -193,13 +193,13 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
                         href={event.meetingLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline truncate"
+                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline truncate"
                       >
                         {event.meetingLink}
                       </a>
                       <button
                         onClick={() => copyToClipboard(event.meetingLink)}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors text-gray-400"
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors text-gray-400 dark:text-gray-500"
                       >
                         <Copy size={16} />
                       </button>
@@ -215,10 +215,10 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
             <div className="flex items-start gap-3">
               <div className="w-5" /> {/* Spacer for alignment */}
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Description
                 </span>
-                <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed">
                   {event.description}
                 </p>
               </div>
@@ -229,13 +229,13 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
             <div className="flex items-start gap-3">
               <Users size={20} className="text-gray-400" />
               <div className="flex-1 flex flex-col">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   CreatedBy
                 </span>
                 <div className="flex items-center gap-2">
                   <p
 
-                    className="text-sm font-medium text-gray-600"
+                    className="text-sm font-medium text-gray-600 dark:text-gray-400"
                   >
                     {event?.createdBy?.firstName} {event?.createdBy?.lastName}
                   </p>
@@ -251,21 +251,21 @@ const CalendarDetails: React.FC<CalendarDetailsProps> = ({
           {/* Attendees */}
           {event.attendees && event.attendees.length > 0 && (
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-3 text-gray-600">
-                <Users size={20} className="text-gray-400" />
-                <span className="text-sm font-medium">Attendees</span>
+              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                <Users size={20} className="text-gray-400 dark:text-gray-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Attendees</span>
               </div>
               <div className="flex flex-col gap-2 pl-8">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
                   {event.attendees.length} guests
                 </span>
                 <div className="flex flex-col gap-2">
                   {event.attendees.map((attendee: any) => (
                     <div key={attendee.id} className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-500 italic">
+                      <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-500 dark:text-gray-400 italic">
                         {attendee.firstName?.[0] || attendee.name?.[0] || "?"}
                       </div>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         {attendee.firstName} {attendee.lastName}
                       </span>
                     </div>

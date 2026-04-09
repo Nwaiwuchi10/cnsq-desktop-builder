@@ -60,28 +60,28 @@ export default function StaffCompletionModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999] p-4 backdrop-blur-sm"
+      className="fixed inset-0 bg-black/40 dark:bg-black/80 transition-colors flex items-center justify-center z-[9999] p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all duration-300"
+        className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Status */}
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-800">Staff Status</h2>
-            <p className="text-sm text-gray-500">{data.staffName}</p>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">Staff Status</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{data.staffName}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-lg transition"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors rounded-lg transition"
           >
             <X className="w-5 h-5 text-gray-400" />
           </button>
         </div>
 
-        <div className="w-full h-px bg-gray-200 mb-4"></div>
+        <div className="w-full h-px bg-gray-200 dark:bg-gray-800 transition-colors mb-4"></div>
 
         {/* Status Badge - Prominent */}
         <div
@@ -108,7 +108,7 @@ export default function StaffCompletionModal({
         {/* Completion Rate Progress */}
         <div className="mb-5">
           <div className="flex justify-between items-center mb-2">
-            <p className="text-sm font-semibold text-gray-700">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Task Completion
             </p>
             <p
@@ -118,7 +118,7 @@ export default function StaffCompletionModal({
               {data.completionRate}%
             </p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-gray-200 dark:bg-gray-800 transition-colors rounded-full h-3 overflow-hidden">
             <div
               className="h-3 rounded-full transition-all duration-500"
               style={{
@@ -131,9 +131,9 @@ export default function StaffCompletionModal({
 
         {/* Task Stats */}
         <div className="grid grid-cols-2 gap-3 mb-5">
-          <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-            <p className="text-xs text-gray-500 font-medium mb-1">Completed</p>
-            <p className="text-2xl font-bold text-gray-800">
+          <div className="bg-gray-50 dark:bg-gray-800 transition-colors p-3 rounded-lg border border-gray-200 dark:border-gray-800">
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Completed</p>
+            <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
               {data.completedTasks}
             </p>
             <p className="text-xs text-gray-400 mt-1">
@@ -169,8 +169,8 @@ export default function StaffCompletionModal({
         </div>
 
         {/* Status Message */}
-        <div className="p-4 rounded-lg bg-gray-50 border border-gray-200 mb-5">
-          <p className="text-sm text-gray-700 leading-relaxed font-medium">
+        <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-800 mb-5">
+          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
             {getPerformanceMessage()}
           </p>
         </div>
@@ -178,7 +178,7 @@ export default function StaffCompletionModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition-colors"
+          className="w-full py-2.5 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500]"
         >
           Close
         </button>

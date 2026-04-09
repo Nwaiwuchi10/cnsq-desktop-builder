@@ -55,16 +55,16 @@ export default function TeamProfiles() {
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[80vh] flex flex-col items-center px-6 sm:px-10 md:px-20 pt-12 ">
+    <div className="bg-[#FAFAFA] dark:bg-[#0d0d0d] min-h-[80vh] flex flex-col items-center px-6 sm:px-10 md:px-20 pt-12 transition-colors">
       {/* Heading */}
       <div className="flex items-center justify-between w-full max-w-7xl mb-10 mt-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-black">
+        <h1 className="text-2xl md:text-3xl font-bold text-black dark:text-white">
           Heads of Departments
         </h1>
         <Link href="/heads-of-departments">
           <button
             style={{ cursor: "pointer" }}
-            className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#141414] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition"
           >
             View All
           </button>
@@ -76,7 +76,7 @@ export default function TeamProfiles() {
         {hodList?.map((hod) => (
           <div
             key={hod?.id}
-            className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
+            className="flex flex-col justify-between border border-[#E5E7EB] dark:border-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-sm"
           >
             {/* Profile Picture + Name + Role */}
             <div className="flex items-center gap-4">
@@ -88,10 +88,10 @@ export default function TeamProfiles() {
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div className="flex flex-col">
-                <span className="text-gray-900 font-semibold">
+                <span className="text-gray-900 dark:text-gray-100 font-semibold">
                   {hod?.staff?.firstName} {hod?.staff?.lastName}
                 </span>
-                <span className="text-gray-500 text-sm">
+                <span className="text-gray-500 dark:text-gray-400 text-sm">
                   {hod.name || "Head of Department"}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export default function TeamProfiles() {
 
             {/* Department Badge */}
             <div className="mt-4">
-              <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+              <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] dark:bg-gray-800 text-[#496C08] dark:text-[#95D700]">
                 {hod?.department?.name ||
                   hod?.staff?.employment?.department?.name ||
                   "Department"}
@@ -107,19 +107,19 @@ export default function TeamProfiles() {
             </div>
 
             {/* Email */}
-            <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
+            <div className="flex items-center gap-2 mt-4 text-gray-600 dark:text-gray-400 text-sm">
               <Mail size={16} />
               <span>{hod?.staff?.email}</span>
             </div>
 
             {/* Phone */}
-            <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
+            <div className="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-400 text-sm">
               <Phone size={16} />
               <span>{hod?.staff?.phone}</span>
             </div>
 
             {/* Location */}
-            <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
+            <div className="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-400 text-sm">
               <MapPin size={16} />
               <span>
                 {hod?.staff?.address?.city}, {hod?.staff?.address?.state},{" "}

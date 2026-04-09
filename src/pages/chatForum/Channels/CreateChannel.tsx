@@ -199,18 +199,18 @@ export default function CreateChannelForm() {
   );
 
   return (
-    <div className="h-full w-full bg-[#FAFAFA] py-4 mb-10">
+    <div className="h-full w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-4 mb-10">
       {/* HEADER */}
       <div className="max-w-xl mx-auto px-4 mb-8 mt-14 flex items-center justify-between">
         <button
           onClick={step > 1 ? back : () => router.back()}
-          className="flex items-center gap-2 text-black hover:opacity-75"
+          className="flex items-center gap-2 text-black dark:text-white hover:opacity-75"
         >
           <ArrowLeft size={20} />
           <span className="font-medium">Back</span>
         </button>
 
-        <h2 className="text-lg md:text-2xl font-semibold text-gray-900">
+        <h2 className="text-lg md:text-2xl font-semibold text-gray-900 dark:text-white">
           {step === 1 ? "Create Channel" : "Add Members"}
         </h2>
         <div className="w-[84px]" />
@@ -218,29 +218,29 @@ export default function CreateChannelForm() {
 
       {/* CARD */}
       <div className="max-w-xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm border p-6 space-y-6 hover:border-lime-500 transition-shadow transition-colors">
+        <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-sm border p-6 space-y-6 hover:border-lime-500 transition-shadow">
           {/* STEP 1 — CHANNEL DETAILS */}
           {step === 1 && (
             <>
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Channel Name *
                 </label>
                 <input
                   value={channelName}
                   onChange={(e) => setChannelName(e.target.value)}
                   placeholder="e.g. General, Dev Team"
-                  className="w-full border rounded-lg px-3 py-2 hover:border-lime-500 transition-shadow transition-colors"
+                  className="w-full border rounded-lg px-3 py-2 hover:border-lime-500 transition-shadow"
                 />
 
-                <label className="block text-sm font-medium text-gray-700 ">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 ">
                   Description
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Channel description..."
-                  className="w-full border rounded-lg px-3 py-2 hover:border-lime-500 transition-shadow transition-colors"
+                  className="w-full border rounded-lg px-3 py-2 hover:border-lime-500 transition-shadow"
                 />
               </div>
             </>
@@ -257,7 +257,7 @@ export default function CreateChannelForm() {
                 className="w-full border rounded-lg px-3 py-2"
               />
 
-              <div className="max-h-60 overflow-y-auto border rounded-lg p-2 bg-gray-50 mt-2">
+              <div className="max-h-60 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800 transition-colors mt-2">
                 {filteredStaff.map((s) => (
                   <label
                     key={s.id}
@@ -272,29 +272,29 @@ export default function CreateChannelForm() {
                       <p className="font-medium">
                         {s.firstName} {s.lastName}
                       </p>
-                      <p className="text-sm text-gray-500">{s.email}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{s.email}</p>
                     </div>
                   </label>
                 ))}
                 {filteredStaff.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">
                     No staff found
                   </p>
                 )}
               </div>
 
               <div className="mt-4">
-                <h3 className="text-sm font-semibold text-gray-600 mb-2">
+                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
                   Selected Members
                 </h3>
                 {selectedMembers.length === 0 ? (
-                  <p className="text-gray-500 text-sm">None selected.</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">None selected.</p>
                 ) : (
                   <ul className="space-y-2">
                     {selectedMembers.map((s) => (
                       <li
                         key={s.id}
-                        className="border p-2 rounded-lg bg-white flex justify-between"
+                        className="border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors flex justify-between"
                       >
                         <span>
                           {s.firstName} {s.lastName} ({s.email})

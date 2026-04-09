@@ -192,9 +192,9 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
   if (!details)
     return (
-      <div className="fixed inset-0 bg-gray-200 bg-opacity-40 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-xl w-full max-w-lg text-center">
-          <p className="text-gray-500 text-sm">
+      <div className="fixed inset-0 bg-gray-200 dark:bg-gray-800 transition-colors bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-[#141414] transition-colors p-6 rounded-xl w-full max-w-lg text-center">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             <LoadingSpinner />
           </p>
         </div>
@@ -210,16 +210,16 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 h-full">
-      <div className="bg-white rounded-2xl w-full max-w-2xl p-6 relative shadow-lg">
+      <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl w-full max-w-2xl p-6 relative shadow-lg">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-400"
         >
           <X size={20} />
         </button>
 
         {/* Header */}
-        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
           {notification.title}
         </h2>
         <p className="text-xs text-gray-400 mb-4">{openedAt}</p>
@@ -227,18 +227,18 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         {/* Dynamic content */}
         {isDemo && (
           <>
-            <h3 className="text-base font-semibold text-gray-800 mb-2">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
               {demoDetails.nameOfProduct}
             </h3>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
               {/* {demoDetails.description} */}
               {renderTextWithLinks(demoDetails.description)}
             </p>
 
-            <h4 className="text-sm font-medium text-gray-800 mb-2">
+            <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
               How it works
             </h4>
-            <ol className="list-decimal list-inside text-sm text-gray-600 mb-4">
+            <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-400 mb-4">
               {/* {demoDetails.howItWorks?.split("\n").map((step, index) => (
                 <li key={index}>{step}</li>
               ))} */}
@@ -254,7 +254,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
                   {demoDetails.videos.map((videoUrl, i) => (
                     <div
                       key={i}
-                      className="min-w-[600px] h-40 bg-gray-200 rounded-lg overflow-hidden relative"
+                      className="min-w-[600px] h-40 bg-gray-200 dark:bg-gray-800 transition-colors rounded-lg overflow-hidden relative"
                     >
                       <video
                         src={videoUrl}
@@ -270,10 +270,10 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
         {isAnnouncement && (
           <>
-            <h3 className="text-base font-semibold text-gray-800 mb-2">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
               {announcementDetails.title}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {/* {announcementDetails.description} */}
               {renderTextWithLinks(announcementDetails.description)}
             </p>
@@ -286,7 +286,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
                 disabled={isUpdatingRead}
                 className="w-4 h-4 accent-lime-500 cursor-pointer"
               />
-              <span className="text-sm text-gray-600">Mark as read</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Mark as read</span>
             </div>
           </>
         )}

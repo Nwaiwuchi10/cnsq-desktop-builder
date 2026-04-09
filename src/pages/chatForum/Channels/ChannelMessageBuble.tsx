@@ -39,7 +39,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
         className={`flex flex-col ${me ? "items-start gap-2 " : "items-start"}`}
       >
         {authorName && (
-          <div className="text-xs font-semibold text-gray-600 mb-1">
+          <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
             {authorName}
           </div>
         )}
@@ -51,7 +51,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
             ${
               me
                 ? "bg-[#10b981] text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
-                : "bg-[#E6EEF7] text-gray-800 rounded-br-xl rounded-tr-xl rounded-tl-xl"
+                : "bg-[#E6EEF7] dark:bg-gray-800 transition-colors text-gray-800 dark:text-gray-200 rounded-br-xl rounded-tr-xl rounded-tl-xl"
             }`}
         >
           <div className="text-sm leading-relaxed">{text}</div>
@@ -59,7 +59,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           {time && (
             <div
               className={`text-xs mt-2 ${
-                me ? "text-green-50/80" : "text-gray-500"
+                me ? "text-green-50/80" : "text-gray-500 dark:text-gray-400"
               }`}
             >
               {time}

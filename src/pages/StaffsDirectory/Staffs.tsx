@@ -103,6 +103,24 @@ export default function StaffDirectory() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  // Multi-filter state
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>(
+    [],
+  );
+  const [locations, setLocations] = useState<string[]>([]);
+  const [filters, setFilters] = useState({
+    department: "All",
+    role: "All",
+    location: "All",
+    completion: "All",
+  });
+  const [tempFilters, setTempFilters] = useState({
+    department: "All",
+    role: "All",
+    location: "All",
+    completion: "All",
+  });
+
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [selectedCompletionData, setSelectedCompletionData] =
     useState<CompletionData | null>(null);
@@ -143,23 +161,71 @@ export default function StaffDirectory() {
 
   // Fetch departmental roles
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchData = async () => {
       try {
-        const res = await Api.get<DepartmentalRole[]>(`/departmental-role`);
-        setRoles(res.data);
+        const [rolesRes, deptsRes] = await Promise.all([
+          Api.get<DepartmentalRole[]>(`/departmental-role`),
+          Api.get<{ id: number; name: string }[]>(`/departments`),
+        ]);
+        setRoles(rolesRes.data);
+        setDepartments(deptsRes.data);
       } catch (error) {
-        console.error("Error fetching roles:", error);
+        console.error("Error fetching filter data:", error);
       }
     };
-    fetchRoles();
+    fetchData();
   }, []);
 
-  // Client-side role filter
+  // Extract unique locations from staff list
+  useEffect(() => {
+    if (staffList.length > 0) {
+      const locs = Array.from(
+        new Set(
+          staffList
+            .map((s) =>
+              s.address?.city && s.address?.state
+                ? `${s.address.city}, ${s.address.state}`
+                : s.address?.city || s.address?.state || "",
+            )
+            .filter((l) => l !== ""),
+        ),
+      );
+      setLocations(locs);
+    }
+  }, [staffList]);
+
+  const handleApplyFilter = () => {
+    setFilters(tempFilters);
+    setShowDropdown(false);
+  };
+
+  // Client-side multi-criteria filter
   const filteredStaff = staffList.filter((person) => {
-    const matchesRole = selectedRole
-      ? person.employment?.departmentalRole?.title === selectedRole
-      : true;
-    return matchesRole;
+    const matchesDept =
+      filters.department === "All" ||
+      person.employment?.department?.name === filters.department;
+
+    const matchesRole =
+      filters.role === "All" ||
+      person.employment?.departmentalRole?.title === filters.role;
+
+    const matchesLocation =
+      filters.location === "All" ||
+      `${person.address?.city}, ${person.address?.state}`.includes(
+        filters.location,
+      );
+
+    const matchesCompletion = (() => {
+      if (filters.completion === "All") return true;
+      const rate = person.taskPerformance?.completionRate || 0;
+      if (filters.completion === "0-25%") return rate <= 25;
+      if (filters.completion === "26-50%") return rate > 25 && rate <= 50;
+      if (filters.completion === "51-75%") return rate > 50 && rate <= 75;
+      if (filters.completion === "76-100%") return rate > 75;
+      return true;
+    })();
+
+    return matchesDept && matchesRole && matchesLocation && matchesCompletion;
   });
 
   const generateVCard = (person: Staff) => {
@@ -187,11 +253,11 @@ END:VCARD`;
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
+    <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] py-24 transition-colors">
       <div className="max-w-[95%] mx-auto px-4 sm:px-8">
         {/* 🔙 Back Button */}
         <div
-          className="flex items-center gap-2 text-black cursor-pointer hover:opacity-70"
+          className="flex items-center gap-2 text-black dark:text-white cursor-pointer hover:opacity-70"
           onClick={() => router.back()}
         >
           <ArrowLeft size={20} />
@@ -200,7 +266,7 @@ END:VCARD`;
 
         {/* 🏷️ Title & Toggle */}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Staff Directory
           </h1>
 
@@ -209,15 +275,15 @@ END:VCARD`;
         </div>
 
         {/* 📄 Subtitle */}
-        <p className="mt-6 text-gray-900 text-base sm:text-lg">
+        <p className="mt-6 text-gray-900 dark:text-gray-300 text-base sm:text-lg">
           Browse and Connect with your colleagues across the organization
         </p>
 
         {/* 🔍 Toolbar */}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           {/* Search Bar */}
-          <div className="flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
-            <Search className="text-gray-500" size={18} />
+          <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors">
+            <Search className="text-gray-500 dark:text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Search by staff name, position, role..."
@@ -226,18 +292,18 @@ END:VCARD`;
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
+              className="ml-2 w-full outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent"
             />
 
             {/* 📱 Mobile-only buttons */}
             <div className="flex sm:hidden gap-2 ml-2">
               {/* view toggle */}
-              <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit">
+              <div className="flex items-center bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl p-1 gap-1 w-fit">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-2 rounded-lg transition-colors ${viewMode === "grid"
-                    ? "bg-gray-100 text-black shadow-sm"
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm"
+                    : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                     }`}
                   title="Grid View"
                 >
@@ -246,8 +312,8 @@ END:VCARD`;
                 <button
                   onClick={() => setViewMode("list")}
                   className={`p-2 rounded-lg transition-colors ${viewMode === "list"
-                    ? "bg-gray-100 text-black shadow-sm"
-                    : "text-gray-400 hover:text-gray-600"
+                    ? "bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm"
+                    : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                     }`}
                   title="List View"
                 >
@@ -257,21 +323,21 @@ END:VCARD`;
               {/* Filter Dropdown */}
               <button
                 onClick={() => setShowDropdown((prev) => !prev)}
-                className="flex items-center gap-1 px-2 py-1 border border-gray-300 rounded-lg text-gray-600 text-xs hover:bg-gray-100"
+                className="flex items-center gap-1 px-2 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141414] rounded-lg text-gray-600 dark:text-gray-300 text-xs hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 <span>{selectedRole || "Filter"}</span>
                 <ChevronDown size={14} />
               </button>
 
               {showDropdown && (
-                <div className="absolute top-16 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <ul className="max-h-60 overflow-y-auto text-gray-600">
+                <div className="absolute top-16 left-4 right-4 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 p-1">
+                  <ul className="max-h-60 overflow-y-auto text-gray-600 dark:text-gray-300">
                     <li
                       onClick={() => {
                         setSelectedRole("");
                         setShowDropdown(false);
                       }}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer"
                     >
                       All Roles
                     </li>
@@ -282,7 +348,7 @@ END:VCARD`;
                           setSelectedRole(role.title);
                           setShowDropdown(false);
                         }}
-                        className="px-4 text-gray-600 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 text-gray-600 dark:text-gray-300 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer"
                       >
                         {role.title} ({role.department?.name})
                       </li>
@@ -309,12 +375,12 @@ END:VCARD`;
 
           {/* 💻 Desktop-only Filter + Add Staff */}
           <div className="hidden sm:flex items-center gap-3 relative">
-            <div className="flex items-center bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit">
+            <div className="flex items-center bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl p-1 gap-1 w-fit">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-2 rounded-lg transition-colors ${viewMode === "grid"
-                  ? "bg-gray-100 text-black shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm"
+                  : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   }`}
                 title="Grid View"
               >
@@ -323,8 +389,8 @@ END:VCARD`;
               <button
                 onClick={() => setViewMode("list")}
                 className={`p-2 rounded-lg transition-colors ${viewMode === "list"
-                  ? "bg-gray-100 text-black shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm"
+                  : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   }`}
                 title="List View"
               >
@@ -332,41 +398,125 @@ END:VCARD`;
               </button>
             </div>
             {/* Filter Dropdown */}
-            <button
-              onClick={() => setShowDropdown((prev) => !prev)}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-            >
-              <span>{selectedRole || "Filter by Dept Unit"}</span>
-              <ChevronDown size={16} />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown((prev) => !prev)}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141414] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium"
+              >
+                <span>Filter by</span>
+                <ChevronDown size={18} />
+              </button>
 
-            {showDropdown && (
-              <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg w-56 z-10">
-                <ul className="max-h-60 overflow-y-auto">
-                  <li
-                    onClick={() => {
-                      setSelectedRole("");
-                      setShowDropdown(false);
-                    }}
-                    className="px-4 text-gray-600 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    All Roles
-                  </li>
-                  {roles.map((role) => (
-                    <li
-                      key={role.id}
-                      onClick={() => {
-                        setSelectedRole(role.title);
-                        setShowDropdown(false);
-                      }}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer"
+              {showDropdown && (
+                <div className="absolute top-12 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl w-[280px] z-[100] p-5 space-y-4 animate-in fade-in zoom-in duration-200">
+                  <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                    Filter by
+                  </h3>
+
+                  {/* Department */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Department
+                    </label>
+                    <select
+                      value={tempFilters.department}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          department: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
-                      {role.title} ({role.department?.name})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                      <option value="All">All</option>
+                      {departments.map((d) => (
+                        <option key={d.id} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={tempFilters.role}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          role: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                    >
+                      <option value="All">All</option>
+                      {roles.map((r) => (
+                        <option key={r.id} value={r.title}>
+                          {r.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Location
+                    </label>
+                    <select
+                      value={tempFilters.location}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          location: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                    >
+                      <option value="All">All</option>
+                      {locations.map((loc, i) => (
+                        <option key={i} value={loc}>
+                          {loc}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Task Completion */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Task Completion percentage
+                    </label>
+                    <select
+                      value={tempFilters.completion}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          completion: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                    >
+                      <option value="All">All</option>
+                      <option value="0-25%">0-25%</option>
+                      <option value="26-50%">26-50%</option>
+                      <option value="51-75%">51-75%</option>
+                      <option value="76-100%">76-100%</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleApplyFilter}
+                    className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
+                  >
+                    Apply Filter
+                  </button>
+                </div>
+              )}
+            </div>
             {/* download card button */}
             {/* <button
               onClick={downloadAllContacts}
@@ -396,7 +546,7 @@ END:VCARD`;
                 {filteredStaff.map((person) => (
                   <div
                     key={person.id}
-                    className="flex flex-col justify-between border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm"
+                    className="flex flex-col justify-between border border-[#E5E7EB] dark:border-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-sm transition-colors"
                   >
                     {/* Profile Picture + Name + Role */}
                     <div className="flex items-center gap-4">
@@ -423,23 +573,23 @@ END:VCARD`;
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-gray-900 font-semibold">
+                        <span className="text-gray-900 dark:text-white font-semibold">
                           {person?.firstName} {person?.lastName}
                         </span>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-2 mt-1">
                           {person?.employment?.jobTitle?.length ? (
                             person.employment.jobTitle.map(
                               (title: string, i: number) => (
                                 <span
                                   key={i}
-                                  className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                                  className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs"
                                 >
                                   {title}
                                 </span>
                               ),
                             )
                           ) : (
-                            <span className="text-gray-500 text-sm">
+                            <span className="text-gray-500 dark:text-gray-400 text-sm">
                               Not Assigned
                             </span>
                           )}
@@ -449,26 +599,26 @@ END:VCARD`;
 
                     {/* Department */}
                     <div className="mt-4">
-                      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+                      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] dark:bg-gray-800 text-[#496C08] dark:text-[#95D700]">
                         {person?.employment?.department?.name ||
                           "No Department"}
                       </span>
                     </div>
 
                     {/* Email */}
-                    <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
+                    <div className="flex items-center gap-2 mt-4 text-gray-600 dark:text-gray-400 text-sm">
                       <Mail size={16} />
                       <span>{person?.email}</span>
                     </div>
 
                     {/* Phone */}
-                    <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
+                    <div className="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-400 text-sm">
                       <Phone size={16} />
                       <span>{person?.phone}</span>
                     </div>
 
                     {/* Location */}
-                    <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
+                    <div className="flex items-center gap-2 mt-2 text-gray-600 dark:text-gray-400 text-sm">
                       <MapPin size={16} />
                       <span>
                         {person.address?.city}, {person.address?.state}
@@ -490,7 +640,7 @@ END:VCARD`;
                 {filteredStaff.map((person) => (
                   <div
                     key={person.id}
-                    className="bg-white border border-[#F1F1F1] rounded-2xl p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow"
+                    className="bg-white dark:bg-[#141414] border border-[#F1F1F1] dark:border-gray-800 rounded-2xl p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow"
                   >
                     {/* Top Row: Avatar, Info, Link */}
                     <div className="flex items-center justify-between">
@@ -518,10 +668,10 @@ END:VCARD`;
                           )}
                         </div>
                         <div className="flex flex-col">
-                          <h3 className="text-gray-900 font-bold text-lg">
+                          <h3 className="text-gray-900 dark:text-white font-bold text-lg">
                             {person?.firstName} {person?.lastName}
                           </h3>
-                          <span className="text-gray-500 text-sm font-medium">
+                          <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">
                             {person?.employment?.jobTitle?.join(", ") ||
                               "Not Assigned"}
                           </span>
@@ -536,39 +686,39 @@ END:VCARD`;
                     </div>
 
                     {/* Horizontal Divider */}
-                    <div className="h-[1px] w-full bg-gray-200" />
+                    <div className="h-[1px] w-full bg-gray-200 dark:bg-gray-800" />
 
                     {/* Bottom Row: 4 Columns */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                       <div className="flex flex-col gap-1">
-                        <span className="text-gray-900 font-bold text-sm">
+                        <span className="text-gray-900 dark:text-gray-200 font-bold text-sm">
                           Department
                         </span>
-                        <span className="text-gray-600 text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">
                           {person?.employment?.department?.name || "N/A"}
                         </span>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <span className="text-gray-900 font-bold text-sm">
+                        <span className="text-gray-900 dark:text-gray-200 font-bold text-sm">
                           Email
                         </span>
-                        <span className="text-gray-600 text-sm break-all">
+                        <span className="text-gray-600 dark:text-gray-400 text-sm break-all">
                           {person?.email}
                         </span>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <span className="text-gray-900 font-bold text-sm">
+                        <span className="text-gray-900 dark:text-gray-200 font-bold text-sm">
                           Phone
                         </span>
-                        <span className="text-gray-600 text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">
                           {person?.phone}
                         </span>
                       </div>
                       <div className="flex flex-col gap-1">
-                        <span className="text-gray-900 font-bold text-sm">
+                        <span className="text-gray-900 dark:text-gray-200 font-bold text-sm">
                           Location
                         </span>
-                        <span className="text-gray-600 text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">
                           {person.address?.city}, {person.address?.state}
                         </span>
                       </div>
@@ -578,7 +728,7 @@ END:VCARD`;
               </div>
             )
           ) : (
-            <p className="text-gray-600 text-center py-12">No staff found.</p>
+            <p className="text-gray-600 dark:text-gray-400 text-center py-12">No staff found.</p>
           )}
         </div>
 

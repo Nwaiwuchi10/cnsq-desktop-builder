@@ -1,29 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Search,
-  ChevronDown,
-  Plus,
-  ArrowLeft,
-  ArrowRight,
-  SortDesc,
-} from "lucide-react";
+import { Search, ChevronDown, Plus, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Api from "@/utils/api";
 import ProjectStatsCards from "./ProjectStats/ProjectStats";
 import ProjectCard from "./ProjectCrad";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 interface Project {
   id: number;
   uuid: string;
   projectName: string;
   desc?: string;
-  derivedStatus?: string; // 🔹 New field for derived status
+  derivedStatus?: string;
   status: string;
   startDate: string;
   endDate: string;
-  projectProgress?: number; // 🔹 New field for progress percentage
+  projectProgress?: number;
   department: { id: number; name: string };
   priority: "critical" | "high" | "medium" | "low";
   timeLine: string;
@@ -53,18 +47,34 @@ export default function ViewProjects() {
   const [limit] = useState(6);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [filters, setFilters] = useState<{
+    status: string;
+    sort: "newest" | "oldest";
+  }>({
+    status: "",
+    sort: "newest",
+  });
+  const [tempFilters, setTempFilters] = useState<{
+    status: string;
+    sort: "newest" | "oldest";
+  }>({
+    status: "",
+    sort: "newest",
+  });
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const handleApplyFilter = () => {
+    setFilters(tempFilters);
+    setShowFilterDropdown(false);
+  };
 
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
         const res = await Api.get(
-          `/projects/paginated/all?page=${page}&limit=${limit}&search=${search}&status=${selectedStatus}&sort=${sortOrder}`,
+          `/projects/paginated/all?page=${page}&limit=${limit}&search=${search}&status=${filters.status}&sort=${filters.sort}`,
         );
         setProjects(res?.data?.data);
         setTotal(res?.data?.total);
@@ -75,7 +85,7 @@ export default function ViewProjects() {
       }
     };
     fetchProjects();
-  }, [page, limit, search, selectedStatus, sortOrder]);
+  }, [page, limit, search, filters]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -97,284 +107,257 @@ export default function ViewProjects() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
-      <div className="max-w-[95%] mx-auto px-4 sm:px-8">
-        <ProjectStatsCards />
+    <StaffLayout>
+      <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] py-4 transition-colors">
+        <div className="max-w-[100%] mx-auto px-4 sm:px-8">
+          <ProjectStatsCards />
 
-        <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900">
-          Projects
-        </h1>
-        <p className="mt-6 text-gray-900 text-base sm:text-lg">
-          Manage and track organizational projects
-        </p>
+          <h1 className="mt-6 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white transition-colors">
+            Projects
+          </h1>
+          <p className="mt-6 text-gray-600 dark:text-gray-400 text-base sm:text-lg transition-colors">
+            Manage and track organizational projects
+          </p>
 
-        {/* 🔍 Toolbar Section */}
-        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
-          {/* Search Bar */}
-          <div className="flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
-            <Search className="text-gray-500" size={18} />
-            <input
-              type="text"
-              placeholder="Search by project name, status, or department..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
-            />
+          {/* 🔍 Toolbar Section */}
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative">
+            {/* Search Bar */}
+            <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors">
+              <Search className="text-gray-500 dark:text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search by project name, status, or department..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="ml-2 w-full outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent"
+              />
+            </div>
+
+            {/* Buttons (Desktop Layout) */}
+            <div className="hidden sm:flex items-center gap-3 relative">
+              {/* Filter Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowFilterDropdown((prev) => !prev)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141414] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium"
+                >
+                  <span>Filter & Sort</span>
+                  <ChevronDown size={18} />
+                </button>
+
+                {showFilterDropdown && (
+                  <div className="absolute top-12 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl w-[280px] z-[100] p-5 space-y-4 animate-in fade-in zoom-in duration-200">
+                    <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                      Filter & Sort
+                    </h3>
+
+                    {/* Status */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Status
+                      </label>
+                      <select
+                        value={tempFilters.status}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            status: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="not_started">Not Started</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="testing">Testing</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+
+                    {/* Sort */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Sort
+                      </label>
+                      <select
+                        value={tempFilters.sort}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            sort: e.target.value as "newest" | "oldest",
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                      >
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={handleApplyFilter}
+                      className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
+                    >
+                      Apply Filter
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Project */}
+              <Link href="/project/create">
+                <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
+                  Add New Project <Plus size={18} />
+                </button>
+              </Link>
+            </div>
+
+            {/* 📱 Mobile Layout */}
+            <div className="flex flex-col sm:hidden gap-2 mt-2 relative z-20">
+              {/* Filter */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowFilterDropdown((prev) => !prev)}
+                  className="flex items-center justify-between gap-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-[#1a1a1a] transition-colors"
+                >
+                  Filter & Sort
+                  <ChevronDown size={16} />
+                </button>
+
+                {showFilterDropdown && (
+                  <div className="absolute top-12 left-0 right-0 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-full z-30 p-4 space-y-4">
+                    <h3 className="text-gray-900 dark:text-white font-bold text-base mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
+                      Filter & Sort
+                    </h3>
+
+                    {/* Status */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Status
+                      </label>
+                      <select
+                        value={tempFilters.status}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            status: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="not_started">Not Started</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="testing">Testing</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
+
+                    {/* Sort */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Sort
+                      </label>
+                      <select
+                        value={tempFilters.sort}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            sort: e.target.value as "newest" | "oldest",
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                      >
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={handleApplyFilter}
+                      className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
+                    >
+                      Apply Filter
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Project */}
+              <Link href="/project/create" className="w-full">
+                <button className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
+                  Add New Project <Plus size={18} />
+                </button>
+              </Link>
+            </div>
           </div>
 
-          {/* Buttons (Desktop Layout) */}
-          <div className="hidden sm:flex items-center gap-3 relative">
-            {/* Filter by Status */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setShowStatusDropdown((prev) => !prev);
-                  setShowSortDropdown(false);
-                }}
-                className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-              >
-                {selectedStatus
-                  ? selectedStatus.replace("_", " ")
-                  : "Filter by Status"}
-                <ChevronDown size={16} />
-              </button>
-
-              {showStatusDropdown && (
-                <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-lg shadow-lg w-56 z-20">
-                  <ul className="max-h-60 text-gray-600 overflow-y-auto">
-                    <li
-                      onClick={() => {
-                        setSelectedStatus("");
-                        setShowStatusDropdown(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      All Statuses
-                    </li>
-                    {["not_started", "in_progress", "testing", "completed"].map(
-                      (status) => (
-                        <li
-                          key={status}
-                          onClick={() => {
-                            setSelectedStatus(status);
-                            setShowStatusDropdown(false);
-                          }}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer capitalize"
-                        >
-                          {status.replace("_", " ")}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {/* Sort Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setShowSortDropdown((prev) => !prev);
-                  setShowStatusDropdown(false);
-                }}
-                className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
-              >
-                <SortDesc size={16} />
-                {sortOrder === "newest" ? "Newest" : "Oldest"}
-                <ChevronDown size={16} />
-              </button>
-
-              {showSortDropdown && (
-                <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg w-44 z-20">
-                  <ul className="text-gray-600">
-                    <li
-                      onClick={() => {
-                        setSortOrder("newest");
-                        setShowSortDropdown(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      Newest
-                    </li>
-                    <li
-                      onClick={() => {
-                        setSortOrder("oldest");
-                        setShowSortDropdown(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      Oldest
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            {/* Add Project */}
-            <Link href="/project/create">
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
-                Add New Project <Plus size={18} />
-              </button>
-            </Link>
+          {/* 🗂 Project Grid */}
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+            {projects?.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400">
+                No projects found.
+              </p>
+            ) : (
+              projects?.map((project) => (
+                <ProjectCard key={project?.id} project={project} />
+              ))
+            )}
           </div>
 
-          {/* 📱 Mobile Layout */}
-          <div className="flex flex-col sm:hidden gap-2 mt-2 relative z-20">
-            {/* Filter */}
-            <div className="relative">
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-10">
               <button
-                onClick={() => {
-                  setShowStatusDropdown((prev) => !prev);
-                  setShowSortDropdown(false);
-                }}
-                className="flex items-center justify-between gap-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                  page === 1
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-[#95D700] text-white hover:bg-green-600"
+                }`}
               >
-                {selectedStatus
-                  ? selectedStatus.replace("_", " ")
-                  : "Filter by Status"}
-                <ChevronDown size={16} />
+                <ArrowLeft size={16} /> Prev
               </button>
 
-              {showStatusDropdown && (
-                <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-lg shadow-lg w-full z-30">
-                  <ul className="max-h-60 text-gray-600 overflow-y-auto">
-                    <li
-                      onClick={() => {
-                        setSelectedStatus("");
-                        setShowStatusDropdown(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      All Statuses
-                    </li>
-                    {["not_started", "in_progress", "testing", "completed"].map(
-                      (status) => (
-                        <li
-                          key={status}
-                          onClick={() => {
-                            setSelectedStatus(status);
-                            setShowStatusDropdown(false);
-                          }}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer capitalize"
-                        >
-                          {status.replace("_", " ")}
-                        </li>
-                      ),
-                    )}
-                  </ul>
-                </div>
+              {getPageNumbers().map((p, idx) =>
+                typeof p === "string" ? (
+                  <span
+                    key={idx}
+                    className="px-3 py-2 text-gray-500 dark:text-gray-400"
+                  >
+                    {p}
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      page === p
+                        ? "bg-[#95D700] text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
               )}
-            </div>
 
-            {/* Sort */}
-            <div className="relative">
               <button
-                onClick={() => {
-                  setShowSortDropdown((prev) => !prev);
-                  setShowStatusDropdown(false);
-                }}
-                className="flex items-center justify-between gap-1 w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100"
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                  page === totalPages
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-[#95D700] text-white hover:bg-green-600"
+                }`}
               >
-                <SortDesc size={16} />
-                {sortOrder === "newest" ? "Newest" : "Oldest"}
-                <ChevronDown size={16} />
+                Next <ArrowRight size={16} />
               </button>
-
-              {showSortDropdown && (
-                <div className="absolute top-12 left-0 bg-white border border-gray-200 rounded-lg shadow-lg w-full z-30">
-                  <ul className="text-gray-600">
-                    <li
-                      onClick={() => {
-                        setSortOrder("newest");
-                        setShowSortDropdown(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      Newest
-                    </li>
-                    <li
-                      onClick={() => {
-                        setSortOrder("oldest");
-                        setShowSortDropdown(false);
-                      }}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      Oldest
-                    </li>
-                  </ul>
-                </div>
-              )}
             </div>
-
-            {/* Add Project */}
-            <Link href="/project/create" className="w-full">
-              <button className="flex items-center justify-center gap-2 w-full px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
-                Add New Project <Plus size={18} />
-              </button>
-            </Link>
-          </div>
-        </div>
-
-        {/* 🗂 Project Grid */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
-          {projects?.length === 0 ? (
-            <p className="text-gray-500">No projects found.</p>
-          ) : (
-            projects?.map((project) => (
-              <ProjectCard key={project?.id} project={project} />
-            ))
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-10">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
-                page === 1
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-[#95D700] text-white hover:bg-green-600"
-              }`}
-            >
-              <ArrowLeft size={16} /> Prev
-            </button>
-
-            {getPageNumbers().map((p, idx) =>
-              typeof p === "string" ? (
-                <span key={idx} className="px-3 py-2 text-gray-500">
-                  {p}
-                </span>
-              ) : (
-                <button
-                  key={p}
-                  onClick={() => setPage(p)}
-                  className={`px-4 py-2 rounded-lg font-medium ${
-                    page === p
-                      ? "bg-[#95D700] text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  {p}
-                </button>
-              ),
-            )}
-
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
-                page === totalPages
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-[#95D700] text-white hover:bg-green-600"
-              }`}
-            >
-              Next <ArrowRight size={16} />
-            </button>
-          </div>
-        )}
       </div>
-    </div>
+    </StaffLayout>
   );
 }
