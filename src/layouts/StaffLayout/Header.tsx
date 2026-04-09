@@ -29,7 +29,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     }
@@ -121,7 +124,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
         {/* Notifications & Messages cluster */}
         <div className="flex items-center gap-4">
-          <Link href="/notifications" className="relative cursor-pointer hover:opacity-80 transition-opacity">
+          <Link
+            href="/notifications"
+            className="relative cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -130,7 +136,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
             )}
           </Link>
 
-          <Link href="/chat" className="relative cursor-pointer hover:opacity-80 transition-opacity">
+          <Link
+            href="/chat"
+            className="relative cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <MessageCircle className="w-6 h-6 text-gray-600 dark:text-gray-300" />
             {chatUnreadCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
@@ -145,36 +154,56 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
         {/* User Info */}
         <div className="relative" ref={dropdownRef}>
-          <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+          <div
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
             <span className="hidden sm:inline text-sm font-medium dark:text-white transition-colors">
               {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
             </span>
             {user?.photoUrl ? (
-              <Image src={user.photoUrl} alt="profile" width={32} height={32} className="rounded-full object-cover h-8 w-8" unoptimized />
+              <Image
+                src={user.photoUrl}
+                alt="profile"
+                width={32}
+                height={32}
+                className="rounded-full object-cover h-8 w-8"
+                unoptimized
+              />
             ) : (
               <div className="flex items-center justify-center h-8 w-8 rounded-full bg-[#a1e508] text-black font-semibold text-sm uppercase">
-                {user ? `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}` : "U"}
+                {user
+                  ? `${user.firstName?.charAt(0) || ""}${user.lastName?.charAt(0) || ""}`
+                  : "U"}
               </div>
             )}
           </div>
-          
+
           {isDropdownOpen && (
             <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-[#141414] rounded-lg shadow-lg border border-gray-100 dark:border-gray-800 z-50 overflow-hidden animate-fadeIn">
               <div className="py-1">
-                 {user && (
-                   <Link href={`/staff/${user.uuid}`} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                     View Profile
-                   </Link>
-                 )}
-                 <Link href="/change-password" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors" onClick={() => setIsDropdownOpen(false)}>
-                   Change Password
-                 </Link>
-                 <button
-                   onClick={handleLogout}
-                   className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                 >
-                   Logout
-                 </button>
+                {user && (
+                  <Link
+                    href={`/staff/${user.uuid}`}
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    View Profile
+                  </Link>
+                )}
+                <Link
+                  href="/change-password"
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Change Password
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           )}

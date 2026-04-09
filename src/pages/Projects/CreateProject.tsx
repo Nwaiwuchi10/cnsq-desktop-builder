@@ -95,7 +95,7 @@ export default function ProjectWizardForm() {
     Api.get("/departments")
       .then((res) => setDepartments(res.data || []))
       .catch(() =>
-        setModal({ type: "error", message: "Failed to load departments." })
+        setModal({ type: "error", message: "Failed to load departments." }),
       );
   }, []);
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function ProjectWizardForm() {
       Api.get("/staff-register")
         .then((res) => setStaffs(res.data || []))
         .catch(() =>
-          setModal({ type: "error", message: "Failed to load staff list." })
+          setModal({ type: "error", message: "Failed to load staff list." }),
         );
     }
   }, [step]);
@@ -194,7 +194,7 @@ export default function ProjectWizardForm() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       setModal({ type: "success", message: "Staff assigned successfully!" });
@@ -215,12 +215,12 @@ export default function ProjectWizardForm() {
   const filteredStaffs = staffs.filter((s) =>
     `${s.firstName} ${s.lastName} ${s.email}`
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(search.toLowerCase()),
   );
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-2">
       {/* Header */}
-      <div className="max-w-xl mx-auto px-4 mb-8 mt-14">
+      <div className="max-w-xl mx-auto px-4 mb-8 mt-4">
         <div className="flex items-center justify-between">
           <button
             onClick={step > 1 ? back : () => router.back()}
@@ -287,7 +287,7 @@ export default function ProjectWizardForm() {
                     value={departmentId}
                     onChange={(e) =>
                       setDepartmentId(
-                        e.target.value ? Number(e.target.value) : ""
+                        e.target.value ? Number(e.target.value) : "",
                       )
                     }
                     className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
@@ -352,7 +352,9 @@ export default function ProjectWizardForm() {
                   </label>
                   {apk ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-700 dark:text-gray-300">{apk.name}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                        {apk.name}
+                      </span>
                       <button
                         type="button"
                         onClick={removeFile}
@@ -440,7 +442,7 @@ export default function ProjectWizardForm() {
                           onClick={() => {
                             setSelectedStaff(s);
                             setSearch(
-                              `${s.firstName} ${s.lastName} (${s.email})`
+                              `${s.firstName} ${s.lastName} (${s.email})`,
                             );
 
                             //  Auto-fill role from employment.jobTitle (first one if array)
@@ -491,7 +493,9 @@ export default function ProjectWizardForm() {
                     Assigned Staff
                   </h3>
                   {assignments.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">No staff added yet.</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      No staff added yet.
+                    </p>
                   ) : (
                     <ul className="space-y-2">
                       {assignments.map((a, idx) => {
@@ -508,7 +512,7 @@ export default function ProjectWizardForm() {
                             <button
                               onClick={() =>
                                 setAssignments((prev) =>
-                                  prev.filter((_, i) => i !== idx)
+                                  prev.filter((_, i) => i !== idx),
                                 )
                               }
                               className="text-red-500 hover:underline text-sm"

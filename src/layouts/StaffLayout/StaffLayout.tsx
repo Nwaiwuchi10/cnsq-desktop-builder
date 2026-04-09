@@ -31,7 +31,8 @@ const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
     if (!token) return;
 
     Api.get("/staff-register/staff/viewProfile", {
@@ -64,10 +65,8 @@ const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
 
         <Header user={user} />
 
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-20 scrollbar-hide bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
-          <div className="max-w-[1600px] mx-auto">
-            {children}
-          </div>
+        <main className="flex-1 overflow-auto px-3 sm:px-4 md:px-6 py-4 md:py-6 pb-20 scrollbar-hide bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
+          <div className="w-full max-w-[1600px] mx-auto">{children}</div>
         </main>
       </div>
     </div>

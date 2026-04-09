@@ -117,7 +117,7 @@ const Anniversary = () => {
   return (
     <StaffLayout>
       {/* Header */}
-      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-16">
+      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-4">
         <h1 className="text-3xl sm:text-5xl font-bold">Anniversary</h1>
       </div>
 
@@ -206,7 +206,9 @@ const Section = ({
       </h1>
 
       {loading ? (
-        <p className="text-gray-600 dark:text-gray-400">Loading {title.toLowerCase()}...</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Loading {title.toLowerCase()}...
+        </p>
       ) : data.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No anniversaries 🎉</p>
       ) : (
@@ -294,10 +296,11 @@ const Pagination = ({
       <button
         onClick={() => setPage(page - 1)}
         disabled={page === 1}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === 1
-          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-          : "bg-[#95D700] text-white"
-          }`}
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
+          page === 1
+            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+            : "bg-[#95D700] text-white"
+        }`}
       >
         <ArrowLeft size={16} /> Prev
       </button>
@@ -305,17 +308,21 @@ const Pagination = ({
       {/* Page numbers */}
       {generatePageNumbers().map((p, idx) =>
         typeof p === "string" ? (
-          <span key={idx} className="px-3 py-2 text-gray-500 dark:text-gray-400">
+          <span
+            key={idx}
+            className="px-3 py-2 text-gray-500 dark:text-gray-400"
+          >
             {p}
           </span>
         ) : (
           <button
             key={p}
             onClick={() => setPage(p)}
-            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${page === p
-              ? "bg-[#95D700] text-white"
-              : "bg-gray-200 text-gray-700"
-              }`}
+            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${
+              page === p
+                ? "bg-[#95D700] text-white"
+                : "bg-gray-200 text-gray-700"
+            }`}
           >
             {p}
           </button>
@@ -326,10 +333,11 @@ const Pagination = ({
       <button
         onClick={() => setPage(page + 1)}
         disabled={page === totalPages}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === totalPages
-          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-          : "bg-[#95D700] text-white"
-          }`}
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
+          page === totalPages
+            ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+            : "bg-[#95D700] text-white"
+        }`}
       >
         Next <ArrowRight size={16} />
       </button>

@@ -1,17 +1,8 @@
 "use client";
 
 import React from "react";
-import MessageCeoModal from "@/component/MessageCEO/MessageCEO";
+import CEOCornerMessages from "@/component/MessageCEO/CEOCornerMessages";
 
 export default function CeosCornerPage() {
-  return (
-    <MessageCeoModal
-      isOpen={true}
-      onClose={() => {
-        if (typeof window !== "undefined") {
-          window.history.back();
-        }
-      }}
-    />
-  );
+  return <CEOCornerMessages />;
 }

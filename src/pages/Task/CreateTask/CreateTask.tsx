@@ -111,9 +111,9 @@ export default function CreateTaskForm() {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [userDepartment, setUserDepartment] = useState<string | null>(null);
   const [userDepartmentId, setUserDepartmentId] = useState<number | null>(null);
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>(
-    [],
-  );
+  const [departments, setDepartments] = useState<
+    { id: number; name: string }[]
+  >([]);
   const [selectedDeptName, setSelectedDeptName] = useState<string | "">("");
   const [selectedDeptId, setSelectedDeptId] = useState<number | "">("");
 
@@ -331,8 +331,8 @@ export default function CreateTaskForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-16">
-      <div className="max-w-xl mx-auto px-4 mb-8 mt-2">
+    <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-4">
+      <div className="max-w-xl mx-auto px-4 mb-8 mt-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
@@ -461,7 +461,9 @@ export default function CreateTaskForm() {
           </select>
 
           {/* Priority */}
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Priority
+          </label>
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
@@ -475,7 +477,9 @@ export default function CreateTaskForm() {
           </select>
 
           {/* Urgency */}
-          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Urgency</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Urgency
+          </label>
           <select
             value={urgency}
             onChange={(e) => setUrgency(e.target.value)}

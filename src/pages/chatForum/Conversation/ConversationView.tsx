@@ -549,36 +549,47 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   return (
     <div className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400">
       {/* Header */}
-      <div className="flex items-center gap-4 px-4 py-3 border-b">
-        <button onClick={onBack} className="md:hidden p-2">
-          ◀
-        </button>
-        <div className="w-10 h-10 rounded-full overflow-hidden">
-          {conversation?.avatar ? (
-            <img
-              src={conversation.avatar}
-              alt={conversation.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-              {conversation?.name?.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors">
+        <div className="flex items-center gap-3 flex-1">
+          <button
+            onClick={onBack}
+            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            ◀
+          </button>
+          <div className="w-11 h-11 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-blue-400 to-blue-600">
+            {conversation?.avatar ? (
+              <img
+                src={conversation.avatar}
+                alt={conversation.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
+                {conversation?.name?.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+          </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="font-semibold truncate">{conversation?.name}</div>
-          {/* <div className="text-xs text-green-500">
-            {conversation ? "Active" : ""}
-          </div> */}
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-gray-900 dark:text-white text-sm truncate">
+              {conversation?.name}
+            </div>
+            {/* <div className="text-xs text-green-500 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+              Online
+            </div> */}
+          </div>
         </div>
+        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400">
+          ⋮
+        </button>
       </div>
 
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-[#141414] transition-colors/5"
+        className="flex-1 overflow-y-auto px-6 py-4 space-y-3 bg-white dark:bg-[#141414] transition-colors"
       >
         {loadingMore && (
           <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
@@ -596,8 +607,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             <div key={m.id} className="mb-2">
               {/* DATE SEPARATOR */}
               {showDateSeparator && (
-                <div className="flex justify-center my-2">
-                  <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full">
+                <div className="flex justify-center my-4">
+                  <div className="px-4 py-2 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full border border-gray-200 dark:border-gray-800">
                     {msgDate}
                   </div>
                 </div>
@@ -611,7 +622,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   <div className="font-semibold text-sm">Replying to:</div>
 
                   {/* Text */}
-                  <div className="text-gray-700 dark:text-gray-300 text-sm">{replyingTo.text}</div>
+                  <div className="text-gray-700 dark:text-gray-300 text-sm">
+                    {replyingTo.text}
+                  </div>
 
                   {/* Attachments */}
                   {(replyingTo.attachments?.length ?? 0) > 0 && (
@@ -650,7 +663,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       Replying to:
                     </div>
 
-                    <div className="text-gray-700 dark:text-gray-300 mb-2">{m.parent.text}</div>
+                    <div className="text-gray-700 dark:text-gray-300 mb-2">
+                      {m.parent.text}
+                    </div>
 
                     {(m.parent.attachments?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
@@ -979,14 +994,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           )}
 
           {/* TOP ROW — Textarea + Send Button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-2">
             <textarea
-              className="w-full rounded-xl border border-black px-4 py-3 resize-none 
-          focus:outline-none bg-transparent text-gray-700 dark:text-gray-300 caret-black min-h-[60px]"
+              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 resize-none 
+          focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[44px] max-h-[120px]"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
-              rows={2}
+              rows={1}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -1001,9 +1016,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 else postMessage();
               }}
               disabled={isSaving}
-              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+              className="p-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg cursor-pointer transition-colors flex-shrink-0"
+              title="Send message"
             >
-              {editMessage ? "Save" : "➤"}
+              {editMessage ? "✓" : "➤"}
             </button>
           </div>
 
@@ -1180,7 +1196,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
             {/* Message Input */}
             <textarea
-              className="flex-1 min-w-0 rounded-full border px-4 py-3 resize-none focus:outline-none"
+              className="flex-1 min-w-0 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -1200,9 +1216,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 else postMessage();
               }}
               disabled={isSaving}
-              className="p-3 bg-green-500 text-white rounded-full cursor-pointer hover:bg-green-600"
+              className="p-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg cursor-pointer transition-colors flex-shrink-0"
+              title="Send message"
             >
-              {editMessage ? "Save" : "➤"}
+              {editMessage ? "✓" : "➤"}
             </button>
           </div>
         </div>

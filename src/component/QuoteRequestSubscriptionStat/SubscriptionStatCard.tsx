@@ -23,7 +23,7 @@ export default function SubscriptionStatsCards() {
     const fetchStats = async () => {
       try {
         const res = await fetch(
-          `${CN_API_BASE}/api/v1/quote-request/generic/subscription-stats`
+          `${CN_API_BASE}/api/v1/quote-request/generic/subscription-stats`,
         );
         const jsonRes = await res.json();
         setStats(jsonRes.data);
@@ -70,28 +70,38 @@ export default function SubscriptionStatsCards() {
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+    <div className="mb-6 md:mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
         Quote Request
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {statsView.map((item) => (
           <div
             key={item.id}
-            className={`flex flex-col gap-4 border-t-[3px] border-b border-l border-r border-b-gray-200 border-l-gray-200 border-r-gray-200 dark:border-b-gray-800 dark:border-l-gray-800 dark:border-r-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-6 transition-colors shadow-sm`}
-            style={{ borderTopColor: item.borderColor.replace('border-[', '').replace(']', '') }}
+            className={`flex flex-col gap-4 border-t-[3px] border-b border-l border-r border-b-gray-200 border-l-gray-200 border-r-gray-200 dark:border-b-gray-800 dark:border-l-gray-800 dark:border-r-gray-800 bg-white dark:bg-[#141414] rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-colors shadow-sm w-full`}
+            style={{
+              borderTopColor: item.borderColor
+                .replace("border-[", "")
+                .replace("]", ""),
+            }}
           >
             <div className="flex flex-col items-start gap-4">
               <div className="bg-gray-100 dark:bg-gray-800/50 p-2 rounded-lg">
-                 <Image src={item.icon} alt="icon" width={24} height={24} className="opacity-80 dark:opacity-100" />
+                <Image
+                  src={item.icon}
+                  alt="icon"
+                  width={24}
+                  height={24}
+                  className="opacity-80 dark:opacity-100"
+                />
               </div>
               <div>
-                 <p className="text-gray-900 dark:text-white text-sm font-semibold mb-1">
-                   {item.label}
-                 </p>
-                 <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
-                   {item.value}
-                 </h3>
+                <p className="text-gray-900 dark:text-white text-xs sm:text-sm font-semibold mb-1">
+                  {item.label}
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  {item.value}
+                </h3>
               </div>
             </div>
           </div>

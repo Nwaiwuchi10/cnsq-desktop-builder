@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Api from "@/utils/api";
-import { Users, FolderKanban, CheckSquare, Cake, Building2 } from "lucide-react";
+import {
+  Users,
+  FolderKanban,
+  CheckSquare,
+  Cake,
+  Building2,
+  CheckLine,
+} from "lucide-react";
 
 interface Stats {
   totalEmployees: number;
@@ -11,6 +18,7 @@ interface Stats {
   tasksInProgress: number;
   birthdays: number;
   totalDepartments: number;
+  totalProjects: number;
 }
 
 export default function StatsCards() {
@@ -51,6 +59,15 @@ export default function StatsCards() {
       href: "/heads-of-departments",
     },
     {
+      id: 3,
+      label: "Total Projects",
+      value: stats?.totalProjects ?? 24,
+      subtitle: "",
+      subtitleColor: "text-amber-500",
+      icon: <CheckLine className="w-5 h-5 text-[#86CD23]" />,
+      href: "/projects",
+    },
+    {
       id: 4,
       label: "Birthday this month",
       value: stats?.birthdays ?? 6,
@@ -60,7 +77,7 @@ export default function StatsCards() {
       href: "/birthday",
     },
     {
-      id: 4,
+      id: 5,
       label: "Anniversaries this Quarter",
       value: stats?.tasksInProgress ?? 148,
       subtitle: "6 due today",
@@ -68,17 +85,6 @@ export default function StatsCards() {
       icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
       href: "/anniversary",
     },
-    {
-      id: 4,
-      label: "Anniversaries",
-      value: stats?.tasksInProgress ?? 148,
-      subtitle: "6 due today",
-      subtitleColor: "text-amber-500",
-      icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
-      href: "/anniversary",
-    },
-
-
   ];
 
   if (loading) {
@@ -90,30 +96,29 @@ export default function StatsCards() {
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+    <div className="mb-6 md:mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
         Quick Analysis
       </h2>
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
         {statsView.map((stat) => (
-          <Link key={stat.id} href={stat.href} className="flex flex-col justify-between border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-5 hover:border-[#86CD23] dark:hover:border-[#86CD23] transition-all shadow-sm group">
-            <div className="flex items-start mb-4">
+          <Link
+            key={stat.id}
+            href={stat.href}
+            className="flex flex-col justify-between border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] rounded-lg sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:border-[#86CD23] dark:hover:border-[#86CD23] transition-all shadow-sm group w-full"
+          >
+            <div className="flex items-start mb-2 sm:mb-4">
               <div className="text-[#86CD23] opacity-80 group-hover:opacity-100 transition-opacity">
                 {stat.icon}
               </div>
             </div>
-            <div>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+            <div className="min-w-0">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
                 {stat.value}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium mb-2 line-clamp-2">
                 {stat.label}
               </p>
-              {/* {stat.subtitle && (
-                <p className={`text-xs font-medium ${stat.subtitleColor}`}>
-                  {stat.subtitle}
-                </p>
-              )} */}
             </div>
           </Link>
         ))}

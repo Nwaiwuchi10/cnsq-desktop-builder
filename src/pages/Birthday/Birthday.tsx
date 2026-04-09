@@ -113,7 +113,7 @@ const Birthday = () => {
   return (
     <StaffLayout>
       {/* Header */}
-      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-16">
+      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-4">
         <h1 className="text-3xl sm:text-5xl font-bold">Birthdays</h1>
       </div>
 
@@ -148,7 +148,9 @@ const Birthday = () => {
               Loading today&apos;s birthdays...
             </div>
           ) : filteredTodays.length === 0 ? (
-            <p className="mt-6 text-gray-500 dark:text-gray-400">No birthdays today 🎂</p>
+            <p className="mt-6 text-gray-500 dark:text-gray-400">
+              No birthdays today 🎂
+            </p>
           ) : (
             <div className="grid grid-cols-1 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
               {filteredTodays.map((staff) => (
@@ -164,7 +166,9 @@ const Birthday = () => {
           {loadingUpcoming ? (
             <div className="p-6 text-center">Loading upcoming birthdays...</div>
           ) : filteredUpcoming.length === 0 ? (
-            <p className="mt-6 text-gray-500 dark:text-gray-400">No upcoming birthdays 🎂</p>
+            <p className="mt-6 text-gray-500 dark:text-gray-400">
+              No upcoming birthdays 🎂
+            </p>
           ) : (
             <>
               <div className="grid grid-cols-1 pb-12 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
@@ -180,10 +184,11 @@ const Birthday = () => {
                   <button
                     onClick={() => setPageUpcoming((p) => Math.max(p - 1, 1))}
                     disabled={pageUpcoming === 1}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${pageUpcoming === 1
-                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                      : "bg-[#95D700] text-white hover:bg-green-600"
-                      }`}
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                      pageUpcoming === 1
+                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                        : "bg-[#95D700] text-white hover:bg-green-600"
+                    }`}
                   >
                     <ArrowLeft size={16} /> Prev
                   </button>
@@ -216,17 +221,21 @@ const Birthday = () => {
 
                       return pages.map((p, i) =>
                         typeof p === "string" ? (
-                          <span key={i} className="px-3 py-2 text-gray-500 dark:text-gray-400">
+                          <span
+                            key={i}
+                            className="px-3 py-2 text-gray-500 dark:text-gray-400"
+                          >
                             {p}
                           </span>
                         ) : (
                           <button
                             key={p}
                             onClick={() => setPageUpcoming(p)}
-                            className={`px-4 py-2 rounded-lg font-medium ${pageUpcoming === p
-                              ? "bg-[#95D700] text-white"
-                              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                              }`}
+                            className={`px-4 py-2 rounded-lg font-medium ${
+                              pageUpcoming === p
+                                ? "bg-[#95D700] text-white"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            }`}
                           >
                             {p}
                           </button>
@@ -243,10 +252,11 @@ const Birthday = () => {
                       )
                     }
                     disabled={pageUpcoming === totalPagesUpcoming}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${pageUpcoming === totalPagesUpcoming
-                      ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                      : "bg-[#95D700] text-white hover:bg-green-600"
-                      }`}
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                      pageUpcoming === totalPagesUpcoming
+                        ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                        : "bg-[#95D700] text-white hover:bg-green-600"
+                    }`}
                   >
                     Next <ArrowRight size={16} />
                   </button>
@@ -287,7 +297,9 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
             </span>
           ))
         ) : (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">Not Assigned</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">
+            Not Assigned
+          </span>
         )}
         {/* {staff.employment?.departmentalRole?.title || "Staff Member"} */}
       </span>
@@ -303,10 +315,10 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
       🎂{" "}
       {staff?.dateOfBirth
         ? `**** ${new Date(staff.dateOfBirth).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          timeZone: "Africa/Lagos",
-        })}`
+            month: "long",
+            day: "numeric",
+            timeZone: "Africa/Lagos",
+          })}`
         : "N/A"}
     </div>
 
@@ -343,7 +355,9 @@ const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
             </span>
           ))
         ) : (
-          <span className="text-gray-500 dark:text-gray-400 text-sm">Not Assigned</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">
+            Not Assigned
+          </span>
         )}
         {/* {staff.employment?.departmentalRole?.title || "Staff Member"} */}
       </span>

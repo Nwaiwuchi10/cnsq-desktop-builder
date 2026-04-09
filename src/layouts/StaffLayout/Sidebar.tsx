@@ -52,7 +52,7 @@ const navSections = [
     items: [
       { name: "Birthdays", href: "/birthday", icon: Cake },
       { name: "Anniversaries", href: "/anniversary", icon: Medal },
-      { name: "New Hires", href: "/add-staff", icon: UserPlus },
+      { name: "New Hires", href: "/new-hire", icon: UserPlus },
     ],
   },
   {
