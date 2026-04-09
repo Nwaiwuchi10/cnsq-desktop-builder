@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useTheme } from "@/hooks/ThemeContext";
+import { usePathname } from "next/navigation";
 import { Search, Bell, Moon, Sun, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Api from "@/utils/api";
@@ -20,12 +20,58 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
-  const { theme, toggleTheme, mounted } = useTheme();
+  const pathname = usePathname();
 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [chatUnreadCount, setChatUnreadCount] = useState<number>(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [theme, setTheme] = useState<string>("light");
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize theme from localStorage
+  useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.classList.toggle("dark");
+  };
+
+  const getPageTitle = () => {
+    const pathMap: { [key: string]: string } = {
+      "/StaffDashboard": "Dashboard",
+      "/birthday": "Birthdays",
+      "/anniversary": "Anniversaries",
+      "/new-hire": "New Hires",
+      "/project": "Projects",
+      "/task": "Tasks",
+      "/chat": "Chat",
+      "/ceos-corner": "CEO's Corner",
+      "/calender": "Calendar",
+      "/notifications": "Notifications",
+      "/heads-of-departments": "Heads of Departments",
+      "/organogram": "Organogram",
+      "/staff": "Staff Directory",
+    };
+
+    if (!pathname) return "Dashboard";
+
+    // Check if current path matches any map entry
+    for (const [path, title] of Object.entries(pathMap)) {
+      if (pathname === path || pathname.startsWith(path + "/")) {
+        return title;
+      }
+    }
+
+    // Default to Dashboard
+    return "Dashboard";
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -109,7 +155,9 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
-      <h2 className="text-xl font-bold text-[#86CD23]">Dashboard</h2>
+      <h2 className="text-lg sm:text-xl font-bold text-[#86CD23] ml-8 sm:ml-0 truncate">
+        {getPageTitle()}
+      </h2>
 
       <div className="flex flex-1 justify-end items-center gap-6">
         {/* Search Bar */}

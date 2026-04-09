@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Search,
-  ChevronDown,
-  Plus,
-  ArrowLeft,
-  ArrowRight,
-  SortDesc,
-} from "lucide-react";
+import { Search, ChevronDown, Plus, ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Api from "@/utils/api";
 import ProjectStatsCards from "./ProjectStats/ProjectStats";
@@ -54,18 +47,34 @@ export default function ViewProjects() {
   const [limit] = useState(6);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [filters, setFilters] = useState<{
+    status: string;
+    sort: "newest" | "oldest";
+  }>({
+    status: "",
+    sort: "newest",
+  });
+  const [tempFilters, setTempFilters] = useState<{
+    status: string;
+    sort: "newest" | "oldest";
+  }>({
+    status: "",
+    sort: "newest",
+  });
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const handleApplyFilter = () => {
+    setFilters(tempFilters);
+    setShowFilterDropdown(false);
+  };
 
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
         const res = await Api.get(
-          `/projects/paginated/all?page=${page}&limit=${limit}&search=${search}&status=${selectedStatus}&sort=${sortOrder}`,
+          `/projects/paginated/all?page=${page}&limit=${limit}&search=${search}&status=${filters.status}&sort=${filters.sort}`,
         );
         setProjects(res?.data?.data);
         setTotal(res?.data?.total);
@@ -76,7 +85,7 @@ export default function ViewProjects() {
       }
     };
     fetchProjects();
-  }, [page, limit, search, selectedStatus, sortOrder]);
+  }, [page, limit, search, filters]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -126,88 +135,71 @@ export default function ViewProjects() {
 
             {/* Buttons (Desktop Layout) */}
             <div className="hidden sm:flex items-center gap-3 relative">
-              {/* Filter by Status */}
+              {/* Filter Dropdown */}
               <div className="relative">
                 <button
-                  onClick={() => {
-                    setShowStatusDropdown((prev) => !prev);
-                    setShowSortDropdown(false);
-                  }}
-                  className="flex items-center gap-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-[#1a1a1a] transition-colors"
+                  onClick={() => setShowFilterDropdown((prev) => !prev)}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141414] rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium"
                 >
-                  {selectedStatus
-                    ? selectedStatus.replace("_", " ")
-                    : "Filter by Status"}
-                  <ChevronDown size={16} />
+                  <span>Filter & Sort</span>
+                  <ChevronDown size={18} />
                 </button>
 
-                {showStatusDropdown && (
-                  <div className="absolute top-12 left-0 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-56 z-20">
-                    <ul className="max-h-60 text-gray-600 dark:text-gray-300 overflow-y-auto">
-                      <li
-                        onClick={() => {
-                          setSelectedStatus("");
-                          setShowStatusDropdown(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                      >
-                        All Statuses
-                      </li>
-                      {["not_started", "in_progress", "testing", "completed"].map(
-                        (status) => (
-                          <li
-                            key={status}
-                            onClick={() => {
-                              setSelectedStatus(status);
-                              setShowStatusDropdown(false);
-                            }}
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer capitalize transition-colors"
-                          >
-                            {status.replace("_", " ")}
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
+                {showFilterDropdown && (
+                  <div className="absolute top-12 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl w-[280px] z-[100] p-5 space-y-4 animate-in fade-in zoom-in duration-200">
+                    <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                      Filter & Sort
+                    </h3>
 
-              {/* Sort Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setShowSortDropdown((prev) => !prev);
-                    setShowStatusDropdown(false);
-                  }}
-                  className="flex items-center gap-1 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-[#1a1a1a] transition-colors"
-                >
-                  <SortDesc size={16} />
-                  {sortOrder === "newest" ? "Newest" : "Oldest"}
-                  <ChevronDown size={16} />
-                </button>
+                    {/* Status */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Status
+                      </label>
+                      <select
+                        value={tempFilters.status}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            status: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="not_started">Not Started</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="testing">Testing</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
 
-                {showSortDropdown && (
-                  <div className="absolute top-12 right-0 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-44 z-20">
-                    <ul className="text-gray-600 dark:text-gray-300">
-                      <li
-                        onClick={() => {
-                          setSortOrder("newest");
-                          setShowSortDropdown(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                    {/* Sort */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Sort
+                      </label>
+                      <select
+                        value={tempFilters.sort}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            sort: e.target.value as "newest" | "oldest",
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                       >
-                        Newest
-                      </li>
-                      <li
-                        onClick={() => {
-                          setSortOrder("oldest");
-                          setShowSortDropdown(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                      >
-                        Oldest
-                      </li>
-                    </ul>
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={handleApplyFilter}
+                      className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
+                    >
+                      Apply Filter
+                    </button>
                   </div>
                 )}
               </div>
@@ -225,85 +217,68 @@ export default function ViewProjects() {
               {/* Filter */}
               <div className="relative">
                 <button
-                  onClick={() => {
-                    setShowStatusDropdown((prev) => !prev);
-                    setShowSortDropdown(false);
-                  }}
+                  onClick={() => setShowFilterDropdown((prev) => !prev)}
                   className="flex items-center justify-between gap-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-[#1a1a1a] transition-colors"
                 >
-                  {selectedStatus
-                    ? selectedStatus.replace("_", " ")
-                    : "Filter by Status"}
+                  Filter & Sort
                   <ChevronDown size={16} />
                 </button>
 
-                {showStatusDropdown && (
-                  <div className="absolute top-12 left-0 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-full z-30">
-                    <ul className="max-h-60 text-gray-600 dark:text-gray-300 overflow-y-auto">
-                      <li
-                        onClick={() => {
-                          setSelectedStatus("");
-                          setShowStatusDropdown(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                      >
-                        All Statuses
-                      </li>
-                      {["not_started", "in_progress", "testing", "completed"].map(
-                        (status) => (
-                          <li
-                            key={status}
-                            onClick={() => {
-                              setSelectedStatus(status);
-                              setShowStatusDropdown(false);
-                            }}
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer capitalize transition-colors"
-                          >
-                            {status.replace("_", " ")}
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
+                {showFilterDropdown && (
+                  <div className="absolute top-12 left-0 right-0 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-full z-30 p-4 space-y-4">
+                    <h3 className="text-gray-900 dark:text-white font-bold text-base mb-3 border-b border-gray-100 dark:border-gray-800 pb-2">
+                      Filter & Sort
+                    </h3>
 
-              {/* Sort */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setShowSortDropdown((prev) => !prev);
-                    setShowStatusDropdown(false);
-                  }}
-                  className="flex items-center justify-between gap-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-[#1a1a1a] transition-colors"
-                >
-                  <SortDesc size={16} />
-                  {sortOrder === "newest" ? "Newest" : "Oldest"}
-                  <ChevronDown size={16} />
-                </button>
+                    {/* Status */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Status
+                      </label>
+                      <select
+                        value={tempFilters.status}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            status: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                      >
+                        <option value="">All Statuses</option>
+                        <option value="not_started">Not Started</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="testing">Testing</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
 
-                {showSortDropdown && (
-                  <div className="absolute top-12 left-0 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-full z-30">
-                    <ul className="text-gray-600 dark:text-gray-300">
-                      <li
-                        onClick={() => {
-                          setSortOrder("newest");
-                          setShowSortDropdown(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+                    {/* Sort */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                        Sort
+                      </label>
+                      <select
+                        value={tempFilters.sort}
+                        onChange={(e) =>
+                          setTempFilters((prev) => ({
+                            ...prev,
+                            sort: e.target.value as "newest" | "oldest",
+                          }))
+                        }
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                       >
-                        Newest
-                      </li>
-                      <li
-                        onClick={() => {
-                          setSortOrder("oldest");
-                          setShowSortDropdown(false);
-                        }}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                      >
-                        Oldest
-                      </li>
-                    </ul>
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                      </select>
+                    </div>
+
+                    <button
+                      onClick={handleApplyFilter}
+                      className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
+                    >
+                      Apply Filter
+                    </button>
                   </div>
                 )}
               </div>
@@ -320,7 +295,9 @@ export default function ViewProjects() {
           {/* 🗂 Project Grid */}
           <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
             {projects?.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400">No projects found.</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                No projects found.
+              </p>
             ) : (
               projects?.map((project) => (
                 <ProjectCard key={project?.id} project={project} />
@@ -334,27 +311,32 @@ export default function ViewProjects() {
               <button
                 disabled={page === 1}
                 onClick={() => setPage((p) => p - 1)}
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${page === 1
-                  ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                  : "bg-[#95D700] text-white hover:bg-green-600"
-                  }`}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                  page === 1
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-[#95D700] text-white hover:bg-green-600"
+                }`}
               >
                 <ArrowLeft size={16} /> Prev
               </button>
 
               {getPageNumbers().map((p, idx) =>
                 typeof p === "string" ? (
-                  <span key={idx} className="px-3 py-2 text-gray-500 dark:text-gray-400">
+                  <span
+                    key={idx}
+                    className="px-3 py-2 text-gray-500 dark:text-gray-400"
+                  >
                     {p}
                   </span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`px-4 py-2 rounded-lg font-medium ${page === p
-                      ? "bg-[#95D700] text-white"
-                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-                      }`}
+                    className={`px-4 py-2 rounded-lg font-medium ${
+                      page === p
+                        ? "bg-[#95D700] text-white"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+                    }`}
                   >
                     {p}
                   </button>
@@ -364,10 +346,11 @@ export default function ViewProjects() {
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${page === totalPages
-                  ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-                  : "bg-[#95D700] text-white hover:bg-green-600"
-                  }`}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
+                  page === totalPages
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-[#95D700] text-white hover:bg-green-600"
+                }`}
               >
                 Next <ArrowRight size={16} />
               </button>
