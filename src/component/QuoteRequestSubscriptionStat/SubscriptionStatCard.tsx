@@ -41,21 +41,21 @@ export default function SubscriptionStatsCards() {
     {
       id: 1,
       label: "Target subscriptions",
-      value: stats?.target_subscriptions ?? 156, // Defaulted to screenshot value for visualization if API fails
+      value: stats?.target_subscriptions ?? 0, // Defaulted to screenshot value for visualization if API fails
       icon: targetIcon,
       borderColor: "border-[#86CD23]",
     },
     {
       id: 2,
       label: "Total subscriptions",
-      value: stats?.total_subscriptions ?? 156,
+      value: stats?.total_subscriptions ?? 0,
       icon: totalIcon,
       borderColor: "border-[#00D0D7]",
     },
     {
       id: 3,
       label: "Total subscriptions left",
-      value: stats?.total_subscriptions_left ?? 156,
+      value: stats?.total_subscriptions_left ?? 0,
       icon: leftIcon,
       borderColor: "border-[#3b82f6]",
     },

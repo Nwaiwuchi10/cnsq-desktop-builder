@@ -58,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
       "/heads-of-departments": "Heads of Departments",
       "/organogram": "Organogram",
       "/staff": "Staff Directory",
+      "/settings": "Settings",
     };
 
     if (!pathname) return "Dashboard";

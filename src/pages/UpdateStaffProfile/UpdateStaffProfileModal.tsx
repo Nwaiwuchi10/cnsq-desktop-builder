@@ -272,19 +272,19 @@ export default function UpdateProfileModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
-      <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6 relative">
+      <div className="bg-white dark:bg-[#141414] w-full max-w-xl rounded-2xl shadow-lg p-6 relative">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={step > 1 ? back : onClose}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 dark:text-gray-300 hover:dark:text-white transition-colors"
           >
             <ArrowLeft size={20} /> <span>Back</span>
           </button>
-          <h2 className="text-xl font-semibold">Update Profile</h2>
+          <h2 className="text-xl font-semibold dark:text-white">Update Profile</h2>
           <div className="w-[64px]" />
         </div>
 
-        <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+        <div className="mt-2 h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-[#95D700]"
             style={{ width: `${progressPct}%` }}
@@ -292,7 +292,7 @@ export default function UpdateProfileModal({
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-500 py-6">Loading...</p>
+        <div className="flex justify-center items-center py-6 text-gray-500 dark:text-gray-400">Loading...</div>
         ) : (
           <div className="mt-6 space-y-4 max-h-[70vh] overflow-y-auto">
             {/* === Same steps from onboarding (Step 1, 2, 3) === */}
@@ -301,58 +301,58 @@ export default function UpdateProfileModal({
               <>
                 {/* First Name */}
                 <div>
-                  <label className="block text-sm mb-1">First Name *</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">First Name *</label>
                   <input
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 {/* Last Name */}
                 <div>
-                  <label className="block text-sm mb-1">Last Name *</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Last Name *</label>
                   <input
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 {/* Email */}
                 <div>
-                  <label className="block text-sm mb-1">Email *</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Email *</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 {/* Phone */}
                 <div>
-                  <label className="block text-sm mb-1">Phone *</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Phone *</label>
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 {/* DOB */}
                 <div>
-                  <label className="block text-sm mb-1">Date of Birth *</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Date of Birth *</label>
                   <input
                     type="date"
                     value={dateOfBirth}
                     onChange={(e) => setDob(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 {/* Gender */}
                 <div>
-                  <label className="block text-sm mb-1">Gender *</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Gender *</label>
                   <select
                     value={gender}
                     onChange={(e) => setGender(e.target.value as Gender)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     {GENDERS.map((g) => (
                       <option key={g}>{g}</option>
@@ -361,11 +361,11 @@ export default function UpdateProfileModal({
                 </div>
                 {/* Marital */}
                 <div>
-                  <label className="block text-sm mb-1">Marital Status</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Marital Status</label>
                   <select
                     value={maritalStatus}
                     onChange={(e) => setMarital(e.target.value as Marital)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     <option value="">-- Select --</option>
                     {MARITALS.map((m) => (
@@ -375,7 +375,7 @@ export default function UpdateProfileModal({
                 </div>
                 {/* Hobbies */}
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Hobbies
                   </label>
 
@@ -385,7 +385,7 @@ export default function UpdateProfileModal({
                       value={hobbiesinput}
                       onChange={(e) => setHobbiesInput(e.target.value)}
                       placeholder="e.g., Reading, Football"
-                      className="flex-1 rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-700 placeholder-gray-400"
+                      className="flex-1 rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-700 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                     />
                     <button
                       type="button"
@@ -408,7 +408,7 @@ export default function UpdateProfileModal({
                     {hobbies.map((hobby) => (
                       <span
                         key={hobby}
-                        className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
+                        className="bg-gray-200 dark:bg-[#2A2A2A] dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
                       >
                         {hobby}
                         <button
@@ -426,18 +426,18 @@ export default function UpdateProfileModal({
                 </div>
                 {/* ✅ Description */}
                 <div>
-                  <label className="block text-sm mb-1">
+                  <label className="block text-sm mb-1 dark:text-gray-300">
                     Tell us more about yourself
                   </label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 {/* Photo */}
                 <div>
-                  <label className="block text-sm mb-1">Staff Photo</label>
+                  <label className="block text-sm mb-1 dark:text-gray-300">Staff Photo</label>
                   {preview ? (
                     <div className="relative inline-block">
                       <Image
@@ -461,7 +461,7 @@ export default function UpdateProfileModal({
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                      className="w-full border dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                     />
                   )}
                 </div>
@@ -474,7 +474,7 @@ export default function UpdateProfileModal({
             {step === 2 && (
               <>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     City *
                   </label>
                   <input
@@ -482,22 +482,22 @@ export default function UpdateProfileModal({
                     pattern="[A-Za-z]+"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     State *
                   </label>
                   <input
                     value={state}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Country *
                   </label>
                   <input
@@ -505,7 +505,7 @@ export default function UpdateProfileModal({
                     value={country}
                     pattern="[A-Za-z]+"
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
               </>
@@ -514,7 +514,7 @@ export default function UpdateProfileModal({
             {step === 3 && (
               <>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Job Titles *
                   </label>
                   <div className="flex gap-2">
@@ -537,7 +537,7 @@ export default function UpdateProfileModal({
                     {jobTitle.map((t) => (
                       <span
                         key={t}
-                        className="bg-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
+                        className="bg-gray-200 dark:bg-[#2A2A2A] dark:text-gray-200 px-3 py-1 rounded-full flex items-center gap-2"
                       >
                         {t}
                         <button
@@ -552,7 +552,7 @@ export default function UpdateProfileModal({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Employment Type *
                   </label>
                   <select
@@ -560,7 +560,7 @@ export default function UpdateProfileModal({
                     onChange={(e) =>
                       setEmploymentType(e.target.value as EmploymentType)
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     {EMPLOYMENT_TYPES.map((t) => (
                       <option key={t}>{t}</option>
@@ -568,13 +568,13 @@ export default function UpdateProfileModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Work Mode *
                   </label>
                   <select
                     value={workMode}
                     onChange={(e) => setWorkMode(e.target.value as WorkMode)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     {WORK_MODES.map((w) => (
                       <option key={w}>{w}</option>
@@ -582,25 +582,25 @@ export default function UpdateProfileModal({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Hire Date *
                   </label>
                   <input
                     type="date"
                     value={hireDate}
                     onChange={(e) => setHireDate(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Reporting Manager *
                   </label>
                   <select
                     value={reportingManager}
                     onChange={(e) => setReportingManager(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     <option value="">-- Select Manager --</option>
                     {staffs.map((staff) => (
@@ -615,13 +615,13 @@ export default function UpdateProfileModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Direct Report *
                   </label>
                   <select
                     value={directReport}
                     onChange={(e) => setDirectReport(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     <option value="">-- Select Direct Report --</option>
                     {staffs.map((staff) => (
@@ -636,7 +636,7 @@ export default function UpdateProfileModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Work Location
                   </label>
                   <input
@@ -644,11 +644,11 @@ export default function UpdateProfileModal({
                     pattern="[A-Za-z]+"
                     value={workLocation}
                     onChange={(e) => setWorkLocation(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Department *
                   </label>
                   <select
@@ -658,7 +658,7 @@ export default function UpdateProfileModal({
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     <option value="">-- Select Department --</option>
                     {departments.map((dept) => (
@@ -670,7 +670,7 @@ export default function UpdateProfileModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Departmental Role *
                   </label>
                   <select
@@ -680,7 +680,7 @@ export default function UpdateProfileModal({
                         e.target.value ? Number(e.target.value) : ""
                       )
                     }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] transition-shadow"
                   >
                     <option value="">-- Select Role --</option>
                     {roles.map((role) => (

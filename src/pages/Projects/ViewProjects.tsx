@@ -206,7 +206,7 @@ export default function ViewProjects() {
 
               {/* Add Project */}
               <Link href="/project/create">
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
+                <button className="flex items-center gap-2 px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold rounded-lg font-medium hover:bg-green-600 transition">
                   Add New Project <Plus size={18} />
                 </button>
               </Link>
@@ -311,11 +311,10 @@ export default function ViewProjects() {
               <button
                 disabled={page === 1}
                 onClick={() => setPage((p) => p - 1)}
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
-                  page === 1
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${page === 1
                     ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
                     : "bg-[#95D700] text-white hover:bg-green-600"
-                }`}
+                  }`}
               >
                 <ArrowLeft size={16} /> Prev
               </button>
@@ -332,11 +331,10 @@ export default function ViewProjects() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`px-4 py-2 rounded-lg font-medium ${
-                      page === p
+                    className={`px-4 py-2 rounded-lg font-medium ${page === p
                         ? "bg-[#95D700] text-white"
                         : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-                    }`}
+                      }`}
                   >
                     {p}
                   </button>
@@ -346,11 +344,10 @@ export default function ViewProjects() {
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
-                  page === totalPages
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg ${page === totalPages
                     ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
                     : "bg-[#95D700] text-white hover:bg-green-600"
-                }`}
+                  }`}
               >
                 Next <ArrowRight size={16} />
               </button>
