@@ -94,8 +94,8 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors flex items-center justify-center">
-      <div className="max-w-md w-full bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-8">
+    <div className="w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors flex items-center justify-center py-8">
+      <div className="w-full bg-white dark:bg-[#141414] transition-colors p-8">
         {/* Header */}
         <div className="flex items-center justify-center text-center mb-6">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">

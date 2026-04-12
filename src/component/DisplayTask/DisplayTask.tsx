@@ -95,7 +95,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         const deptId = res.data?.employment?.department?.id || null;
         setUserDeptName(res.data?.employment?.department?.name || null);
         setUserDeptId(deptId);
-        if (deptId) setSelectedDeptId(deptId);
+        // Do not auto-select department so we can show login staff tasks by default
       } catch (err) {
         console.error("Failed to fetch user profile", err);
       }
@@ -142,17 +142,14 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           } else {
             const query = params.toString();
             res = await Api.get(
-              `/task/staff/${staffFilter}/project/${project.id}${
-                query ? `?${query}` : ""
+              `/task/staff/${staffFilter}/project/${project.id}${query ? `?${query}` : ""
               }`,
             );
           }
-        } else if (typeof selectedDeptId === "number") {
+        } else if (selectedDeptId !== "all" && typeof selectedDeptId === "number") {
           const params = new URLSearchParams();
-          if (sprintFilter !== "all")
-            params.append("sprint", String(sprintFilter));
-          if (staffFilter !== "all")
-            params.append("staffId", String(staffFilter));
+          if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
+          if (staffFilter !== "all") params.append("staffId", String(staffFilter));
           if (yearFilter) params.append("year", String(yearFilter));
           if (monthFilter) params.append("month", String(monthFilter));
           if (dayFilter) params.append("day", String(dayFilter));
@@ -160,26 +157,21 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           res = await Api.get(
             `/task/department/${selectedDeptId}${query ? `?${query}` : ""}`,
           );
-        } else if (userDeptId && typeof userDeptId === "number") {
+        } else {
+          // Default for "All" departments without Project ID
           const params = new URLSearchParams();
-          if (sprintFilter !== "all")
-            params.append("sprint", String(sprintFilter));
-          if (staffFilter !== "all")
-            params.append("staffId", String(staffFilter));
-          if (yearFilter) params.append("year", String(yearFilter));
-          if (monthFilter) params.append("month", String(monthFilter));
-          if (dayFilter) params.append("day", String(dayFilter));
+          if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
+          // If staff filter is selected, send it to backend to filter login staff tasks?
+          if (staffFilter !== "all") params.append("staffId", String(staffFilter));
           const query = params.toString();
+
           res = await Api.get(
-            `/task/department/${userDeptId}${query ? `?${query}` : ""}`,
-          );
-        } else if (staffId) {
-          const targetStaff = staffFilter === "all" ? staffId : staffFilter;
-          const query = params.toString();
-          res = await Api.get(
-            `/task/staff/${targetStaff}/tasks-by-status?openPageNum=1&openPageSize=100${
-              query ? `&${query}` : ""
-            }`,
+            `/task/login/staff${query ? `?${query}` : ""}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("user-token")}`,
+              },
+            }
           );
         }
 
@@ -197,7 +189,8 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       }
     };
 
-    if (project?.id || userDeptId || typeof selectedDeptId === "number") {
+    const staffId = localStorage.getItem("userId");
+    if (project?.id || staffId || typeof selectedDeptId === "number") {
       fetchTasks();
     }
   }, [
@@ -335,22 +328,20 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setIsBoard(false)}
-              className={`p-2 rounded transition-all ${
-                !isBoard
-                  ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
-                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              }`}
+              className={`p-2 rounded transition-all ${!isBoard
+                ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
+                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                }`}
               title="Table View"
             >
               <List size={18} />
             </button>
             <button
               onClick={() => setIsBoard(true)}
-              className={`p-2 rounded transition-all ${
-                isBoard
-                  ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
-                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              }`}
+              className={`p-2 rounded transition-all ${isBoard
+                ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
+                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                }`}
               title="Board View"
             >
               <Grid3x3 size={18} />
@@ -368,7 +359,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
               project?.uuid ? `/project/${project.uuid}/add-task` : "/add-task"
             }
           >
-            <button className="px-4 py-2 bg-[#95D700] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1">
+            <button className="px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1">
               + New Task
             </button>
           </Link>

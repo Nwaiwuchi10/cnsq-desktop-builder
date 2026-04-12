@@ -5,6 +5,7 @@ import Image, { StaticImageData } from "next/image";
 import React, { useEffect, useState } from "react";
 import Api from "@/utils/api";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
+import DailyInspiration from "@/component/StaffDashboard/DailyInspiration";
 
 interface NewHireStaff {
   id: number;
@@ -72,8 +73,11 @@ const NewHire = () => {
   return (
     <StaffLayout>
       {/* Header */}
-      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-4">
+      {/* <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-4">
         <h1 className="text-3xl sm:text-5xl font-bold">New Hires</h1>
+      </div> */}
+      <div>
+        <DailyInspiration />
       </div>
 
       <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors pb-12">
@@ -208,11 +212,10 @@ const Pagination = ({
       <button
         onClick={() => setPage(page - 1)}
         disabled={page === 1}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
-          page === 1
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === 1
             ? "bg-gray-300 text-gray-600 cursor-not-allowed"
             : "bg-[#95D700] text-white"
-        }`}
+          }`}
       >
         <ArrowLeft size={16} /> Prev
       </button>
@@ -230,11 +233,10 @@ const Pagination = ({
           <button
             key={idx}
             onClick={() => setPage(p)}
-            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${
-              page === p
+            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${page === p
                 ? "bg-[#95D700] text-white"
                 : "bg-gray-200 text-gray-700"
-            }`}
+              }`}
           >
             {p}
           </button>
@@ -245,11 +247,10 @@ const Pagination = ({
       <button
         onClick={() => setPage(page + 1)}
         disabled={page === totalPages}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
-          page === totalPages
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === totalPages
             ? "bg-gray-300 text-gray-600 cursor-not-allowed"
             : "bg-[#95D700] text-white"
-        }`}
+          }`}
       >
         Next <ArrowRight size={16} />
       </button>

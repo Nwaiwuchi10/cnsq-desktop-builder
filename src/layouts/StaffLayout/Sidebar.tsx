@@ -17,7 +17,9 @@ import {
   Menu,
   X,
   PanelLeftClose,
-  PanelRightClose
+  PanelRightClose,
+  Book,
+  BookOpen
 } from "lucide-react";
 import Image from "next/image";
 import imgHome from "../../assests/images/CNSQ.png";
@@ -72,6 +74,13 @@ const navSections = [
   {
     title: "PLANNING",
     items: [{ name: "Calendar", href: "/calender", icon: Calendar }],
+  },
+  {
+    title: "SYSTEM",
+    items: [
+      { name: "Settings", href: "/settings", icon: Settings },
+      { name: "Documentation", href: "/documentation", icon: BookOpen },
+    ],
   },
 ];
 
@@ -146,16 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
           ))}
         </div>
 
-        {/* Footer Area */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
-          <Link
-            href="#"
-            className={`flex items-center px-2 py-2 mb-4 text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 rounded-md transition-colors`}
-            title={isCollapsed ? "Settings" : undefined}
-          >
-            <Settings className="w-5 h-5 shrink-0 text-gray-500 dark:text-gray-400" />
-            {!isCollapsed && <span className="ml-3">Settings</span>}
-          </Link>
 
           <div className="flex items-center border-t border-gray-200 dark:border-gray-800 pt-4 px-2">
             {user?.photoUrl ? (

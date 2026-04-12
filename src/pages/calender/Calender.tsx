@@ -171,6 +171,7 @@ const Calender = () => {
 
   return (
     <>
+      {/* <StaffLayout> */}
       <CalendarLayout
         currentDate={currentDate}
         onNavigate={handleNavigate}
@@ -223,6 +224,7 @@ const Calender = () => {
         eventTitle={selectedEvent?.title}
       />
       <Footer />
+      {/* </StaffLayout> */}
     </>
   );
 };

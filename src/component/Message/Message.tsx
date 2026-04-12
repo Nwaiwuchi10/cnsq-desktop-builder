@@ -25,7 +25,7 @@ export default function CustomModal({
   const isSuccess = type === "success";
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 dark:bg-black/80 z-50 transition-colors">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40 dark:bg-black/80 z-[9999] transition-colors">
       <div className="bg-white dark:bg-[#141414] rounded-xl shadow-lg w-full max-w-sm relative p-6 text-center transition-colors">
         {/* Close button top right */}
         <button

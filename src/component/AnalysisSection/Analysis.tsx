@@ -44,7 +44,7 @@ export default function StatsCards() {
     {
       id: 1,
       label: "Total Staff",
-      value: stats?.totalEmployees ?? 87, // Default to mock data from screenshot
+      value: stats?.totalEmployees ?? 0, // Default to mock data from screenshot
       subtitle: "+3 new this month",
       subtitleColor: "text-[#86CD23]",
       icon: <Users className="w-5 h-5 text-[#86CD23]" />,
@@ -53,7 +53,7 @@ export default function StatsCards() {
     {
       id: 2,
       label: "Departments",
-      value: stats?.totalDepartments ?? 10,
+      value: stats?.totalDepartments ?? 0,
       subtitle: "",
       icon: <Building2 className="w-5 h-5 text-[#86CD23]" />,
       href: "/heads-of-departments",
@@ -61,7 +61,7 @@ export default function StatsCards() {
     {
       id: 3,
       label: "Total Projects",
-      value: stats?.totalProjects ?? 24,
+      value: stats?.totalProjects ?? 0,
       subtitle: "",
       subtitleColor: "text-amber-500",
       icon: <CheckLine className="w-5 h-5 text-[#86CD23]" />,
@@ -70,7 +70,7 @@ export default function StatsCards() {
     {
       id: 4,
       label: "Birthday this month",
-      value: stats?.birthdays ?? 6,
+      value: stats?.birthdays ?? 0,
       subtitle: "Next 7 days",
       subtitleColor: "text-[#86CD23]",
       icon: <Cake className="w-5 h-5 text-[#86CD23]" />,
@@ -79,7 +79,7 @@ export default function StatsCards() {
     {
       id: 5,
       label: "Anniversaries this Quarter",
-      value: stats?.tasksInProgress ?? 148,
+      value: stats?.tasksInProgress ?? 0,
       subtitle: "6 due today",
       subtitleColor: "text-amber-500",
       icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
