@@ -99,7 +99,7 @@ export default function StaffDirectory() {
   const [limit] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [selectedRole, setSelectedRole] = useState<string>("");
+
   const [showDropdown, setShowDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
@@ -282,7 +282,7 @@ END:VCARD`;
         {/* 🔍 Toolbar */}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           {/* Search Bar */}
-          <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors">
+          <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors relative">
             <Search className="text-gray-500 dark:text-gray-400" size={18} />
             <input
               type="text"
@@ -325,35 +325,117 @@ END:VCARD`;
                 onClick={() => setShowDropdown((prev) => !prev)}
                 className="flex items-center gap-1 px-2 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141414] rounded-lg text-gray-600 dark:text-gray-300 text-xs hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <span>{selectedRole || "Filter"}</span>
+                <span>Filter</span>
                 <ChevronDown size={14} />
               </button>
 
               {showDropdown && (
-                <div className="absolute top-16 left-4 right-4 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-10 p-1">
-                  <ul className="max-h-60 overflow-y-auto text-gray-600 dark:text-gray-300">
-                    <li
-                      onClick={() => {
-                        setSelectedRole("");
-                        setShowDropdown(false);
-                      }}
-                      className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer"
+                <div className="absolute top-16 left-0 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-[100] p-5 space-y-4 animate-in fade-in zoom-in duration-200 min-w-[280px]">
+                  <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
+                    Filter by
+                  </h3>
+
+                  {/* Department */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Department
+                    </label>
+                    <select
+                      value={tempFilters.department}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          department: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
-                      All Roles
-                    </li>
-                    {roles.map((role) => (
-                      <li
-                        key={role.id}
-                        onClick={() => {
-                          setSelectedRole(role.title);
-                          setShowDropdown(false);
-                        }}
-                        className="px-4 text-gray-600 dark:text-gray-300 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-pointer"
-                      >
-                        {role.title} ({role.department?.name})
-                      </li>
-                    ))}
-                  </ul>
+                      <option value="All">All</option>
+                      {departments.map((d) => (
+                        <option key={d.id} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={tempFilters.role}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          role: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                    >
+                      <option value="All">All</option>
+                      {roles.map((r) => (
+                        <option key={r.id} value={r.title}>
+                          {r.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Location
+                    </label>
+                    <select
+                      value={tempFilters.location}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          location: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                    >
+                      <option value="All">All</option>
+                      {locations.map((loc, i) => (
+                        <option key={i} value={loc}>
+                          {loc}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Task Completion */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                      Task Completion
+                    </label>
+                    <select
+                      value={tempFilters.completion}
+                      onChange={(e) =>
+                        setTempFilters((prev) => ({
+                          ...prev,
+                          completion: e.target.value,
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                    >
+                      <option value="All">All</option>
+                      <option value="0-25%">0-25%</option>
+                      <option value="26-50%">26-50%</option>
+                      <option value="51-75%">51-75%</option>
+                      <option value="76-100%">76-100%</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleApplyFilter}
+                    className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
+                  >
+                    Apply Filter
+                  </button>
                 </div>
               )}
               {/* download card button */}
