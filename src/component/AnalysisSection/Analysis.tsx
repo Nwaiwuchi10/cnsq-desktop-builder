@@ -56,7 +56,7 @@ export default function StatsCards() {
       value: stats?.totalDepartments ?? 0,
       subtitle: "",
       icon: <Building2 className="w-5 h-5 text-[#86CD23]" />,
-      href: "/heads-of-departments",
+      href: "/heads_of_departments",
     },
     {
       id: 3,

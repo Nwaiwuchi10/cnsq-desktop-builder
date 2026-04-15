@@ -150,7 +150,7 @@ const CEOCornerMessages: React.FC = () => {
 
           {/* New Message Button */}
           <Link
-            href="/ceos-corner/create"
+            href="/ceos_corner/create"
             className="flex-shrink-0 flex items-center gap-2 px-6 py-3 rounded-lg bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold transition-colors whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />

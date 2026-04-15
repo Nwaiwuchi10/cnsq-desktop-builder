@@ -45,17 +45,17 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
   const getPageTitle = () => {
     const pathMap: { [key: string]: string } = {
-      "/StaffDashboard": "Dashboard",
+      "/staff_dashboard": "Dashboard",
       "/birthday": "Birthdays",
       "/anniversary": "Anniversaries",
-      "/new-hire": "New Hires",
+      "/new_hire": "New Hires",
       "/project": "Projects",
       "/task": "Tasks",
       "/chat": "Chat",
-      "/ceos-corner": "CEO's Corner",
+      "/ceos_corner": "CEO's Corner",
       "/calender": "Calendar",
       "/notifications": "Notifications",
-      "/heads-of-departments": "Heads of Departments",
+      "/heads_of_departments": "Heads of Departments",
       "/organogram": "Organogram",
       "/staff": "Staff Directory",
       "/settings": "Settings",
@@ -241,7 +241,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                   </Link>
                 )}
                 <Link
-                  href="/change-password"
+                  href="/change_password"
                   className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >

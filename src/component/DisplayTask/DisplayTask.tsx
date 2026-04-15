@@ -356,7 +356,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           {/* New Task Button */}
           <Link
             href={
-              project?.uuid ? `/project/${project.uuid}/add-task` : "/add-task"
+              project?.uuid ? `/project/${project.uuid}/add_task` : "/add_task"
             }
           >
             <button className="px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1">

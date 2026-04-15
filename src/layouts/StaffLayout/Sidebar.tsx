@@ -47,14 +47,14 @@ interface SidebarProps {
 const navSections = [
   {
     title: "OVERVIEW",
-    items: [{ name: "Dashboard", href: "/StaffDashboard", icon: LayoutDashboard }],
+    items: [{ name: "Dashboard", href: "/staff_dashboard", icon: LayoutDashboard }],
   },
   {
     title: "CELEBRATIONS",
     items: [
       { name: "Birthdays", href: "/birthday", icon: Cake },
       { name: "Anniversaries", href: "/anniversary", icon: Medal },
-      { name: "New Hires", href: "/new-hire", icon: UserPlus },
+      { name: "New Hires", href: "/new_hire", icon: UserPlus },
     ],
   },
   {
@@ -68,7 +68,7 @@ const navSections = [
     title: "COMMUNICATION",
     items: [
       { name: "Chat", href: "/chat", icon: MessageSquare },
-      { name: "CEO's Corner", href: "/ceos-corner", icon: Mail },
+      { name: "CEO's Corner", href: "/ceos_corner", icon: Mail },
     ],
   },
   {
@@ -86,7 +86,7 @@ const navSections = [
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen, user }) => {
   // Using a mock path for this implementation since it will be mounted somewhere
-  const pathname = "/StaffDashboard";
+  const pathname = usePathname();
 
   return (
     <>
@@ -136,13 +136,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
                     <li key={itemIdx}>
                       <Link
                         href={item.href}
-                        className={`flex items-center px-6 py-2 transition-colors ${isActive
+                        className={`flex items-center px-6 py-2 transition-colors group ${isActive
                           ? "text-[#86CD23] font-medium"
-                          : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
+                          : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#86CD23] dark:hover:text-[#86CD23]"
                           }`}
                         title={isCollapsed ? item.name : undefined}
                       >
-                        <item.icon className={`w-5 h-5 shrink-0 ${isActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400"}`} />
+                        <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400 group-hover:text-[#86CD23] dark:group-hover:text-[#86CD23]"}`} />
                         {!isCollapsed && (
                           <span className="ml-3 truncate">{item.name}</span>
                         )}

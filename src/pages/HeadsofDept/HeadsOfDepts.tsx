@@ -118,7 +118,7 @@ export default function HeadsStaffDirectory() {
               <button className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg text-gray-600 text-sm hover:bg-gray-100">
                 Filter <Filter size={16} />
               </button>
-              <Link href="/add-dept-head" style={{ cursor: "pointer" }}>
+              <Link href="/add_dept_head" style={{ cursor: "pointer" }}>
                 <button
                   style={{ cursor: "pointer" }}
                   className="flex items-center gap-2 px-3 py-1 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:bg-green-600 transition"
@@ -135,7 +135,7 @@ export default function HeadsStaffDirectory() {
               <Filter size={16} />
               Filter by
             </button>
-            <Link href="/add-dept-head" style={{ cursor: "pointer" }}>
+            <Link href="/add_dept_head" style={{ cursor: "pointer" }}>
               <button
                 style={{ cursor: "pointer" }}
                 className="flex items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition"
