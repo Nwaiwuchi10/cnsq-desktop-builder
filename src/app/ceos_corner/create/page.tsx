@@ -9,7 +9,7 @@ export default function CreateMessagePage() {
   const router = useRouter();
 
   const handleSuccess = () => {
-    router.push("/ceos-corner");
+    router.push("/ceos_corner");
   };
 
   return (

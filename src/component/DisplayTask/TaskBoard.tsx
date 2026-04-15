@@ -282,7 +282,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </div>
 
             {/* Add task button */}
-            <Link href={projectId ? `/project/${projectId}/add-task` : "/add-task"}>
+            <Link href={projectId ? `/project/${projectId}/add_task` : "/add_task"}>
               {" "}
               <button className="mt-4 text-green-600 text-sm">
                 + New Task
@@ -395,7 +395,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
         </div>
 
         {/* Add task button */}
-        <Link href={projectId ? `/project/${projectId}/add-task` : "/add-task"}>
+        <Link href={projectId ? `/project/${projectId}/add_task` : "/add_task"}>
           {" "}
           <button className="mt-4 text-green-600 text-sm">+ New Task</button>
         </Link>

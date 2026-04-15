@@ -96,7 +96,7 @@ export default function MessageCeoCreateForm({
         if (onSuccess) {
           onSuccess();
         } else {
-          router.push("/ceos-corner");
+          router.push("/ceos_corner");
         }
       }, 1200);
     } catch (err: unknown) {

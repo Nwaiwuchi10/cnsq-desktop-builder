@@ -447,7 +447,7 @@ END:VCARD`;
               </button> */}
 
               {/* Add Staff (MOBILE) */}
-              <Link href="/add-staff" style={{ cursor: "pointer" }}>
+              <Link href="/add_staff" style={{ cursor: "pointer" }}>
                 <button className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
                   <Plus size={14} /> Add New Staff
                 </button>
@@ -608,7 +608,7 @@ END:VCARD`;
             </button> */}
 
             {/* Add Staff */}
-            <Link href="/add-staff" style={{ cursor: "pointer" }}>
+            <Link href="/add_staff" style={{ cursor: "pointer" }}>
               <button className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#95D700] text-white rounded-lg font-medium hover:bg-green-600 transition">
                 Add New Staff <Plus size={18} />
               </button>
