@@ -19,7 +19,8 @@ import {
   PanelLeftClose,
   PanelRightClose,
   Book,
-  BookOpen
+  BookOpen,
+  Send
 } from "lucide-react";
 import Image from "next/image";
 import imgHome from "../../assests/images/CNSQ.png";
@@ -29,6 +30,7 @@ type User = {
   firstName: string;
   lastName: string;
   photoUrl?: string;
+  isCeo?: boolean;
   employment?: {
     departmentalRole?: {
       title?: string;
@@ -69,6 +71,7 @@ const navSections = [
     items: [
       { name: "Chat", href: "/chat", icon: MessageSquare },
       { name: "CEO's Corner", href: "/ceos_corner", icon: Mail },
+      { name: "CEO's Messaging", href: "/ceo_messaging", icon: Send, isCeoOnly: true },
     ],
   },
   {
@@ -122,37 +125,47 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
 
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
-          {navSections.map((section, idx) => (
-            <div key={idx} className="mb-6">
-              {!isCollapsed && (
-                <h3 className="px-6 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-wider">
-                  {section.title}
-                </h3>
-              )}
-              <ul className="space-y-1">
-                {section.items.map((item, itemIdx) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <li key={itemIdx}>
-                      <Link
-                        href={item.href}
-                        className={`flex items-center px-6 py-2 transition-colors group ${isActive
-                          ? "text-[#86CD23] font-medium"
-                          : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#86CD23] dark:hover:text-[#86CD23]"
-                          }`}
-                        title={isCollapsed ? item.name : undefined}
-                      >
-                        <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400 group-hover:text-[#86CD23] dark:group-hover:text-[#86CD23]"}`} />
-                        {!isCollapsed && (
-                          <span className="ml-3 truncate">{item.name}</span>
-                        )}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+          {navSections.map((section, idx) => {
+            // Filter items based on CEO status
+            const filteredItems = section.items.filter(item => {
+              if (item.isCeoOnly && !user?.isCeo) return false;
+              return true;
+            });
+
+            if (filteredItems.length === 0) return null;
+
+            return (
+              <div key={idx} className="mb-6">
+                {!isCollapsed && (
+                  <h3 className="px-6 mb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-wider">
+                    {section.title}
+                  </h3>
+                )}
+                <ul className="space-y-1">
+                  {filteredItems.map((item, itemIdx) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <li key={itemIdx}>
+                        <Link
+                          href={item.href}
+                          className={`flex items-center px-6 py-2 transition-colors group ${isActive
+                            ? "text-[#86CD23] font-medium"
+                            : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#86CD23] dark:hover:text-[#86CD23]"
+                            }`}
+                          title={isCollapsed ? item.name : undefined}
+                        >
+                          <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400 group-hover:text-[#86CD23] dark:group-hover:text-[#86CD23]"}`} />
+                          {!isCollapsed && (
+                            <span className="ml-3 truncate">{item.name}</span>
+                          )}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">

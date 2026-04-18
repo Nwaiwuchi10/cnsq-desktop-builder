@@ -47,6 +47,11 @@ const BoardView: React.FC<BoardViewProps> = ({
 
   const updateTaskStatus = useCallback(
     async (taskId: number, newStatus: string) => {
+      // Optimistically update local state immediately
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
+      );
+
       try {
         const token = localStorage.getItem("user-token");
 
@@ -56,15 +61,12 @@ const BoardView: React.FC<BoardViewProps> = ({
           { headers: { Authorization: `Bearer ${token}` } },
         );
 
-        setTasks((prev) =>
-          prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
-        );
-
         if (onTasksUpdate) {
           onTasksUpdate();
         }
       } catch (error) {
         console.error("Error updating task status:", error);
+        // If the request fails, move it back to its initial status position
         setTasks(initialTasks);
       }
     },
@@ -95,10 +97,13 @@ const BoardView: React.FC<BoardViewProps> = ({
       return;
     }
 
-    await updateTaskStatus(draggedTask.id, newStatus);
+    const taskId = draggedTask.id;
 
+    // Reset drag state immediately for a smooth UI transition
     setDraggedTask(null);
     setDraggedFromStatus(null);
+
+    await updateTaskStatus(taskId, newStatus);
   };
 
   const handleDragEnd = () => {

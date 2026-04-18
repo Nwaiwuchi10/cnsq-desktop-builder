@@ -19,6 +19,7 @@ type User = {
       title?: string;
     };
   };
+  isCeo?: boolean;
 };
 
 interface StaffLayoutProps {
