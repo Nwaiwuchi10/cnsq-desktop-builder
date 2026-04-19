@@ -37,6 +37,9 @@ interface Task {
   startDate: string;
   dueDate?: string;
   timeline?: string;
+  projectId?: number;
+  departmentId?: number;
+  departmentName?: string;
   project: { id: number; projectName: string; assignedTo: ProjectAssignment[] };
   assignedTo: { id: number; role: string; staff: Staff }[];
 }
@@ -344,16 +347,22 @@ export default function TaskUpdateModal({
               placeholder="e.g. Task on Authentication, Dashboard etc"
               className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
             />
-            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-              Task Sprint
-            </label>
-            <input
-              type="number"
-              value={sprint}
-              onChange={(e) => setSprint(Number(e.target.value))}
-              placeholder="Sprint 1"
-              className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
-            />
+            {projectId && (
+              <>
+                <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                  Task Sprint
+                </label>
+                <input
+                  type="number"
+                  value={sprint}
+                  onChange={(e) =>
+                    setSprint(e.target.value ? Number(e.target.value) : "")
+                  }
+                  placeholder="Sprint 1"
+                  className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+                />
+              </>
+            )}
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Task Status
             </label>
@@ -363,7 +372,9 @@ export default function TaskUpdateModal({
               className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {TASK_STATUSES.map((s) => (
-                <option key={s}>{s}</option>
+                <option key={s} value={s}>
+                  {s.replace(/_/g, " ")}
+                </option>
               ))}
             </select>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Priority</label>
@@ -373,7 +384,9 @@ export default function TaskUpdateModal({
               className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {PRIORITIES.map((p) => (
-                <option key={p}>{p}</option>
+                <option key={p} value={p}>
+                  {p.replace(/_/g, " ")}
+                </option>
               ))}
             </select>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Urgency</label>
@@ -382,8 +395,11 @@ export default function TaskUpdateModal({
               onChange={(e) => setUrgency(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
+              <option value="">-- Select Urgency --</option>
               {URGENCIES.map((u) => (
-                <option key={u}>{u}</option>
+                <option key={u} value={u}>
+                  {u.replace(/_/g, " ")}
+                </option>
               ))}
             </select>
             {/* Start Date */}
@@ -403,12 +419,13 @@ export default function TaskUpdateModal({
               onChange={(e) => setDueDate(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Timeline</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+              Timeline (auto-calculated)
+            </label>
             <input
-              placeholder="Timeline"
               value={timeline}
-              onChange={(e) => setTimeline(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+              readOnly
+              className="w-full rounded-lg border px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
             />
 
             {/* Assign Staff */}

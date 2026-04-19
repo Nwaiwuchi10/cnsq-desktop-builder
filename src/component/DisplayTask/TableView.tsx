@@ -6,6 +6,7 @@ import TaskModal from "./TaskDetailsModal";
 
 interface TableViewProps {
   tasks: TaskDTO[];
+  projectId?: number;
   loading?: boolean;
   selectedTask?: TaskDTO | null;
   onTaskSelect?: (task: TaskDTO) => void;
@@ -14,6 +15,7 @@ interface TableViewProps {
 
 const TableView: React.FC<TableViewProps> = ({
   tasks,
+  projectId,
   loading = false,
   selectedTask = null,
   onTaskSelect = () => {},
@@ -92,6 +94,11 @@ const TableView: React.FC<TableViewProps> = ({
               <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                 Timeline
               </th>
+              {!projectId && (
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
+                  Project
+                </th>
+              )}
               <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                 Team
               </th>
@@ -150,6 +157,11 @@ const TableView: React.FC<TableViewProps> = ({
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                   {task.timeline || "—"}
                 </td>
+                {!projectId && (
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">
+                    {task.project?.projectName || "—"}
+                  </td>
+                )}
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">
                   {task.department?.name || "—"}
                 </td>

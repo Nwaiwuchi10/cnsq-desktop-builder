@@ -23,6 +23,7 @@ const iconMap: Record<string, JSX.Element> = {
   demo: <Layers className="text-indigo-500" size={18} />,
   announcement: <Megaphone className="text-blue-500" size={18} />,
   new_product: <Package className="text-orange-500" size={18} />,
+  ceo_message: <Megaphone className="text-[#86CD23]" size={18} />,
 };
 
 const AnnouncementList: React.FC = () => {

@@ -124,7 +124,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
     try {
       let res;
       const staffId = localStorage.getItem("userId");
-      
+
       // Build query params
       const params = new URLSearchParams();
       if (yearFilter) params.append("year", String(yearFilter));
@@ -140,8 +140,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         } else {
           const query = params.toString();
           res = await Api.get(
-            `/task/staff/${staffFilter}/project/${projectId}${
-              query ? `?${query}` : ""
+            `/task/staff/${staffFilter}/project/${projectId}${query ? `?${query}` : ""
             }`,
           );
         }
@@ -454,7 +453,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               <th className="p-2 border text-gray-600 dark:text-gray-400">Due Date</th>
               <th className="p-2 border text-gray-600 dark:text-gray-400">Timeline</th>
               <th className="p-2 border text-gray-600 dark:text-gray-400">Module</th>
-              <th className="p-2 border text-gray-600 dark:text-gray-400">Project</th>
+              {!projectId && <th className="p-2 border text-gray-600 dark:text-gray-400">Project</th>}
               <th className="p-2 border text-gray-600 dark:text-gray-400">Assigned To</th>
               <th className="p-2 border text-gray-600 dark:text-gray-400">Created At</th>
             </tr>
@@ -478,9 +477,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 <td className="p-2 border">
                   {t?.status ? (
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        statusColors[t?.status] || "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[t?.status] || "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+                        }`}
                     >
                       {formatLabel(t?.status)}
                     </span>
@@ -493,10 +491,9 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 <td className="p-2 border">
                   {t?.priority ? (
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        priorityColors[t.priority] ||
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[t.priority] ||
                         "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
-                      }`}
+                        }`}
                     >
                       {formatLabel(t.priority)}
                     </span>
@@ -509,9 +506,8 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 <td className="p-2 border">
                   {t.urgency ? (
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        urgencyColors[t.urgency] || "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${urgencyColors[t.urgency] || "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+                        }`}
                     >
                       {formatLabel(t.urgency)}
                     </span>
@@ -531,9 +527,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 </td>
                 <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.timeline}</td>
                 <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.taskModule}</td>
-                <td className="p-2 border text-gray-600 dark:text-gray-400">
-                  {t?.project?.projectName}
-                </td>
+                {!projectId && (
+                  <td className="p-2 border text-gray-600 dark:text-gray-400">
+                    {t?.project?.projectName}
+                  </td>
+                )}
                 <td className="p-2 border text-gray-600 dark:text-gray-400">
                   {t?.assignedTo
                     ?.filter((a: any) => a?.staff) // ✅ guard

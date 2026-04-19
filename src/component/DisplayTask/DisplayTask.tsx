@@ -491,6 +491,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       ) : (
         <TableView
           tasks={filteredTasks}
+          projectId={project?.id}
           loading={loading}
           selectedTask={selectedTask}
           onTaskSelect={setSelectedTask}

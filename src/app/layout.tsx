@@ -1,20 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ProtectedLayout from "@/hooks/AuthGuard";
 import ClientRoot from "./ClientRoot";
 import { ThemeProvider } from "@/hooks/ThemeContext";
 // import ScrollToTop from "@/component/ScrollToTop/ScrollToTop";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "CN-Squad",
@@ -61,7 +50,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="font-sans antialiased"
       >
         {/* <ScrollToTop /> */}
         <ThemeProvider>

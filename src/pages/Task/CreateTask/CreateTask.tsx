@@ -274,7 +274,7 @@ export default function CreateTaskForm() {
       });
       return;
     }
-    if (!title || !dueDate || !startDate || !sprint) {
+    if (!title || !dueDate || !startDate) {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
     }
@@ -291,7 +291,7 @@ export default function CreateTaskForm() {
       title,
       description,
       taskModule,
-      sprint,
+      sprint: sprint ? Number(sprint) : undefined,
       status: status || "Not_started",
       priority: priority || "Medium",
       urgency: urgency || "Short_Term",
@@ -433,16 +433,20 @@ export default function CreateTaskForm() {
             className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           />
           {/* Sprint */}
-          <label className="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">
-            Task Sprint <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            value={sprint}
-            onChange={(e) => setSprint(e.target.value)}
-            placeholder="Sprint 1"
-            className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
-          />
+          {projectId && (
+            <>
+              <label className="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">
+                Task Sprint
+              </label>
+              <input
+                type="number"
+                value={sprint}
+                onChange={(e) => setSprint(e.target.value)}
+                placeholder="Sprint 1"
+                className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
+              />
+            </>
+          )}
           {/* status, urgency and priority */}
           {/* Status */}
           <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
