@@ -63,7 +63,6 @@ export default function LatestBirthday() {
         "
       >
         {birthdays?.map((person) => (
-          <>
             <div
               key={person?.id}
               className="flex flex-col items-start text-left w-full"
@@ -110,7 +109,6 @@ export default function LatestBirthday() {
                 </span>
               </Link>
             </div>
-          </>
         ))}
       </div>
     </div>

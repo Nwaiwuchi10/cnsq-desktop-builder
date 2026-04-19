@@ -46,29 +46,32 @@ const BoardView: React.FC<BoardViewProps> = ({
   }, [initialTasks]);
 
   const updateTaskStatus = useCallback(
-    async (taskId: number, newStatus: string) => {
+    (taskId: number, newStatus: string) => {
       // Optimistically update local state immediately
       setTasks((prev) =>
         prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
       );
 
-      try {
-        const token = localStorage.getItem("user-token");
+      // Detach the API call so React can complete painting the optimistic update
+      setTimeout(async () => {
+        try {
+          const token = localStorage.getItem("user-token");
 
-        await Api.patch(
-          `/task/${taskId}`,
-          { status: newStatus },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
+          await Api.patch(
+            `/task/${taskId}`,
+            { status: newStatus },
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
 
-        if (onTasksUpdate) {
-          onTasksUpdate();
+          if (onTasksUpdate) {
+            onTasksUpdate();
+          }
+        } catch (error) {
+          console.error("Error updating task status:", error);
+          // If the request fails, move it back to its initial status position
+          setTasks(initialTasks);
         }
-      } catch (error) {
-        console.error("Error updating task status:", error);
-        // If the request fails, move it back to its initial status position
-        setTasks(initialTasks);
-      }
+      }, 0);
     },
     [onTasksUpdate, initialTasks],
   );
@@ -88,7 +91,7 @@ const BoardView: React.FC<BoardViewProps> = ({
     e.dataTransfer.dropEffect = "move";
   };
 
-  const handleDropColumn = async (e: React.DragEvent, newStatus: string) => {
+  const handleDropColumn = (e: React.DragEvent, newStatus: string) => {
     e.preventDefault();
 
     if (!draggedTask || draggedFromStatus === newStatus) {
@@ -103,7 +106,8 @@ const BoardView: React.FC<BoardViewProps> = ({
     setDraggedTask(null);
     setDraggedFromStatus(null);
 
-    await updateTaskStatus(taskId, newStatus);
+    // Call synchronously to execute optimistic update without awaiting API latency
+    updateTaskStatus(taskId, newStatus);
   };
 
   const handleDragEnd = () => {
@@ -171,6 +175,12 @@ const BoardView: React.FC<BoardViewProps> = ({
                         <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 line-clamp-2">
                           {task.title}
                         </h4>
+                        
+                        {!projectId && task.project?.projectName && (
+                          <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 truncate">
+                            {task.project.projectName}
+                          </p>
+                        )}
 
                         {/* Task Description */}
                         {task.description && (

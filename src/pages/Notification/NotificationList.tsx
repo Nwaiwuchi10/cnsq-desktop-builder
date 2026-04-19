@@ -189,8 +189,9 @@ const NotificationList: React.FC<NotificationListProps> = ({
       ? notifications
       : notifications.filter((n) => !n.isRead);
 
+  const errorMap: any = null; // No longer needed
   const nonAnnouncement = filtered.filter(
-    (n) => n.type !== "demo" && n.type !== "announcement"
+    (n) => n.type !== "demo" && n.type !== "announcement" && n.type !== "ceo_message"
   );
 
   return (

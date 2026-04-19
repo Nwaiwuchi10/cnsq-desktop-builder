@@ -7,6 +7,17 @@ import { Search, Bell, Moon, Sun, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Api from "@/utils/api";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
+import AnnouncementModal from "@/pages/Notification/AnnouncementModal";
+
+interface NotificationData {
+  id: number;
+  type: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  relatedProductDemo?: { id: number };
+  relatedAnnouncement?: { id: number };
+}
 
 type User = {
   uuid: string;
@@ -27,6 +38,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [theme, setTheme] = useState<string>("light");
   const [mounted, setMounted] = useState(false);
+  const [activeNotification, setActiveNotification] = useState<NotificationData | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Initialize theme from localStorage
@@ -87,11 +99,23 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("user-token");
+      try {
+        const token = localStorage.getItem("user-token");
+        if (token) {
+          await Api.post("/staff-register/logout", {}, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        }
+      } catch (error) {
+        console.error("Logout request failed:", error);
+      } finally {
+        localStorage.removeItem("user-token");
+        localStorage.removeItem("userId");
+        window.location.href = "/presignin";
+      }
     }
-    window.location.href = "/presignin";
   };
 
   // 🔹 Realtime chat unread count via Socket.IO
@@ -153,6 +177,62 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
     fetchChatUnread();
   }, []);
+
+  // Fetch special announcement notices
+  useEffect(() => {
+    const fetchSpecialNotices = async () => {
+      try {
+        const recipientId = localStorage.getItem("userId");
+        if (!recipientId) return;
+
+        const res = await Api.get(
+          `/notification/special/notice?recipientId=${recipientId}`,
+        );
+        const notifications: NotificationData[] = res.data;
+
+        const now = new Date().getTime();
+        const recentNotices = notifications.filter((n) => {
+          const createdTime = new Date(n.createdAt).getTime();
+          const isWithin24Hrs = now - createdTime <= 24 * 60 * 60 * 1000;
+
+          const closed = localStorage.getItem(`closed_notification_${n.id}`);
+          const showCount =
+            Number(localStorage.getItem(`shown_count_${n.id}`)) || 0;
+
+          // Show only if within 24h, not closed, and shown less than twice
+          return isWithin24Hrs && !closed && showCount < 2;
+        });
+
+        if (recentNotices.length > 0) {
+          const firstNotice = recentNotices[0];
+
+          // Increment show count each time the modal appears
+          const currentCount =
+            Number(localStorage.getItem(`shown_count_${firstNotice.id}`)) || 0;
+          localStorage.setItem(
+            `shown_count_${firstNotice.id}`,
+            String(currentCount + 1),
+          );
+
+          setActiveNotification(firstNotice);
+        }
+      } catch (error) {
+        console.error("Error fetching special notices:", error);
+      }
+    };
+
+    fetchSpecialNotices();
+  }, []);
+
+  const handleCloseModal = () => {
+    if (activeNotification) {
+      localStorage.setItem(
+        `closed_notification_${activeNotification.id}`,
+        "true",
+      );
+      setActiveNotification(null);
+    }
+  };
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
@@ -271,6 +351,14 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           )}
         </button>
       </div>
+
+      {/* Auto popup modal with friendly display limit */}
+      {activeNotification && (
+        <AnnouncementModal
+          notification={activeNotification as any}
+          onClose={handleCloseModal}
+        />
+      )}
     </header>
   );
 };
