@@ -1,10 +1,14 @@
 "use client";
+// Forced rebuild to clear stale lucide-react module factory cache
+
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import Image, { StaticImageData } from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Api from "@/utils/api";
 import heroimgLogo from "../../assests/images/cnsquad.png";
+import cnThumb from "../../assests/images/cnthumb.png";
+import taskThumb from "../../assests/images/taskthumb.png";
 
 interface Staff {
   id: string;
@@ -35,14 +39,11 @@ interface Quote {
 export default function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [todaysBirthdays, setTodaysBirthdays] = useState<Staff[]>([]);
-  const [todaysAnniversaries, setTodaysAnniversaries] = useState<
-    StaffAnniversary[]
-  >([]);
+  const [todaysAnniversaries, setTodaysAnniversaries] = useState<StaffAnniversary[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const textRef = useRef<HTMLDivElement>(null);
 
-  // 🧠 Pre-calculate frequently used URLs for instant availability
   const defaultImages = useMemo(
     () => ({
       defaultBirthday:
@@ -103,9 +104,7 @@ export default function HeroSection() {
         const years = staff?.yearsCompleted || 0;
         const anniversaryText =
           years > 0
-            ? ` Happy ${years} Year${years > 1 ? "s" : ""} Anniversary ${
-                staff?.firstName
-              } ${staff?.lastName}!`
+            ? ` Happy ${years} Year${years > 1 ? "s" : ""} Anniversary ${staff?.firstName} ${staff?.lastName}!`
             : ` Happy Anniversary ${staff?.firstName} ${staff?.lastName}!`;
         return {
           image: staff?.photoUrl || defaultImages.defaultAnniversary,
@@ -190,22 +189,21 @@ export default function HeroSection() {
     gallerySlides,
   ]);
 
-  // 🔁 Faster Slide Rotation (now every 6s instead of 10s)
+  // 🔁 Slide Rotation every 6s
   useEffect(() => {
     if (slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
-    }, 6000); // ⏩ Faster transition
+    }, 6000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // 🧠 Preload next image (browser cache)
-  // 🧠 Preload next image (browser cache)
+  // 🧠 Preload next image
   useEffect(() => {
     const nextIndex = (current + 1) % slides.length;
     const next = slides[nextIndex];
     if (next?.image || next?.url) {
-      const preload = new window.Image(); // ✅ Explicitly reference the native Image constructor
+      const preload = new window.Image();
       preload.src = next.image || next.url;
     }
   }, [current, slides]);
@@ -247,93 +245,178 @@ export default function HeroSection() {
   const currentSlide = slides[current];
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#1F3300]">
-      {/* Background / Media */}
-      {currentSlide.type === "videoQuote" ? (
-        <video
-          src={currentSlide?.url}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata" // ⚡ only load metadata, not full file
-          className="absolute inset-0 w-full h-full object-cover brightness-75"
-        />
-      ) : currentSlide.type === "imageQuote" || currentSlide.image ? (
-        <Image
-          src={currentSlide?.url || currentSlide?.image}
-          alt="Slide Background"
-          fill
-          unoptimized={false}
-          loading="eager" // ⚡ Eager for first image
-          placeholder="blur" // Blur placeholder for smooth load
-          blurDataURL="/blur-placeholder.png" // ⚡ Add a tiny placeholder image in /public
-          priority={current === 0} // Preload first image only
-          className="object-cover brightness-75 transition-opacity duration-500 object-[center_top]"
-        />
-      ) : null}
+    <div className="flex flex-col lg:flex-row w-full h-screen overflow-hidden bg-[#141414]">
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70" />
+      {/* ── LEFT 60%: Slideshow ── */}
+      <div className="relative w-full lg:w-[60%] h-[55vh] pt-16 lg:pt-0 lg:h-full bg-[#1F3300] overflow-hidden shrink-0">
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
-        {/* Welcome / Celebration */}
-        {["welcome", "celebration"].includes(currentSlide.type) && (
-          <>
-            <h1 className="text-3xl md:text-6xl font-bold mb-4">
-              {currentSlide.text}
-            </h1>
-            {currentSlide.image2 && (
-              <div className="mt-4 w-[200px] md:w-[300px]">
+        {/* Background Media */}
+        {currentSlide.type === "videoQuote" ? (
+          <video
+            src={currentSlide?.url}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-cover brightness-75"
+          />
+        ) : currentSlide.type === "imageQuote" || currentSlide.image ? (
+          <Image
+            src={currentSlide?.url || currentSlide?.image}
+            alt="Slide Background"
+            fill
+            sizes="(max-width: 1024px) 100vw, 60vw"
+            loading="eager"
+            placeholder="blur"
+            blurDataURL="/blur-placeholder.png"
+            priority={current === 0}
+            className="object-cover brightness-75 object-[center_top] transition-opacity duration-500"
+          />
+        ) : null}
+
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70" />
+
+        {/* Slide Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
+
+          {/* Welcome / Celebration */}
+          {["welcome", "celebration"].includes(currentSlide.type) && (
+            <>
+              <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-4">
+                {currentSlide.text}
+              </h1>
+              {currentSlide.image2 && (
+                <div className="mt-4 w-40 sm:w-52 lg:w-72">
+                  <Image
+                    src={currentSlide?.image2}
+                    alt="Logo"
+                    className="w-full h-auto object-contain"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Quote */}
+          {currentSlide.type === "quote" && (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide.quote.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="max-w-3xl"
+              >
+                <div
+                  ref={textRef}
+                  className="max-h-[55vh] mt-20 overflow-hidden leading-relaxed text-white"
+                  style={{
+                    maskImage:
+                      "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
+                  }}
+                >
+                  <h1 className="text-2xl lg:text-4xl font-semibold">
+                    &ldquo;{currentSlide.quote.description}&rdquo;
+                  </h1>
+                </div>
+                <p className="mt-4 text-lg italic">
+                  &mdash;{" "}
+                  {currentSlide.quote.createdBy?.firstName
+                    ? `${currentSlide.quote.createdBy.firstName} ${currentSlide.quote.createdBy.lastName}`
+                    : "Unknown"}
+                </p>
+                <p className="mt-2 text-base opacity-80">
+                  {currentSlide.quote.subject}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </div>
+      </div>
+
+      {/* ── RIGHT 40%: Cards ── */}
+      <div className="w-full lg:w-[40%] h-[45vh] lg:h-full overflow-y-auto bg-[#141414] custom-scrollbar">
+        <div className="min-h-full flex flex-col justify-center items-center px-4 py-5 lg:p-6 gap-4">
+
+          {/* Quote Request Card */}
+          <div className="group relative w-full max-w-sm bg-[#0f0f0f] border border-[#2a2a2a] rounded-xl p-5 flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:border-[#555]">
+            {/* External Link Icon */}
+            <svg
+              className="absolute top-4 right-4 w-4 h-4 text-[#555] group-hover:text-white transition-colors"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center w-20 h-14">
                 <Image
-                  src={currentSlide?.image2}
-                  alt="Logo"
-                  className="w-full h-auto object-contain"
-                  loading="lazy"
+                  src={taskThumb}
+                  alt="Quote Request"
+                  width={90}
+                  height={58}
+                  className="object-cover w-full h-full"
                 />
               </div>
-            )}
-          </>
-        )}
+            <div className="flex flex-col pt-1">
+              <h3 className="text-white font-bold text-base leading-tight mb-1.5">Quote Request</h3>
+              <span className="text-[#aaa] text-[0.7rem] px-2.5 py-0.5 rounded-full border border-[#333] bg-[#1a1a1a] inline-block">
+                E-commerce
+              </span>
+            </div>
+          </div>
+          <p className="text-[#888] text-xs leading-relaxed">
+            Connect instantly with verified professionals across hundreds of services in Nigeria and get quotes that match your needs.
+          </p>
+        </div>
 
-        {/* Quote */}
-        {currentSlide.type === "quote" && (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide.quote.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-3xl"
-            >
-              <div
-                ref={textRef}
-                className="max-h-[55vh] mt-20 overflow-hidden leading-relaxed text-white scrollbar-hide"
-                style={{
-                  maskImage:
-                    "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)",
-                }}
-              >
-                <h1 className="text-3xl md:text-4xl font-semibold">
-                  “{currentSlide.quote.description}”
-                </h1>
-              </div>
+        {/* Connect Nigeria Card */}
+        <div className="group relative w-full max-w-sm bg-[#0f0f0f] border border-[#2a2a2a] rounded-xl p-5 flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:border-[#555]">
+          {/* External Link Icon */}
+          <svg
+            className="absolute top-4 right-4 w-4 h-4 text-[#555] group-hover:text-white transition-colors"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
 
-              <p className="mt-4 text-lg italic">
-                —{" "}
-                {currentSlide.quote.createdBy?.firstName
-                  ? `${currentSlide.quote.createdBy.firstName} ${currentSlide.quote.createdBy.lastName}`
-                  : "Unknown"}
-              </p>
-              <p className="mt-2 text-base opacity-80">
-                {currentSlide.quote.subject}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        )}
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center w-20 h-14">
+              <Image
+                src={cnThumb}
+                alt="Connect Nigeria"
+                width={90}
+                height={58}
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <div className="flex flex-col pt-1">
+              <h3 className="text-white font-bold text-base leading-tight mb-1.5">Connect Nigeria</h3>
+              <span className="text-[#aaa] text-[0.7rem] px-2.5 py-0.5 rounded-full border border-[#333] bg-[#1a1a1a] inline-block">
+                E-commerce
+              </span>
+            </div>
+          </div>
+          <p className="text-[#888] text-xs leading-relaxed">
+            Buy and sell products and services in a trusted online marketplace built for Nigerians.
+          </p>
+        </div>
+
+        </div>
       </div>
     </div>
   );
