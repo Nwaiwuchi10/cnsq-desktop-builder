@@ -63,7 +63,7 @@ export default function TeamProfiles() {
         <h1 className="text-2xl md:text-3xl font-bold text-black dark:text-white">
           Heads of Departments
         </h1>
-        <Link href="/heads_of_departments">
+        <Link href="/heads-of-departments">
           <button
             style={{ cursor: "pointer" }}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#141414] text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition"

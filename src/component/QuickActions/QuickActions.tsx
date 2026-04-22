@@ -1,7 +1,7 @@
 "use client";
 
 import svgContact from "../../assests/imageIcons/SVG.png";
-import svgContact1 from "../../assests/imageIcons/mingcute_celebrate-line.png";
+import svgContact1 from "../../assests/imageIcons/mingcute-celebrate-line.png";
 import svgContact2 from "../../assests/imageIcons/line-chart-up-02.png";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
