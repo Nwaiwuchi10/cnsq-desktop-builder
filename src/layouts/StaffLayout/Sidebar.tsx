@@ -49,14 +49,14 @@ interface SidebarProps {
 const navSections = [
   {
     title: "OVERVIEW",
-    items: [{ name: "Dashboard", href: "/staff_dashboard", icon: LayoutDashboard }],
+    items: [{ name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard }],
   },
   {
     title: "CELEBRATIONS",
     items: [
       { name: "Birthdays", href: "/birthday", icon: Cake },
       { name: "Anniversaries", href: "/anniversary", icon: Medal },
-      { name: "New Hires", href: "/new_hire", icon: UserPlus },
+      { name: "New Hires", href: "/new-hire", icon: UserPlus },
     ],
   },
   {
@@ -70,8 +70,8 @@ const navSections = [
     title: "COMMUNICATION",
     items: [
       { name: "Chat", href: "/chat", icon: MessageSquare },
-      { name: "CEO's Corner", href: "/ceos_corner", icon: Mail },
-      { name: "CEO's Messaging", href: "/ceo_messaging", icon: Send, isCeoOnly: true },
+      { name: "CEO's Corner", href: "/ceos-corner", icon: Mail },
+      { name: "CEO's Messaging", href: "/ceo-messaging", icon: Send, isCeoOnly: true },
     ],
   },
   {

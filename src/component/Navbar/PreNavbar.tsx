@@ -282,7 +282,7 @@ export default function PreNavbar() {
                           View Profile
                         </Link>
                         <Link
-                          href={`/change_password`}
+                          href={`/change-password`}
                           className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsDropdownOpen(false)}
                         >
@@ -400,7 +400,7 @@ export default function PreNavbar() {
                       View Profile
                     </Link>
                     <Link
-                      href={`/change_password`}
+                      href={`/change-password`}
                       className="block py-2 text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsDropdownOpen(false)}
                     >

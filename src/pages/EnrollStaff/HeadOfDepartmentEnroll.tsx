@@ -366,7 +366,7 @@ export default function HeadOfDeptOnboardingForm() {
         type: "success",
         message: "Head of Department assigned successfully.",
       });
-      setTimeout(() => router.push("/heads_of_departments"), 1200);
+      setTimeout(() => router.push("/heads-of-departments"), 1200);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({

@@ -21,7 +21,7 @@ export function useAuth() {
     //   return;
     // }
     //  Allow login, forgot-password, and reset-password pages
-    const allowedRoutes = ["/presignin", "/login", "/forgot_password", "/reset_password"];
+    const allowedRoutes = ["/presignin", "/login", "/forgot-password", "/reset-password"];
 
     // If current page is under an allowed route, don't block it
     if (allowedRoutes.includes(pathname)) {

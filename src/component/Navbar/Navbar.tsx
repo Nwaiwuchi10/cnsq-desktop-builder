@@ -219,7 +219,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center justify-end space-x-6">
 
               {/* Grid Icon */}
-              <Link href="/staff_dashboard" className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2">
+              <Link href="/staff-dashboard" className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
@@ -236,7 +236,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Button + Grid Icon */}
             <div className="md:hidden flex items-center gap-4">
-              <Link href="/staff_dashboard" className="flex items-center justify-center">
+              <Link href="/staff-dashboard" className="flex items-center justify-center">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
@@ -279,10 +279,10 @@ export default function Navbar() {
                   <Link href={`/staff/${user?.uuid}`} onClick={() => setIsOpen(false)} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition">
                     View Profile
                   </Link>
-                  <Link href={`/change_password`} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition" onClick={() => setIsDropdownOpen(false)}>
+                  <Link href={`/change-password`} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition" onClick={() => setIsDropdownOpen(false)}>
                     Change Password
                   </Link>
-                  <Link href="/ceos_corner" className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition cursor-pointer" onClick={() => setIsOpen(false)}>
+                  <Link href="/ceos-corner" className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition cursor-pointer" onClick={() => setIsOpen(false)}>
                     Urgent Message to the CEO
                   </Link>
                   <div className="cursor-pointer block font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition mt-2">

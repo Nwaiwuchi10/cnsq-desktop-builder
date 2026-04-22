@@ -41,7 +41,7 @@
   "shortcuts": [
     {
       "name": "Dashboard",
-      "url": "/staff_dashboard",
+      "url": "/staff-dashboard",
       "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     },
     {
