@@ -34,13 +34,13 @@ export default function Settings() {
 
         {/* Switch Tabs */}
         <div className="flex items-center gap-1 bg-gray-100/50 dark:bg-[#1A1A1A] rounded-full p-1.5 w-fit mb-8 ml-1 border border-gray-100 dark:border-gray-800">
-          {["Profile", "Password", "Notifications", "Activity Log"].map((tab) => (
+          {["Profile", "Password", "Notifications"].map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
               className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${activeTab === tab
-                  ? "bg-white dark:bg-[#2C2C2C] text-gray-900 dark:text-white shadow-md shadow-gray-200/50 border border-gray-100 dark:border-gray-800"
-                  : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5"
+                ? "bg-white dark:bg-[#2C2C2C] text-gray-900 dark:text-white shadow-md shadow-gray-200/50 border border-gray-100 dark:border-gray-800"
+                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-white/5"
                 }`}
             >
               {tab}
