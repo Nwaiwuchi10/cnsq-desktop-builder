@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/hooks/ThemeContext";
 import Api from "@/utils/api";
 import { AxiosError } from "axios";
 import CustomModal from "@/component/Message/Message";
@@ -10,6 +11,7 @@ import Image from "next/image";
 
 export default function Login() {
   const router = useRouter();
+  const { theme, toggleTheme, mounted } = useTheme();
 
   const [identifier, setIdentifier] = useState<string>(""); // 🔹 can be email or employeeCode
   const [password, setPassword] = useState<string>("");
@@ -66,7 +68,22 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen w-full bg-white font-sans">
+    <div className="flex flex-col md:flex-row min-h-screen w-full bg-white dark:bg-[#0d0d0d] font-sans transition-colors duration-300 relative">
+      {/* Theme Toggle in Top Right */}
+      <div className="absolute top-6 right-6 z-50">
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:opacity-80 transition-all shadow-sm"
+          aria-label="Toggle Theme"
+        >
+          {mounted && theme === "dark" ? (
+            <Sun className="w-5 h-5 text-yellow-400" />
+          ) : (
+            <Moon className="w-5 h-5 text-gray-600" />
+          )}
+        </button>
+      </div>
+
       {/* Left side: Form */}
       <div className="w-full md:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24 xl:px-32 py-12">
         <div className="w-full max-w-[380px] mx-auto">
@@ -76,25 +93,25 @@ export default function Login() {
           </div>
 
           {/* Headers */}
-          <h1 className="text-[28px] font-bold text-[#141414] mb-1.5 tracking-tight">Sign in</h1>
-          <p className="text-gray-500 text-[15px] mb-10">Sign in to your account to continue</p>
+          <h1 className="text-[28px] font-bold text-[#141414] dark:text-white mb-1.5 tracking-tight">Sign in</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-[15px] mb-10">Sign in to your account to continue</p>
 
           <div className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                 Email
               </label>
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="w-full rounded-[4px] border border-gray-100 px-3 py-3 bg-white text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                className="w-full rounded-[4px] border border-gray-100 dark:border-gray-800 px-3 py-3 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700] transition-colors"
                 placeholder="you@connectnigeria.com"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -102,7 +119,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-[4px] border border-gray-100 px-3 py-3 pr-10 bg-white text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                  className="w-full rounded-[4px] border border-gray-100 dark:border-gray-800 px-3 py-3 pr-10 bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700] transition-colors"
                   placeholder="********"
                 />
                 <button
@@ -142,13 +159,13 @@ export default function Login() {
           <div className="flex justify-end mt-4 mb-4">
             <button
               onClick={() => router.push("/forgot-password")}
-              className="text-[13px] cursor-pointer text-gray-500 font-medium hover:text-gray-800 transition-colors"
+              className="text-[13px] cursor-pointer text-gray-500 dark:text-gray-400 font-medium hover:text-gray-800 dark:hover:text-white transition-colors"
             >
               Forgot Password?
             </button>
           </div>
 
-          <p className="mt-16 text-left text-xs text-gray-400 font-medium">
+          <p className="mt-16 text-left text-xs text-gray-400 dark:text-gray-600 font-medium">
             &copy; 2026 Connect Nigeria. All rights reserved.
           </p>
         </div>
