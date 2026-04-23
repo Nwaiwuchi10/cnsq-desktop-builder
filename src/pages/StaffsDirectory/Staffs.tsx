@@ -114,12 +114,6 @@ export default function StaffDirectory() {
     location: "All",
     completion: "All",
   });
-  const [tempFilters, setTempFilters] = useState({
-    department: "All",
-    role: "All",
-    location: "All",
-    completion: "All",
-  });
 
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [selectedCompletionData, setSelectedCompletionData] =
@@ -139,13 +133,22 @@ export default function StaffDirectory() {
     }
   };
 
-  // Fetch staff data (with search + pagination)
+  // Fetch staff data (with search + pagination + filters)
   useEffect(() => {
     const fetchStaff = async () => {
       setLoading(true);
       try {
-        const query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}${search ? `&search=${encodeURIComponent(search)}` : ""
-          }`;
+        let query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}`;
+        
+        if (search) query += `&search=${encodeURIComponent(search)}`;
+        if (filters.department !== "All") query += `&department=${encodeURIComponent(filters.department)}`;
+        if (filters.role !== "All") query += `&role=${encodeURIComponent(filters.role)}`;
+        if (filters.location !== "All") query += `&location=${encodeURIComponent(filters.location)}`;
+        if (filters.completion !== "All") {
+          const range = filters.completion.replace("%", "");
+          query += `&completionRange=${encodeURIComponent(range)}`;
+        }
+
         const res = await Api.get<StaffResponse>(query);
         setStaffList(res?.data?.data);
         setTotalPages(res?.data?.totalPages);
@@ -157,7 +160,7 @@ export default function StaffDirectory() {
     };
 
     fetchStaff();
-  }, [page, limit, search]);
+  }, [page, limit, search, filters]);
 
   // Fetch departmental roles
   useEffect(() => {
@@ -194,39 +197,7 @@ export default function StaffDirectory() {
     }
   }, [staffList]);
 
-  const handleApplyFilter = () => {
-    setFilters(tempFilters);
-    setShowDropdown(false);
-  };
 
-  // Client-side multi-criteria filter
-  const filteredStaff = staffList.filter((person) => {
-    const matchesDept =
-      filters.department === "All" ||
-      person.employment?.department?.name === filters.department;
-
-    const matchesRole =
-      filters.role === "All" ||
-      person.employment?.departmentalRole?.title === filters.role;
-
-    const matchesLocation =
-      filters.location === "All" ||
-      `${person.address?.city}, ${person.address?.state}`.includes(
-        filters.location,
-      );
-
-    const matchesCompletion = (() => {
-      if (filters.completion === "All") return true;
-      const rate = person.taskPerformance?.completionRate || 0;
-      if (filters.completion === "0-25%") return rate <= 25;
-      if (filters.completion === "26-50%") return rate > 25 && rate <= 50;
-      if (filters.completion === "51-75%") return rate > 50 && rate <= 75;
-      if (filters.completion === "76-100%") return rate > 75;
-      return true;
-    })();
-
-    return matchesDept && matchesRole && matchesLocation && matchesCompletion;
-  });
 
   const generateVCard = (person: Staff) => {
     return `BEGIN:VCARD
@@ -240,7 +211,7 @@ ADR:;;${person.address?.city || ""};${person.address?.state || ""};;${person.add
 END:VCARD`;
   };
   const downloadAllContacts = () => {
-    const vCards = filteredStaff
+    const vCards = staffList
       .map((person) => generateVCard(person))
       .join("\n");
 
@@ -341,13 +312,14 @@ END:VCARD`;
                       Department
                     </label>
                     <select
-                      value={tempFilters.department}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.department}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           department: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -365,13 +337,14 @@ END:VCARD`;
                       Role
                     </label>
                     <select
-                      value={tempFilters.role}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.role}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           role: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -389,13 +362,14 @@ END:VCARD`;
                       Location
                     </label>
                     <select
-                      value={tempFilters.location}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.location}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           location: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -413,13 +387,14 @@ END:VCARD`;
                       Task Completion
                     </label>
                     <select
-                      value={tempFilters.completion}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.completion}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           completion: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -430,12 +405,6 @@ END:VCARD`;
                     </select>
                   </div>
 
-                  <button
-                    onClick={handleApplyFilter}
-                    className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
-                  >
-                    Apply Filter
-                  </button>
                 </div>
               )}
               {/* download card button */}
@@ -501,13 +470,14 @@ END:VCARD`;
                       Department
                     </label>
                     <select
-                      value={tempFilters.department}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.department}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           department: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -525,13 +495,14 @@ END:VCARD`;
                       Role
                     </label>
                     <select
-                      value={tempFilters.role}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.role}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           role: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -549,13 +520,14 @@ END:VCARD`;
                       Location
                     </label>
                     <select
-                      value={tempFilters.location}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.location}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           location: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -573,13 +545,14 @@ END:VCARD`;
                       Task Completion percentage
                     </label>
                     <select
-                      value={tempFilters.completion}
-                      onChange={(e) =>
-                        setTempFilters((prev) => ({
+                      value={filters.completion}
+                      onChange={(e) => {
+                        setFilters((prev) => ({
                           ...prev,
                           completion: e.target.value,
-                        }))
-                      }
+                        }));
+                        setPage(1);
+                      }}
                       className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                     >
                       <option value="All">All</option>
@@ -590,12 +563,6 @@ END:VCARD`;
                     </select>
                   </div>
 
-                  <button
-                    onClick={handleApplyFilter}
-                    className="w-full py-3 bg-[#95D700] text-white font-bold rounded-lg hover:bg-[#78B500] transition-colors shadow-lg active:scale-[0.98] mt-2"
-                  >
-                    Apply Filter
-                  </button>
                 </div>
               )}
             </div>
@@ -622,10 +589,10 @@ END:VCARD`;
             <div className="flex justify-center py-12">
               <LoadingSpinner />
             </div>
-          ) : filteredStaff?.length > 0 ? (
+          ) : staffList?.length > 0 ? (
             viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredStaff.map((person) => (
+                {staffList.map((person) => (
                   <div
                     key={person.id}
                     className="flex flex-col justify-between border border-[#E5E7EB] dark:border-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-sm transition-colors"
@@ -719,7 +686,7 @@ END:VCARD`;
             ) : (
               /* --- Detailed Column (List) View --- */
               <div className="flex flex-col gap-6">
-                {filteredStaff.map((person) => (
+                {staffList.map((person) => (
                   <div
                     key={person.id}
                     className="bg-white dark:bg-[#141414] border border-[#F1F1F1] dark:border-gray-800 rounded-2xl p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow"
