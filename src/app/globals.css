@@ -34,11 +34,17 @@ body {
   color: inherit;
 } */
 
-/* .dark input,
+.dark input,
 .dark textarea,
 .dark select {
   color: #ededed;
-} */
+}
+
+.light input,
+.light textarea,
+.light select {
+  color: #171717;
+}
 
 /* ── PWA / Safe-area utilities ────────────────────────────────── */
 /* Pushes content below iPhone notch / Dynamic Island in standalone mode */
@@ -47,11 +53,7 @@ body {
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-input,
-textarea,
-select {
-  color: #171717;
-}
+
 
 /* Slide-up animation for the PWA install banner */
 @keyframes slideUp {
