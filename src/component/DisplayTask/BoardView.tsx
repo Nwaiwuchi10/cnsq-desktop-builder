@@ -158,7 +158,7 @@ const BoardView: React.FC<BoardViewProps> = ({
                   className={`space-y-3 min-h-96 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 transition-colors rounded-lg p-1 ${isDragOver ? "bg-green-50 dark:bg-green-900/20" : ""}`}
                 >
                   {columnTasks.length === 0 ? (
-                    <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+                    <div className="flex items-start justify-start h-32 text-gray-400 text-sm">
                       No tasks
                     </div>
                   ) : (
@@ -175,7 +175,7 @@ const BoardView: React.FC<BoardViewProps> = ({
                         <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 line-clamp-2">
                           {task.title}
                         </h4>
-                        
+
                         {!projectId && task.project?.projectName && (
                           <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 truncate">
                             {task.project.projectName}
@@ -193,13 +193,12 @@ const BoardView: React.FC<BoardViewProps> = ({
                         <div className="flex items-center justify-between gap-2 mb-2">
                           {task.priority && (
                             <span
-                              className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold text-white ${
-                                task.priority === "High"
+                              className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold text-white ${task.priority === "High"
                                   ? "bg-red-500"
                                   : task.priority === "Medium"
                                     ? "bg-yellow-500"
                                     : "bg-blue-500"
-                              }`}
+                                }`}
                             >
                               {task.priority === "High"
                                 ? "HIGH"
@@ -215,12 +214,12 @@ const BoardView: React.FC<BoardViewProps> = ({
                           <span>
                             {task.dueDate
                               ? new Date(task.dueDate).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                  },
-                                )
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
                               : "—"}
                           </span>
                           <button
