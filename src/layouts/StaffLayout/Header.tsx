@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Bell, Moon, Sun, MessageCircle } from "lucide-react";
+import { useTheme } from "@/hooks/ThemeContext";
 import Image from "next/image";
 import Api from "@/utils/api";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
@@ -36,24 +37,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [chatUnreadCount, setChatUnreadCount] = useState<number>(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [theme, setTheme] = useState<string>("light");
-  const [mounted, setMounted] = useState(false);
+  const { theme, toggleTheme, mounted } = useTheme();
   const [activeNotification, setActiveNotification] = useState<NotificationData | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Initialize theme from localStorage
-  useEffect(() => {
-    setMounted(true);
-    const savedTheme = localStorage.getItem("theme") || "light";
-    setTheme(savedTheme);
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark");
-  };
 
   const getPageTitle = () => {
     const pathMap: { [key: string]: string } = {
