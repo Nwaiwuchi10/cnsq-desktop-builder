@@ -442,7 +442,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
           </div>
         </div>
 
-        {/* Tasks Table */}
+        {/* Tasks Table **/}
         <table className="min-w-full border border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400">
           <thead className="bg-gray-100 dark:bg-gray-800 transition-colors text-left text-gray-600 dark:text-gray-400">
             <tr className="text-gray-600 dark:text-gray-400">
