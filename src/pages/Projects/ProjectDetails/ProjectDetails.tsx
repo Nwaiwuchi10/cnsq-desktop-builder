@@ -111,9 +111,9 @@ export default function ProjectDetails() {
 
   if (!project)
     return (
-      <p className="p-6">
+      <div className="p-6">
         <LoadingSpinner />
-      </p>
+      </div>
     );
   const progressValue = () => {
     switch (project.status as ProjectStatus) {

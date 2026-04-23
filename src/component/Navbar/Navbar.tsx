@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu, X, Bell, MessageCircle } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
@@ -25,6 +26,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -219,7 +221,13 @@ export default function Navbar() {
             <div className="hidden md:flex items-center justify-end space-x-6">
 
               {/* Grid Icon */}
-              <Link href="/staff-dashboard" className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2">
+              <button
+                onClick={() => {
+                  console.log("Navigating to /staff-dashboard-final");
+                  router.push("/staff-dashboard");
+                }}
+                className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2 focus:outline-none"
+              >
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
@@ -231,12 +239,18 @@ export default function Navbar() {
                   <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
                 </svg>
-              </Link>
+              </button>
             </div>
 
             {/* Mobile Menu Button + Grid Icon */}
             <div className="md:hidden flex items-center gap-4">
-              <Link href="/staff-dashboard" className="flex items-center justify-center">
+              <button
+                onClick={() => {
+                  console.log("Navigating to /staff-dashboard");
+                  router.push("/staff-dashboard");
+                }}
+                className="flex items-center justify-center focus:outline-none"
+              >
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
@@ -248,7 +262,7 @@ export default function Navbar() {
                   <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
                   <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
                 </svg>
-              </Link>
+              </button>
               <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-300 hover:text-[#95D700] focus:outline-none">
                 {isOpen ? <X size={26} /> : <Menu size={26} />}
               </button>

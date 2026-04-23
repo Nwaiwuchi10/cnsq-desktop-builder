@@ -10,7 +10,9 @@ import {
     AlertCircle,
     Edit2,
     Trash2,
-    ExternalLink
+    ExternalLink,
+    Database,
+    Calendar
 } from "lucide-react";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import Api from "@/utils/api";
@@ -204,7 +206,7 @@ const CeoMessagingCenter: React.FC = () => {
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-2 text-gray-400">
-                                            <Clock className="w-4 h-4" />
+                                            <Calendar className="w-4 h-4" />
                                             <span className="text-gray-900 dark:text-gray-200">
                                                 {new Date(msg.createdAt).toLocaleDateString()}
                                             </span>

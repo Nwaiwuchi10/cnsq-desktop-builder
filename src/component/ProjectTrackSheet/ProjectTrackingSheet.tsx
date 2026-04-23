@@ -354,24 +354,26 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
               </select>
             )}
             {/* Sprint Dropdown */}
-            <select
-              className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500"
-              value={sprintFilter}
-              onChange={(e) =>
-                setSprintFilter(
-                  e.target.value === "all" ? "all" : Number(e.target.value),
-                )
-              }
-            >
-              <option value="all" className="text-gray-600 dark:text-gray-400">
-                All Sprints
-              </option>
-              {uniqueSprints.map((s) => (
-                <option key={s} value={s}>
-                  Sprint {s}
+            {projectId && (
+              <select
+                className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500 bg-white dark:bg-[#1a1a1a]"
+                value={sprintFilter}
+                onChange={(e) =>
+                  setSprintFilter(
+                    e.target.value === "all" ? "all" : Number(e.target.value),
+                  )
+                }
+              >
+                <option value="all" className="text-gray-600 dark:text-gray-400">
+                  All Sprints
                 </option>
-              ))}
-            </select>
+                {uniqueSprints.map((s) => (
+                  <option key={s} value={s}>
+                    Sprint {s}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* Staff Dropdown */}
             <select
@@ -440,11 +442,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
           </div>
         </div>
 
-        {/* Tasks Table */}
+        {/* Tasks Table **/}
         <table className="min-w-full border border-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-400">
           <thead className="bg-gray-100 dark:bg-gray-800 transition-colors text-left text-gray-600 dark:text-gray-400">
             <tr className="text-gray-600 dark:text-gray-400">
-              <th className="p-2 border text-gray-600 dark:text-gray-400">Sprint</th>
+              {projectId && <th className="p-2 border text-gray-600 dark:text-gray-400">Sprint</th>}
               <th className="p-2 border text-gray-600 dark:text-gray-400">Title</th>
               <th className="p-2 border text-gray-600 dark:text-gray-400">Status</th>
               <th className="p-2 border text-gray-600 dark:text-gray-400">Priority</th>
@@ -466,7 +468,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 key={t?.id}
                 className="odd:bg-white dark:bg-[#141414] transition-colors even:bg-gray-50 dark:bg-[#1a1a1a] transition-colors text-gray-600 dark:text-gray-400 hover:bg-green-100 duration-150 cursor-pointer text-gray-600 dark:text-gray-400"
               >
-                <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.sprint}</td>
+                {projectId && <td className="p-2 border text-gray-600 dark:text-gray-400">{t?.sprint}</td>}
                 <td
                   className="p-2 border cursor-pointer text-gray-600 dark:text-gray-400"
                   onClick={() => setSelectedTask(t)}
