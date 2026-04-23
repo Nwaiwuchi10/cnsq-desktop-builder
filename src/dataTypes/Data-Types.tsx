@@ -77,6 +77,7 @@ export interface TaskDTO {
   };
   assignedTo: TaskAssignment[];
   comments: TaskComment[];
+  createdBy?: Staff;
 }
 export enum ProjectStatus {
   NOT_STARTED = "not_started",

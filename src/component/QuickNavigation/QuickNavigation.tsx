@@ -15,7 +15,7 @@ const navItems = [
   {
     title: "Dashboard",
     description: "View metrics and insights",
-    href: "/",
+    href: "/staff-dashboard",
     icon: LayoutDashboard,
     bg: "bg-[#a855f7]", // Purple
   },
@@ -63,7 +63,7 @@ export default function QuickNavigation() {
         <h2 className="text-2xl md:text-3xl font-bold text-black dark:text-white mb-10 tracking-tight">
           Quick Navigation
         </h2>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {navItems.map((item, idx) => (
             <Link
@@ -76,7 +76,7 @@ export default function QuickNavigation() {
               >
                 <item.icon className="w-6 h-6 md:w-7 md:h-7" strokeWidth={1.5} />
               </div>
-              
+
               <div className="ml-5 flex-1">
                 <div className="flex items-center gap-1.5 mb-1">
                   <h3 className="text-[15px] font-bold text-gray-800 dark:text-gray-200 tracking-tight">

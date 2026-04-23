@@ -49,7 +49,7 @@ interface SidebarProps {
 const navSections = [
   {
     title: "OVERVIEW",
-    items: [{ name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard }],
+    items: [{ name: "Dashboard", href: "/staff-dashboard-final", icon: LayoutDashboard }],
   },
   {
     title: "CELEBRATIONS",

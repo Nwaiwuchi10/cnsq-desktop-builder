@@ -73,9 +73,11 @@ const TableView: React.FC<TableViewProps> = ({
               <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                 Title
               </th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
-                Sprint
-              </th>
+              {projectId && (
+                <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
+                  Sprint
+                </th>
+              )}
               <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                 Status
               </th>
@@ -103,6 +105,9 @@ const TableView: React.FC<TableViewProps> = ({
                 Team
               </th>
               <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
+                Created By
+              </th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
                 Assigned To
               </th>
               <th className="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">
@@ -120,9 +125,11 @@ const TableView: React.FC<TableViewProps> = ({
                 <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 max-w-xs truncate">
                   {task.title}
                 </td>
-                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                  {task.sprint || "—"}
-                </td>
+                {projectId && (
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
+                    {task.sprint || "—"}
+                  </td>
+                )}
                 <td className="px-4 py-3">
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${statusColors[task.status || ""] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}
@@ -164,6 +171,11 @@ const TableView: React.FC<TableViewProps> = ({
                 )}
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">
                   {task.department?.name || "—"}
+                </td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">
+                  {task.createdBy
+                    ? `${task.createdBy.firstName} ${task.createdBy.lastName}`
+                    : "—"}
                 </td>
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs">
                   {task.assignedTo
