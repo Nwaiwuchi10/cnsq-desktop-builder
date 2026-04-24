@@ -7,6 +7,7 @@ interface CompletedTask {
   id: number;
   title: string;
   status: string;
+  startDate: string | null;
   dueDate: string;
   project: string;
   projectId: number | null;
@@ -84,9 +85,14 @@ const CompletedTasksList = ({
                   </span>
                 </div>
               </div>
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap ml-2">
-                {new Date(task.dueDate).toLocaleDateString()}
-              </span>
+              <div className="flex flex-col items-end gap-1 ml-2 whitespace-nowrap">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  Start: {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+                </span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "—"}
+                </span>
+              </div>
             </div>
           ))}
         </div>

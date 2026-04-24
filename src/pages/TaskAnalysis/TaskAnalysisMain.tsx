@@ -34,6 +34,7 @@ interface CompletedTask {
   id: number;
   title: string;
   status: string;
+  startDate: string | null;
   dueDate: string;
   project: string;
   projectId: number | null;
@@ -47,6 +48,7 @@ interface OpenTask {
   urgency: string;
   project: string;
   projectId: number | null;
+  startDate: string | null;
   dueDate: string | null;
   sprint: number;
   description?: string;

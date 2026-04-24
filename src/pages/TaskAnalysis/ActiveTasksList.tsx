@@ -95,7 +95,7 @@ const ActiveTasksList = ({
                   style={{ width: `${task.progress}%` }}
                 ></div>
               </div>
-              {/* <div className="flex gap-2 flex-wrap text-xs">
+              <div className="flex gap-2 flex-wrap text-xs">
                 <span
                   className={`px-2 py-1 rounded ${
                     task.priority === "High"
@@ -110,12 +110,17 @@ const ActiveTasksList = ({
                 <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
                   {task.urgency}
                 </span>
+                {task.startDate && (
+                  <span className="px-2 py-1 bg-green-50 text-green-600 dark:bg-green-900/20 rounded">
+                    Start: {new Date(task.startDate).toLocaleDateString()}
+                  </span>
+                )}
                 {task.dueDate && (
-                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded">
+                  <span className="px-2 py-1 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded">
                     Due: {new Date(task.dueDate).toLocaleDateString()}
                   </span>
                 )}
-              </div> */}
+              </div>
             </div>
           ))}
         </div>

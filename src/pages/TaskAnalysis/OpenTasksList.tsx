@@ -11,6 +11,7 @@ interface OpenTask {
   urgency: string;
   project: string;
   projectId: number | null;
+  startDate: string | null;
   dueDate: string | null;
   sprint: number;
   description?: string;
@@ -89,9 +90,12 @@ const OpenTasksList = ({
                   </span>
                 </div>
               </div>
-              <div className="flex gap-2 items-center ml-2 flex-shrink-0">
-                <span className="px-3 py-1 bg-[#F7FEE7] dark:bg-gray-800 text-[#95D700] text-xs font-bold rounded-full whitespace-nowrap">
-                  Not Started
+              <div className="flex flex-col items-end gap-1 ml-2 whitespace-nowrap">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  Start: {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+                </span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                  Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "—"}
                 </span>
               </div>
             </div>

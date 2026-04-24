@@ -211,17 +211,19 @@ const BoardView: React.FC<BoardViewProps> = ({
 
                         {/* Date and Progress */}
                         <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                          <span>
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  month: "short",
-                                  day: "numeric",
-                                },
-                              )
-                              : "—"}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            {task.startDate && (
+                              <span>
+                                Start: {new Date(task.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              </span>
+                            )}
+                            {task.dueDate && (
+                              <span>
+                                Due: {new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              </span>
+                            )}
+                            {!task.startDate && !task.dueDate && <span>No dates set</span>}
+                          </div>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
