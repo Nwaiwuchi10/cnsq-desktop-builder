@@ -293,7 +293,7 @@ export default function HeroSection() {
         {/* Slide Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
 
-          {/* Welcome / Celebration */}
+          {/* Welcome / Celebration **/}
           {["welcome", "celebration"].includes(currentSlide.type) && (
             <>
               <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-4">
