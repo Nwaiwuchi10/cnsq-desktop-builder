@@ -36,11 +36,21 @@ interface Quote {
   };
 }
 
+interface HeroContent {
+  id: string;
+  title: string;
+  description: string;
+  tag: string;
+  link: string;
+  imageUrl: string;
+}
+
 export default function HeroSection() {
   const [current, setCurrent] = useState(0);
   const [todaysBirthdays, setTodaysBirthdays] = useState<Staff[]>([]);
   const [todaysAnniversaries, setTodaysAnniversaries] = useState<StaffAnniversary[]>([]);
   const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [heroContent, setHeroContent] = useState<HeroContent[]>([]);
   const [loading, setLoading] = useState(true);
   const textRef = useRef<HTMLDivElement>(null);
 
@@ -58,14 +68,16 @@ export default function HeroSection() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [birthdayRes, anniversaryRes, quoteRes] = await Promise.all([
+        const [birthdayRes, anniversaryRes, quoteRes, heroRes] = await Promise.all([
           Api.get<Staff[]>("/staff-register/birthdays/today"),
           Api.get<StaffAnniversary[]>("/staff-register/anniversaries/today"),
           Api.get<Quote[]>("/quote/all/today"),
+          Api.get<HeroContent[]>("/hero-content"),
         ]);
         setTodaysBirthdays(birthdayRes?.data || []);
         setTodaysAnniversaries(anniversaryRes?.data || []);
         setQuotes(quoteRes?.data || []);
+        setHeroContent(heroRes?.data || []);
       } catch (error) {
         console.error("Error fetching hero data:", error);
       } finally {
@@ -281,7 +293,7 @@ export default function HeroSection() {
         {/* Slide Content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 text-center text-white">
 
-          {/* Welcome / Celebration */}
+          {/* Welcome / Celebration **/}
           {["welcome", "celebration"].includes(currentSlide.type) && (
             <>
               <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold mb-4">
@@ -343,79 +355,81 @@ export default function HeroSection() {
       {/* ── RIGHT 40%: Cards ── */}
       <div className="w-full lg:w-[40%] h-[45vh] lg:h-full overflow-y-auto bg-[#141414] custom-scrollbar">
         <div className="min-h-full flex flex-col justify-center items-center px-4 py-5 lg:p-6 gap-4">
+          {(() => {
+            const dummyData = [
+              {
+                id: "dummy-1",
+                title: "Quote Request",
+                description: "Connect instantly with verified professionals across hundreds of services in Nigeria and get quotes that match your needs.",
+                tag: "E-commerce",
+                link: "#",
+                imageUrl: taskThumb,
+              },
+              {
+                id: "dummy-2",
+                title: "Connect Nigeria",
+                description: "Buy and sell products and services in a trusted online marketplace built for Nigerians.",
+                tag: "E-commerce",
+                link: "#",
+                imageUrl: cnThumb,
+              }
+            ];
 
-          {/* Quote Request Card */}
-          <div className="group relative w-full max-w-sm bg-[#0f0f0f] border border-[#2a2a2a] rounded-xl p-5 flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:border-[#555]">
-            {/* External Link Icon */}
-            <svg
-              className="absolute top-4 right-4 w-4 h-4 text-[#555] group-hover:text-white transition-colors"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
+            let displayItems: any[] = [];
 
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center w-20 h-14">
-                <Image
-                  src={taskThumb}
-                  alt="Quote Request"
-                  width={90}
-                  height={58}
-                  className="object-cover w-full h-full"
-                />
+            if (heroContent.length === 0) {
+              displayItems = dummyData;
+            } else if (heroContent.length === 1) {
+              displayItems = [heroContent[0], dummyData[1]];
+            } else {
+              // Pick 2 random items from heroContent
+              const shuffled = [...heroContent].sort(() => 0.5 - Math.random());
+              displayItems = shuffled.slice(0, 2);
+            }
+
+            return displayItems.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => item.link && window.open(item.link, "_blank")}
+                className="group relative w-full max-w-sm bg-[#0f0f0f] border border-[#2a2a2a] rounded-xl p-5 flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:border-[#555]"
+              >
+                {/* External Link Icon */}
+                <svg
+                  className="absolute top-4 right-4 w-4 h-4 text-[#555] group-hover:text-white transition-colors"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center w-20 h-14">
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      width={90}
+                      height={58}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="flex flex-col pt-1">
+                    <h3 className="text-white font-bold text-base leading-tight mb-1.5">{item.title}</h3>
+                    {item.tag && (
+                      <span className="text-[#aaa] text-[0.7rem] px-2.5 py-0.5 rounded-full border border-[#333] bg-[#1a1a1a] inline-block w-fit">
+                        {item.tag}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[#888] text-xs leading-relaxed">
+                  {item.description}
+                </p>
               </div>
-            <div className="flex flex-col pt-1">
-              <h3 className="text-white font-bold text-base leading-tight mb-1.5">Quote Request</h3>
-              <span className="text-[#aaa] text-[0.7rem] px-2.5 py-0.5 rounded-full border border-[#333] bg-[#1a1a1a] inline-block">
-                E-commerce
-              </span>
-            </div>
-          </div>
-          <p className="text-[#888] text-xs leading-relaxed">
-            Connect instantly with verified professionals across hundreds of services in Nigeria and get quotes that match your needs.
-          </p>
-        </div>
-
-        {/* Connect Nigeria Card */}
-        <div className="group relative w-full max-w-sm bg-[#0f0f0f] border border-[#2a2a2a] rounded-xl p-5 flex flex-col gap-3 cursor-pointer transition-all duration-200 hover:border-[#555]">
-          {/* External Link Icon */}
-          <svg
-            className="absolute top-4 right-4 w-4 h-4 text-[#555] group-hover:text-white transition-colors"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 bg-white rounded-lg overflow-hidden flex items-center justify-center w-20 h-14">
-              <Image
-                src={cnThumb}
-                alt="Connect Nigeria"
-                width={90}
-                height={58}
-                className="object-cover w-full h-full"
-              />
-            </div>
-            <div className="flex flex-col pt-1">
-              <h3 className="text-white font-bold text-base leading-tight mb-1.5">Connect Nigeria</h3>
-              <span className="text-[#aaa] text-[0.7rem] px-2.5 py-0.5 rounded-full border border-[#333] bg-[#1a1a1a] inline-block">
-                E-commerce
-              </span>
-            </div>
-          </div>
-          <p className="text-[#888] text-xs leading-relaxed">
-            Buy and sell products and services in a trusted online marketplace built for Nigerians.
-          </p>
-        </div>
-
+            ));
+          })()}
         </div>
       </div>
     </div>
