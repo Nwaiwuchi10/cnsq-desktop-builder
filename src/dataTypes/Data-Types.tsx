@@ -71,8 +71,13 @@ export interface TaskDTO {
   completed_Date?: string;
   updatedAt?: string;
   project: Project;
+  department?: {
+    id: number;
+    name: string;
+  };
   assignedTo: TaskAssignment[];
   comments: TaskComment[];
+  createdBy?: Staff;
 }
 export enum ProjectStatus {
   NOT_STARTED = "not_started",

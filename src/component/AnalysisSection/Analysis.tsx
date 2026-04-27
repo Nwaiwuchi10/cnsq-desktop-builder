@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-
-// ✅ Import your icons
-import svgContact from "../../assests/imageIcons/SVG.png";
-import svgContact1 from "../../assests/imageIcons/SVG (1).png";
-import svgContact2 from "../../assests/imageIcons/SVG (2).png";
-import svgContact3 from "../../assests/imageIcons/SVG (3).png";
-import Api from "@/utils/api";
 import Link from "next/link";
+import Api from "@/utils/api";
+import {
+  Users,
+  FolderKanban,
+  CheckSquare,
+  Cake,
+  Building2,
+  CheckLine,
+} from "lucide-react";
 
 interface Stats {
   totalEmployees: number;
-  totalDepartments: number;
+  activeProjects: number;
+  tasksInProgress: number;
   birthdays: number;
-  anniversaries: number;
+  totalDepartments: number;
+  totalProjects: number;
 }
 
 export default function StatsCards() {
@@ -25,11 +28,10 @@ export default function StatsCards() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await Api.get("/staff-register/stats/dashboard"); // 🔹 replace with your API endpoint
-        // Limit to 3 staff members
+        const res = await Api.get("/staff-register/stats/dashboard");
         setStats(res?.data || null);
       } catch (error) {
-        console.error("Error fetching staff:", error);
+        console.error("Error fetching stats:", error);
       } finally {
         setLoading(false);
       }
@@ -41,64 +43,85 @@ export default function StatsCards() {
   const statsView = [
     {
       id: 1,
-      label: "Total Employees",
-      value: stats?.totalEmployees ?? 0,
-      icon: <Image src={svgContact} alt="employees-icon" />,
+      label: "Total Staff",
+      value: stats?.totalEmployees ?? 0, // Default to mock data from screenshot
+      subtitle: "+3 new this month",
+      subtitleColor: "text-[#86CD23]",
+      icon: <Users className="w-5 h-5 text-[#86CD23]" />,
       href: "/staff",
     },
     {
       id: 2,
       label: "Departments",
       value: stats?.totalDepartments ?? 0,
-      icon: <Image src={svgContact1} alt="departments-icon" />,
+      subtitle: "",
+      icon: <Building2 className="w-5 h-5 text-[#86CD23]" />,
       href: "/heads-of-departments",
     },
     {
       id: 3,
-      label: "Birthday this month",
-      value: stats?.birthdays ?? 0,
-      icon: <Image src={svgContact2} alt="birthdays-icon" />,
-      href: "/birthday",
+      label: "Total Projects",
+      value: stats?.totalProjects ?? 0,
+      subtitle: "",
+      subtitleColor: "text-amber-500",
+      icon: <CheckLine className="w-5 h-5 text-[#86CD23]" />,
+      href: "/projects",
     },
     {
       id: 4,
+      label: "Birthday this month",
+      value: stats?.birthdays ?? 0,
+      subtitle: "Next 7 days",
+      subtitleColor: "text-[#86CD23]",
+      icon: <Cake className="w-5 h-5 text-[#86CD23]" />,
+      href: "/birthday",
+    },
+    {
+      id: 5,
       label: "Anniversaries this Quarter",
-      value: stats?.anniversaries ?? 0,
-      icon: <Image src={svgContact3} alt="anniversaries-icon" />,
+      value: stats?.tasksInProgress ?? 0,
+      subtitle: "6 due today",
+      subtitleColor: "text-amber-500",
+      icon: <CheckSquare className="w-5 h-5 text-[#86CD23]" />,
       href: "/anniversary",
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">
-        <p>Loading stats...</p>
+      <div className="flex justify-center items-center py-10">
+        <p className="dark:text-white">Loading analysis stats...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[80vh] sm:min-h-[100vh] md:min-h-[70vh] lg:min-h-[50vh]  px-8 sm:px-6 md:px-20 pt-20">
-      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-7xl">
+    <div className="mb-6 md:mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
         Quick Analysis
-      </h1>
-      <div className="flex items-center justify-center">
-        <div className="flex flex-wrap gap-6 justify-center w-full max-w-7xl">
-          {statsView?.map((stat) => (
-            <div
-              key={stat.id}
-              className="flex flex-col items-start gap-3 border border-[#E5E7EB] bg-white rounded-2xl p-6 flex-1 min-w-[48%] sm:min-w-[48%] md:min-w-[22%]"
-            >
-              <Link href={stat.href} className="hover:opacity-80">
-                <div className="text-gray-600">{stat.icon}</div>
-                <p className="text-gray-900 font-medium">{stat.label}</p>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {stat?.value}
-                </h2>
-              </Link>
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+        {statsView.map((stat) => (
+          <Link
+            key={stat.id}
+            href={stat.href}
+            className="flex flex-col justify-between border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] rounded-lg sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:border-[#86CD23] dark:hover:border-[#86CD23] transition-all shadow-sm group w-full"
+          >
+            <div className="flex items-start mb-2 sm:mb-4">
+              <div className="text-[#86CD23] opacity-80 group-hover:opacity-100 transition-opacity">
+                {stat.icon}
+              </div>
             </div>
-          ))}
-        </div>
+            <div className="min-w-0">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1 truncate">
+                {stat.value}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm font-medium mb-2 line-clamp-2">
+                {stat.label}
+              </p>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

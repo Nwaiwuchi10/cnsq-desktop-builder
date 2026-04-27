@@ -18,15 +18,15 @@ const VerticalOptionsMenu: React.FC<Props> = ({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="p-2 hover:bg-gray-100 rounded-full"
+        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors rounded-full"
       >
         <BsThreeDotsVertical size={22} />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg z-50 border">
+        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141414] transition-colors shadow-lg rounded-lg z-50 border">
           <button
-            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+            className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
             onClick={() => {
               setOpen(false);
               onAddMember();
@@ -36,7 +36,7 @@ const VerticalOptionsMenu: React.FC<Props> = ({
           </button>
 
           <button
-            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+            className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors"
             onClick={() => {
               setOpen(false);
               onViewMembers();
@@ -46,7 +46,7 @@ const VerticalOptionsMenu: React.FC<Props> = ({
           </button>
 
           <button
-            className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+            className="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-800 transition-colors text-red-600"
             onClick={() => {
               setOpen(false);
               onRemoveMember();

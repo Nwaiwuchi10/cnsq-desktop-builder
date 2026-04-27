@@ -23,6 +23,7 @@ const iconMap: Record<string, JSX.Element> = {
   demo: <Layers className="text-indigo-500" size={18} />,
   announcement: <Megaphone className="text-blue-500" size={18} />,
   new_product: <Package className="text-orange-500" size={18} />,
+  ceo_message: <Megaphone className="text-[#86CD23]" size={18} />,
 };
 
 const AnnouncementList: React.FC = () => {
@@ -161,12 +162,12 @@ const AnnouncementList: React.FC = () => {
 
   if (loading)
     return (
-      <div className="p-4 text-sm text-gray-500">Loading announcements...</div>
+      <div className="p-4 text-sm text-gray-500 dark:text-gray-400">Loading announcements...</div>
     );
 
   if (announcements.length === 0)
     return (
-      <p className="text-sm text-gray-500 p-3 text-center">
+      <p className="text-sm text-gray-500 dark:text-gray-400 p-3 text-center">
         No announcements yet.
       </p>
     );
@@ -175,7 +176,7 @@ const AnnouncementList: React.FC = () => {
     <>
       <div className="flex flex-col">
         {announcements.length > 0 && (
-          <div className="flex items-center justify-between py-2 px-2 bg-gray-50 rounded-lg mb-2">
+          <div className="flex items-center justify-between py-2 px-2 bg-gray-50 dark:bg-[#1a1a1a] rounded-lg mb-2 transition-colors">
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -187,7 +188,7 @@ const AnnouncementList: React.FC = () => {
                 }
                 className="w-4 h-4 rounded border-gray-300 text-[#FF990C] focus:ring-[#FF990C]"
               />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Select All Read
               </span>
             </div>
@@ -202,11 +203,11 @@ const AnnouncementList: React.FC = () => {
           </div>
         )}
 
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800 transition-colors">
           {announcements.map((n) => (
             <div
               key={n.id}
-              className="flex items-center gap-2 py-3 hover:bg-gray-50 transition-colors rounded-lg px-2"
+              className="flex items-center gap-2 py-3 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors rounded-lg px-2"
             >
               <div
                 onClick={() => setSelected(n)}
@@ -230,13 +231,13 @@ const AnnouncementList: React.FC = () => {
 
                 <div className="flex-1">
                   <p
-                    className={`text-sm ${n.isRead ? "text-gray-400 font-normal" : "text-black font-lighter"
+                    className={`text-sm transition-colors ${n.isRead ? "text-gray-400 font-normal" : "text-black dark:text-white font-lighter"
                       }`}
                   >
                     {n.title}
                   </p>
                   <span
-                    className={`text-xs mt-1 block ${n.isRead ? "text-gray-300" : "text-gray-500 font-medium"
+                    className={`text-xs mt-1 block transition-colors ${n.isRead ? "text-gray-300 dark:text-gray-600" : "text-gray-500 dark:text-gray-400 font-medium"
                       }`}
                   >
                     {new Date(n.createdAt).toLocaleString()}

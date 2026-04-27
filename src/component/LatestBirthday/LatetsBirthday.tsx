@@ -38,16 +38,16 @@ export default function LatestBirthday() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <p className="text-gray-600">Loading upcoming birthdays...</p>
+      <div className="flex justify-center items-center min-h-[50vh] dark:bg-[#0d0d0d] transition-colors">
+        <p className="text-gray-600 dark:text-gray-400">Loading upcoming birthdays...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[60vh] flex flex-col items-center px-4 sm:px-6 md:px-12 lg:px-20 pt-12">
+    <div className="bg-[#FAFAFA] dark:bg-[#0d0d0d] min-h-[60vh] flex flex-col items-center px-4 sm:px-6 md:px-12 lg:px-20 pt-12 transition-colors">
       {/* Heading */}
-      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-7xl">
+      <h1 className="text-2xl md:text-3xl font-bold text-black dark:text-white mb-10 w-full max-w-7xl">
         Latest Birthdays
       </h1>
 
@@ -63,7 +63,6 @@ export default function LatestBirthday() {
         "
       >
         {birthdays?.map((person) => (
-          <>
             <div
               key={person?.id}
               className="flex flex-col items-start text-left w-full"
@@ -81,7 +80,7 @@ export default function LatestBirthday() {
                 rounded-lg
                 overflow-hidden
                 shadow-sm
-                bg-gray-200
+                bg-gray-200 dark:bg-gray-800
               "
                 >
                   <Image
@@ -95,12 +94,12 @@ export default function LatestBirthday() {
                 </div>
 
                 {/* Name */}
-                <p className="mt-3 text-gray-900 font-semibold text-lg">
+                <p className="mt-3 text-gray-900 dark:text-gray-100 font-semibold text-lg">
                   {person?.firstName} {person?.lastName}
                 </p>
 
                 {/* Next Birthday (with Lagos timezone) */}
-                <span className="text-gray-500 text-sm">
+                <span className="text-gray-500 dark:text-gray-400 text-sm">
                   {new Date(person.nextBirthday).toLocaleDateString("en-US", {
                     month: "long",
                     day: "numeric",
@@ -110,7 +109,6 @@ export default function LatestBirthday() {
                 </span>
               </Link>
             </div>
-          </>
         ))}
       </div>
     </div>

@@ -14,6 +14,7 @@ interface AnnouncementModalProps {
     message: string;
     relatedProductDemo?: { id: number };
     relatedAnnouncement?: { id: number };
+    relatedCeoMessageId?: string;
   };
   onClose: () => void;
 }
@@ -81,8 +82,13 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
           notification?.relatedAnnouncement?.id
         ) {
           endpoint = `/announcement/${notification.relatedAnnouncement.id}`;
+        } else if (
+          notification.type === "ceo_message" &&
+          notification?.relatedCeoMessageId
+        ) {
+          endpoint = `/ceo-messaging-center/${notification.relatedCeoMessageId}`;
         }
-
+        console.log("endpoint", endpoint);
         if (!endpoint) {
           console.warn(
             "No valid related ID found for notification:",
@@ -192,9 +198,9 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
   if (!details)
     return (
-      <div className="fixed inset-0 bg-gray-200 bg-opacity-40 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-xl w-full max-w-lg text-center">
-          <p className="text-gray-500 text-sm">
+      <div className="fixed inset-0 bg-gray-200 dark:bg-gray-800 transition-colors bg-opacity-40 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-[#141414] transition-colors p-6 rounded-xl w-full max-w-lg text-center">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             <LoadingSpinner />
           </p>
         </div>
@@ -203,58 +209,60 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
   const isDemo =
     notification.type === "demo" || notification.type === "new_product";
-  const isAnnouncement = notification.type === "announcement";
+  const isAnnouncement = notification.type === "announcement" || notification.type === "ceo_message";
 
   const demoDetails = details as DemoData;
   const announcementDetails = details as AnnouncementData;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 h-full">
-      <div className="bg-white rounded-2xl w-full max-w-2xl p-6 relative shadow-lg">
+      <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl w-full max-w-2xl p-6 relative shadow-lg">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-400"
         >
           <X size={20} />
         </button>
 
         {/* Header */}
-        <h2 className="text-lg font-semibold text-gray-800 mb-1">
-          {notification.title}
-        </h2>
+        <div className="flex items-center gap-2 mb-1">
+          {notification.type === "ceo_message" && (
+            <span className="px-2 py-0.5 bg-[#86CD23]/10 text-[#86CD23] text-[10px] font-black uppercase rounded-full tracking-wider">
+              CEO Message
+            </span>
+          )}
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+            {notification.title}
+          </h2>
+        </div>
         <p className="text-xs text-gray-400 mb-4">{openedAt}</p>
 
         {/* Dynamic content */}
         {isDemo && (
           <>
-            <h3 className="text-base font-semibold text-gray-800 mb-2">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
               {demoDetails.nameOfProduct}
             </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {/* {demoDetails.description} */}
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
               {renderTextWithLinks(demoDetails.description)}
             </p>
 
-            <h4 className="text-sm font-medium text-gray-800 mb-2">
+            <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">
               How it works
             </h4>
-            <ol className="list-decimal list-inside text-sm text-gray-600 mb-4">
-              {/* {demoDetails.howItWorks?.split("\n").map((step, index) => (
-                <li key={index}>{step}</li>
-              ))} */}
+            <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-400 mb-4">
               {demoDetails.howItWorks?.split("\n").map((step, index) => (
                 <li key={index}>{renderTextWithLinks(step)}</li>
               ))}
             </ol>
 
-            {/* Safe check before mapping videos */}
             {Array.isArray(demoDetails.videos) &&
               demoDetails.videos.length > 0 && (
                 <div className="flex overflow-x-auto gap-3 pb-2">
                   {demoDetails.videos.map((videoUrl, i) => (
                     <div
                       key={i}
-                      className="min-w-[600px] h-40 bg-gray-200 rounded-lg overflow-hidden relative"
+                      className="min-w-[600px] h-40 bg-gray-200 dark:bg-gray-800 transition-colors rounded-lg overflow-hidden relative"
                     >
                       <video
                         src={videoUrl}
@@ -270,24 +278,25 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
         {isAnnouncement && (
           <>
-            <h3 className="text-base font-semibold text-gray-800 mb-2">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
               {announcementDetails.title}
             </h3>
-            <p className="text-sm text-gray-600">
-              {/* {announcementDetails.description} */}
+            <div className="text-sm text-gray-600 dark:text-gray-400 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
               {renderTextWithLinks(announcementDetails.description)}
-            </p>
-
-            <div className="flex items-center gap-2 mb-4 mt-4">
-              <input
-                type="checkbox"
-                checked={isRead}
-                onChange={toggleReadStatus}
-                disabled={isUpdatingRead}
-                className="w-4 h-4 accent-lime-500 cursor-pointer"
-              />
-              <span className="text-sm text-gray-600">Mark as read</span>
             </div>
+
+            {notification.type === "announcement" && (
+              <div className="flex items-center gap-2 mb-4 mt-4">
+                <input
+                  type="checkbox"
+                  checked={isRead}
+                  onChange={toggleReadStatus}
+                  disabled={isUpdatingRead}
+                  className="w-4 h-4 accent-lime-500 cursor-pointer"
+                />
+                <span className="text-sm text-gray-600 dark:text-gray-400">Mark as read</span>
+              </div>
+            )}
           </>
         )}
 
@@ -295,7 +304,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         <div className="flex justify-center mt-6">
           <button
             onClick={onClose}
-            className="bg-lime-500 hover:bg-lime-600 text-white text-sm px-6 py-2 rounded-md"
+            className="bg-lime-500 hover:bg-lime-600 text-white text-sm px-6 py-2 rounded-md font-bold transition-all active:scale-95"
           >
             Close
           </button>

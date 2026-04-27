@@ -231,16 +231,16 @@ const EventModal: React.FC<EventModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-2 md:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-lg md:rounded-xl shadow-2xl w-[95%] sm:max-w-full md:max-w-lg h-auto max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="p-3 md:p-4 border-b border-b-gray-200 flex justify-between items-center bg-white flex-shrink-0">
-          <h2 className="text-lg md:text-xl font-bold text-gray-800">
+      <div className="bg-white dark:bg-[#141414] rounded-lg md:rounded-xl shadow-2xl w-[95%] sm:max-w-full md:max-w-lg h-auto max-h-[90vh] flex flex-col overflow-hidden transition-colors">
+        <div className="p-3 md:p-4 border-b border-b-gray-200 dark:border-b-gray-700 flex justify-between items-center bg-white dark:bg-[#1a1a1a] flex-shrink-0 transition-colors">
+          <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white">
             Create New Meeting
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 md:p-2 hover:bg-gray-200 rounded-full transition-colors"
+            className="p-1.5 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors"
           >
-            <X size={20} className="md:w-6 md:h-6 text-gray-500" />
+            <X size={20} className="md:w-6 md:h-6 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
 
@@ -250,7 +250,7 @@ const EventModal: React.FC<EventModalProps> = ({
         >
           {/* Title */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
               {/* <Type size={16} />  */}
               Title
             </label>
@@ -262,7 +262,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 setFormData((prev) => ({ ...prev, title: e.target.value }))
               }
               placeholder="Event Title"
-              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] focus:border-transparent outline-none transition-all text-base text-gray-900 bg-white"
+              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] focus:border-transparent outline-none transition-all text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1a1a1a]"
             />
           </div>
 
@@ -301,7 +301,7 @@ const EventModal: React.FC<EventModalProps> = ({
                   }))
                 }
                 min={formData.startDate === todayStr ? currentTime : undefined}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1a1a1a]"
               />
             </div>
           </div>
@@ -319,11 +319,11 @@ const EventModal: React.FC<EventModalProps> = ({
                   setFormData((prev) => ({ ...prev, endDate: e.target.value }))
                 }
                 min={formData.startDate || todayStr}
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1a1a1a]"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+              <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
                 <Clock size={16} /> End Time
               </label>
               <input
@@ -338,7 +338,7 @@ const EventModal: React.FC<EventModalProps> = ({
                     ? formData.startTime
                     : undefined
                 }
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1a1a1a]"
               />
             </div>
           </div>
@@ -346,7 +346,7 @@ const EventModal: React.FC<EventModalProps> = ({
           {/* Type & Color */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-600">
+              <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                 Type
               </label>
               <select
@@ -354,7 +354,7 @@ const EventModal: React.FC<EventModalProps> = ({
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, type: e.target.value }))
                 }
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base text-gray-900"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white dark:bg-[#1a1a1a] text-base text-gray-900 dark:text-gray-100"
               >
                 {EVENT_TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -364,7 +364,7 @@ const EventModal: React.FC<EventModalProps> = ({
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-semibold text-gray-600">
+              <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                 Color
               </label>
               <div className="flex gap-3 md:gap-2.5 flex-wrap">
@@ -384,7 +384,7 @@ const EventModal: React.FC<EventModalProps> = ({
           </div>
 
           {/* Recurrence */}
-          <div className="flex flex-col gap-1.5 border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div className="flex flex-col gap-1.5 border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-[#1a1a1a]">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -405,14 +405,14 @@ const EventModal: React.FC<EventModalProps> = ({
                 }
                 className="w-5 h-5 md:w-4 md:h-4 text-[#95D700] rounded focus:ring-[#95D700] disabled:opacity-40 disabled:cursor-not-allowed"
               />
-              <span className="text-sm font-semibold text-gray-600">
+              <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                 Recurring Event
               </span>
             </label>
             {formData.startDate &&
               formData.endDate &&
               formData.startDate !== formData.endDate && (
-                <p className="text-xs text-amber-600 mt-1">
+                <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
                   Recurrence is only available when the event starts and ends on
                   the same day.
                 </p>
@@ -420,7 +420,7 @@ const EventModal: React.FC<EventModalProps> = ({
             {formData.isRecurring && (
               <div className="mt-2 flex flex-col gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-gray-600">
+                  <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                     Recurrence Frequency
                   </label>
                   <select
@@ -431,7 +431,7 @@ const EventModal: React.FC<EventModalProps> = ({
                         recurrenceFrequency: e.target.value,
                       }))
                     }
-                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white text-base"
+                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none bg-white dark:bg-[#141414] text-base"
                   >
                     {RECURRENCE_FREQUENCIES.map((freq) => (
                       <option key={freq} value={freq}>
@@ -445,9 +445,9 @@ const EventModal: React.FC<EventModalProps> = ({
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+                  <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
                     <Calendar size={14} /> Recurrence End Date
-                    <span className="font-normal text-gray-400">
+                    <span className="font-normal text-gray-400 dark:text-gray-500">
                       (optional)
                     </span>
                   </label>
@@ -461,7 +461,7 @@ const EventModal: React.FC<EventModalProps> = ({
                       }))
                     }
                     min={formData.startDate || todayStr}
-                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
+                    className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#141414]"
                   />
                 </div>
               </div>
@@ -498,17 +498,17 @@ const EventModal: React.FC<EventModalProps> = ({
                   }))
                 }
                 placeholder="https://zoom.us/j/..."
-                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 bg-white"
+                className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1a1a1a]"
               />
             </div>
           </div>
 
           {/* Attendees */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-600 flex items-center gap-2">
+            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
               <Users size={16} /> Attendees
             </label>
-            <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto flex flex-col gap-2 bg-gray-50">
+            <div className="border border-gray-300 dark:border-gray-700 rounded-lg p-3 max-h-40 overflow-y-auto flex flex-col gap-2 bg-gray-50 dark:bg-[#1a1a1a]">
               {staffList.map((staff) => (
                 <label
                   key={staff?.id}
@@ -521,10 +521,10 @@ const EventModal: React.FC<EventModalProps> = ({
                     className="w-5 h-5 md:w-4 md:h-4 text-[#95D700] rounded focus:ring-[#95D700]"
                   />
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                       {staff.firstName} {staff.lastName}
                     </span>
-                    <span className="text-[10px] text-gray-500">
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
                       {staff?.employment?.jobTitle || "Staff"}
                     </span>
                   </div>
@@ -535,7 +535,7 @@ const EventModal: React.FC<EventModalProps> = ({
 
           {/* Description */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-gray-600">
+            <label className="text-sm font-semibold text-gray-600 dark:text-gray-300">
               Description
             </label>
             <textarea
@@ -548,11 +548,11 @@ const EventModal: React.FC<EventModalProps> = ({
               }
               placeholder="Optional notes..."
               rows={3}
-              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none resize-none text-base text-gray-900 bg-white"
+              className="w-full px-4 py-2.5 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#95D700] outline-none resize-none text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-[#1a1a1a]"
             />
           </div>
 
-          <div className="pt-4 border-t sticky bottom-0 bg-white mt-auto">
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-[#141414] mt-auto">
             <button
               disabled={loading}
               type="submit"

@@ -18,16 +18,12 @@ export default function SubscriptionStatsCards() {
   const [loading, setLoading] = useState(true);
 
   const CN_API_BASE = process.env.NEXT_PUBLIC_CN_API_BASE_URL;
-  console.log("CN API BASE URL", process.env.NEXT_PUBLIC_CN_API_BASE_URL);
-  useEffect(() => {
-    console.log("CN_API_BASE =", CN_API_BASE);
-  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const res = await fetch(
-          `${CN_API_BASE}/api/v1/quote-request/generic/subscription-stats`
+          `${CN_API_BASE}/api/v1/quote-request/generic/subscription-stats`,
         );
         const jsonRes = await res.json();
         setStats(jsonRes.data);
@@ -39,68 +35,75 @@ export default function SubscriptionStatsCards() {
     };
 
     fetchStats();
-  }, []);
+  }, [CN_API_BASE]);
 
   const statsView = [
     {
       id: 1,
       label: "Target subscriptions",
-      value: stats?.target_subscriptions ?? 0,
+      value: stats?.target_subscriptions ?? 0, // Defaulted to screenshot value for visualization if API fails
       icon: targetIcon,
-      borderColor: "border-t-lime-400",
+      borderColor: "border-[#86CD23]",
     },
     {
       id: 2,
       label: "Total subscriptions",
       value: stats?.total_subscriptions ?? 0,
       icon: totalIcon,
-
-      borderColor: "border-t-[#00D0D7]",
+      borderColor: "border-[#00D0D7]",
     },
     {
       id: 3,
       label: "Total subscriptions left",
       value: stats?.total_subscriptions_left ?? 0,
       icon: leftIcon,
-      borderColor: "border-t-[#0007D7]",
+      borderColor: "border-[#3b82f6]",
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh]">
-        <p>Loading subscription stats...</p>
+      <div className="flex justify-center items-center py-10">
+        <p className="dark:text-white">Loading subscription stats...</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#FAFAFA] min-h-[40vh] flex flex-col items-center px-8 sm:px-6 md:px-20 pt-20">
-      {/* Heading */}
-      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-7xl">
+    <div className="mb-6 md:mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">
         Quote Request
-      </h1>
-
-      {/* Stats Cards */}
-      <div className="flex flex-wrap gap-8 justify-center w-full max-w-7xl">
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {statsView.map((item) => (
           <div
             key={item.id}
-            className={`flex flex-col gap-4 border border-gray-200 bg-white rounded-2xl p-5 flex-1 
-              min-w-[48%] sm:min-w-[48%] md:min-w-[30%] lg:min-w-[22%] border-t-4 ${item.borderColor}`}
+            className={`flex flex-col gap-4 border-t-[3px] border-b border-l border-r border-b-gray-200 border-l-gray-200 border-r-gray-200 dark:border-b-gray-800 dark:border-l-gray-800 dark:border-r-gray-800 bg-white dark:bg-[#141414] rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-colors shadow-sm w-full`}
+            style={{
+              borderTopColor: item.borderColor
+                .replace("border-[", "")
+                .replace("]", ""),
+            }}
           >
-            {/* Top section */}
-            <div className="flex items-center gap-4">
-              <Image src={item.icon} alt="icon" width={40} height={40} />
-              <span className="text-gray-700 text-lg font-medium">
-                {item.label}
-              </span>
+            <div className="flex flex-col items-start gap-4">
+              <div className="bg-gray-100 dark:bg-gray-800/50 p-2 rounded-lg">
+                <Image
+                  src={item.icon}
+                  alt="icon"
+                  width={24}
+                  height={24}
+                  className="opacity-80 dark:opacity-100"
+                />
+              </div>
+              <div>
+                <p className="text-gray-900 dark:text-white text-xs sm:text-sm font-semibold mb-1">
+                  {item.label}
+                </p>
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  {item.value}
+                </h3>
+              </div>
             </div>
-
-            {/* Value */}
-            <h2 className="text-2xl font-bold text-gray-900 mt-1 mb-1">
-              {item.value}
-            </h2>
           </div>
         ))}
       </div>

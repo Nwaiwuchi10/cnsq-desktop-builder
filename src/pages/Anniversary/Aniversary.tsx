@@ -4,6 +4,8 @@ import { Search, ArrowLeft, ArrowRight } from "lucide-react";
 import Image, { StaticImageData } from "next/image";
 import React, { useEffect, useState } from "react";
 import Api from "@/utils/api"; // ✅ Axios instance
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
+import DailyInspiration from "@/component/StaffDashboard/DailyInspiration";
 
 interface StaffAnniversary {
   id: number;
@@ -114,31 +116,33 @@ const Anniversary = () => {
     );
 
   return (
-    <div>
+    <StaffLayout>
       {/* Header */}
-      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-16">
+      {/* <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-4">
         <h1 className="text-3xl sm:text-5xl font-bold">Anniversary</h1>
+      </div> */}
+      <div>
+        <DailyInspiration />
       </div>
-
-      <div className="min-h-screen w-full bg-[#FAFAFA]">
-        <div className="max-w-[95%] mx-auto px-4 sm:px-8">
-          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900">
+      <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors pb-12">
+        <div className="max-w-[100%] mx-auto px-4 sm:px-8">
+          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Anniversary
           </h1>
 
-          <p className="mt-8 text-gray-600 text-base sm:text-lg">
+          <p className="mt-8 text-gray-600 dark:text-gray-300 text-base sm:text-lg">
             Browse and connect with your colleagues across the organization
           </p>
 
           {/* 🔎 Search */}
-          <div className="mt-8 flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
-            <Search className="text-gray-500" size={18} />
+          <div className="mt-8 flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors">
+            <Search className="text-gray-500 dark:text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Search anniversaries..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
+              className="ml-2 w-full outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent"
             />
           </div>
 
@@ -174,7 +178,7 @@ const Anniversary = () => {
           />
         </div>
       </div>
-    </div>
+    </StaffLayout>
   );
 };
 
@@ -200,14 +204,16 @@ const Section = ({
 
   return (
     <div className="mt-16 pb-16">
-      <h1 className="text-2xl md:text-3xl font-bold text-black mb-10 w-full max-w-6xl">
+      <h1 className="text-2xl md:text-3xl font-bold text-black dark:text-white mb-10 w-full max-w-6xl">
         {title}
       </h1>
 
       {loading ? (
-        <p>Loading {title.toLowerCase()}...</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          Loading {title.toLowerCase()}...
+        </p>
       ) : data.length === 0 ? (
-        <p className="text-gray-500">No anniversaries 🎉</p>
+        <p className="text-gray-500 dark:text-gray-400">No anniversaries 🎉</p>
       ) : (
         <>
           {/* Cards */}
@@ -239,16 +245,16 @@ const AnniversaryCard = ({ staff }: { staff: StaffAnniversary }) => {
           alt={`${staff.firstName} ${staff.lastName}`}
           width={280}
           height={280}
-          className="w-full h-full object-cover bg-gray-100"
+          className="w-full h-full object-cover bg-gray-100 dark:bg-gray-800"
         />
       </div>
 
-      <p className="mt-3 text-gray-900 font-semibold text-lg">
+      <p className="mt-3 text-gray-900 dark:text-gray-100 font-semibold text-lg">
         {staff.firstName} {staff.lastName}
       </p>
 
       {anniversaryDate && (
-        <span className="text-gray-500 text-sm">
+        <span className="text-gray-500 dark:text-gray-400 text-sm">
           {new Date(anniversaryDate).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",
@@ -293,11 +299,10 @@ const Pagination = ({
       <button
         onClick={() => setPage(page - 1)}
         disabled={page === 1}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
-          page === 1
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === 1
             ? "bg-gray-300 text-gray-600 cursor-not-allowed"
             : "bg-[#95D700] text-white"
-        }`}
+          }`}
       >
         <ArrowLeft size={16} /> Prev
       </button>
@@ -305,18 +310,20 @@ const Pagination = ({
       {/* Page numbers */}
       {generatePageNumbers().map((p, idx) =>
         typeof p === "string" ? (
-          <span key={idx} className="px-3 py-2 text-gray-500">
+          <span
+            key={idx}
+            className="px-3 py-2 text-gray-500 dark:text-gray-400"
+          >
             {p}
           </span>
         ) : (
           <button
             key={p}
             onClick={() => setPage(p)}
-            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${
-              page === p
+            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium ${page === p
                 ? "bg-[#95D700] text-white"
                 : "bg-gray-200 text-gray-700"
-            }`}
+              }`}
           >
             {p}
           </button>
@@ -327,11 +334,10 @@ const Pagination = ({
       <button
         onClick={() => setPage(page + 1)}
         disabled={page === totalPages}
-        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${
-          page === totalPages
+        className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm sm:text-base ${page === totalPages
             ? "bg-gray-300 text-gray-600 cursor-not-allowed"
             : "bg-[#95D700] text-white"
-        }`}
+          }`}
       >
         Next <ArrowRight size={16} />
       </button>

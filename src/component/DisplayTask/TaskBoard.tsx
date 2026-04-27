@@ -54,7 +54,7 @@ const statusColumns = [
   // { key: "ALL", label: "All Tasks", color: "bg-blue-500" },
 ];
 interface DisplayTaskProps {
-  projectId: number;
+  projectId?: number;
 }
 const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
   // const params = useParams();
@@ -64,34 +64,114 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
   console.log("projectId", projectId);
   const [tasks, setTasks] = useState<TaskDTO[]>([]);
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
+  const [userDeptName, setUserDeptName] = useState<string | null>(null);
+  const [userDeptId, setUserDeptId] = useState<number | null>(null);
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "all">("all");
+  const [allDepartments, setAllDepartments] = useState<
+    { id: number; name: string }[]
+  >([]);
 
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
   useEffect(() => {
-    if (!projectId) return;
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+      try {
+        const res = await Api.get("/staff-register/staff/viewProfile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const deptId = res.data?.employment?.department?.id || null;
+        setUserDeptName(res.data?.employment?.department?.name || null);
+        setUserDeptId(deptId);
+        if (deptId) setSelectedDeptId(deptId);
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    if (!projectId) {
+      fetchUserProfile();
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await Api.get("/departments");
+        setAllDepartments(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch departments", err);
+      }
+    };
+    if (!projectId) {
+      fetchDepartments();
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    const staffId = localStorage.getItem("userId");
 
     const fetchTasks = async () => {
       try {
-        const res = await Api.get(`/task/project/${projectId}`);
-        setTasks(res?.data || []);
+        let res;
+        if (projectId) {
+          res = await Api.get(`/task/project/${projectId}`);
+        } else if (selectedDeptId !== "all") {
+          res = await Api.get(`/task/department/${selectedDeptId}`);
+        } else if (userDeptId) {
+          res = await Api.get(`/task/department/${userDeptId}`);
+        } else if (staffId) {
+          res = await Api.get(
+            `/task/staff/${staffId}/tasks-by-status?openPageNum=1&openPageSize=100`,
+          );
+        }
+        setTasks(res?.data?.openTasks || res?.data || []);
       } catch (error) {
         console.error("Error fetching tasks:", error);
         setTasks([]);
       }
     };
 
-    fetchTasks();
-  }, [projectId]);
+    if (projectId || userDeptId || selectedDeptId !== "all" || !projectId) {
+      fetchTasks();
+    }
+  }, [projectId, userDeptId, selectedDeptId]);
 
   if (!tasks.length)
     return <p className="p-6">No Task Found for this project.</p>;
 
   return (
     <>
+      {/* Department Filter (Global only) */}
+      <div className="px-6 pt-4">
+        {!projectId && (
+          <div className="flex flex-col gap-1 w-full md:w-64">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Filter by Department
+            </label>
+            <select
+              className="px-3 py-2 border rounded-lg text-gray-600 dark:text-gray-400 border-gray-500 bg-white dark:bg-[#1a1a1a]"
+              value={selectedDeptId}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedDeptId(val === "all" ? "all" : Number(val));
+              }}
+            >
+              <option value="all">All Departments</option>
+              {allDepartments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
       <div className="flex flex-col md:flex-row gap-6 p-4 md:p-6 overflow-x-auto">
         {statusColumns.map((col) => (
           <div
             key={col.key}
-            className="w-full md:w-72 bg-white p-4 rounded-xl shadow flex-shrink-0"
+            className="w-full md:w-72 bg-white dark:bg-[#141414] transition-colors p-4 rounded-xl shadow flex-shrink-0"
           >
             {/* Column header */}
             <h2 className="font-bold mb-4 flex items-center justify-between">
@@ -110,7 +190,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                 ?.map((task) => (
                   <div
                     key={task?.id}
-                    className="bg-[#FAFAFA] rounded-xl p-3 shadow border border-[#FAFAFA] flex flex-col gap-2"
+                    className="bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors rounded-xl p-3 shadow border border-[#FAFAFA] flex flex-col gap-2"
                   >
                     {/* Title + 3 dots */}
                     <div className="flex items-start justify-between">
@@ -140,7 +220,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                       />
                     )}
 
-                    <p className="text-xs font-medium text-gray-600 -mt-2 mb-2">
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 -mt-2 mb-2">
                       Sprint: {task?.sprint}{" "}
                     </p>
                     {/* Status Badge */}
@@ -148,7 +228,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                       className={`inline-flex items-center px-3 py-1 text-xs font-medium border rounded-full w-fit
     ${
       col.key === "Not_started"
-        ? "text-gray-600 bg-gray-100 border-gray-400"
+        ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 transition-colors border-gray-400"
         : col.key === "In_progress"
           ? "text-yellow-700 bg-yellow-100 border-yellow-500"
           : col.key === "Testing_In_Progress"
@@ -190,7 +270,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                           ))}
                       </div>
 
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                         <Image src={imgIcon} alt="date icon" />
                         {new Date(task.createdAt).toLocaleDateString()}
                       </p>
@@ -202,7 +282,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
             </div>
 
             {/* Add task button */}
-            <Link href="/project/create">
+            <Link href={projectId ? `/project/${projectId}/add-task` : "/add-task"}>
               {" "}
               <button className="mt-4 text-green-600 text-sm">
                 + New Task
@@ -217,9 +297,9 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
       </div>
 
       {/* /// */}
-      <div className="w-full md:w-96 bg-white p-4 rounded-xl shadow">
+      <div className="w-full md:w-96 bg-white dark:bg-[#141414] transition-colors p-4 rounded-xl shadow">
         {/* Header */}
-        <h2 className="font-bold mb-4 flex items-center justify-between text-gray-600">
+        <h2 className="font-bold mb-4 flex items-center justify-between text-gray-600 dark:text-gray-400">
           All Tasks
           <span className="text-xs px-2 py-1 rounded bg-blue-500 text-white">
             {tasks?.length}
@@ -231,13 +311,13 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
           {tasks?.map((task) => (
             <div
               key={task.id}
-              className="bg-[#FAFAFA] rounded-xl p-3 shadow border border-[#FAFAFA] flex flex-col gap-2"
+              className="bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors rounded-xl p-3 shadow border border-[#FAFAFA] flex flex-col gap-2"
             >
               {/* Title + 3 dots */}
               <div className="flex items-start justify-between">
                 <h3
                   style={{ cursor: "pointer" }}
-                  className="font-semibold text-base text-gray-600"
+                  className="font-semibold text-base text-gray-600 dark:text-gray-400"
                   onClick={() => setSelectedTask(task)}
                 >
                   {task?.title}
@@ -258,15 +338,15 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   onUpdated={() => window.location.reload()}
                 />
               )}
-              <p className="text-xs font-medium text-gray-600 -mt-2 mb-2">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 -mt-2 mb-2">
                 Sprint: {task?.sprint}{" "}
               </p>
               {/* Status Badge */}
               <span
-                className={`inline-flex items-center text-gray-600 px-3 py-1 text-xs font-medium border rounded-full w-fit
+                className={`inline-flex items-center text-gray-600 dark:text-gray-400 px-3 py-1 text-xs font-medium border rounded-full w-fit
             ${
               task.status === "Not_started"
-                ? "text-gray-600 bg-gray-100 border-gray-400"
+                ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 transition-colors border-gray-400"
                 : task.status === "In_progress"
                   ? "text-yellow-700 bg-yellow-100 border-yellow-500"
                   : task.status === "Testing_In_Progress"
@@ -305,7 +385,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                   ))}
                 </div>
 
-                <p className="text-xs text-gray-500 flex items-center gap-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <Image src={imgIcon} alt="date icon" />
                   {new Date(task.createdAt).toLocaleDateString()}
                 </p>
@@ -315,7 +395,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
         </div>
 
         {/* Add task button */}
-        <Link href="/project/create">
+        <Link href={projectId ? `/project/${projectId}/add-task` : "/add-task"}>
           {" "}
           <button className="mt-4 text-green-600 text-sm">+ New Task</button>
         </Link>

@@ -341,14 +341,25 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             <p className="mb-2">Sprint: {displayTask?.sprint || "—"}</p>
             <p>Timeline: {displayTask?.timeline || "—"}</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-            <Image src={imgIcon} alt="date icon" />
-            <p>
-              Due Date:{" "}
-              {displayTask?.dueDate
-                ? new Date(displayTask.dueDate).toLocaleString()
-                : "No due date"}
-            </p>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Image src={imgIcon} alt="date icon" />
+              <p>
+                Start Date:{" "}
+                {displayTask?.startDate
+                  ? new Date(displayTask.startDate).toLocaleString()
+                  : "No start date"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Image src={imgIcon} alt="date icon" />
+              <p>
+                Due Date:{" "}
+                {displayTask?.dueDate
+                  ? new Date(displayTask.dueDate).toLocaleString()
+                  : "No due date"}
+              </p>
+            </div>
           </div>
 
           {/* Description */}

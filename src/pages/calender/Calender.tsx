@@ -13,6 +13,7 @@ import EventModal from "./CalenderComponents/EventModal";
 import CalendarDetails from "./CalenderComponents/CalendarDetails";
 import EditEventModal from "./CalenderComponents/EditEventModal";
 import DeleteConfirmationModal from "./CalenderComponents/DeleteConfirmationModal";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 const Calender = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -169,7 +170,8 @@ const Calender = () => {
   };
 
   return (
-    <div>
+    <>
+      {/* <StaffLayout> */}
       <CalendarLayout
         currentDate={currentDate}
         onNavigate={handleNavigate}
@@ -222,7 +224,8 @@ const Calender = () => {
         eventTitle={selectedEvent?.title}
       />
       <Footer />
-    </div>
+      {/* </StaffLayout> */}
+    </>
   );
 };
 

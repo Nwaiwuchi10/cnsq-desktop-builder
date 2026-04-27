@@ -25,12 +25,12 @@ export default function CustomModal({
   const isSuccess = type === "success";
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-sm relative p-6 text-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40 dark:bg-black/80 z-[9999] transition-colors">
+      <div className="bg-white dark:bg-[#141414] rounded-xl shadow-lg w-full max-w-sm relative p-6 text-center transition-colors">
         {/* Close button top right */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+          className="absolute top-3 right-3 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
         >
           <X size={20} />
         </button>
@@ -45,7 +45,7 @@ export default function CustomModal({
         </div>
 
         {/* Message */}
-        <p className="text-gray-800 text-base mb-6">{message}</p>
+        <p className="text-gray-800 dark:text-gray-200 text-base mb-6">{message}</p>
 
         {/* Close Button */}
         <button

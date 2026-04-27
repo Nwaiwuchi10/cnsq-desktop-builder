@@ -15,7 +15,7 @@ const ChannelConversationList: React.FC<{
   }
 
   return (
-    <div className="space-y-3 text-gray-600">
+    <div className="space-y-3 text-gray-600 dark:text-gray-400">
       {items.map((c) => (
         <ChannelConversationItem
           key={c.id}

@@ -69,7 +69,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
   if (!currentDate) {
     return (
-      <aside className="w-full md:w-64 border-r border-gray-200 bg-white h-full overflow-y-auto p-4 flex flex-col gap-6 shadow-sm md:shadow-none items-center justify-center">
+      <aside className="w-full md:w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141414] h-full overflow-y-auto p-4 flex flex-col gap-6 shadow-sm md:shadow-none items-center justify-center transition-colors">
         Loading...
       </aside>
     );
@@ -126,7 +126,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   };
 
   return (
-    <aside className="w-full md:w-64 border-r border-gray-200 bg-white h-full overflow-y-auto p-4 flex flex-col gap-6 shadow-sm md:shadow-none">
+    <aside className="w-full md:w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-[#141414] h-full overflow-y-auto p-4 flex flex-col gap-6 shadow-sm md:shadow-none transition-colors">
       <button
         onClick={onCreateEvent}
         className="cursor-pointer w-full flex items-center justify-center gap-2 py-3 bg-[#95D700] hover:bg-[#85c000] text-white rounded-lg font-bold shadow-md transition-all transform active:scale-[0.98]"
@@ -137,12 +137,12 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between px-1">
-          <span className="font-medium text-gray-700">
+          <span className="font-medium text-gray-700 dark:text-gray-200">
             {MONTHS[month]} {year}
           </span>
           <div className="flex gap-2">
-            <button className="text-gray-400 hover:text-gray-600">{"<"}</button>
-            <button className="text-gray-400 hover:text-gray-600">{">"}</button>
+            <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">{"<"}</button>
+            <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">{">"}</button>
           </div>
         </div>
 
@@ -150,7 +150,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           {DAYS_OF_WEEK.map((day) => (
             <span
               key={day}
-              className="text-[10px] uppercase font-bold text-gray-400 py-1"
+              className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 py-1"
             >
               {day[0]}
             </span>
@@ -161,8 +161,8 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
               onClick={() => onDateSelect(item.date)}
               className={`text-xs w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
                 !item.isCurrentMonth
-                  ? "text-gray-300"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "text-gray-300 dark:text-gray-600"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               } ${isSameDay(item.date, currentDate) ? "bg-[#2962ff] !text-white" : ""} ${
                 isSameDay(item.date, today) &&
                 !isSameDay(item.date, currentDate)
@@ -178,14 +178,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
       {/* Staff Schedule Section */}
       <div className="flex flex-col gap-3">
-        <h3 className="font-semibold text-gray-800">View All Staff Schedule</h3>
+        <h3 className="font-semibold text-gray-800 dark:text-white">View All Staff Schedule</h3>
 
         <div className="relative">
           <button
             onClick={() => setIsStaffDropdownOpen(!isStaffDropdownOpen)}
-            className="w-full flex items-center justify-between p-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center justify-between p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-300">
               {selectedStaffIds.length === 0
                 ? "Select Staff"
                 : `${selectedStaffIds.length} staff${selectedStaffIds.length > 1 ? "s" : ""} selected`}
@@ -197,9 +197,9 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           </button>
 
           {isStaffDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-80 overflow-y-auto">
               {/* Search Box */}
-              <div className="p-3 border-b border-gray-200">
+              <div className="p-3 border-b border-gray-200 dark:border-gray-700">
                 <div className="relative">
                   <Search
                     size={16}
@@ -210,14 +210,14 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     placeholder="Search staff..."
                     value={staffSearch}
                     onChange={(e) => setStaffSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#95D700] focus:border-transparent bg-white"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#95D700] focus:border-transparent bg-white dark:bg-[#141414]"
                     autoComplete="off"
                   />
                 </div>
               </div>
 
               {/* Select All/Deselect All */}
-              <div className="flex gap-2 p-3 border-b border-gray-200">
+              <div className="flex gap-2 p-3 border-b border-gray-200 dark:border-gray-700">
                 <button
                   onClick={handleSelectAllStaff}
                   className="text-xs text-[#95D700] hover:text-[#85c000] font-medium"
@@ -250,7 +250,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                       <div
                         key={staff.id}
                         onClick={() => handleStaffToggle(staff.id)}
-                        className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors"
                       >
                         <div
                           className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
@@ -264,10 +264,10 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                             {staff.firstName} {staff.lastName}
                           </div>
-                          <div className="text-xs text-gray-500 truncate">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                             {staff.employment?.department?.name ||
                               "No Department"}
                           </div>
@@ -284,7 +284,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
 
       {/* Upcoming Events Section */}
       <div className="flex flex-col gap-4">
-        <h3 className="font-semibold text-gray-800 border-b pb-2">
+        <h3 className="font-semibold text-gray-800 dark:text-white border-b dark:border-gray-700 pb-2">
           Upcoming Events
         </h3>
         <div className="flex flex-col gap-4">
@@ -292,13 +292,13 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
             upcomingEvents.map((event) => (
               <div
                 key={event.id}
-                className="flex flex-col gap-1.5 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-100"
+                className="flex flex-col gap-1.5 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700"
                 onClick={() => onEventClick(event)}
               >
-                <h4 className="font-medium text-sm text-gray-900 truncate">
+                <h4 className="font-medium text-sm text-gray-900 dark:text-white truncate">
                   {event.title}
                 </h4>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                   <Clock size={12} />
                   <span>
                     {new Date(event.startTime).toLocaleDateString([], {
@@ -312,7 +312,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                     })}
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                   <Users size={12} />
                   <span>{event.attendees?.length || 0} attendees</span>
                 </div>

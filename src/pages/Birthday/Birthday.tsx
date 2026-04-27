@@ -1,5 +1,7 @@
 "use client";
 
+import DailyInspiration from "@/component/StaffDashboard/DailyInspiration";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import Api from "@/utils/api";
 import { Search, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
@@ -110,36 +112,38 @@ const Birthday = () => {
   const totalPagesUpcoming = Math.ceil(totalUpcoming / limit);
 
   return (
-    <div>
+    <StaffLayout>
       {/* Header */}
-      <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-16">
+      {/* <div className="bg-[#FF990C] text-white h-[50vh] flex items-center justify-center w-full mt-4">
         <h1 className="text-3xl sm:text-5xl font-bold">Birthdays</h1>
+      </div> */}
+      <div>
+        <DailyInspiration />
       </div>
-
-      <div className="min-h-screen w-full bg-[#FAFAFA]">
-        <div className="max-w-[95%] mx-auto px-4 sm:px-8">
-          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900">
+      <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors pb-12">
+        <div className="max-w-[100%] mx-auto px-4 sm:px-8">
+          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             Birthdays
           </h1>
 
-          <p className="mt-8 text-gray-600 text-base sm:text-lg">
+          <p className="mt-8 text-gray-600 dark:text-gray-300 text-base sm:text-lg">
             Browse and connect with your colleagues across the organization
           </p>
 
           {/* 🔹 Search Bar */}
-          <div className="mt-8 flex items-center w-full sm:w-1/3 bg-white border border-gray-300 rounded-lg px-3 py-2">
-            <Search className="text-gray-500" size={18} />
+          <div className="mt-8 flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors">
+            <Search className="text-gray-500 dark:text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Search birthdays..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="ml-2 w-full outline-none text-sm text-gray-700 placeholder-gray-400"
+              className="ml-2 w-full outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent"
             />
           </div>
 
           {/* 🔹 Today's Birthday Section */}
-          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             🎉 Today&apos;s Birthday
           </h1>
           {loadingToday ? (
@@ -147,7 +151,9 @@ const Birthday = () => {
               Loading today&apos;s birthdays...
             </div>
           ) : filteredTodays.length === 0 ? (
-            <p className="mt-6 text-gray-500">No birthdays today 🎂</p>
+            <p className="mt-6 text-gray-500 dark:text-gray-400">
+              No birthdays today 🎂
+            </p>
           ) : (
             <div className="grid grid-cols-1 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
               {filteredTodays.map((staff) => (
@@ -157,13 +163,15 @@ const Birthday = () => {
           )}
 
           {/* 🔹 Upcoming Birthdays Section */}
-          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="pt-12 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
             🎉 Upcoming Birthdays
           </h1>
           {loadingUpcoming ? (
             <div className="p-6 text-center">Loading upcoming birthdays...</div>
           ) : filteredUpcoming.length === 0 ? (
-            <p className="mt-6 text-gray-500">No upcoming birthdays 🎂</p>
+            <p className="mt-6 text-gray-500 dark:text-gray-400">
+              No upcoming birthdays 🎂
+            </p>
           ) : (
             <>
               <div className="grid grid-cols-1 pb-12 gap-16 pt-12 sm:grid-cols-2 lg:grid-cols-3 w-full max-w-6xl">
@@ -179,17 +187,16 @@ const Birthday = () => {
                   <button
                     onClick={() => setPageUpcoming((p) => Math.max(p - 1, 1))}
                     disabled={pageUpcoming === 1}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
-                      pageUpcoming === 1
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${pageUpcoming === 1
                         ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                         : "bg-[#95D700] text-white hover:bg-green-600"
-                    }`}
+                      }`}
                   >
                     <ArrowLeft size={16} /> Prev
                   </button>
 
                   {/* ✅ Mobile: simplified (Prev, X of Y, Next) */}
-                  <span className="block sm:hidden px-3 py-2 text-gray-700 font-medium">
+                  <span className="block sm:hidden px-3 py-2 text-gray-700 dark:text-gray-300 font-medium">
                     {pageUpcoming} / {totalPagesUpcoming}
                   </span>
 
@@ -216,18 +223,20 @@ const Birthday = () => {
 
                       return pages.map((p, i) =>
                         typeof p === "string" ? (
-                          <span key={i} className="px-3 py-2 text-gray-500">
+                          <span
+                            key={i}
+                            className="px-3 py-2 text-gray-500 dark:text-gray-400"
+                          >
                             {p}
                           </span>
                         ) : (
                           <button
                             key={p}
                             onClick={() => setPageUpcoming(p)}
-                            className={`px-4 py-2 rounded-lg font-medium ${
-                              pageUpcoming === p
+                            className={`px-4 py-2 rounded-lg font-medium ${pageUpcoming === p
                                 ? "bg-[#95D700] text-white"
                                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                            }`}
+                              }`}
                           >
                             {p}
                           </button>
@@ -244,11 +253,10 @@ const Birthday = () => {
                       )
                     }
                     disabled={pageUpcoming === totalPagesUpcoming}
-                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${
-                      pageUpcoming === totalPagesUpcoming
+                    className={`flex items-center gap-1 px-4 py-2 rounded-lg ${pageUpcoming === totalPagesUpcoming
                         ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                         : "bg-[#95D700] text-white hover:bg-green-600"
-                    }`}
+                      }`}
                   >
                     Next <ArrowRight size={16} />
                   </button>
@@ -258,57 +266,59 @@ const Birthday = () => {
           )}
         </div>
       </div>
-    </div>
+    </StaffLayout>
   );
 };
 
 // 🔹 Reusable Card Components
 const BirthdayCard = ({ staff }: { staff: Staff }) => (
-  <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
+  <div className="flex flex-col items-center text-center border border-[#E5E7EB] dark:border-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-sm transition-colors">
     <Image
       src={staff?.photoUrl || "/default-avatar.png"}
       alt={`${staff.firstName} ${staff.lastName}`}
       width={100}
       height={100}
-      className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
+      className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB] dark:border-gray-700"
     />
 
     <div className="mt-4">
-      <span className="text-gray-900 font-semibold text-lg block">
+      <span className="text-gray-900 dark:text-gray-100 font-semibold text-lg block">
         {staff.firstName} {staff.lastName}
       </span>
 
-      <span className="text-gray-500 text-sm">
+      <span className="text-gray-500 dark:text-gray-400 text-sm">
         {staff?.employment?.jobTitle?.length ? (
           staff.employment.jobTitle.map((title: string, i: number) => (
             <span
               key={i}
-              className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+              className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs"
             >
               {title}
             </span>
           ))
         ) : (
-          <span className="text-gray-500 text-sm">Not Assigned</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">
+            Not Assigned
+          </span>
         )}
         {/* {staff.employment?.departmentalRole?.title || "Staff Member"} */}
       </span>
     </div>
 
     <div className="mt-3">
-      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] dark:bg-gray-800 text-[#496C08] dark:text-[#95D700]">
         {staff.employment?.department?.name || "Department"}
       </span>
     </div>
 
-    <div className="mt-3 text-gray-600 text-sm">
+    <div className="mt-3 text-gray-600 dark:text-gray-400 text-sm">
       🎂{" "}
       {staff?.dateOfBirth
         ? `**** ${new Date(staff.dateOfBirth).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            timeZone: "Africa/Lagos",
-          })}`
+          month: "long",
+          day: "numeric",
+          timeZone: "Africa/Lagos",
+        })}`
         : "N/A"}
     </div>
 
@@ -321,43 +331,45 @@ const BirthdayCard = ({ staff }: { staff: Staff }) => (
 );
 
 const BirthdayCard2 = ({ staff }: { staff: Staff }) => (
-  <div className="flex flex-col items-center text-center border border-[#E5E7EB] bg-white rounded-2xl p-6 shadow-sm">
+  <div className="flex flex-col items-center text-center border border-[#E5E7EB] dark:border-gray-800 bg-white dark:bg-[#141414] rounded-2xl p-6 shadow-sm transition-colors">
     <Image
       src={staff?.photoUrl || "/default-avatar.png"}
       alt={`${staff.firstName} ${staff.lastName}`}
       width={100}
       height={100}
-      className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB]"
+      className="w-34 h-34 rounded-full object-cover border-4 border-[#E9EAEB] dark:border-gray-700"
     />
 
     <div className="mt-4">
-      <span className="text-gray-900 font-semibold text-lg block">
+      <span className="text-gray-900 dark:text-gray-100 font-semibold text-lg block">
         {staff.firstName} {staff.lastName}
       </span>
-      <span className="text-gray-500 text-sm">
+      <span className="text-gray-500 dark:text-gray-400 text-sm">
         {staff?.employment?.jobTitle?.length ? (
           staff.employment.jobTitle.map((title: string, i: number) => (
             <span
               key={i}
-              className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+              className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs"
             >
               {title}
             </span>
           ))
         ) : (
-          <span className="text-gray-500 text-sm">Not Assigned</span>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">
+            Not Assigned
+          </span>
         )}
         {/* {staff.employment?.departmentalRole?.title || "Staff Member"} */}
       </span>
     </div>
 
     <div className="mt-3">
-      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] text-[#496C08]">
+      <span className="px-3 py-1 text-sm font-medium rounded-full bg-[#E9EAEB] dark:bg-gray-800 text-[#496C08] dark:text-[#95D700]">
         {staff.employment?.department?.name || "Department"}
       </span>
     </div>
 
-    <div className="mt-3 text-gray-600 text-sm">
+    <div className="mt-3 text-gray-600 dark:text-gray-400 text-sm">
       🎂{" "}
       {new Date(staff?.nextBirthday).toLocaleDateString("en-US", {
         month: "long",

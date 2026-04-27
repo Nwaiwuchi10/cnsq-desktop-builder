@@ -169,18 +169,18 @@ export default function NotificationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 h-full">
-      <div className="mt-12 mb-8 relative w-full max-w-lg bg-white rounded-2xl shadow-lg p-8">
+      <div className="mt-12 mb-8 relative w-full max-w-lg bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-lg p-8">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-gray-500 hover:text-gray-700"
+          className="absolute top-5 right-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300"
         >
           <X size={22} />
         </button>
 
         {/* Header */}
         <div className="mb-4">
-          <p className="text-sm text-gray-800">
+          <p className="text-sm text-gray-800 dark:text-gray-200">
             <span className="font-semibold">
               {notification.triggeredByStaff
                 ? `${notification.triggeredByStaff?.firstName || "User"} ${notification.triggeredByStaff?.lastName || ""
@@ -200,7 +200,7 @@ export default function NotificationModal({
                   : "sent you a notification"}
             </span>
           </p>
-          <h2 className="text-2xl font-semibold text-gray-900 mt-1">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mt-1">
             {notification.title.replace("_", " ")}
           </h2>
           <p className="text-sm text-gray-400 mt-1">
@@ -209,15 +209,15 @@ export default function NotificationModal({
         </div>
 
         {/* Message */}
-        <p className="text-sm text-gray-700 mt-4">{notification.message}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300 mt-4">{notification.message}</p>
 
         {/* === Dynamic Task/Project Preview === */}
         {(project || displayTask) && (
-          <div className="border border-gray-200 rounded-xl p-4 mt-6">
+          <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 mt-6">
             <div className="flex items-start justify-between">
               <div className="flex-1 ml-3">
                 {/* Title */}
-                <h3 className="text-sm font-semibold text-gray-900">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                   {displayTask?.title.replace("_", " ") ||
                     relatedProject?.projectName.replace("_", " ")}
                 </h3>
@@ -247,7 +247,7 @@ export default function NotificationModal({
                       </div>
                     ))}
 
-                    <button className="w-10 h-10 text-gray-600 rounded-full bg-gray-100 border flex items-center justify-center">
+                    <button className="w-10 h-10 text-gray-600 dark:text-gray-400 rounded-full bg-gray-100 dark:bg-gray-800 transition-colors border flex items-center justify-center">
                       +
                     </button>
                   </div>
@@ -256,9 +256,9 @@ export default function NotificationModal({
                 {/* Due Date */}
                 {displayTask?.dueDate && (
                   <div className="mt-4">
-                    <p className="text-xs text-gray-500 mb-1">Due Date</p>
-                    <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700">
-                      <Calendar size={16} className="text-gray-500" />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Due Date</p>
+                    <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                      <Calendar size={16} className="text-gray-500 dark:text-gray-400" />
                       <span>{formatDate(displayTask.dueDate)}</span>
                     </div>
                   </div>
@@ -267,10 +267,10 @@ export default function NotificationModal({
                 {/* Description */}
                 {(displayTask?.description || project?.desc) && (
                   <div className="mt-4">
-                    <p className="text-xs font-semibold text-gray-800 mb-1">
+                    <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
                       Description
                     </p>
-                    <p className="text-xs text-gray-500 leading-relaxed">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                       {displayTask?.description || project?.desc}
                     </p>
                   </div>

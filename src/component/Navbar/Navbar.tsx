@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu, X, Bell, MessageCircle } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
@@ -19,17 +20,13 @@ type User = {
 };
 
 const navLinks = [
-  // { name: "Home", href: "/" },
-  { name: "Staff", href: "/staff" },
-  { name: "Birthday", href: "/birthday" },
-  { name: "Anniversary", href: "/anniversary" },
+  // { name: "Anniversary", href: "/anniversary" },
+  { name: "Staff Directory", href: "/staff" },
   { name: "Organogram", href: "/organogram" },
-  { name: "Calender", href: "/calender" },
-  { name: "Chat", href: "/chat" },
-  { name: "Project", href: "/project" },
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -61,7 +58,7 @@ export default function Navbar() {
       );
     });
 
-    // When component unmounts
+    // When component unmounts *
     return () => {
       socket.off("chat:unreadCount");
       // don't disconnect here if other components rely on the socket; but if only navbar uses it, disconnect:
@@ -172,7 +169,7 @@ export default function Navbar() {
       localStorage.removeItem("user-token");
     }
     setUser(null);
-    window.location.href = "/login";
+    window.location.href = "/presignin";
   };
 
   const getAvatar = () => {
@@ -201,160 +198,73 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/*  Logo */}
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              <Image
-                src={imgHome}
-                alt="logo"
-                width={120}
-                height={60}
-                unoptimized
-              />
+      <nav className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-[#0d0d0d] shadow-sm border-b border-gray-100 dark:border-gray-800 transition-colors">
+        <div className="w-full px-4 sm:px-6 md:px-12 lg:px-20 mx-auto max-w-[1400px]">
+          <div className="flex items-center justify-between h-20">
+            {/* Logo */}
+            <Link href="/" className="flex-shrink-0 mt-2">
+              <Image src={imgHome} alt="logo" width={140} height={70} unoptimized />
             </Link>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex flex-1 justify-center">
-              <div className="flex space-x-8 justify-end w-full max-w-2xl items-center ml-24">
+            {/* Desktop Center Links */}
+            <div className="hidden md:flex flex-1 justify-center relative right-[3%]">
+              <div className="flex space-x-12 items-center">
                 {navLinks.map((link) => (
-                  <div key={link.name} className="relative inline-block">
-                    <Link
-                      href={link.href}
-                      className="text-lg text-gray-700 hover:text-[#95D700] transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-
-                    {link.name === "Chat" && chatUnreadCount > 0 && (
-                      <span className="absolute -top-2 -right-4 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
-                        {chatUnreadCount}
-                      </span>
-                    )}
-                  </div>
-                ))}
-
-                <div>
-                  {" "}
-                  {user && (
-                    <Link href="/notifications" className="relative left-4">
-                      <Bell
-                        className="text-gray-700 hover:text-[#95D700]"
-                        size={22}
-                      />
-                      {unreadCount > 0 && (
-                        <span
-                          className="bg-[#FF990C]  absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                        // style={{ backgroundColor: "#FF990C" }}
-                        >
-                          {unreadCount}
-                        </span>
-                      )}
-                    </Link>
-                  )}
-                </div>
-                {/* Notification Bell + Count */}
-
-                {/*  User Profile */}
-                {user ? (
-                  <div className="relative z-50" ref={dropdownRef}>
-                    <div className="flex items-center gap-2 focus:outline-none">
-                      <button
-                        onClick={() => setIsDropdownOpen((prev) => !prev)}
-                        className="flex items-center gap-2 focus:outline-none pl-2"
-                      >
-                        {getAvatar()}
-                        <span className="hidden md:inline font-medium text-gray-700 pl-2">
-                          {user.firstName}
-                        </span>
-                        {/* ///// Notification Bell + Count */}
-                      </button>
-                    </div>
-
-                    {isDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg py-2">
-                        <Link
-                          href={`/staff/${user?.uuid}`}
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsDropdownOpen(false)}
-                        >
-                          View Profile
-                        </Link>
-                        <Link
-                          href={`/change-password`}
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsDropdownOpen(false)}
-                        >
-                          Change Password
-                        </Link>
-                        <div
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => setIsOpenModal(true)}
-                        >
-                          Urgent Message to the CEO
-                        </div>
-                        <div className="cursor-pointer block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
-                          <EnableNotificationsButton />
-                        </div>
-                        <button
-                          style={{ cursor: "pointer" }}
-                          onClick={handleLogout}
-                          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="text-lg text-gray-700 hover:text-[#95D700] transition"
-                  >
-                    Login
+                  <Link key={link.name} href={link.href} className="text-[16px] font-medium text-gray-700 dark:text-gray-300 hover:text-[#95D700] transition-colors tracking-tight">
+                    {link.name}
                   </Link>
-                )}
+                ))}
               </div>
             </div>
 
-            {/* Mobile Menu Button + Notification */}
-            <div className="md:hidden flex items-center gap-4">
-              {/* 🔹 Message Icon */}
-              <Link href="/chat" className="relative">
-                <MessageCircle
-                  className="text-gray-700 hover:text-[#95D700]"
-                  size={22}
-                />{" "}
-                {/* replace with Message icon */}
-                {chatUnreadCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-[#FF990C] text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
-                    {chatUnreadCount}
-                  </span>
-                )}
-              </Link>
-              {user && (
-                <Link href="/notifications" className="relative">
-                  <Bell
-                    className="text-gray-700 hover:text-[#95D700]"
-                    size={22}
-                  />
-                  {unreadCount > 0 && (
-                    <span
-                      className="bg-[#FF990C] absolute -top-2 -right-2 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center"
-                    // style={{ backgroundColor: "#FF990C" }}
-                    >
-                      {unreadCount}
-                    </span>
-                  )}
-                </Link>
-              )}
+            {/* Desktop Right (Staff Grid Icon) */}
+            <div className="hidden md:flex items-center justify-end space-x-6">
 
+              {/* Grid Icon */}
               <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-700 hover:text-[#95D700] focus:outline-none"
+                onClick={() => {
+                  console.log("Navigating to /staff-dashboard-final");
+                  router.push("/staff-dashboard");
+                }}
+                className="flex items-center justify-center hover:opacity-80 transition-opacity ml-2 focus:outline-none"
               >
-                {isOpen ? <X size={24} /> : <Menu size={24} />}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="2" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="2" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Mobile Menu Button + Grid Icon */}
+            <div className="md:hidden flex items-center gap-4">
+              <button
+                onClick={() => {
+                  console.log("Navigating to /staff-dashboard");
+                  router.push("/staff-dashboard");
+                }}
+                className="flex items-center justify-center focus:outline-none"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="2" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="2" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                </svg>
+              </button>
+              <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-300 hover:text-[#95D700] focus:outline-none">
+                {isOpen ? <X size={26} /> : <Menu size={26} />}
               </button>
             </div>
           </div>
@@ -362,86 +272,49 @@ export default function Navbar() {
 
         {/* Mobile Dropdown */}
         {isOpen && (
-          <div className="md:hidden bg-white shadow-lg h-screen">
+          <div className="md:hidden bg-white dark:bg-[#141414] shadow-2xl h-screen absolute w-full left-0 top-20 border-t border-gray-100 dark:border-gray-800 transition-colors">
             <div className="flex flex-col items-start px-6 py-8 space-y-6">
               {navLinks.map((link) => (
                 <div key={link.name} className="relative w-full">
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
-                  >
+                  <Link href={link.href} onClick={() => setIsOpen(false)} className="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-[#95D700] transition block w-full">
                     {link.name}
                   </Link>
-
-                  {/* {link.name === "Message" && chatUnreadCount > 0 && (
-                    <span className="bg-red-500 absolute -top-2 left-24 text-xs font-bold text-white rounded-full w-5 h-5 flex items-center justify-center">
-                      {chatUnreadCount}
-                    </span>
-                  )} */}
                 </div>
               ))}
 
-              {!loading &&
-                (user ? (
-                  <div className="w-full">
-                    <div className="flex items-center gap-3 mb-4">
-                      {getAvatar()}
-                      <span className="font-medium text-gray-700">
-                        {user?.firstName} {user?.lastName}
-                      </span>
-                    </div>
-
-                    <Link
-                      href={`/staff/${user?.uuid}`}
-                      onClick={() => setIsOpen(false)}
-                      className="block py-2 text-gray-700 hover:text-blue-600"
-                    >
-                      View Profile
-                    </Link>
-                    <Link
-                      href={`/change-password`}
-                      className="block py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      Change Password
-                    </Link>
-                    <div
-                      className="block py-2 text-gray-700 hover:bg-gray-100 cursor-pointer"
-                      onClick={() => setIsOpenModal(true)}
-                    >
-                      Urgent Message to the CEO
-                    </div>
-                    <div className="cursor-pointer block ml-2 text-gray-700 hover:bg-gray-100 cursor-pointer">
-                      <EnableNotificationsButton />
-                    </div>
-                    <button
-                      style={{ cursor: "pointer" }}
-                      onClick={handleLogout}
-                      className="block py-2 text-left text-gray-700 hover:text-blue-600"
-                    >
-                      Logout
-                    </button>
+              {!loading && (user ? (
+                <div className="w-full border-t border-gray-100 dark:border-gray-800 pt-6">
+                  <div className="flex items-center gap-3 mb-6 bg-gray-50 dark:bg-[#1a1a1a] p-3 rounded-lg border border-gray-100 dark:border-gray-800">
+                    {getAvatar()}
+                    <span className="font-bold text-gray-800 dark:text-gray-200 text-lg tracking-tight">
+                      {user?.firstName} {user?.lastName}
+                    </span>
                   </div>
-                ) : (
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="text-lg font-medium text-gray-700 hover:text-[#95D700] transition"
-                  >
-                    Login
+                  <Link href={`/staff/${user?.uuid}`} onClick={() => setIsOpen(false)} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition">
+                    View Profile
                   </Link>
-                ))}
+                  <Link href={`/change-password`} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition" onClick={() => setIsDropdownOpen(false)}>
+                    Change Password
+                  </Link>
+                  <Link href="/ceos-corner" className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition cursor-pointer" onClick={() => setIsOpen(false)}>
+                    Urgent Message to the CEO
+                  </Link>
+                  <div className="cursor-pointer block font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition mt-2">
+                    <EnableNotificationsButton />
+                  </div>
+                  <button style={{ cursor: "pointer" }} onClick={handleLogout} className="block w-full py-3 mt-4 text-left font-bold text-red-600 hover:text-red-700 transition">
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login" onClick={() => setIsOpen(false)} className="text-xl font-bold text-gray-800 dark:text-gray-200 hover:text-[#95D700] transition border-t border-gray-100 dark:border-gray-800 pt-6 w-full inline-block">
+                  Login
+                </Link>
+              ))}
             </div>
           </div>
         )}
       </nav>
-      {isOpenModal && (
-        <MessageCeoModal
-          isOpen={isOpenModal}
-          onClose={() => setIsOpenModal(false)}
-        />
-      )}
     </>
   );
 }

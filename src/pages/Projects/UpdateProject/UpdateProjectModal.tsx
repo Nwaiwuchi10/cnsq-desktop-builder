@@ -206,14 +206,14 @@ export default function UpdateProjectModal({
   );
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-lg w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg text-gray-600 font-semibold">
+          <h2 className="text-lg text-gray-600 dark:text-gray-400 font-semibold">
             Update Project
           </h2>
           <button onClick={onClose}>
-            <X size={20} className="text-gray-600" />
+            <X size={20} className="text-gray-600 dark:text-gray-400" />
           </button>
         </div>
 
@@ -221,27 +221,27 @@ export default function UpdateProjectModal({
           <p>Loading...</p>
         ) : (
           <div className="space-y-4">
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Project Name
             </label>
             <input
               placeholder="Project Name"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Decription
             </label>
             <textarea
               placeholder="Description"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
 
             <div>
-              <label className="block text-sm  mb-1 text-gray-700">
+              <label className="block text-sm  mb-1 text-gray-700 dark:text-gray-300">
                 Department
               </label>
               <select
@@ -249,7 +249,7 @@ export default function UpdateProjectModal({
                 onChange={(e) =>
                   setDepartmentId(e.target.value ? Number(e.target.value) : "")
                 }
-                className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
               >
                 <option value="">-- Select Department --</option>
                 {departments.map((dept) => (
@@ -259,36 +259,36 @@ export default function UpdateProjectModal({
                 ))}
               </select>
             </div>
-            <label className="block text-sm text-gray-700 mb-1">Status</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {PROJECT_STATUSES.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
-            <label className="block text-sm text-gray-700 mb-1">Priority</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Priority</label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {PROJECT_PRIORITIES.map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Production Link
             </label>
             <input
               placeholder="Production URL"
               value={prodUrl}
               onChange={(e) => setProdUrl(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
-            <label className="block text-sm text-gray-700 mb-1">
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Stagging Link
             </label>
 
@@ -296,17 +296,17 @@ export default function UpdateProjectModal({
               placeholder="Staging URL"
               value={stagingUrl}
               onChange={(e) => setStagingUrl(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
 
             {/* ///////file uploader */}
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                 Mobile App APK File
               </label>
               {apk ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">{apk.name}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{apk.name}</span>
                   <button
                     type="button"
                     onClick={removeFile}
@@ -320,7 +320,7 @@ export default function UpdateProjectModal({
                   type="file"
                   accept=".apk,application/vnd.android.package-archive"
                   onChange={handleFileChange}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2"
                 />
               )}
             </div>
@@ -331,7 +331,7 @@ export default function UpdateProjectModal({
               <div>
                 <div>
                   {" "}
-                  <label className="block text-sm text-gray-700 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                     Start Date
                   </label>
                 </div>
@@ -340,14 +340,14 @@ export default function UpdateProjectModal({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full flex-1 border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full flex-1 border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                   />
                 </div>
               </div>
               <div>
                 <div>
                   {" "}
-                  <label className="block text-sm text-gray-700 mt-4 mb-1">
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mt-4 mb-1">
                     End Date
                   </label>
                 </div>
@@ -358,25 +358,25 @@ export default function UpdateProjectModal({
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full flex-1 border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                    className="w-full flex-1 border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                   />
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1">
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                 Tiimeline
               </label>
               <input
                 placeholder="Timeline"
                 value={timeLine}
                 onChange={(e) => setTimeLine(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
               />
             </div>
 
             {/* Assign Staff */}
-            <div className="border p-3 rounded-lg bg-gray-50 text-gray-600">
+            <div className="border p-3 rounded-lg bg-gray-50 dark:bg-[#1f1f1f] text-gray-600 dark:text-gray-400">
               <h3 className="font-medium mb-2">Assign Staff</h3>
               <div className="flex flex-col gap-3">
                 <input
@@ -387,14 +387,14 @@ export default function UpdateProjectModal({
                     setSearch(e.target.value);
                     setSelectedStaff(null);
                   }}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-600"
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400"
                 />
 
                 {/* Dropdown results */}
                 {search && !selectedStaff && (
-                  <ul className="absolute top-12 left-0 right-0 bg-white border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
+                  <ul className="absolute top-12 left-0 right-0 bg-white dark:bg-[#141414] transition-colors border rounded-lg max-h-40 overflow-y-auto shadow-md z-10">
                     {filteredStaffs.length === 0 && (
-                      <li className="px-3 py-2 text-gray-500">
+                      <li className="px-3 py-2 text-gray-500 dark:text-gray-400">
                         No staff found
                       </li>
                     )}
@@ -414,7 +414,7 @@ export default function UpdateProjectModal({
                             setRole("");
                           }
                         }}
-                        className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                        className="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:bg-gray-800"
                       >
                         {s.firstName} {s.lastName} ({s.email})
                       </li>
@@ -426,7 +426,7 @@ export default function UpdateProjectModal({
                   onChange={(e) =>
                     setStaffId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 >
                   <option value="">-- Select Staff --</option>
                   {staffs.map((s) => (
@@ -435,14 +435,14 @@ export default function UpdateProjectModal({
                     </option>
                   ))}
                 </select> */}
-                <label className="block text-sm text-gray-700 mb-1">
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                   Project Role
                 </label>
                 <input
                   placeholder="Role"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 />
                 <button
                   type="button"
@@ -468,7 +468,7 @@ export default function UpdateProjectModal({
                   return (
                     <li
                       key={idx}
-                      className="flex justify-between items-center border p-2 rounded-lg bg-white text-gray-600"
+                      className="flex justify-between items-center border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400"
                     >
                       <span>
                         {staff?.firstName} {staff?.lastName} — <b>{a.role}</b>

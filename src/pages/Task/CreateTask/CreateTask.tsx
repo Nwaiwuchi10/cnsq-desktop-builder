@@ -108,6 +108,14 @@ export default function CreateTaskForm() {
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
   const [loadingProject, setLoadingProject] = useState(true);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [userDepartment, setUserDepartment] = useState<string | null>(null);
+  const [userDepartmentId, setUserDepartmentId] = useState<number | null>(null);
+  const [departments, setDepartments] = useState<
+    { id: number; name: string }[]
+  >([]);
+  const [selectedDeptName, setSelectedDeptName] = useState<string | "">("");
+  const [selectedDeptId, setSelectedDeptId] = useState<number | "">("");
 
   // === AssignedTo ===
   const [assignments, setAssignments] = useState<
@@ -118,6 +126,10 @@ export default function CreateTaskForm() {
 
   useEffect(() => {
     const fetchProject = async () => {
+      if (!projectId) {
+        setLoadingProject(false);
+        return;
+      }
       try {
         const res = await Api.get(`/projects/data/${projectId}`);
         setProjectUuid(res.data);
@@ -129,6 +141,42 @@ export default function CreateTaskForm() {
     };
     fetchProject();
   }, [projectId]);
+
+  // Load all projects and departments if no projectId is provided
+  useEffect(() => {
+    if (projectId) return;
+
+    const fetchInitialData = async () => {
+      try {
+        const [projRes, deptRes] = await Promise.all([
+          Api.get("/projects"),
+          Api.get("/departments"),
+        ]);
+        setAllProjects(projRes.data || []);
+        setDepartments(deptRes.data || []);
+      } catch (err) {
+        console.error("Failed to fetch initial data", err);
+      }
+    };
+    fetchInitialData();
+  }, [projectId]);
+  // Load user profile to get department
+  useEffect(() => {
+    if (!token) return;
+    const fetchProfile = async () => {
+      try {
+        const res = await Api.get("/staff-register/staff/viewProfile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserDepartment(res.data?.employment?.department?.name || null);
+        setUserDepartmentId(res.data?.employment?.department?.id || null);
+      } catch (err) {
+        console.error("Failed to fetch user profile", err);
+      }
+    };
+    fetchProfile();
+  }, [token]);
+
   // Load token
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -141,24 +189,54 @@ export default function CreateTaskForm() {
     }
   }, [router]);
 
-  // Load staffs assigned to this project
+  // Load staffs (either project-specific or departmental)
   useEffect(() => {
-    if (!projectUuid?.id) return;
-
-    Api.get(`/projects/${projectUuid?.id}/staffs`)
-      .then((res) => {
-        const clean = (res.data || []).filter(
-          (s: any) => s && s.staff && s.staff.id,
+    if (projectId) {
+      if (!projectUuid?.id) return;
+      Api.get(`/projects/${projectUuid?.id}/staffs`)
+        .then((res) => {
+          const clean = (res.data || []).filter(
+            (s: any) => s && s.staff && s.staff.id,
+          );
+          setStaffs(clean);
+        })
+        .catch(() =>
+          setModal({
+            type: "error",
+            message: "Failed to load project staff list.",
+          }),
         );
-        setStaffs(clean);
-      })
-      .catch(() =>
-        setModal({
-          type: "error",
-          message: "Failed to load project staff list.",
-        }),
-      );
-  }, [projectUuid?.id]);
+    } else {
+      // Use selectedDeptName if set, otherwise fallback to userDepartment
+      const deptToFetch = selectedDeptName || userDepartment;
+      if (deptToFetch) {
+        Api.get(
+          `/staff-register/all/staffs/by-department?name=${encodeURIComponent(deptToFetch)}`,
+        )
+          .then((res) => {
+            const clean = (res.data || [])
+              .filter((s: any) => s && s.id)
+              .map((s: any) => ({
+                staff: {
+                  id: s.id,
+                  firstName: s.firstName,
+                  lastName: s.lastName,
+                  email: s.email,
+                  employment: s.employment || { jobTitle: [] },
+                },
+                role: s.employment?.departmentalRole?.title || "Staff Member",
+              }));
+            setStaffs(clean);
+          })
+          .catch(() =>
+            setModal({
+              type: "error",
+              message: "Failed to load departmental staff list.",
+            }),
+          );
+      }
+    }
+  }, [projectId, projectUuid?.id, userDepartment, selectedDeptName]);
 
   // useEffect(() => {
   //   if (!projectUuid?.id) return;
@@ -189,14 +267,14 @@ export default function CreateTaskForm() {
   }, [startDate, dueDate]);
 
   const handleCreateTask = async () => {
-    if (!projectUuid?.id) {
+    if (projectId && !projectUuid?.id) {
       setModal({
         type: "error",
         message: "Project not loaded yet. Try again.",
       });
       return;
     }
-    if (!title || !dueDate || !startDate || !sprint) {
+    if (!title || !dueDate || !startDate) {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
     }
@@ -213,7 +291,7 @@ export default function CreateTaskForm() {
       title,
       description,
       taskModule,
-      sprint,
+      sprint: sprint ? Number(sprint) : undefined,
       status: status || "Not_started",
       priority: priority || "Medium",
       urgency: urgency || "Short_Term",
@@ -222,7 +300,9 @@ export default function CreateTaskForm() {
       // startDate: new Date(startDate).toISOString(),
       // dueDate: new Date(dueDate).toISOString(),
       timeline,
-      projectId: projectUuid?.id,
+      projectId: projectUuid?.id || null, // allow null for departmental tasks
+      departmentId: selectedDeptId || userDepartmentId,
+      departmentName: selectedDeptName || userDepartment,
       assignedTo: assignments,
     };
 
@@ -232,7 +312,13 @@ export default function CreateTaskForm() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setModal({ type: "success", message: "Task created successfully!" });
-      setTimeout(() => router.push(`/project/${projectId}`), 1200);
+      setTimeout(() => {
+        if (projectId) {
+          router.push(`/project/${projectId}`);
+        } else {
+          router.push("/task");
+        }
+      }, 1200);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -245,17 +331,17 @@ export default function CreateTaskForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] py-16">
-      <div className="max-w-xl mx-auto px-4 mb-8 mt-14">
+    <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-4">
+      <div className="max-w-xl mx-auto px-4 mb-8 mt-4">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-black hover:opacity-75"
+            className="flex items-center gap-2 text-black dark:text-white hover:opacity-75"
           >
             <ArrowLeft size={20} />
             <span className="font-medium">Back</span>
           </button>
-          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">
             Create Task
           </h2>
           <div className="w-[84px]" />
@@ -263,58 +349,113 @@ export default function CreateTaskForm() {
       </div>
 
       <div className="max-w-xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-5">
+        <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
+          {/* Department Selection (only if no projectId in URL) */}
+          {!projectId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Select Department <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={selectedDeptId}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedDeptId(Number(val));
+                  const dept = departments.find((d) => d.id === Number(val));
+                  setSelectedDeptName(dept?.name || "");
+                }}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
+              >
+                <option value="">-- Choose Department --</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1 italic">
+                Select a department to filter the assignment staff list.
+              </p>
+            </div>
+          )}
+
+          {/* Project Selection (only if no projectId in URL) */}
+          {/* {!projectId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Select Project <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={projectUuid?.uuid || ""}
+                onChange={(e) => {
+                  const selected = allProjects.find(p => p.uuid === e.target.value);
+                  setProjectUuid(selected || null);
+                }}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
+              >
+                <option value="">-- Choose Project --</option>
+                {allProjects.map((p) => (
+                  <option key={p.id} value={p.uuid}>{p.projectName}</option>
+                ))}
+              </select>
+            </div>
+          )} */}
+
           {/* Title */}
-          <label className="block text-sm font-medium text-gray-600">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
             Task Title <span className="text-red-500">*</span>
           </label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter task title"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+            className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           />
 
           {/* Description */}
-          <label className="block text-sm font-medium text-gray-600">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
             Description
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter task description"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900 border-gray-700"
+            className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white border-gray-700"
           />
           {/* Task Module/Feature */}
-          <label className="block text-sm font-medium text-gray-600">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
             Task Module/Feature <span className="text-red-500"></span>
           </label>
           <input
             value={taskModule}
             onChange={(e) => setTaskModule(e.target.value)}
             placeholder="e.g. Task on Authentication, Dashboard etc"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+            className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           />
           {/* Sprint */}
-          <label className="block text-sm font-medium mb-1 text-gray-600">
-            Task Sprint <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            value={sprint}
-            onChange={(e) => setSprint(e.target.value)}
-            placeholder="Sprint 1"
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
-          />
+          {projectId && (
+            <>
+              <label className="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-400">
+                Task Sprint
+              </label>
+              <input
+                type="number"
+                value={sprint}
+                onChange={(e) => setSprint(e.target.value)}
+                placeholder="Sprint 1"
+                className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
+              />
+            </>
+          )}
           {/* status, urgency and priority */}
           {/* Status */}
-          <label className="block text-sm text-gray-700 mb-1">
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
             Task Status
           </label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900"
+            className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           >
             {TASK_STATUSES.map((s) => (
               <option key={s} value={s}>
@@ -324,11 +465,13 @@ export default function CreateTaskForm() {
           </select>
 
           {/* Priority */}
-          <label className="block text-sm text-gray-700 mb-1">Priority</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Priority
+          </label>
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
           >
             {PRIORITIES.map((p) => (
               <option key={p} value={p}>
@@ -338,11 +481,13 @@ export default function CreateTaskForm() {
           </select>
 
           {/* Urgency */}
-          <label className="block text-sm text-gray-700 mb-1">Urgency</label>
+          <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+            Urgency
+          </label>
           <select
             value={urgency}
             onChange={(e) => setUrgency(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 bg-white text-gray-900 placeholder-gray-400"
+            className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
           >
             <option value="">-- Select Urgency --</option>
             {URGENCIES.map((u) => (
@@ -353,40 +498,40 @@ export default function CreateTaskForm() {
           </select>
 
           {/* Start Date */}
-          <label className="block text-sm font-medium text-gray-600">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
             Start Date <span className="text-red-500">*</span>
           </label>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+            className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           />
 
           {/* Due Date */}
-          <label className="block text-sm font-medium text-gray-600">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
             Due Date <span className="text-red-500">*</span>
           </label>
           <input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 bg-white text-gray-900"
+            className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           />
 
           {/* Timeline (auto-calculated) */}
-          <label className="block text-sm font-medium text-gray-600">
+          <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
             Timeline (auto-calculated)
           </label>
           <input
             value={timeline}
             readOnly
-            className="w-full rounded-lg border px-3 py-2 bg-gray-100 text-gray-700 cursor-not-allowed"
+            className="w-full rounded-lg border px-3 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
           />
 
           {/* Staff Assignment */}
-          <div className="border p-3 rounded-lg bg-gray-50 mt-4">
-            <h3 className="text-sm font-semibold mb-2 text-gray-600">
+          <div className="border p-3 rounded-lg bg-gray-50 dark:bg-[#1f1f1f] mt-4">
+            <h3 className="text-sm font-semibold mb-2 text-gray-600 dark:text-gray-400">
               Assign Staff
             </h3>
             <select
@@ -405,7 +550,7 @@ export default function CreateTaskForm() {
                   setRole("");
                 }
               }}
-              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900"
+              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
             >
               <option value="">-- Select Staff --</option>
               {staffs
@@ -421,7 +566,7 @@ export default function CreateTaskForm() {
               placeholder="Role (e.g. Lead, Contributor)"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white text-gray-900"
+              className="w-full rounded-lg border px-3 py-2 mb-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
             />
 
             <button
@@ -458,7 +603,7 @@ export default function CreateTaskForm() {
                   return (
                     <li
                       key={idx}
-                      className="flex justify-between items-center border p-2 rounded-lg bg-white text-gray-600"
+                      className="flex justify-between items-center border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400"
                     >
                       <span>
                         {staffObj?.staff.firstName} {staffObj?.staff.lastName} (

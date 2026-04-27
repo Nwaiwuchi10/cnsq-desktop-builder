@@ -15,6 +15,7 @@ import CustomModal from "@/component/Message/Message";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 import Navbar from "@/component/Navbar/Navbar";
 import Footer from "@/component/Footer/Footer";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 interface Project {
   id: number;
@@ -110,9 +111,9 @@ export default function ProjectDetails() {
 
   if (!project)
     return (
-      <p className="p-6">
+      <div className="p-6">
         <LoadingSpinner />
-      </p>
+      </div>
     );
   const progressValue = () => {
     switch (project.status as ProjectStatus) {
@@ -174,7 +175,7 @@ export default function ProjectDetails() {
     derivedStatus.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
   if (loadingProject) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA]">
+      <div className="flex justify-center items-center min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
         <LoadingSpinner />
       </div>
     );
@@ -185,13 +186,13 @@ export default function ProjectDetails() {
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-[#FAFAFA] p-6">
+    <StaffLayout>
+
+      <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors p-6">
         {/* Back Button */}
         <div
           onClick={() => router.back()}
-          className="flex pt-20 items-center gap-2 text-black cursor-pointer hover:opacity-70 mb-6"
+          className="flex pt-2 items-center gap-2 text-black dark:text-white cursor-pointer hover:opacity-70 mb-6"
         >
           <ArrowLeft size={20} />
           <span className="font-medium">Back</span>
@@ -199,7 +200,7 @@ export default function ProjectDetails() {
 
         {/* Project Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl text-black font-bold">
+          <h1 className="text-2xl text-black dark:text-white font-bold">
             {project?.projectName}
           </h1>
           <span
@@ -210,18 +211,17 @@ export default function ProjectDetails() {
           </span>
         </div>
         <div
-          className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${
-            statusColors[project?.derivedStatus as ProjectStatus]
-          }`}
+          className={`inline-block px-3 py-1 text-xs rounded-full font-medium w-fit ${statusColors[project?.derivedStatus as ProjectStatus]
+            }`}
         >
           {formatStatus(project?.derivedStatus || project?.status)}
         </div>
 
         {/* Dates */}
-        <div className="text-gray-600 mt-2">
+        <div className="text-gray-600 dark:text-gray-400 mt-2">
           <span>Timeline:</span> {project?.timeLine}
         </div>
-        <div className="text-gray-600 mt-2">
+        <div className="text-gray-600 dark:text-gray-400 mt-2">
           <div className="mb-2">
             <span>Start Date:</span>{" "}
             {new Date(project?.startDate).toLocaleDateString()}
@@ -230,7 +230,7 @@ export default function ProjectDetails() {
             <span>End Date:</span>{" "}
             {new Date(project?.endDate).toLocaleDateString()}
           </div>
-          <div className="text-gray-600 mt-2">
+          <div className="text-gray-600 dark:text-gray-400 mt-2">
             <span>Stagging Link:</span>
             <a
               href={project?.stagingUrl}
@@ -241,7 +241,7 @@ export default function ProjectDetails() {
               {project?.stagingUrl}
             </a>
           </div>
-          <div className="text-gray-600 mt-2">
+          <div className="text-gray-600 dark:text-gray-400 mt-2">
             <span>Website Link:</span>
             <a
               href={project?.prodUrl}
@@ -252,7 +252,7 @@ export default function ProjectDetails() {
             </a>
           </div>
           {/* ///apk */}
-          <div className="text-gray-600 mt-2">
+          <div className="text-gray-600 dark:text-gray-400 mt-2">
             <span>Mobile App (APK):</span>
             {project?.apk ? (
               <a
@@ -264,7 +264,7 @@ export default function ProjectDetails() {
                 Download APK
               </a>
             ) : (
-              <span className="text-gray-600 ml-1 italic">
+              <span className="text-gray-600 dark:text-gray-400 ml-1 italic">
                 No APK available
               </span>
             )}
@@ -274,10 +274,10 @@ export default function ProjectDetails() {
 
         {/* Progress */}
         <div className="mt-4 w-full max-w-lg">
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
+          <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
             <span>{progress}% Complete</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-lg">
+          <div className="h-2 bg-gray-200 dark:bg-gray-800 transition-colors rounded-lg">
             <div
               className="h-2 bg-[#78B500] rounded-lg"
               style={{ width: `${progress}%` }}
@@ -286,14 +286,14 @@ export default function ProjectDetails() {
         </div>
 
         {/* Description */}
-        <p className="mt-4 text-gray-800 text-1xl font-bold leading-relaxed">
+        <p className="mt-4 text-gray-800 dark:text-gray-200 text-1xl font-bold leading-relaxed">
           Description
         </p>
-        <p className="mt-2 text-gray-800 leading-relaxed">{project?.desc}</p>
+        <p className="mt-2 text-gray-800 dark:text-gray-200 leading-relaxed">{project?.desc}</p>
 
         {/* Assigned Staff */}
         <div className="mt-6">
-          <h3 className="font-semibold text-gray-700 mb-2">Assigned Staff</h3>
+          <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Assigned Staff</h3>
           <div className="flex items-center mt-2">
             {project?.assignedTo
               ?.filter((assign): assign is AssignedTo =>
@@ -346,7 +346,7 @@ export default function ProjectDetails() {
                 </div>
               ))} */}
             <button
-              className="w-15 h-15 text-gray-600 rounded-full bg-gray-100 border flex items-center justify-center"
+              className="w-15 h-15 text-gray-600 dark:text-gray-400 rounded-full bg-gray-100 dark:bg-gray-800 transition-colors border flex items-center justify-center"
               style={{ cursor: "pointer" }}
               onClick={() => setShowEditModals(true)}
             >
@@ -357,15 +357,15 @@ export default function ProjectDetails() {
 
         {/* Comments */}
         <div className="mt-8">
-          <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+          <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
             <MessageCircle size={18} /> Comments ({project?.comments?.length})
           </h3>
           {project?.comments
             ?.filter((c) => c && c.id)
             .map((c) => (
-              <div key={c.id} className="p-3 bg-white rounded-lg shadow-sm">
-                <p className="text-sm text-gray-800">{c.text}</p>
-                <span className="text-xs text-gray-500">
+              <div key={c.id} className="p-3 bg-white dark:bg-[#141414] transition-colors rounded-lg shadow-sm">
+                <p className="text-sm text-gray-800 dark:text-gray-200">{c.text}</p>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
                   {c.staff?.firstName} {c.staff?.lastName} •{" "}
                   {new Date(c.createdAt).toLocaleDateString()}
                 </span>
@@ -375,9 +375,9 @@ export default function ProjectDetails() {
           {/* {project?.comments?.length && project?.comments?.length > 0 ? (
             <div className="space-y-3">
               {project?.comments?.map((c) => (
-                <div key={c?.id} className="p-3 bg-white rounded-lg shadow-sm">
-                  <p className="text-sm text-gray-800">{c?.text}</p>
-                  <span className="text-xs text-gray-500">
+                <div key={c?.id} className="p-3 bg-white dark:bg-[#141414] transition-colors rounded-lg shadow-sm">
+                  <p className="text-sm text-gray-800 dark:text-gray-200">{c?.text}</p>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {c?.staff?.firstName} {c?.staff?.lastName} •{" "}
                     {new Date(c?.createdAt).toLocaleDateString()}
                   </span>
@@ -385,7 +385,7 @@ export default function ProjectDetails() {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-sm">No comments yet.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No comments yet.</p>
           )} */}
         </div>
 
@@ -398,7 +398,7 @@ export default function ProjectDetails() {
               placeholder="Add a comment"
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              className="w-full bg-white text-gray-600 border rounded-lg px-3 py-2 pr-20"
+              className="w-full bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400 border rounded-lg px-3 py-2 pr-20"
             />
             <button
               onClick={handleAddComment}
@@ -439,7 +439,7 @@ export default function ProjectDetails() {
           onUpdateds={() => window.location.reload()}
         />
       </div>
-      <Footer />
-    </>
+
+    </StaffLayout>
   );
 }

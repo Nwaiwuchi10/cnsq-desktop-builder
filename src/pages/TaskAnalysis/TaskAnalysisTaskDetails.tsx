@@ -123,11 +123,11 @@ export default function TaskAnalysisTaskDetailsModal({
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
-        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh]">
+        <div className="bg-white dark:bg-[#141414] w-full max-w-2xl rounded-2xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh] transition-colors">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+            className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-xl"
           >
             ✕
           </button>
@@ -136,17 +136,17 @@ export default function TaskAnalysisTaskDetailsModal({
 
           {/* Title */}
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-2xl font-bold">Task Title</h2>
+            <h2 className="text-2xl font-bold dark:text-white">Task Title</h2>
           </div>
           <div className="mb-4">
-            <h2 className="text-2xl font-bold">{displayTask?.title}</h2>
+            <h2 className="text-2xl font-bold dark:text-white">{displayTask?.title}</h2>
           </div>
           {/* Assigned Staff */}
           <div className="flex items-center gap-2 mb-4">
             {displayTask?.assignedTo?.filter(Boolean).map((assign) => (
               <div
                 key={assign?.id}
-                className="w-10 h-10 rounded-full overflow-hidden border"
+                className="w-10 h-10 rounded-full overflow-hidden border dark:border-gray-700"
               >
                 {assign?.staff?.photoUrl ? (
                   <Image
@@ -158,7 +158,7 @@ export default function TaskAnalysisTaskDetailsModal({
                     unoptimized
                   />
                 ) : (
-                  <div className="bg-gray-400 w-full h-full flex items-center justify-center text-white font-bold">
+                  <div className="bg-gray-400 dark:bg-gray-600 w-full h-full flex items-center justify-center text-white font-bold">
                     {assign?.staff?.firstName[0]}
                   </div>
                 )}
@@ -167,11 +167,11 @@ export default function TaskAnalysisTaskDetailsModal({
           </div>
 
           {/* Task Info */}
-          <div className="text-sm text-gray-600 mb-2">
+          <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
             <p className="mb-2">Sprint: {displayTask?.sprint || "—"}</p>
             <p>Timeline: {displayTask?.timeline || "—"}</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
             <Image src={imgIcon} alt="date icon" />
             <p>
               Due Date:{" "}
@@ -182,23 +182,23 @@ export default function TaskAnalysisTaskDetailsModal({
           </div>
 
           {/* Description */}
-          <h3 className="font-semibold mb-1">Description</h3>
-          <p className="text-sm text-gray-700 mb-4">
+          <h3 className="font-semibold mb-1 dark:text-white">Description</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
             {displayTask?.description || "No description provided."}
           </p>
 
           {/* Module */}
-          <h3 className="font-semibold mb-1">Task Feature/Module</h3>
-          <p className="text-sm text-gray-700 mb-4">
+          <h3 className="font-semibold mb-1 dark:text-white">Task Feature/Module</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
             {displayTask?.taskModule || "No Module/Feature provided."}
           </p>
 
           {/* Comments */}
-          <h3 className="font-semibold mb-2">Comments</h3>
-          <div className="bg-gray-100 rounded-lg p-3 mb-3">
+          <h3 className="font-semibold mb-2 dark:text-white">Comments</h3>
+          <div className="bg-gray-100 dark:bg-[#1a1a1a] rounded-lg p-3 mb-3 transition-colors">
             {displayTask?.comments?.length ? (
               displayTask?.comments?.filter(Boolean).map((c) => (
-                <div key={c.id} className="relative text-sm text-gray-600 mb-4">
+                <div key={c.id} className="relative text-sm text-gray-600 dark:text-gray-300 mb-4">
                   <p>
                     <span className="font-semibold">{c?.staff?.firstName}</span>
                     {c?.mentionedStaff && (
@@ -224,12 +224,12 @@ export default function TaskAnalysisTaskDetailsModal({
                       📎 View Attached File
                     </a>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {new Date(c.createdAt).toLocaleString()}
                   </p>
 
                   {c?.staff?.id === currentUserId && (
-                    <div className="absolute top-2 right-2 flex gap-3 text-xs text-gray-500 z-20 ">
+                    <div className="absolute top-2 right-2 flex gap-3 text-xs text-gray-500 dark:text-gray-400 z-20 ">
                       <button
                         onClick={() => setEditingComment(c)}
                         className="text-[#95D700] hover:text-green-700"
@@ -247,7 +247,7 @@ export default function TaskAnalysisTaskDetailsModal({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-600">No Comment</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">No Comment</p>
             )}
           </div>
 

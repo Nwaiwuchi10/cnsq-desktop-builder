@@ -7,9 +7,8 @@ export function initChatSocket(userId?: number) {
   if (socket && socket.connected) return socket;
   const token = localStorage.getItem("user-token");
 
-  socket = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat` || "", {
-    query: { token },
-    transports: ["websocket"],
+  socket = io(`${process.env.NEXT_PUBLIC_API_BASE_URL}/chat`, {
+    query: { token: token || "" },
     autoConnect: true,
   });
 
