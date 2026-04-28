@@ -216,7 +216,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
   const displayTask = taskData || task;
 
-  // 🗑 Delete Task
+  // 🗑 Delete Task*
 
   const handleDeleteTask = async () => {
     if (!token) return;
@@ -251,23 +251,22 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
   return (
     <>
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
-        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh]">
+        <div className="bg-white dark:bg-[#141414] w-full max-w-2xl rounded-2xl shadow-lg p-6 relative overflow-y-auto max-h-[90vh] transition-colors">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-xl"
+            className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 text-xl transition-colors"
           >
             ✕
           </button>
 
           {/* Status + Priority */}
           <div className="flex items-center justify-between mb-4">
-            <span className=" text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+            <span className="text-green-700 px-3 py-1 rounded-full text-xs font-medium">
               {task?.status ? (
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    statusColors[task?.status] || "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task?.status] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                    }`}
                 >
                   {task?.status?.replace("_", " ")}
                 </span>
@@ -278,9 +277,8 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             <span className="text-red-700 px-3 py-1 rounded-full text-xs font-medium mr-12">
               {task?.priority ? (
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    priorityColors[task.priority] || "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[task.priority] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                    }`}
                 >
                   {task?.priority}
                 </span>
@@ -289,9 +287,10 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
               )}
             </span>
           </div>
+
           {/* Title */}
           <div className="flex justify-between items-center mb-2">
-            <h2 className="text-2xl font-bold">Task Title</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Task Title</h2>
             <div className="flex gap-10 items-center">
               <span
                 style={{ cursor: "pointer" }}
@@ -309,14 +308,15 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             </div>
           </div>
           <div className="mb-4">
-            <h2 className="text-2xl font-bold">{displayTask?.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{displayTask?.title}</h2>
           </div>
+
           {/* Assigned Staff */}
           <div className="flex items-center gap-2 mb-4">
             {displayTask?.assignedTo?.filter(Boolean).map((assign) => (
               <div
                 key={assign?.id}
-                className="w-10 h-10 rounded-full overflow-hidden border"
+                className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700"
               >
                 {assign?.staff?.photoUrl ? (
                   <Image
@@ -328,7 +328,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                     unoptimized
                   />
                 ) : (
-                  <div className="bg-gray-400 w-full h-full flex items-center justify-center text-white font-bold">
+                  <div className="bg-gray-400 dark:bg-gray-600 w-full h-full flex items-center justify-center text-white font-bold">
                     {assign?.staff?.firstName[0]}
                   </div>
                 )}
@@ -337,12 +337,12 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </div>
 
           {/* Task Info */}
-          <div className="text-sm text-gray-600 mb-2">
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
             <p className="mb-2">Sprint: {displayTask?.sprint || "—"}</p>
             <p>Timeline: {displayTask?.timeline || "—"}</p>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <Image src={imgIcon} alt="date icon" />
               <p>
                 Start Date:{" "}
@@ -351,7 +351,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                   : "No start date"}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <Image src={imgIcon} alt="date icon" />
               <p>
                 Due Date:{" "}
@@ -363,27 +363,27 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
           </div>
 
           {/* Description */}
-          <h3 className="font-semibold mb-1">Description</h3>
-          <p className="text-sm text-gray-700 mb-4">
+          <h3 className="font-semibold mb-1 text-gray-900 dark:text-white">Description</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-400 mb-4">
             {displayTask?.description || "No description provided."}
           </p>
 
           {/* Module */}
-          <h3 className="font-semibold mb-1">Task Feature/Module</h3>
-          <p className="text-sm text-gray-700 mb-4">
+          <h3 className="font-semibold mb-1 text-gray-900 dark:text-white">Task Feature/Module</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-400 mb-4">
             {displayTask?.taskModule || "No Module/Feature provided."}
           </p>
 
           {/* Comments */}
-          <h3 className="font-semibold mb-2">Comments</h3>
-          <div className="bg-gray-100 rounded-lg p-3 mb-3">
+          <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Comments</h3>
+          <div className="bg-gray-100 dark:bg-[#1a1a1a] rounded-lg p-3 mb-3 transition-colors">
             {displayTask?.comments?.length ? (
               displayTask?.comments?.filter(Boolean).map((c) => (
-                <div key={c.id} className="relative text-sm text-gray-600 mb-4">
+                <div key={c.id} className="relative text-sm text-gray-600 dark:text-gray-400 mb-4">
                   <p>
-                    <span className="font-semibold">{c?.staff?.firstName}</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-200">{c?.staff?.firstName}</span>
                     {c?.mentionedStaff && (
-                      <span className="text-blue-500">
+                      <span className="text-blue-500 dark:text-blue-400">
                         → @{c?.mentionedStaff?.firstName}
                       </span>
                     )}
@@ -400,17 +400,17 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                       href={c.fileUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-blue-600 text-xs mt-1 inline-block hover:underline"
+                      className="text-blue-600 dark:text-blue-400 text-xs mt-1 inline-block hover:underline"
                     >
                       📎 View Attached File
                     </a>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                     {new Date(c.createdAt).toLocaleString()}
                   </p>
 
                   {c?.staff?.id === currentUserId && (
-                    <div className="absolute top-2 right-2 flex gap-3 text-xs text-gray-500 z-20 ">
+                    <div className="absolute top-2 right-2 flex gap-3 text-xs text-gray-500 z-20">
                       <button
                         onClick={() => setEditingComment(c)}
                         className="text-[#95D700] hover:text-green-700"
@@ -428,7 +428,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-600">No Comment</p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">No Comment</p>
             )}
           </div>
 
@@ -439,10 +439,9 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                 value={commentText}
                 onChange={handleChange}
                 placeholder="Add a Comment (use @ to mention)"
-                className="w-full border rounded-lg p-2 pr-12 text-sm focus:outline-none focus:ring focus:ring-green-200"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 pr-12 text-sm bg-white dark:bg-[#0d0d0d] text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring focus:ring-green-200 dark:focus:ring-green-800 transition-colors"
               />
-
-              <label className="absolute right-3 top-2 cursor-pointer">
+              <label className="absolute right-3 top-2 cursor-pointer text-gray-500 dark:text-gray-400">
                 📎
                 <input
                   type="file"
@@ -454,7 +453,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
             {file && (
               <div className="flex items-center gap-2 mt-2">
-                <p className="text-sm text-gray-700 truncate">{file.name}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{file.name}</p>
                 <button
                   onClick={() => setFile(null)}
                   className="text-red-500 text-xs hover:underline"
@@ -463,27 +462,27 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
                 </button>
               </div>
             )}
+
             {/* Suggestions dropdown */}
             {suggestions?.length > 0 && (
-              <ul className="border rounded-lg bg-white shadow-md mt-1 max-h-40 overflow-y-auto">
+              <ul className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-[#1a1a1a] shadow-md mt-1 max-h-40 overflow-y-auto transition-colors">
                 {suggestions?.filter(Boolean).map((s) => (
                   <li
                     key={s.id}
                     onClick={() => handleSelectStaff(s)}
-                    className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                    className="p-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
                   >
                     {s?.firstName} {s?.lastName}
                   </li>
                 ))}
               </ul>
             )}
-            {/* ////sugesstions dropdown ends */}
+
             <div className="mt-3 text-right">
               <button
                 style={{ cursor: "pointer" }}
                 onClick={handleAddComment}
                 disabled={loading || (!commentText.trim() && !file)}
-                // disabled={loading}
                 className="bg-[#95D700] text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-60"
               >
                 {loading ? "Posting..." : "Post Comment"}
@@ -497,11 +496,11 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
         {/* Delete Task Confirmation Modal */}
         {showDeleteTaskModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm">
+            <div className="bg-white dark:bg-[#141414] p-6 rounded-xl shadow-lg w-full max-w-sm transition-colors">
               <h2 className="text-xl font-semibold text-red-600 mb-3">
                 Delete Task?
               </h2>
-              <p className="text-sm text-gray-700 mb-5">
+              <p className="text-sm text-gray-700 dark:text-gray-400 mb-5">
                 Are you sure you want to delete this task? This action cannot be
                 undone.
               </p>
@@ -509,7 +508,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowDeleteTaskModal(false)}
-                  className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-100"
+                  className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   Cancel
                 </button>

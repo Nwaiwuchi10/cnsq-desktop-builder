@@ -58,7 +58,7 @@ export default function Navbar() {
       );
     });
 
-    // When component unmounts
+    // When component unmounts *
     return () => {
       socket.off("chat:unreadCount");
       // don't disconnect here if other components rely on the socket; but if only navbar uses it, disconnect:

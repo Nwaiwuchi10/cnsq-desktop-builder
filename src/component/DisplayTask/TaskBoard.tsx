@@ -59,7 +59,7 @@ interface DisplayTaskProps {
 const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
   // const params = useParams();
 
-  // const projectId = Number(params?.id);
+  /// const projectId = Number(params?.id);
 
   console.log("projectId", projectId);
   const [tasks, setTasks] = useState<TaskDTO[]>([]);
@@ -226,18 +226,17 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
                     {/* Status Badge */}
                     <span
                       className={`inline-flex items-center px-3 py-1 text-xs font-medium border rounded-full w-fit
-    ${
-      col.key === "Not_started"
-        ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 transition-colors border-gray-400"
-        : col.key === "In_progress"
-          ? "text-yellow-700 bg-yellow-100 border-yellow-500"
-          : col.key === "Testing_In_Progress"
-            ? "text-orange-700 bg-orange-100 border-orange-500"
-            : "text-emerald-700 bg-emerald-100 border-emerald-500"
-    }
+    ${col.key === "Not_started"
+                          ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 transition-colors border-gray-400"
+                          : col.key === "In_progress"
+                            ? "text-yellow-700 bg-yellow-100 border-yellow-500"
+                            : col.key === "Testing_In_Progress"
+                              ? "text-orange-700 bg-orange-100 border-orange-500"
+                              : "text-emerald-700 bg-emerald-100 border-emerald-500"
+                        }
 //   `}
-                      //                     className={`text-xs px-2 py-1 rounded-lg ${col.color} text-white w-fit`}
-                      // ⬆️ rounded → rounded-lg for smoother curve
+                    //                     className={`text-xs px-2 py-1 rounded-lg ${col.color} text-white w-fit`}
+                    // ⬆️ rounded → rounded-lg for smoother curve
                     >
                       {col.label}
                     </span>
@@ -344,15 +343,14 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
               {/* Status Badge */}
               <span
                 className={`inline-flex items-center text-gray-600 dark:text-gray-400 px-3 py-1 text-xs font-medium border rounded-full w-fit
-            ${
-              task.status === "Not_started"
-                ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 transition-colors border-gray-400"
-                : task.status === "In_progress"
-                  ? "text-yellow-700 bg-yellow-100 border-yellow-500"
-                  : task.status === "Testing_In_Progress"
-                    ? "text-orange-700 bg-orange-100 border-orange-500"
-                    : "text-emerald-700 bg-emerald-100 border-emerald-500"
-            }`}
+            ${task.status === "Not_started"
+                    ? "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 transition-colors border-gray-400"
+                    : task.status === "In_progress"
+                      ? "text-yellow-700 bg-yellow-100 border-yellow-500"
+                      : task.status === "Testing_In_Progress"
+                        ? "text-orange-700 bg-orange-100 border-orange-500"
+                        : "text-emerald-700 bg-emerald-100 border-emerald-500"
+                  }`}
               >
                 {task?.status?.replace("_", " ")}
               </span>
