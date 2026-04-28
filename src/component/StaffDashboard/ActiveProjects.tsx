@@ -42,7 +42,7 @@ export default function ActiveProjects() {
           </h3>
         </div>
         <Link
-          href="/projects"
+          href="/project"
           className="text-xs sm:text-sm font-medium text-[#86CD23] hover:underline whitespace-nowrap"
         >
           View all &rarr;
