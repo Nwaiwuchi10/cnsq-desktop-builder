@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Api from "@/utils/api";
+import { useChatStore } from "@/store/ChatStore";
 
 interface Staff {
   id: number;
@@ -26,6 +27,7 @@ export default function ConversationMembersManager({
   const [search, setSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(false);
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
 
   // Load existing conversation members
   const loadMembers = async () => {
@@ -137,9 +139,12 @@ export default function ConversationMembersManager({
                   />
 
                   <div>
-                    <p className="font-medium">
-                      {s.firstName} {s.lastName}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">
+                        {s.firstName} {s.lastName}
+                      </p>
+                      <span className={`w-2 h-2 rounded-full ${onlineStaffs[s.id] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                    </div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{s.email}</p>
                   </div>
                 </label>
@@ -199,7 +204,8 @@ export default function ConversationMembersManager({
                 key={m.id}
                 className="flex items-center justify-between p-3 border rounded"
               >
-                <div>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${onlineStaffs[m.user.id] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                   {m.user.firstName} {m.user.lastName}
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-400">{m.role}</div>
@@ -216,7 +222,8 @@ export default function ConversationMembersManager({
                 key={m.id}
                 className="flex items-center justify-between p-3 border rounded"
               >
-                <div>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${onlineStaffs[m.user.id] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                   {m.user.firstName} {m.user.lastName}
                 </div>
                 <button

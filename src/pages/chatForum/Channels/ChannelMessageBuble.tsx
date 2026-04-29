@@ -7,6 +7,7 @@ interface MessageBubbleProps {
   selected?: boolean;
   authorName?: string;
   avatar?: string | null;
+  online?: boolean;
   onClick?: () => void;
 }
 
@@ -17,6 +18,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
   selected,
   authorName,
   avatar,
+  online,
   onClick,
 }) => {
   return (
@@ -26,13 +28,18 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
       }`}
     >
       {/* Avatar FIRST always */}
-      {avatar && (
-        <img
-          src={avatar}
-          alt="avatar"
-          className="w-8 h-8 rounded-full object-cover"
-        />
-      )}
+      <div className="relative">
+        {avatar && (
+          <img
+            src={avatar}
+            alt="avatar"
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        )}
+        {online !== undefined && (
+          <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-white dark:border-[#1a1a1a] ${online ? 'bg-green-500' : 'bg-gray-400'}`} />
+        )}
+      </div>
 
       {/* Message + Author */}
       <div

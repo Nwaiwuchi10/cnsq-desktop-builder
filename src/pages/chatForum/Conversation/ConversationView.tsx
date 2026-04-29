@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import MessageBubble from "./MessageBuble";
 import EmojiPicker from "emoji-picker-react";
 import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
+import { useChatStore } from "@/store/ChatStore";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -36,12 +37,14 @@ type Msg = {
   attachments?: Attachment[];
   reactions?: Reaction[];
   parent?: Partial<Msg>; // allow minimal parent info
+  peerId?: number;
 };
 
 const ConversationView: React.FC<ConversationViewProps> = ({
   conversation,
   onBack,
 }) => {
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -575,10 +578,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             <div className="font-semibold text-gray-900 dark:text-white text-sm truncate">
               {conversation?.name}
             </div>
-            {/* <div className="text-xs text-green-500 flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
-              Online
-            </div> */}
+            {conversation?.peerId && (
+              <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <span className={`w-2 h-2 rounded-full ${onlineStaffs[conversation.peerId] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                {onlineStaffs[conversation.peerId] ? 'Online' : 'Offline'}
+              </div>
+            )}
           </div>
         </div>
         <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400">

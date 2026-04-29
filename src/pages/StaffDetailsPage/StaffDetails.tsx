@@ -11,6 +11,7 @@ import editIcon from "../../assests/images/Button.png";
 import UpdateProfileModal from "../UpdateStaffProfile/UpdateStaffProfileModal";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 import StaffCompletionModal from "@/component/StaffCompletionModal/StaffCompletionModal";
+import { useChatStore } from "@/store/ChatStore";
 interface Project {
   id: number;
   uuid: string;
@@ -103,6 +104,7 @@ interface Staff {
   photoUrl: string;
   address: Address;
   employment: Employment;
+  isOnline?: boolean;
 }
 
 interface CompletionData {
@@ -135,6 +137,7 @@ export default function StaffDetails() {
   );
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [loadingCompletion, setLoadingCompletion] = useState(false);
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
 
   useEffect(() => {
     const Id = localStorage.getItem("userId");
@@ -302,9 +305,13 @@ export default function StaffDetails() {
               <p className="text-gray-500 dark:text-gray-400 font-medium">
                 {staff.address.state}, {staff.address.city}
               </p>
-              <button className="mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium text-[#95D700] bg-[#FAFAFA] dark:bg-[#1a1a1a] rounded-full">
-                <span className="w-2 h-2 rounded-full bg-[#95D700]"></span>
-                {staff.employment?.status}
+              <button className={`mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium ${
+                (onlineStaffs[staff.id] ?? staff.isOnline) ? "text-[#95D700]" : "text-gray-500"
+              } bg-[#FAFAFA] dark:bg-[#1a1a1a] rounded-full`}>
+                <span className={`w-2 h-2 rounded-full ${
+                  (onlineStaffs[staff.id] ?? staff.isOnline) ? "bg-[#95D700]" : "bg-gray-400"
+                }`}></span>
+                {(onlineStaffs[staff.id] ?? staff.isOnline) ? "Online" : "Offline"}
               </button>
             </div>
           </div>
