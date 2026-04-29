@@ -13,6 +13,7 @@ import io from "socket.io-client";
 import ChannelConversationList from "../Channels/ConversationList";
 import ChannelConversationView from "../Channels/ChannelConverationView";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
+import { useChatStore } from "@/store/ChatStore";
 
 interface Member {
   id: number;
@@ -59,6 +60,7 @@ const MessagesLayout: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState("all");
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
 
   // Fetch DMs
   const fetchConversations = async () => {
@@ -84,6 +86,7 @@ const MessagesLayout: React.FC = () => {
           text: c.lastMessage?.text || "",
           me: false,
           createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
+          peerId: peer?.id,
           time: c.lastMessage?.createdAt
             ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
               hour: "2-digit",
@@ -92,6 +95,7 @@ const MessagesLayout: React.FC = () => {
             : "",
           unread: c.unreadCount,
           isChannel: false,
+          online: peer ? (onlineStaffs[peer.id] ?? false) : false,
         };
       });
 
@@ -113,6 +117,8 @@ const MessagesLayout: React.FC = () => {
           me: false,
           createdAt: "",
           time: "",
+          peerId: s.id,
+          online: onlineStaffs[s.id] ?? false,
         }));
 
       setStaffMatches(staff);
@@ -188,6 +194,7 @@ const MessagesLayout: React.FC = () => {
           text: conv.lastMessage?.text || "",
           me: false,
           createdAt: conv.lastMessage?.createdAt || new Date().toISOString(),
+          peerId: peer?.id,
           time: conv.lastMessage?.createdAt
             ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
               hour: "2-digit",
@@ -195,6 +202,7 @@ const MessagesLayout: React.FC = () => {
             })
             : "",
           unread: conv.unreadCount ?? 0,
+          online: peer ? (onlineStaffs[peer.id] ?? false) : false,
         };
         return [msg, ...prev];
       });
@@ -369,7 +377,10 @@ const MessagesLayout: React.FC = () => {
                   />
                 ) : (
                   <ConversationList
-                    items={filteredConversations}
+                    items={filteredConversations.map((c: any) => ({
+                      ...c,
+                      online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                    }))}
                     onSelect={handleSelect}
                   />
                 )}
@@ -380,7 +391,10 @@ const MessagesLayout: React.FC = () => {
                       Search Results
                     </h2>
                     <ConversationList
-                      items={staffMatches}
+                      items={staffMatches.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
                       onSelect={handleSelect}
                     />
                   </div>
@@ -464,7 +478,10 @@ const MessagesLayout: React.FC = () => {
                     />
                   ) : (
                     <ConversationList
-                      items={filteredConversations}
+                      items={filteredConversations.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
                       onSelect={handleSelect}
                     />
                   )}
@@ -475,7 +492,10 @@ const MessagesLayout: React.FC = () => {
                         Search Results
                       </h2>
                       <ConversationList
-                        items={staffMatches}
+                        items={staffMatches.map((c: any) => ({
+                          ...c,
+                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        }))}
                         onSelect={handleSelect}
                       />
                     </div>

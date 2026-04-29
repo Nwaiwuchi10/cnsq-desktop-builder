@@ -103,12 +103,6 @@ export default function Notification() {
       {/* Header */}
       <div className="flex items-center gap-2 mb-6">
         <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Notifications</h2>
-        <span
-          className="text-sm font-medium text-white rounded-full px-2 py-0.5"
-          style={{ backgroundColor: "#FF990C" }}
-        >
-          {unreadCount}
-        </span>
       </div>
 
       {/* Tabs */}
@@ -116,17 +110,23 @@ export default function Notification() {
         <button
           onClick={() => setActiveTab("all")}
           className={`mr-6 pb-2 text-sm font-medium transition-colors ${activeTab === "all"
-              ? "text-[#FF990C] border-b-2 border-[#FF990C]"
-              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            ? "text-[#FF990C] border-b-2 border-[#FF990C]"
+            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
         >
           All Notifications
+          <span
+            className="ml-2 text-xs font-medium text-white rounded-full px-2 py-0.5"
+            style={{ backgroundColor: "#FF990C" }}
+          >
+            {unreadCount}
+          </span>
         </button>
         <button
           onClick={() => setActiveTab("unread")}
           className={`pb-2 text-sm font-medium flex items-center gap-1 transition-colors ${activeTab === "unread"
-              ? "text-[#FF990C] border-b-2 border-[#FF990C]"
-              : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            ? "text-[#FF990C] border-b-2 border-[#FF990C]"
+            : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
         >
           Announcements

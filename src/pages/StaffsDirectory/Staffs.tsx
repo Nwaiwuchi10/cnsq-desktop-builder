@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useChatStore } from "@/store/ChatStore";
 import {
   ArrowLeft,
   ArrowRight,
@@ -68,6 +69,7 @@ interface Staff {
       label: string;
     };
   };
+  isOnline?: boolean;
 }
 
 // === Departmental Role Interface ===
@@ -102,6 +104,7 @@ export default function StaffDirectory() {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
 
   // Multi-filter state
   const [departments, setDepartments] = useState<{ id: number; name: string }[]>(
@@ -625,6 +628,19 @@ END:VCARD`;
                         <span className="text-gray-900 dark:text-white font-semibold">
                           {person?.firstName} {person?.lastName}
                         </span>
+                        {/* Status Indicator */}
+                        <div className="flex items-center gap-1 mt-1">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              (onlineStaffs[person.id] ?? person.isOnline)
+                                ? "bg-green-500"
+                                : "bg-gray-400"
+                            }`}
+                          ></span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {(onlineStaffs[person.id] ?? person.isOnline) ? "Online" : "Offline"}
+                          </span>
+                        </div>
                         <div className="flex flex-wrap gap-2 mt-1">
                           {person?.employment?.jobTitle?.length ? (
                             person.employment.jobTitle.map(
@@ -720,6 +736,19 @@ END:VCARD`;
                           <h3 className="text-gray-900 dark:text-white font-bold text-lg">
                             {person?.firstName} {person?.lastName}
                           </h3>
+                          {/* Status Indicator */}
+                          <div className="flex items-center gap-1 mb-1">
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                (onlineStaffs[person.id] ?? person.isOnline)
+                                  ? "bg-green-500"
+                                  : "bg-gray-400"
+                              }`}
+                            ></span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {(onlineStaffs[person.id] ?? person.isOnline) ? "Online" : "Offline"}
+                            </span>
+                          </div>
                           <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">
                             {person?.employment?.jobTitle?.join(", ") ||
                               "Not Assigned"}

@@ -27,6 +27,7 @@ export type Msg = {
 
   unread?: number;
   online?: boolean;
+  peerId?: number;
   attachments?: Attachment[];
   reactions?: Reaction[];
   parent?: Partial<Msg>;

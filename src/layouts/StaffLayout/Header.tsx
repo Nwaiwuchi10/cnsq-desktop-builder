@@ -9,6 +9,7 @@ import Image from "next/image";
 import Api from "@/utils/api";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
 import AnnouncementModal from "@/pages/Notification/AnnouncementModal";
+import { useChatStore } from "@/store/ChatStore";
 
 interface NotificationData {
   id: number;
@@ -25,6 +26,7 @@ type User = {
   firstName: string;
   lastName: string;
   photoUrl?: string;
+  isOnline?: boolean;
 };
 
 interface HeaderProps {
@@ -40,6 +42,14 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   const { theme, toggleTheme, mounted } = useTheme();
   const [activeNotification, setActiveNotification] = useState<NotificationData | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
+  const setOnlineStaff = useChatStore((s) => s.setOnlineStaff);
+  const [loggedInUserId, setLoggedInUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem("userId");
+    if (id) setLoggedInUserId(Number(id));
+  }, []);
 
 
   const getPageTitle = () => {
@@ -122,10 +132,26 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
       );
     });
 
+    // 🟢 Listen for realtime staff status updates
+    socket.on("staff:online", (data: { userId: number }) => {
+      setOnlineStaff(data.userId, true);
+    });
+
+    socket.on("staff:offline", (data: { userId: number }) => {
+      setOnlineStaff(data.userId, false);
+    });
+
+    socket.on("staff:online-list", (userIds: number[]) => {
+      userIds.forEach(id => setOnlineStaff(id, true));
+    });
+
     return () => {
       socket.off("chat:unreadCount");
+      socket.off("staff:online");
+      socket.off("staff:offline");
+      socket.off("staff:online-list");
     };
-  }, []);
+  }, [setOnlineStaff]);
 
   // Fetch unread notifications count
   useEffect(() => {
@@ -274,9 +300,21 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
             className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <span className="hidden sm:inline text-sm font-medium dark:text-white transition-colors">
-              {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
-            </span>
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-sm font-medium dark:text-white transition-colors">
+                {user ? `${user.firstName} ${user.lastName}` : "Loading..."}
+              </span>
+              {user && (
+                <div className="flex items-center gap-1 -mt-0.5">
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    (loggedInUserId && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "bg-green-500" : "bg-gray-400"
+                  }`}></span>
+                  <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                    {(loggedInUserId && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "Online" : "Offline"}
+                  </span>
+                </div>
+              )}
+            </div>
             {user?.photoUrl ? (
               <Image
                 src={user.photoUrl}

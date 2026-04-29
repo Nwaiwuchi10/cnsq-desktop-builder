@@ -10,7 +10,7 @@ import ChannelMessageBubble from "./ChannelMessageBuble";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
-
+import { useChatStore } from "@/store/ChatStore";
 import NativeVoiceRecorder from "../../../component/VoiceRecorder/NativeVoiceRecorder";
 
 type ConversationViewProps = {
@@ -43,6 +43,7 @@ type Msg = {
   reactions?: Reaction[];
   parent?: Partial<Msg>; // allow minimal parent info
   author?: {
+    id?: number;
     firstName: string;
     photoUrl: string | null;
   };
@@ -82,6 +83,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [limit] = useState(100);
   const [search, setSearch] = useState("");
   const [staffList, setStaffList] = useState<any[]>([]);
+  const onlineStaffs = useChatStore((s) => s.onlineStaffs);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -216,6 +218,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         name: m.author.firstName + " " + m.author.lastName,
 
         author: {
+          id: m.author.id,
           firstName: m.author.firstName,
           photoUrl: m.author.photoUrl || null,
         },
@@ -270,6 +273,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
+        author: {
+          id: m.author.id,
+          firstName: m.author.firstName,
+          photoUrl: m.author.photoUrl || null,
+        },
         authorFirstName: m.author.firstName,
         authorAvatarUrl: m.author.photoUrl,
         edited: m.edited,
@@ -793,6 +801,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         }
                         authorName={m.author?.firstName}
                         avatar={m.author?.photoUrl}
+                        online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
                       />
                     )}
                     {selectedMessageId === m.id && (
@@ -857,13 +866,18 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             /* Author ABOVE attachment — same style as ChannelMessageBubble */
                             const authorInfo = (
                               <div className="flex items-center gap-2 mb-1">
-                                {m.author?.photoUrl && (
-                                  <img
-                                    src={m.author.photoUrl}
-                                    alt={m.author?.firstName ?? ""}
-                                    className="w-6 h-6 rounded-full object-cover"
-                                  />
-                                )}
+                                <div className="relative">
+                                  {m.author?.photoUrl && (
+                                    <img
+                                      src={m.author.photoUrl}
+                                      alt={m.author?.firstName ?? ""}
+                                      className="w-6 h-6 rounded-full object-cover"
+                                    />
+                                  )}
+                                  {m.author?.id && onlineStaffs[m.author.id] !== undefined && (
+                                    <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white dark:border-[#1a1a1a] ${onlineStaffs[m.author.id] ? 'bg-green-500' : 'bg-gray-400'}`} />
+                                  )}
+                                </div>
                                 <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
                                   {m.author?.firstName ?? ""}
                                 </span>
@@ -952,6 +966,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       }
                       authorName={m.author?.firstName}
                       avatar={m.author?.photoUrl}
+                      online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
                     />
                   )}
 
