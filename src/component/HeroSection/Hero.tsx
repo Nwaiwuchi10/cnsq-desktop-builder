@@ -260,7 +260,7 @@ export default function HeroSection() {
     <div className="flex flex-col lg:flex-row w-full h-screen overflow-hidden bg-[#141414]">
 
       {/* ── LEFT 60%: Slideshow ── */}
-      <div className="relative w-full lg:w-[60%] h-[55vh] pt-16 lg:pt-0 lg:h-full bg-[#1F3300] overflow-hidden shrink-0">
+      <div className="relative w-full lg:w-[100%] h-[55vh] pt-16 lg:pt-0 lg:h-full bg-[#1F3300] overflow-hidden shrink-0">
 
         {/* Background Media */}
         {currentSlide.type === "videoQuote" ? (
