@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Bell, Loader2 } from "lucide-react";
 import Api from "@/utils/api";
 import CustomModal from "@/component/Message/Message";
+import { pushNotificationService } from "@/utils/pushNotificationService";
 
 export default function NotificationsTab() {
   const [settings, setSettings] = useState({
@@ -12,6 +13,7 @@ export default function NotificationsTab() {
     taskReminders: true,
     celebrationAlerts: true,
     weeklyReport: false,
+    pushNotifications: false,
   });
 
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,36 @@ export default function NotificationsTab() {
           taskReminders: res.data.taskReminders ?? true,
           celebrationAlerts: res.data.celebrationAlerts ?? true,
           weeklyReport: res.data.weeklyReport ?? false,
+          pushNotifications: res.data.pushNotifications ?? true,
         });
+
+        // Check if user has ANY active push subscriptions in the backend
+        if (pushNotificationService.isBrowserSupported()) {
+          try {
+            const userSubs = await pushNotificationService.getUserSubscriptions();
+            const hasAnySubscription = userSubs.length > 0;
+            const isThisDeviceSubscribed = await pushNotificationService.isSubscribed();
+
+            // Logic:
+            // 1. If DB says disabled, UI is definitely false.
+            // 2. If DB says enabled AND user has ANY subscription elsewhere, we show true (as they've "activated" the service).
+            // 3. We also check if this specific device is subscribed.
+            
+            const isActivated = (res.data.pushNotifications !== false) && (hasAnySubscription || isThisDeviceSubscribed);
+            
+            setSettings(prev => ({ 
+              ...prev, 
+              pushNotifications: isActivated 
+            }));
+
+            // Special Case: If DB says enabled but this device isn't subscribed yet, 
+            // the user might expect it to work. We'll handle that when they toggle or leave it.
+          } catch (err) {
+            console.error("Error checking push status:", err);
+            // Fallback to DB value
+            setSettings(prev => ({ ...prev, pushNotifications: res.data.pushNotifications ?? false }));
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching notification settings:", error);
@@ -63,25 +94,39 @@ export default function NotificationsTab() {
     // Update local state immediately for responsiveness
     setSettings(updatedSettings);
     
-    // Call API immediately
     try {
+      // Handle push notifications (Socket/Service + Backend Persistence)
+      if (key === 'pushNotifications') {
+        if (!previousValue) {
+          // Enable push notifications on device
+          await pushNotificationService.subscribe();
+        } else {
+          // Disable push notifications on device
+          await pushNotificationService.unsubscribeAll();
+        }
+      }
+
+      // Sync ALL settings (including pushNotifications) to backend
       const token = localStorage.getItem("user-token");
       await Api.patch("/notification-settings/me", updatedSettings, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setModal({
         show: true,
         type: "success",
-        message: "Setting updated successfully.",
+        message: key === 'pushNotifications' 
+          ? `Push notifications ${!previousValue ? 'enabled' : 'disabled'} successfully.`
+          : "Setting updated successfully.",
       });
     } catch (error) {
-      console.error("Error auto-saving notification settings:", error);
-      // Revert if failed
+      console.error(`Error updating ${key}:`, error);
+      // Revert local state on error
       setSettings(settings); 
       setModal({
         show: true,
         type: "error",
-        message: "Failed to update setting. Please try again.",
+        message: error instanceof Error ? error.message : "Failed to update setting. Please try again.",
       });
     }
   };
@@ -118,6 +163,13 @@ export default function NotificationsTab() {
 
         {/* Settings List */}
         <div className="space-y-4">
+          <NotificationItem
+            label="Push Notifications"
+            description="Receive real-time push notifications on this device"
+            enabled={settings.pushNotifications}
+            onToggle={() => toggle("pushNotifications")}
+          />
+
           <NotificationItem
             label="Email Notifications"
             description="Receive notifications via email"

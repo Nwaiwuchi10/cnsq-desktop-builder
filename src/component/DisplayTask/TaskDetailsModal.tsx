@@ -216,7 +216,7 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
 
   const displayTask = taskData || task;
 
-  // 🗑 Delete Task
+  // 🗑 Delete Task*
 
   const handleDeleteTask = async () => {
     if (!token) return;
@@ -265,9 +265,8 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             <span className="text-green-700 px-3 py-1 rounded-full text-xs font-medium">
               {task?.status ? (
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    statusColors[task?.status] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                  }`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task?.status] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                    }`}
                 >
                   {task?.status?.replace("_", " ")}
                 </span>
@@ -278,9 +277,8 @@ export default function TaskModal({ task, onClose }: TaskModalProps) {
             <span className="text-red-700 px-3 py-1 rounded-full text-xs font-medium mr-12">
               {task?.priority ? (
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    priorityColors[task.priority] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                  }`}
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[task.priority] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                    }`}
                 >
                   {task?.priority}
                 </span>

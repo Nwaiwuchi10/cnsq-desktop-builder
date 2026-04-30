@@ -10,12 +10,16 @@ type ChatState = {
   addConversation: (c: Conversation) => void;
   updateMembers: (conversationId: string, members: Member[]) => void;
   setStaffSearchResults: (results: Staff[]) => void;
+  
+  onlineStaffs: Record<number, boolean>;
+  setOnlineStaff: (userId: number, isOnline: boolean) => void;
 };
 
 export const useChatStore = create<ChatState>((set) => ({
   conversations: [],
   activeConversation: null,
   staffSearchResults: [],
+  onlineStaffs: {},
 
   setActiveConversation: (c) => set({ activeConversation: c }),
   addConversation: (c) =>
@@ -31,4 +35,9 @@ export const useChatStore = create<ChatState>((set) => ({
     })),
 
   setStaffSearchResults: (results) => set({ staffSearchResults: results }),
+
+  setOnlineStaff: (userId, isOnline) =>
+    set((state) => ({
+      onlineStaffs: { ...state.onlineStaffs, [userId]: isOnline },
+    })),
 }));

@@ -20,6 +20,7 @@ type User = {
     };
   };
   isCeo?: boolean;
+  isOnline?: boolean;
 };
 
 interface StaffLayoutProps {

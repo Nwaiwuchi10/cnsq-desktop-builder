@@ -7,10 +7,11 @@ import { Menu, X, Bell, MessageCircle } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
-import MessageCeoModal from "../MessageCEO/MessageCEO";
+
 import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
 import { pushNotificationService } from "@/utils/pushNotification";
+import { useChatStore } from "@/store/ChatStore";
 
 type User = {
   uuid: string;
@@ -39,32 +40,51 @@ export default function Navbar() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  //  Fetch user profile
-  // 🔹 Realtime chat unread count via Socket.IO
+  const setOnlineStaff = useChatStore((s) => s.setOnlineStaff);
+
+  // 🔹 Realtime chat unread count + online/offline status via Socket.IO
   useEffect(() => {
     const token = localStorage.getItem("user-token");
     const storedUserId = localStorage.getItem("userId");
     if (!token || !storedUserId) return;
 
-    // init socket (this should decode token server-side; we also send userId in auth)
     initChatSocket(Number(storedUserId));
 
     const socket = getChatSocket();
     if (!socket) return;
 
+    // Chat unread count
     socket.on("chat:unreadCount", (data: { total: number }) => {
       setChatUnreadCount(
         typeof data === "object" ? (data.total ?? 0) : (Number(data) ?? 0),
       );
     });
 
-    // When component unmounts *
+    // ── Real-time online presence ────────────────────────────────────────
+    // Initial list of all currently-online user IDs
+    socket.on("staff:online-list", (userIds: number[]) => {
+      userIds.forEach((id) => setOnlineStaff(id, true));
+    });
+
+    // A staff member came online
+    socket.on("staff:online", ({ userId }: { userId: number }) => {
+      setOnlineStaff(userId, true);
+    });
+
+    // A staff member went offline
+    socket.on("staff:offline", ({ userId }: { userId: number }) => {
+      setOnlineStaff(userId, false);
+    });
+    // ────────────────────────────────────────────────────────────────────
+
     return () => {
       socket.off("chat:unreadCount");
-      // don't disconnect here if other components rely on the socket; but if only navbar uses it, disconnect:
+      socket.off("staff:online-list");
+      socket.off("staff:online");
+      socket.off("staff:offline");
       socket.disconnect();
     };
-  }, []);
+  }, [setOnlineStaff]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
