@@ -7,7 +7,7 @@ import { Menu, X, Bell, MessageCircle } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
-import MessageCeoModal from "../MessageCEO/MessageCEO";
+
 import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
 import { pushNotificationService } from "@/utils/pushNotification";

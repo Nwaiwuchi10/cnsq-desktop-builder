@@ -82,7 +82,7 @@ const CeoMessagingCenter: React.FC = () => {
     return (
         <StaffLayout>
             <div className="w-full max-w-7xl mx-auto py-8">
-                {/* Header Section */}
+                {/* Header Section **/}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                     <div className="flex items-start gap-4">
                         <div className="p-3 bg-[#f7fff0] rounded-xl border border-[#86CD23]/20 shadow-sm">
