@@ -90,9 +90,9 @@ export default function HeroSection() {
   const welcomeSlide = useMemo(
     () => ({
       image:
-        "https://res.cloudinary.com/dk1hvevsa/image/upload/v1760307934/cn-team-Picsart-AiImageEnhancer_ti53lc.jpg",
-      text: "Welcome",
-      image2: heroimgLogo,
+        "https://res.cloudinary.com/dlrelihio/image/upload/v1777635211/WhatsApp_Image_2026-05-01_at_12_02_46_PM-Picsart-AiImageEnhancer_mb8fsv.jpg",
+      // text: "Welcome",
+      // image2: heroimgLogo,
       type: "welcome",
     }),
     [],
