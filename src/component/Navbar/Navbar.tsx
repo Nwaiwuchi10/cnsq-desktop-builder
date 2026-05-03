@@ -7,7 +7,7 @@ import { Menu, X, Bell, MessageCircle } from "lucide-react";
 import imgHome from "../../assests/images/CNSQ.png";
 import Image from "next/image";
 import Api from "@/utils/api"; // axios wrapper
-import MessageCeoModal from "../MessageCEO/MessageCEO";
+
 import EnableNotificationsButton from "../EnableNotificationButton/EnableButtonComponent";
 import { getChatSocket, initChatSocket } from "@/utils/chatSocket";
 import { pushNotificationService } from "@/utils/pushNotification";
@@ -218,7 +218,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-[#0d0d0d] shadow-sm border-b border-gray-100 dark:border-gray-800 transition-colors">
+      <nav className="pwa-nav fixed top-0 left-0 w-full z-50 bg-white dark:bg-[#0d0d0d] shadow-sm border-b border-gray-100 dark:border-gray-800 transition-colors">
         <div className="w-full px-4 sm:px-6 md:px-12 lg:px-20 mx-auto max-w-[1400px]">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}

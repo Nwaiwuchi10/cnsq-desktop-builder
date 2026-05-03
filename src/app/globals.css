@@ -53,6 +53,28 @@ body {
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/*
+  Only apply safe-area padding when running as an installed PWA (standalone).
+  In a regular browser the status bar is opaque and already reserves space,
+  so we must NOT add extra padding there — this keeps both experiences correct.
+*/
+@media all and (display-mode: standalone) {
+  /* Public-facing Navbar (Navbar.tsx) */
+  nav.pwa-nav {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+  }
+
+  /* Staff-dashboard Header (Header.tsx) */
+  header.pwa-header {
+    padding-top: env(safe-area-inset-top, 0px) !important;
+  }
+
+  /* Mobile hamburger/menu button inside StaffLayout — shift it down too */
+  div.pwa-mobile-menu-btn {
+    top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
+  }
+}
+
 
 
 /* Slide-up animation for the PWA install banner */

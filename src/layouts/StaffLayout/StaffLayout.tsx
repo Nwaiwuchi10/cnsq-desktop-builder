@@ -56,7 +56,7 @@ const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Mobile menu button absolute positioned so it isn't blocked */}
-        <div className="absolute top-4 left-4 z-10 lg:hidden">
+        <div className="pwa-mobile-menu-btn absolute top-4 left-4 z-10 lg:hidden">
           <button
             onClick={() => setIsMobileOpen(true)}
             className="p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors bg-white dark:bg-[#0d0d0d]"

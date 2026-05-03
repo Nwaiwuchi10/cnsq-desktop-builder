@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { X, Paperclip } from "lucide-react";
 import Api from "@/utils/api";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 import { useRef } from "react";
@@ -29,6 +29,7 @@ interface DemoData {
 interface AnnouncementData {
   title: string;
   description: string;
+  attachments?: string[];
 }
 
 const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
@@ -284,6 +285,26 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
             <div className="text-sm text-gray-600 dark:text-gray-400 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
               {renderTextWithLinks(announcementDetails.description)}
             </div>
+
+            {announcementDetails.attachments && announcementDetails.attachments.length > 0 && (
+              <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+                <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">Attachments</h4>
+                <div className="flex flex-col gap-2">
+                  {announcementDetails.attachments.map((attachmentUrl, i) => (
+                    <a
+                      key={i}
+                      href={attachmentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-600 transition-colors w-max"
+                    >
+                      <Paperclip size={16} />
+                      <span className="underline">View Attachment {i + 1}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {notification.type === "announcement" && (
               <div className="flex items-center gap-2 mb-4 mt-4">
