@@ -248,7 +248,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
+    <header className="pwa-header flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
       <h2 className="text-lg sm:text-xl font-bold text-[#86CD23] ml-8 sm:ml-0 truncate">
         {getPageTitle()}
       </h2>
