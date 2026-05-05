@@ -6,7 +6,7 @@ import { FileText, ExternalLink, Download, Pencil, Trash2, FileCode, FileSpreads
 export interface Documentation {
   id: string;
   name: string;
-  url?: string;
+  link?: string;
   files?: string[];
   createdAt: string;
 }
@@ -42,11 +42,11 @@ const DocumentationItem: React.FC<DocumentationItemProps> = ({ doc, onEdit, onDe
           </h3>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px] sm:max-w-md">
-              {doc.url || (doc.files && doc.files.length > 0 ? `${doc.files.length} attached file(s)` : "No link")}
+              {doc.link || (doc.files && doc.files.length > 0 ? `${doc.files.length} attached file(s)` : "No link")}
             </span>
             <div className="flex items-center gap-1.5 font-sans">
-                {doc.url && (
-                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#a1e508] transition-colors">
+                {doc.link && (
+                    <a href={doc.link} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#a1e508] transition-colors">
                         <ExternalLink size={14} />
                     </a>
                 )}
