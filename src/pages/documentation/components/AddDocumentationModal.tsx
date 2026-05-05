@@ -89,7 +89,7 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
               Upload Files
             </label>
-            <div 
+            <div
               onClick={() => fileInputRef.current?.click()}
               className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center hover:border-[#a1e508] transition-colors cursor-pointer group"
             >
@@ -118,9 +118,9 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
                       <FileText size={16} className="text-[#a1e508] shrink-0" />
                       <span className="text-xs text-gray-700 dark:text-gray-300 truncate">{file.name}</span>
                     </div>
-                    <button 
+                    <button
                       type="button"
-                      onClick={() => removeFile(index)} 
+                      onClick={() => removeFile(index)}
                       className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                     >
                       <Trash2 size={14} />
