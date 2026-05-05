@@ -102,7 +102,7 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
               Files
             </label>
 
-            {/* Existing Files */}
+            {/* Existing Files **/}
             {existingFiles.length > 0 && (
               <div className="mb-4 space-y-2">
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Files</p>
