@@ -44,17 +44,23 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    const trimmedLink = link.trim();
+    const hasFiles = files.length > 0;
+
+    console.log("Submitting documentation:", { name: trimmedName, link: trimmedLink, filesCount: files.length });
+
+    if (!trimmedName) {
       setError("Documentation name is required");
       return;
     }
 
-    if (!link.trim() && files.length === 0) {
+    if (!trimmedLink && !hasFiles) {
       setError("Please provide either a documentation link or upload at least one file");
       return;
     }
 
-    onAdd({ name: name.trim(), link: link.trim(), files });
+    onAdd({ name: trimmedName, link: trimmedLink, files });
   };
 
   return (

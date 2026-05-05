@@ -56,19 +56,31 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    const trimmedLink = link.trim();
+    const hasFiles = files.length > 0;
+    const hasExistingFiles = existingFiles.length > 0;
+
+    console.log("Updating documentation:", { 
+      name: trimmedName, 
+      link: trimmedLink, 
+      newFilesCount: files.length, 
+      existingFilesCount: existingFiles.length 
+    });
+
+    if (!trimmedName) {
       setError("Documentation name is required");
       return;
     }
 
-    if (!link.trim() && files.length === 0 && existingFiles.length === 0) {
+    if (!trimmedLink && !hasFiles && !hasExistingFiles) {
       setError("Please provide either a documentation link or upload at least one file");
       return;
     }
 
     onUpdate(doc.id, { 
-      name: name.trim(), 
-      link: link.trim(), // Sending trimmed link (could be empty string)
+      name: trimmedName, 
+      link: trimmedLink, 
       files, 
       existingFiles 
     });
