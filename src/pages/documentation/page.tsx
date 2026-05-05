@@ -76,7 +76,7 @@ export default function DocumentationPage() {
 
       const dto = {
         name: data.name,
-        link: data.link || undefined,
+        link: data.link,
       };
 
       formData.append("dto", JSON.stringify(dto));
@@ -115,7 +115,7 @@ export default function DocumentationPage() {
 
       const dto = {
         name: data.name,
-        link: data.link || undefined,
+        link: data.link,
         files: data.existingFiles, // Send the list of existing files to keep
       };
 

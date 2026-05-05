@@ -51,14 +51,7 @@ const navSections = [
     title: "OVERVIEW",
     items: [{ name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard }],
   },
-  {
-    title: "CELEBRATIONS",
-    items: [
-      { name: "Birthdays", href: "/birthday", icon: Cake },
-      { name: "Anniversaries", href: "/anniversary", icon: Medal },
-      { name: "New Hires", href: "/new-hire", icon: UserPlus },
-    ],
-  },
+
   {
     title: "WORK",
     items: [
@@ -83,6 +76,14 @@ const navSections = [
     items: [
       { name: "Settings", href: "/settings", icon: Settings },
       { name: "Documentation", href: "/documentation", icon: BookOpen },
+    ],
+  },
+  {
+    title: "CELEBRATIONS",
+    items: [
+      { name: "Birthdays", href: "/birthday", icon: Cake },
+      { name: "Anniversaries", href: "/anniversary", icon: Medal },
+      { name: "New Hires", href: "/new-hire", icon: UserPlus },
     ],
   },
 ];

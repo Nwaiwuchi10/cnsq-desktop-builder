@@ -16,6 +16,7 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
   const [name, setName] = useState("");
   const [link, setLink] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
       setName("");
       setLink("");
       setFiles([]);
+      setError(null);
     }
   }, [isOpen]);
 
@@ -40,8 +42,19 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
-    onAdd({ name, link, files });
+    setError(null);
+
+    if (!name.trim()) {
+      setError("Documentation name is required");
+      return;
+    }
+
+    if (!link.trim() && files.length === 0) {
+      setError("Please provide either a documentation link or upload at least one file");
+      return;
+    }
+
+    onAdd({ name: name.trim(), link: link.trim(), files });
   };
 
   return (
@@ -56,6 +69,13 @@ const AddDocumentationModal: React.FC<AddDocumentationModalProps> = ({ isOpen, o
             <X size={20} />
           </button>
         </div>
+
+        {error && (
+          <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl flex items-center gap-2 text-red-600 dark:text-red-400 text-sm animate-in slide-in-from-top-2 duration-200">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-600 dark:bg-red-400 shrink-0" />
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
