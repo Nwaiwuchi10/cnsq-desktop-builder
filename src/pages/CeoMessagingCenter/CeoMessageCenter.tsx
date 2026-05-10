@@ -12,12 +12,16 @@ import {
     Trash2,
     ExternalLink,
     Database,
-    Calendar
+    Calendar,
+    Eye,
+    X
 } from "lucide-react";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import Api from "@/utils/api";
 import CeoBroadcastForm from "@/component/CeoMessagingCenter/CeoBroadcastForm";
 import DeleteConfirmModal from "@/pages/Notification/DeleteResuableModal";
+
+import CeoMessageReadersModal from "./CeoMessageReadersModal";
 
 interface CeoMessage {
     id: string;
@@ -36,6 +40,8 @@ const CeoMessagingCenter: React.FC = () => {
     const [selectedMessage, setSelectedMessage] = useState<CeoMessage | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [viewingReaders, setViewingReaders] = useState<CeoMessage | null>(null);
+    const [viewingDetails, setViewingDetails] = useState<CeoMessage | null>(null);
 
     useEffect(() => {
         fetchMessages();
@@ -158,8 +164,7 @@ const CeoMessagingCenter: React.FC = () => {
                                     key={msg.id}
                                     className="group relative bg-[#FAFAFA] dark:bg-[#1a1a1a]/50 p-6 rounded-[20px] border border-gray-100 dark:border-gray-800 hover:border-[#86CD23]/40 transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
                                     onClick={() => {
-                                        setSelectedMessage(msg);
-                                        setShowForm(true);
+                                        setViewingDetails(msg);
                                     }}
                                 >
                                     <div className="flex items-start justify-between mb-4">
@@ -212,11 +217,21 @@ const CeoMessagingCenter: React.FC = () => {
                                             </span>
                                         </div>
                                         {msg.attachments && msg.attachments.length > 0 && (
-                                            <div className="flex items-center gap-2 text-gray-400 ml-auto">
+                                            <div className="flex items-center gap-2 text-gray-400">
                                                 <ExternalLink className="w-4 h-4" />
                                                 <span className="text-[#86CD23] hover:underline">View Attachments</span>
                                             </div>
                                         )}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setViewingReaders(msg);
+                                            }}
+                                            className="flex items-center gap-2 text-blue-500 hover:underline ml-auto"
+                                        >
+                                            <Eye size={14} />
+                                            <span>Who read?</span>
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -244,6 +259,50 @@ const CeoMessagingCenter: React.FC = () => {
                     onConfirm={handleDelete}
                     loading={isDeleting}
                 />
+            )}
+
+            {viewingReaders && (
+                <CeoMessageReadersModal
+                    messageId={viewingReaders.id}
+                    title={viewingReaders.title}
+                    onClose={() => setViewingReaders(null)}
+                />
+            )}
+
+            {viewingDetails && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-[#141414] transition-colors w-full max-w-2xl rounded-2xl p-6 relative shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                        <button
+                            onClick={() => setViewingDetails(null)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                        >
+                            <X size={24} />
+                        </button>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 pr-8">{viewingDetails.title}</h2>
+                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-4">
+                            <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(viewingDetails.createdAt).toLocaleString()}</span>
+                            <span className="flex items-center gap-1"><Users size={14} /> {viewingDetails.isAllStaff ? "All Staff" : "Selected Members"}</span>
+                        </div>
+                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-y-auto custom-scrollbar flex-1 pr-2">
+                            {viewingDetails.description}
+                        </div>
+                        {viewingDetails.attachments && viewingDetails.attachments.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 shrink-0">
+                                <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">Attachments</h4>
+                                <div className="flex flex-col gap-2">
+                                    {viewingDetails.attachments.map((url, i) => (
+                                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors text-sm flex items-center gap-2 w-fit bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
+                                            <ExternalLink size={14} /> View Attachment {i + 1}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end shrink-0">
+                            <button onClick={() => setViewingDetails(null)} className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-bold transition-all active:scale-95">Close</button>
+                        </div>
+                    </div>
+                </div>
             )}
         </StaffLayout>
     );

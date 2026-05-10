@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import { Menu } from "lucide-react";
+
 import Api from "@/utils/api";
 
 type User = {
@@ -55,17 +55,8 @@ const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Mobile menu button absolute positioned so it isn't blocked **/}
-        <div className="pwa-mobile-menu-btn absolute top-4 left-4 z-10 lg:hidden">
-          <button
-            onClick={() => setIsMobileOpen(true)}
-            className="p-1 rounded-md text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors bg-white dark:bg-[#0d0d0d]"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-        </div>
 
-        <Header user={user} />
+        <Header user={user} setMobileOpen={setIsMobileOpen} />
 
         <main className="flex-1 overflow-auto px-3 sm:px-4 md:px-6 py-4 md:py-6 pb-20 scrollbar-hide bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
           <div className="w-full max-w-[1600px] mx-auto">{children}</div>

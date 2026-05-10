@@ -7,6 +7,8 @@ import MessageBubble from "./MessageBuble";
 import EmojiPicker from "emoji-picker-react";
 import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
 import { useChatStore } from "@/store/ChatStore";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
+import { ReactionsState } from "../Channels/ChannelMessageBuble";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -33,9 +35,10 @@ type Msg = {
   me: boolean;
   createdAt: string;
   edited?: boolean;
+  pinned?: boolean;
   time: string;
   attachments?: Attachment[];
-  reactions?: Reaction[];
+  reactions?: ReactionsState;
   parent?: Partial<Msg>; // allow minimal parent info
   peerId?: number;
 };
@@ -54,14 +57,37 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [editMessage, setEditMessage] = useState<Msg | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-  const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(new Set());
+
+  // ======= Helper: Normalize raw reactions array → ReactionsState =======
+  const normalizeReactions = (rawReactions: any[]): ReactionsState | undefined => {
+    if (!Array.isArray(rawReactions) || rawReactions.length === 0) return undefined;
+    const state: ReactionsState = {};
+    for (const r of rawReactions) {
+      const emoji = r.emoji;
+      if (!emoji) continue;
+      if (!state[emoji]) {
+        state[emoji] = { count: 0, me: false, users: [] };
+      }
+      state[emoji].count++;
+      if (r.author || r.user) {
+        const u = r.author || r.user;
+        state[emoji].users.push(Number(u.id));
+        if (Number(u.id) === currentUserId) {
+          state[emoji].me = true;
+        }
+      }
+    }
+    return state;
+  };
 
   console.log("currentUserId", currentUserId);
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
     null,
   );
+  const [forwardingMessage, setForwardingMessage] = useState<Msg | null>(null);
+  const [allConversations, setAllConversations] = useState<any[]>([]);
+  const [isForwardingModalOpen, setIsForwardingModalOpen] = useState(false);
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [uploadingVoice, setUploadingVoice] = useState(false);
@@ -77,6 +103,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   // const socketRef = useRef<Socket | null>(null);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const mobileTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const desktopTextareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     if (!conversation?.id) return;
 
@@ -114,9 +142,22 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     };
 
     container.addEventListener("scroll", onScroll);
-
     return () => container.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Auto-expand textarea
+  useEffect(() => {
+    const adjustHeight = (ref: React.RefObject<HTMLTextAreaElement | null>) => {
+      if (ref.current) {
+        ref.current.style.height = "auto";
+        const newHeight = Math.min(ref.current.scrollHeight, 200);
+        ref.current.style.height = `${newHeight}px`;
+      }
+    };
+    adjustHeight(mobileTextareaRef);
+    adjustHeight(desktopTextareaRef);
+  }, [text]);
+
   useEffect(() => {
     if (!hasUserScrolled.current) {
       scrollRef.current?.scrollTo({
@@ -169,16 +210,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           minute: "2-digit",
         }),
         attachments: m.attachments,
-        reactions: m.reactions,
+        reactions: m.reactions && typeof m.reactions === 'object' && !Array.isArray(m.reactions)
+          ? m.reactions
+          : normalizeReactions(m.reactions || []),
         parent: m.parent
           ? {
-              id: m.parent.id,
-              text: m.parent.text,
-              attachments: m.parent.attachments,
-            }
+            id: m.parent.id,
+            text: m.parent.text,
+            attachments: m.parent.attachments,
+          }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
         edited: m.edited,
+        pinned: m.pinned,
+        type: m.type,
       }));
 
       // backend returns DESC, reverse to ASC for display
@@ -226,13 +271,15 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           minute: "2-digit",
         }),
         attachments: m.attachments,
-        reactions: m.reactions,
+        reactions: m.reactions && typeof m.reactions === 'object' && !Array.isArray(m.reactions)
+          ? m.reactions
+          : normalizeReactions(m.reactions || []),
         parent: m.parent
           ? {
-              id: m.parent.id,
-              text: m.parent.text,
-              attachments: m.parent.attachments,
-            }
+            id: m.parent.id,
+            text: m.parent.text,
+            attachments: m.parent.attachments,
+          }
           : undefined,
         name: m.author.firstName + " " + m.author.lastName,
         edited: m.edited,
@@ -284,7 +331,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           }),
           name: msg.author.firstName + " " + msg.author.lastName,
           attachments: msg.attachments,
-          reactions: msg.reactions,
+          reactions: normalizeReactions(msg.reactions || []),
           parent: msg.parent,
         },
       ]);
@@ -302,13 +349,95 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       setMessages((prev) => prev.filter((m) => m.id !== msg.id));
     });
 
-    // === 5️ Cleanup ===
+    socketRef.current.on("message:pin", (data: any) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === data.id ? { ...m, pinned: data.pinned } : m,
+        ),
+      );
+    });
+
+    socketRef.current.on("message:reaction", (data: any) => {
+      const normalizeIncoming = (r: any) => {
+        if (r && typeof r === 'object' && !Array.isArray(r)) {
+          return r.emojis ? r.emojis : r;
+        }
+        return normalizeReactions(Array.isArray(r) ? r : []);
+      };
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === data.messageId ? { ...m, reactions: normalizeIncoming(data.reactions) } : m,
+        ),
+      );
+    });
+
     return () => {
-      // clearInterval(interval);
       socketRef.current?.emit("leaveConversation", conversation?.id);
       socketRef.current?.disconnect();
     };
   }, [conversation?.id, currentUserId]);
+
+  const togglePin = async (messageId: string) => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+    try {
+      await Api.post(`/chat/messages/${messageId}/pin`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error("Pin toggle failed", err);
+    }
+  };
+
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+    try {
+      await Api.post(`/chat/reaction`, {
+        emoji,
+        messageId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (err) {
+      console.error("Reaction toggle failed", err);
+    }
+  };
+
+  const fetchForwardConversations = async () => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+    try {
+      const [dmsRes, channelsRes] = await Promise.all([
+        Api.get("/chat/dms/all/user", { headers: { Authorization: `Bearer ${token}` } }),
+        Api.get("/chat/channels/all/user", { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      const dms = dmsRes.data.conversations || [];
+      const channels = channelsRes.data || [];
+      setAllConversations([...dms, ...channels]);
+      setIsForwardingModalOpen(true);
+    } catch (err) {
+      console.error("Fetch forward convs failed", err);
+    }
+  };
+
+  const forwardMessage = async (targetConversationId: string) => {
+    if (!forwardingMessage) return;
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+    try {
+      await Api.post(`/chat/messages/${forwardingMessage.id}/forward`, {
+        targetConversationId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsForwardingModalOpen(false);
+      setForwardingMessage(null);
+    } catch (err) {
+      console.error("Forwarding failed", err);
+    }
+  };
   //// close emoji picker
   const handleEmojiSelect = (emoji: any) => {
     setText((prev) => prev + emoji.emoji);
@@ -401,13 +530,19 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
     try {
       setIsSaving(true);
-      const res = await Api.patch(
+      await Api.patch(
         `/chat/messages/${messageId}/edit`,
         { text },
         {
           headers: { Authorization: `Bearer ${token}` },
         },
       );
+
+      // Optimistic update
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, text, edited: true } : m)),
+      );
+
       // Clear edit state
       setEditMessage(null);
       setText("");
@@ -550,6 +685,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   ////
 
   return (
+
     <div className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors">
@@ -706,19 +842,24 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         }
                         me={m.me}
                         time={m.time}
+                        pinned={m.pinned}
+                        reactions={m.reactions}
                         selected={selectedMessageId === m.id}
                         onClick={() =>
                           setSelectedMessageId(
                             selectedMessageId === m.id ? null : m.id,
                           )
                         }
+                        onTogglePin={() => togglePin(m.id)}
+                        onReact={(emoji) => toggleReaction(m.id, emoji)}
+                        currentUserId={currentUserId}
                       />
                     )}
                     {selectedMessageId === m.id && (
                       <div
-                        className={`flex gap-3 mt-1 ${
-                          m.me ? "justify-end" : "justify-start"
-                        }`}
+                        className={`flex items-center gap-4 mt-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 w-fit shadow-sm border border-gray-100 dark:border-gray-700
+                          ${m.me ? "ml-auto flex-row-reverse" : "mr-auto"}
+                        `}
                       >
                         {m.me && (
                           <>
@@ -728,38 +869,55 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                                 setText(m.text);
                                 setReplyTo(null);
                               }}
-                              className="text-blue-500 text-sm hover:underline"
+                              className="flex items-center gap-1 text-blue-500 hover:text-blue-600 transition-colors"
+                              title="Edit"
                             >
-                              Edit
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                              <span className="text-xs font-medium">Edit</span>
                             </button>
 
                             <button
                               onClick={() => deleteMessage(m.id)}
-                              className="text-red-500 text-sm hover:underline disabled:opacity-50"
                               disabled={deletingMessageIds.has(m.id)}
+                              className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                              title="Delete"
                             >
-                              {deletingMessageIds.has(m.id)
-                                ? "Deleting..."
-                                : "Delete"}
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                              <span className="text-xs font-medium">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
                             </button>
                           </>
                         )}
 
-                        {/* Reply button */}
                         <button
-                          onClick={() => setReplyingTo(m)}
-                          className="text-gray-600 dark:text-gray-400 text-sm hover:underline"
+                          onClick={() => {
+                            setReplyingTo(m);
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
+                          title="Reply"
                         >
-                          Reply
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                          <span className="text-xs font-medium">Reply</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setForwardingMessage(m);
+                            fetchForwardConversations();
+                          }}
+                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+                          title="Forward"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
+                          <span className="text-xs font-medium">Forward</span>
                         </button>
                       </div>
                     )}
                     {/* ---------- CHILD ATTACHMENTS ---------- */}
                     {(m.attachments?.length ?? 0) > 0 && (
                       <div
-                        className={`flex flex-col mt-2 ${
-                          m.me ? "items-end" : "items-start"
-                        }`}
+                        className={`flex flex-col mt-2 ${m.me ? "items-end" : "items-start"
+                          }`}
                       >
                         <div className="flex flex-wrap gap-2">
                           {(m.attachments ?? []).map((a) => {
@@ -775,7 +933,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
                             if (a.mimeType?.startsWith("audio/")) {
                               return (
-                                <div key={a.id} className="relative">
+                                <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                   <audio controls className="w-64">
                                     <source src={a.url} type={a.mimeType} />
                                   </audio>
@@ -789,7 +947,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                               ["png", "jpg", "jpeg", "gif"].includes(ext)
                             ) {
                               return (
-                                <div key={a.id} className="relative">
+                                <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                   <img
                                     src={a.url}
                                     className="w-32 h-32 object-cover rounded"
@@ -801,7 +959,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
                             if (ext && ["mp4", "mov", "webm"].includes(ext)) {
                               return (
-                                <div key={a.id} className="relative">
+                                <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                   <video
                                     src={a.url}
                                     controls
@@ -813,7 +971,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                             }
 
                             return (
-                              <div key={a.id} className="relative">
+                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                 <a
                                   href={a.url}
                                   target="_blank"
@@ -850,12 +1008,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       }
                       me={m.me}
                       time={m.time}
+                      pinned={m.pinned}
+                      reactions={m.reactions}
                       selected={selectedMessageId === m.id}
                       onClick={() =>
                         setSelectedMessageId(
                           selectedMessageId === m.id ? null : m.id,
                         )
                       }
+                      onTogglePin={() => togglePin(m.id)}
+                      onReact={(emoji) => toggleReaction(m.id, emoji)}
+                      currentUserId={currentUserId}
                     />
                   )}
 
@@ -864,9 +1027,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
          ====================================================== */}
                   {selectedMessageId === m.id && (
                     <div
-                      className={`flex gap-3 mt-1 ${
-                        m.me ? "justify-end" : "justify-start"
-                      }`}
+                      className={`flex items-center gap-4 mt-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 w-fit shadow-sm border border-gray-100 dark:border-gray-700
+                        ${m.me ? "ml-auto flex-row-reverse" : "mr-auto"}
+                      `}
                     >
                       {m.me && (
                         <>
@@ -876,29 +1039,35 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                               setText(m.text);
                               setReplyTo(null);
                             }}
-                            className="text-blue-500 text-sm hover:underline"
+                            className="flex items-center gap-1 text-blue-500 hover:text-blue-600 transition-colors"
+                            title="Edit"
                           >
-                            Edit
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            <span className="text-xs font-medium">Edit</span>
                           </button>
 
                           <button
                             onClick={() => deleteMessage(m.id)}
-                            className="text-red-500 text-sm hover:underline disabled:opacity-50"
                             disabled={deletingMessageIds.has(m.id)}
+                            className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                            title="Delete"
                           >
-                            {deletingMessageIds.has(m.id)
-                              ? "Deleting..."
-                              : "Delete"}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            <span className="text-xs font-medium">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
                           </button>
                         </>
                       )}
 
-                      {/* Reply button */}
                       <button
-                        onClick={() => setReplyingTo(m)}
-                        className="text-gray-600 dark:text-gray-400 text-sm hover:underline"
+                        onClick={() => {
+                          setReplyingTo(m);
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
+                        title="Reply"
                       >
-                        Reply
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                        <span className="text-xs font-medium">Reply</span>
                       </button>
                     </div>
                   )}
@@ -908,9 +1077,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
          ====================================================== */}
                   {(m.attachments?.length ?? 0) > 0 && (
                     <div
-                      className={`flex flex-col mt-1 ${
-                        m.me ? "items-end" : "items-start"
-                      }`}
+                      className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"
+                        }`}
                     >
                       <div className="flex flex-wrap gap-2">
                         {(m.attachments ?? []).map((a) => {
@@ -926,7 +1094,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
                           if (a.mimeType?.startsWith("audio/")) {
                             return (
-                              <div key={a.id} className="relative">
+                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                 <audio controls className="w-64">
                                   <source src={a.url} type={a.mimeType} />
                                 </audio>
@@ -940,7 +1108,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                             ["png", "jpg", "jpeg", "gif"].includes(ext)
                           ) {
                             return (
-                              <div key={a.id} className="relative">
+                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                 <img
                                   src={a.url}
                                   className="w-32 h-32 object-cover rounded"
@@ -952,7 +1120,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
                           if (ext && ["mp4", "mov", "webm"].includes(ext)) {
                             return (
-                              <div key={a.id} className="relative">
+                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                                 <video
                                   src={a.url}
                                   controls
@@ -964,7 +1132,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                           }
 
                           return (
-                            <div key={a.id} className="relative">
+                            <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
                               <a
                                 href={a.url}
                                 target="_blank"
@@ -998,11 +1166,159 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </div>
           )}
 
-          {/* TOP ROW — Textarea + Send Button */}
-          <div className="flex items-end gap-2">
+          {/* Edit / Reply Indicators */}
+          {editMessage && (
+            <div className="flex items-center justify-between px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-xl mb-2 shadow-sm">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Editing Message</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-[200px]">{editMessage.text}</span>
+              </div>
+              <button onClick={() => { setEditMessage(null); setText(""); }} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+          )}
+
+          {replyingTo && (
+            <div className="flex items-center justify-between px-3 py-2.5 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 rounded-xl mb-2 shadow-sm">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400">Replying to {replyingTo.name}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-[200px]">{replyingTo.text}</span>
+              </div>
+              <button onClick={() => setReplyingTo(null)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+          )}
+
+          <div className="flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-3 border border-gray-200 dark:border-gray-700 shadow-inner">
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={mobileTextareaRef}
+                className="w-full bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none py-1.5 min-h-[40px] max-h-[150px] overflow-y-auto"
+                placeholder="Type a message..."
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    if (editMessage) saveEdit(editMessage.id);
+                    else postMessage();
+                  }
+                }}
+              />
+
+              <button
+                onClick={() => {
+                  if (editMessage) saveEdit(editMessage.id);
+                  else postMessage();
+                }}
+                disabled={isSaving || (!text.trim() && files.length === 0 && !voiceBlob)}
+                className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1 border-t border-gray-200 dark:border-gray-700 mt-2.5 pt-2">
+              {/* File Button */}
+              <label className="p-2 text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+                  className="hidden"
+                  onChange={(e: any) => {
+                    if (e.target.files) {
+                      setFiles((prev: any) => [
+                        ...prev,
+                        ...Array.from(e.target.files),
+                      ]);
+                    }
+                  }}
+                />
+              </label>
+
+              {/* Voice recording */}
+              <NativeVoiceRecorder
+                onRecorded={(blob, url) => {
+                  setVoiceBlob(blob);
+                  setVoiceUrl(url);
+                }}
+              />
+
+              {/* Emoji Button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowEmojiPicker((p) => !p)}
+                  className="p-2 text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition-all text-xl"
+                >
+                  😀
+                </button>
+                {showEmojiPicker && (
+                  <div className="absolute bottom-12 left-0 z-50 bg-white dark:bg-gray-900 transition-all shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <EmojiPicker onEmojiClick={handleEmojiSelect} />
+                  </div>
+                )}
+              </div>
+
+              {voiceUrl && (
+                <div className="ml-2 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1 pr-1 border border-gray-200 dark:border-gray-700">
+                  <audio src={voiceUrl} controls className="h-6 w-32" />
+                  <button
+                    onClick={() => { setVoiceUrl(null); setVoiceBlob(null); }}
+                    className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors text-red-500"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ================ DESKTOP VIEW ================ */}
+      <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors hidden md:flex flex-col gap-2">
+        {/* File Previews */}
+        {files.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2 px-4">
+            {files.map((f, idx) => renderFilePreview(f, idx))}
+          </div>
+        )}
+
+        {/* Edit / Reply Indicators */}
+        {editMessage && (
+          <div className="flex items-center justify-between px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-xl mb-2 mx-4 shadow-sm">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Editing Message</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-[500px]">{editMessage.text}</span>
+            </div>
+            <button onClick={() => { setEditMessage(null); setText(""); }} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        )}
+
+        {replyingTo && (
+          <div className="flex items-center justify-between px-4 py-2.5 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 rounded-xl mb-2 mx-4 shadow-sm">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400">Replying to {replyingTo.name}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300 truncate max-w-[500px]">{replyingTo.text}</span>
+            </div>
+            <button onClick={() => setReplyingTo(null)} className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-inner mx-4">
+          <div className="flex items-end gap-3">
             <textarea
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 resize-none 
-          focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[44px] max-h-[120px]"
+              ref={desktopTextareaRef}
+              className="w-full bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none py-1.5 min-h-[40px] max-h-[200px] overflow-y-auto"
               placeholder="Type a message..."
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -1010,7 +1326,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  postMessage();
+                  if (editMessage) saveEdit(editMessage.id);
+                  else postMessage();
                 }
               }}
             />
@@ -1020,19 +1337,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 if (editMessage) saveEdit(editMessage.id);
                 else postMessage();
               }}
-              disabled={isSaving}
-              className="p-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg cursor-pointer transition-colors flex-shrink-0"
-              title="Send message"
+              disabled={isSaving || (!text.trim() && files.length === 0 && !voiceBlob)}
+              className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
             >
-              {editMessage ? "✓" : "➤"}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
           </div>
 
-          {/* BELOW — Attachments, Audio, Emoji */}
-          <div className="flex items-center gap-3">
-            {/* File Select */}
-            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-gray-700 dark:text-gray-300">
-              📎
+          <div className="flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 mt-3 pt-2">
+            {/* File Button */}
+            <label className="p-2 text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
               <input
                 type="file"
                 multiple
@@ -1057,180 +1372,68 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               }}
             />
 
-            {/* Audio preview */}
-            {voiceUrl && (
-              <div className="p-2 border rounded bg-gray-100 dark:bg-gray-800 transition-colors">
-                <audio controls src={voiceUrl} className="w-full" />
-
-                <div className="flex gap-3 mt-2">
-                  <button
-                    className="px-3 py-1 bg-red-500 text-white rounded"
-                    onClick={() => {
-                      setVoiceUrl(null);
-                      setVoiceBlob(null);
-                    }}
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    className="px-3 py-1 bg-green-500 text-white rounded"
-                    disabled={uploadingVoice}
-                    onClick={sendVoiceNote}
-                  >
-                    {uploadingVoice ? "Sending..." : "Send"}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Emoji */}
-            <button
-              onClick={() => setShowEmojiPicker((p) => !p)}
-              className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-xl"
-            >
-              😀
-            </button>
-          </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowEmojiPicker((p) => !p)}
+                className="p-2 text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 rounded-lg transition-all text-xl"
+              >
+                😀
+              </button>
+              {showEmojiPicker && (
+                <div className="absolute bottom-12 left-0 z-50 bg-white dark:bg-gray-900 transition-all shadow-2xl rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <EmojiPicker onEmojiClick={handleEmojiSelect} />
+                </div>
+              )}
+            </div>
 
-          {/* Floating Emoji Picker */}
-          {showEmojiPicker && (
-            <div className="absolute bottom-24 left-4 z-50 bg-white dark:bg-[#141414] transition-colors shadow-lg rounded-lg">
-              <div className="flex justify-between items-center px-2 py-1 border-b">
-                <span className="text-sm font-semibold">Emoji</span>
+            {voiceUrl && (
+              <div className="ml-2 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-1.5 pr-1.5 border border-gray-200 dark:border-gray-700">
+                <audio src={voiceUrl} controls className="h-7 w-48" />
                 <button
-                  onClick={() => setShowEmojiPicker(false)}
-                  className="text-gray-500 dark:text-gray-400 hover:text-red-500 text-lg leading-none"
+                  onClick={() => { setVoiceUrl(null); setVoiceBlob(null); }}
+                  className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors text-red-500"
                 >
-                  ✖
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
-              <EmojiPicker onEmojiClick={handleEmojiSelect} />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ================ DESKTOP VIEW (UNCHANGED) ================ */}
-      <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors hidden md:block">
-        <div className="flex flex-col gap-2">
-          {/* File Previews */}
-          {files.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {files.map((f, idx) => renderFilePreview(f, idx))}
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            {/* File Select */}
-            <label className="cursor-pointer px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-gray-700 dark:text-gray-300">
-              📎
-              <input
-                type="file"
-                multiple
-                accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
-                className="hidden"
-                onChange={(e: any) => {
-                  if (e.target.files) {
-                    setFiles((prev: any) => [
-                      ...prev,
-                      ...Array.from(e.target.files),
-                    ]);
-                  }
-                }}
-              />
-            </label>
-
-            {/* Mic */}
-            <NativeVoiceRecorder
-              onRecorded={(blob, url) => {
-                setVoiceBlob(blob);
-                setVoiceUrl(url);
-              }}
-            />
-
-            {/* Audio Preview */}
-            {voiceUrl && (
-              <div className="p-2 border rounded bg-gray-100 dark:bg-gray-800 transition-colors">
-                <audio controls src={voiceUrl} className="w-full" />
-
-                <div className="flex gap-3 mt-2">
-                  <button
-                    className="px-3 py-1 bg-red-500 text-white rounded"
-                    onClick={() => {
-                      setVoiceUrl(null);
-                      setVoiceBlob(null);
-                    }}
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    className="px-3 py-1 bg-green-500 text-white rounded"
-                    disabled={uploadingVoice}
-                    onClick={sendVoiceNote}
-                  >
-                    {uploadingVoice ? "Sending..." : "Send"}
-                  </button>
-                </div>
-              </div>
             )}
-
-            {/* Emoji */}
-            <button
-              onClick={() => setShowEmojiPicker((p) => !p)}
-              className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 transition-colors hover:bg-gray-300 text-xl"
-            >
-              😀
-            </button>
-
-            {showEmojiPicker && (
-              <div className="absolute bottom-12 left-2 z-50 bg-white dark:bg-[#141414] transition-colors shadow-lg rounded-lg">
-                <div className="flex justify-between items-center px-2 py-1 border-b">
-                  <span className="text-sm font-semibold">Emoji</span>
-                  <button
-                    onClick={() => setShowEmojiPicker(false)}
-                    className="text-gray-500 dark:text-gray-400 hover:text-red-500 text-lg leading-none"
-                  >
-                    ✖
-                  </button>
-                </div>
-                <EmojiPicker onEmojiClick={handleEmojiSelect} />
-              </div>
-            )}
-
-            {/* Message Input */}
-            <textarea
-              className="flex-1 min-w-0 rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
-              placeholder="Type a message..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={1}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  postMessage();
-                }
-              }}
-            />
-
-            {/* Send */}
-            <button
-              onClick={() => {
-                if (editMessage) saveEdit(editMessage.id);
-                else postMessage();
-              }}
-              disabled={isSaving}
-              className="p-2.5 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg cursor-pointer transition-colors flex-shrink-0"
-              title="Send message"
-            >
-              {editMessage ? "✓" : "➤"}
-            </button>
           </div>
         </div>
       </div>
+      {/* Forwarding Modal */}
+      {isForwardingModalOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="font-bold text-lg text-gray-800 dark:text-white">Forward message</h3>
+              <button onClick={() => setIsForwardingModalOpen(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {allConversations.map((c: any) => (
+                <button
+                  key={c.id}
+                  onClick={() => forwardMessage(c.id)}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center font-bold text-gray-500">
+                    {c.name?.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-800 dark:text-gray-200">{c.name}</div>
+                    <div className="text-xs text-gray-500">{c.type}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
 
 export default ConversationView;

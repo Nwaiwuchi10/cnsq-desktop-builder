@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Bell, Moon, Sun, MessageCircle } from "lucide-react";
+import { Search, Bell, Moon, Sun, MessageCircle, LayoutDashboard } from "lucide-react";
 import { useTheme } from "@/hooks/ThemeContext";
 import Image from "next/image";
 import Api from "@/utils/api";
@@ -31,9 +31,10 @@ type User = {
 
 interface HeaderProps {
   user?: User | null;
+  setMobileOpen?: (open: boolean) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user }) => {
+const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
   const pathname = usePathname();
 
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -249,9 +250,19 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
   return (
     <header className="pwa-header flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
-      <h2 className="text-lg sm:text-xl font-bold text-[#86CD23] ml-8 sm:ml-0 truncate">
-        {getPageTitle()}
-      </h2>
+      <div className="flex items-center gap-3">
+        {/* Mobile: Dashboard icon opens sidebar */}
+        <button
+          onClick={() => setMobileOpen?.(true)}
+          className="lg:hidden p-1.5 rounded-md text-[#86CD23] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Open menu"
+        >
+          <LayoutDashboard className="w-6 h-6" />
+        </button>
+        <h2 className="text-lg sm:text-xl font-bold text-[#86CD23] truncate">
+          {getPageTitle()}
+        </h2>
+      </div>
 
       <div className="flex flex-1 justify-end items-center gap-6">
         {/* Search Bar */}
@@ -307,10 +318,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
               {user && (
                 <div className="flex items-center gap-1 -mt-0.5">
                   <span className={`w-1.5 h-1.5 rounded-full ${
-                    (loggedInUserId && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "bg-green-500" : "bg-gray-400"
+                    (loggedInUserId && onlineStaffs && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "bg-green-500" : "bg-gray-400"
                   }`}></span>
                   <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
-                    {(loggedInUserId && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "Online" : "Offline"}
+                    {(loggedInUserId && onlineStaffs && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "Online" : "Offline"}
                   </span>
                 </div>
               )}
@@ -336,6 +347,13 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-[#141414] rounded-lg shadow-lg border border-gray-100 dark:border-gray-800 z-50 overflow-hidden animate-fadeIn">
               <div className="py-1">
+                <Link
+                  href="/staff-dashboard"
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Dashboard
+                </Link>
                 {user && (
                   <Link
                     href={`/staff/${user.uuid}`}

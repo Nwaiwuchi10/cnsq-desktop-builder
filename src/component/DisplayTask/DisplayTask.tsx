@@ -75,6 +75,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   const [yearFilter, setYearFilter] = useState<number | "">("");
   const [monthFilter, setMonthFilter] = useState<number | "">("");
   const [dayFilter, setDayFilter] = useState<number | "">("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Department filters
   const [userDeptName, setUserDeptName] = useState<string | null>(null);
@@ -133,6 +134,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         if (yearFilter) params.append("year", String(yearFilter));
         if (monthFilter) params.append("month", String(monthFilter));
         if (dayFilter) params.append("day", String(dayFilter));
+        if (statusFilter !== "all") params.append("status", statusFilter);
 
         if (project?.id) {
           if (staffFilter === "all") {
@@ -154,6 +156,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           if (yearFilter) params.append("year", String(yearFilter));
           if (monthFilter) params.append("month", String(monthFilter));
           if (dayFilter) params.append("day", String(dayFilter));
+          if (statusFilter !== "all") params.append("status", statusFilter);
           const query = params.toString();
           res = await Api.get(
             `/task/department/${selectedDeptId}${query ? `?${query}` : ""}`,
@@ -164,6 +167,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
           // If staff filter is selected, send it to backend to filter login staff tasks?
           if (staffFilter !== "all") params.append("staffId", String(staffFilter));
+          if (statusFilter !== "all") params.append("status", statusFilter);
           const query = params.toString();
 
           res = await Api.get(
@@ -199,6 +203,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     userDeptId,
     selectedDeptId,
     staffFilter,
+    statusFilter,
     yearFilter,
     monthFilter,
     dayFilter,
@@ -457,6 +462,29 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
                     </option>
                   ) : null,
                 )}
+              </select>
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Status
+              </label>
+              <select
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All</option>
+                <option value="Not_started">Not Started</option>
+                <option value="In_progress">In Progress</option>
+                <option value="Ready_To_Test">Ready to Test</option>
+                <option value="Testing_In_Progress">Testing In Progress</option>
+                <option value="Failed_Test">Failed Test</option>
+                <option value="Passed_Test">Passed Test</option>
+                <option value="Dev_Completed">Dev Setup Completed</option>
+                <option value="Completed">Completed</option>
+                <option value="On_Hold">On Hold</option>
               </select>
             </div>
 

@@ -231,7 +231,7 @@ const AnnouncementList: React.FC = () => {
 
                 <div className="flex-1">
                   <p
-                    className={`text-sm transition-colors ${n.isRead ? "text-gray-400 font-normal" : "text-black dark:text-white font-lighter"
+                    className={`text-sm whitespace-nowrap transition-colors ${n.isRead ? "text-gray-400 font-normal" : "text-black dark:text-white font-lighter"
                       }`}
                   >
                     {n.title}
