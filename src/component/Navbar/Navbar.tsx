@@ -23,7 +23,7 @@ type User = {
 const navLinks = [
   // { name: "Anniversary", href: "/anniversary" },
   { name: "Staff Directory", href: "/staff" },
-  { name: "Organogram", href: "/organogram" },
+  // { name: "Organogram", href: "/organogram" },
 ];
 
 export default function Navbar() {

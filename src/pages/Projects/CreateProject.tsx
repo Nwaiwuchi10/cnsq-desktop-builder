@@ -198,7 +198,7 @@ export default function ProjectWizardForm() {
       );
 
       setModal({ type: "success", message: "Staff assigned successfully!" });
-      setTimeout(() => router.push(`/project/${createdProjectId}`), 1200);
+      setTimeout(() => router.push("/project"), 1200);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
@@ -210,7 +210,7 @@ export default function ProjectWizardForm() {
     }
   };
   const skipAssign = () => {
-    router.push(`/project/${createdProjectId}`);
+    router.push("/project");
   };
   const filteredStaffs = staffs.filter((s) =>
     `${s.firstName} ${s.lastName} ${s.email}`
