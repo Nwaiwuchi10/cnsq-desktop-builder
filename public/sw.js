@@ -3,7 +3,7 @@
 // Handles: Caching, Offline Support, Push Notifications (iOS + Android)
 // ============================================================
 
-const CACHE_NAME = "cnsquad-cache-v1";
+const CACHE_NAME = "cnsquad-cache-v2";
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -25,7 +25,7 @@ self.addEventListener("install", (event) => {
         console.log("[SW] Pre-caching app shell assets");
         return cache.addAll(STATIC_ASSETS);
       })
-      .then(() => self.skipWaiting()) // Activate immediately without waiting
+      .then(() => self.skipWaiting()), // Activate immediately without waiting
   );
 });
 
@@ -44,10 +44,10 @@ self.addEventListener("activate", (event) => {
             .map((name) => {
               console.log("[SW] Deleting stale cache:", name);
               return caches.delete(name);
-            })
-        )
+            }),
+        ),
       )
-      .then(() => self.clients.claim()) // Take control of all open tabs immediately
+      .then(() => self.clients.claim()), // Take control of all open tabs immediately
   );
 });
 
@@ -77,15 +77,27 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request)) // Return cached version on network failure
+        .catch(() => caches.match(request)), // Return cached version on network failure
     );
     return;
   }
 
-  // Static assets → Cache-first strategy
-  if (
-    url.pathname.match(/\.(png|jpg|jpeg|svg|ico|woff|woff2|ttf|webp|css|js)$/)
-  ) {
+  // Next.js chunks → Network-first strategy (to avoid stale module errors)
+  if (url.pathname.includes("/_next/static/")) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(request)), // Fallback to cache if offline
+    );
+    return;
+  }
+
+  // Other static assets → Cache-first strategy
+  if (url.pathname.match(/\.(png|jpg|jpeg|svg|ico|woff|woff2|ttf|webp)$/)) {
     event.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
@@ -94,7 +106,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         });
-      })
+      }),
     );
     return;
   }
@@ -113,9 +125,9 @@ self.addEventListener("fetch", (event) => {
             (cached) =>
               cached ||
               // Absolute last resort — serve the root page
-              caches.match("/")
-          )
-        )
+              caches.match("/"),
+          ),
+        ),
     );
     return;
   }
@@ -173,7 +185,7 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(title, notificationOptions)
+    self.registration.showNotification(title, notificationOptions),
   );
 });
 
@@ -205,7 +217,7 @@ self.addEventListener("notificationclick", (event) => {
         }
         // App is not open — open a new window/tab
         return clients.openWindow(url);
-      })
+      }),
   );
 });
 
@@ -233,13 +245,13 @@ self.addEventListener("pushsubscriptionchange", (event) => {
             client.postMessage({
               type: "PUSH_SUBSCRIPTION_RENEWED",
               subscription: newSubscription.toJSON(),
-            })
+            }),
           );
         });
       })
       .catch((err) =>
-        console.error("[SW] Failed to re-subscribe to push:", err)
-      )
+        console.error("[SW] Failed to re-subscribe to push:", err),
+      ),
   );
 });
 

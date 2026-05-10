@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Avatar from "./Avatar";
+import { ReactionsState } from "../Channels/ChannelMessageBuble";
 
 type Attachment = {
   id: string;
@@ -16,21 +17,20 @@ type Reaction = {
 
 export type Msg = {
   id: string;
-
   name: string;
   avatar?: string;
-  text: string; // REQUIRED
-  me: boolean; // REQUIRED
+  text: string; 
+  me: boolean; 
   preview: string;
   createdAt: string;
   time: string;
-
   unread?: number;
   online?: boolean;
   peerId?: number;
   attachments?: Attachment[];
-  reactions?: Reaction[];
+  reactions?: ReactionsState;
   parent?: Partial<Msg>;
+  isChannel?: boolean;
 };
 
 const ConversationItem: React.FC<{ item?: Msg; onClick: () => void }> = ({
@@ -38,7 +38,6 @@ const ConversationItem: React.FC<{ item?: Msg; onClick: () => void }> = ({
   onClick,
 }) => {
   if (!item) {
-    // guard clause for SSR
     return null;
   }
 

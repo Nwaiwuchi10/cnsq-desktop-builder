@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Api from "@/utils/api";
 import { useChatStore } from "@/store/ChatStore";
+import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 
 interface Staff {
   id: number;
@@ -103,12 +104,16 @@ export default function ConversationMembersManager({
   );
 
   return (
+
     <div className="fixed inset-0 bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors bg-opacity-40 flex items-center justify-center z-50 px-4">
       <div className="bg-white dark:bg-[#141414] transition-colors p-6 rounded-xl w-full max-w-lg shadow-lg space-y-4">
         {/* Header */}
         <div className="flex justify-between items-center mb-2">
           <h2 className="font-bold text-xl capitalize">{mode} Member</h2>
-          <button onClick={onClose} className="text-gray-600 dark:text-gray-400 hover:text-black dark:text-white">
+          <button
+            onClick={onClose}
+            className="text-gray-600 dark:text-gray-400 hover:text-black dark:text-white"
+          >
             ✕
           </button>
         </div>
@@ -126,6 +131,7 @@ export default function ConversationMembersManager({
             />
 
             {/* Staff List */}
+
             <div className="max-h-60 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800 transition-colors mt-2">
               {filteredStaff.map((s) => (
                 <label
@@ -143,26 +149,37 @@ export default function ConversationMembersManager({
                       <p className="font-medium">
                         {s.firstName} {s.lastName}
                       </p>
-                      <span className={`w-2 h-2 rounded-full ${onlineStaffs[s.id] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                      <span
+                        className={`w-2 h-2 rounded-full ${onlineStaffs[s.id] ? "bg-green-500" : "bg-gray-400"
+                          }`}
+                      ></span>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{s.email}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {s.email}
+                    </p>
                   </div>
                 </label>
               ))}
 
               {filteredStaff.length === 0 && (
-                <p className="text-gray-500 dark:text-gray-400 text-center py-4">No staff found</p>
+                <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                  No staff found
+                </p>
               )}
             </div>
 
+
             {/* Selected members preview */}
+
             <div>
               <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mt-4 mb-2">
                 Selected Members
               </h3>
 
               {selectedMembers.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400 text-sm">None selected.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">
+                  None selected.
+                </p>
               ) : (
                 <ul className="space-y-2">
                   {selectedMembers.map((s) => (
@@ -185,6 +202,7 @@ export default function ConversationMembersManager({
               )}
             </div>
 
+
             {/* Submit */}
             <button
               onClick={addMembers}
@@ -197,6 +215,7 @@ export default function ConversationMembersManager({
         )}
 
         {/* --- VIEW MEMBERS MODE --- */}
+
         {mode === "view" && (
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {members.map((m) => (
@@ -205,16 +224,22 @@ export default function ConversationMembersManager({
                 className="flex items-center justify-between p-3 border rounded"
               >
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${onlineStaffs[m.user.id] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                  <span
+                    className={`w-2 h-2 rounded-full ${onlineStaffs[m.user.id] ? "bg-green-500" : "bg-gray-400"
+                      }`}
+                  ></span>
                   {m.user.firstName} {m.user.lastName}
                 </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">{m.role}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {m.role}
+                </div>
               </div>
             ))}
           </div>
         )}
 
         {/* --- REMOVE MEMBERS MODE --- */}
+
         {mode === "remove" && (
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {members.map((m) => (
@@ -223,7 +248,10 @@ export default function ConversationMembersManager({
                 className="flex items-center justify-between p-3 border rounded"
               >
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${onlineStaffs[m.user.id] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                  <span
+                    className={`w-2 h-2 rounded-full ${onlineStaffs[m.user.id] ? "bg-green-500" : "bg-gray-400"
+                      }`}
+                  ></span>
                   {m.user.firstName} {m.user.lastName}
                 </div>
                 <button
@@ -237,6 +265,7 @@ export default function ConversationMembersManager({
           </div>
         )}
 
+
         {/* Footer Close Button */}
         <button
           onClick={onClose}
@@ -246,5 +275,6 @@ export default function ConversationMembersManager({
         </button>
       </div>
     </div>
+
   );
 }

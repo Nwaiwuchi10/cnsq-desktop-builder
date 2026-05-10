@@ -14,7 +14,6 @@ import {
   Mail,
   Calendar,
   Settings,
-  Menu,
   X,
   PanelLeftClose,
   PanelRightClose,
