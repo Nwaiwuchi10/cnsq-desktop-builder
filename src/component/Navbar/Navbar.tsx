@@ -290,9 +290,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Dropdown */}
         {isOpen && (
-          <div className="md:hidden bg-white dark:bg-[#141414] shadow-2xl h-screen absolute w-full left-0 top-20 border-t border-gray-100 dark:border-gray-800 transition-colors">
+          <div className="md:hidden bg-white dark:bg-[#141414] shadow-2xl h-screen absolute w-full left-0 top-full border-t border-gray-100 dark:border-gray-800 transition-colors">
             <div className="flex flex-col items-start px-6 py-8 space-y-6">
               <div className="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-[#95D700] transition block w-full" onClick={() => {
                 console.log("Navigating to /staff-dashboard");
