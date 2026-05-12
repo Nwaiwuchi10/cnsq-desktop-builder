@@ -76,6 +76,8 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   const [monthFilter, setMonthFilter] = useState<number | "">("");
   const [dayFilter, setDayFilter] = useState<number | "">("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [urgencyFilter, setUrgencyFilter] = useState<string>("all");
 
   // Department filters
   const [userDeptName, setUserDeptName] = useState<string | null>(null);
@@ -135,6 +137,8 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         if (monthFilter) params.append("month", String(monthFilter));
         if (dayFilter) params.append("day", String(dayFilter));
         if (statusFilter !== "all") params.append("status", statusFilter);
+        if (priorityFilter !== "all") params.append("priority", priorityFilter);
+        if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
 
         if (project?.id) {
           if (staffFilter === "all") {
@@ -157,6 +161,8 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           if (monthFilter) params.append("month", String(monthFilter));
           if (dayFilter) params.append("day", String(dayFilter));
           if (statusFilter !== "all") params.append("status", statusFilter);
+          if (priorityFilter !== "all") params.append("priority", priorityFilter);
+          if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
           const query = params.toString();
           res = await Api.get(
             `/task/department/${selectedDeptId}${query ? `?${query}` : ""}`,
@@ -165,9 +171,13 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           // Default for "All" departments without Project ID
           const params = new URLSearchParams();
           if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
-          // If staff filter is selected, send it to backend to filter login staff tasks?
           if (staffFilter !== "all") params.append("staffId", String(staffFilter));
           if (statusFilter !== "all") params.append("status", statusFilter);
+          if (priorityFilter !== "all") params.append("priority", priorityFilter);
+          if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
+          if (yearFilter) params.append("year", String(yearFilter));
+          if (monthFilter) params.append("month", String(monthFilter));
+          if (dayFilter) params.append("day", String(dayFilter));
           const query = params.toString();
 
           res = await Api.get(
@@ -204,6 +214,8 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     selectedDeptId,
     staffFilter,
     statusFilter,
+    priorityFilter,
+    urgencyFilter,
     yearFilter,
     monthFilter,
     dayFilter,
@@ -221,17 +233,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
             .filter(Boolean);
           setStaffList(staffOnly);
         } else {
-          const deptToUse =
-            typeof selectedDeptId === "number"
-              ? allDepartments.find((d) => d.id === selectedDeptId)?.name
-              : userDeptName;
-
-          if (deptToUse) {
-            res = await Api.get(
-              `/staff-register/all/staffs/by-department?name=${encodeURIComponent(deptToUse)}`,
-            );
-            setStaffList(res.data || []);
-          }
+          // Fetch ALL staff from the organization
+          res = await Api.get("/staff-register/all/staffs/dept?limit=1000");
+          setStaffList(res?.data?.data || []);
         }
       } catch (err) {
         console.error("Error fetching staff list", err);
@@ -307,7 +311,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       {/* Top Bar */}
       <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         {/* Search & Action Bar */}
@@ -328,16 +332,189 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           </div>
 
           {/* Filter Toggle */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <span className="text-sm font-medium">Filter by</span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
-            />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <span className="text-sm font-medium">Filter by</span>
+              <ChevronDown
+                size={16}
+                className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {/* Filter Panel */}
+            {showFilters && (
+              <div className="z-50 absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-[#141414] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 max-h-[70vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wider">
+                  Filter by
+                </h3>
+
+                <div className="flex flex-col gap-3 mb-4">
+                  {/* Department Filter */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Department
+                    </label>
+                    <select
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={selectedDeptId}
+                      onChange={(e) =>
+                        setSelectedDeptId(
+                          e.target.value === "all" ? "all" : Number(e.target.value),
+                        )
+                      }
+                    >
+                      <option value="all">All</option>
+                      {allDepartments.map((dept) => (
+                        <option key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sprint Filter */}
+                  {project?.id && (
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Sprint
+                      </label>
+                      <select
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                        value={sprintFilter}
+                        onChange={(e) =>
+                          setSprintFilter(
+                            e.target.value === "all" ? "all" : Number(e.target.value),
+                          )
+                        }
+                      >
+                        <option value="all">All</option>
+                        {uniqueSprints.map((s) => (
+                          <option key={s} value={s}>
+                            Sprint {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Staff Filter */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Staff
+                    </label>
+                    <select
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={staffFilter}
+                      onChange={(e) =>
+                        setStaffFilter(
+                          e.target.value === "all" ? "all" : Number(e.target.value),
+                        )
+                      }
+                    >
+                      <option value="all">All</option>
+                      {staffList.map((s) =>
+                        s ? (
+                          <option key={s?.id} value={s?.id}>
+                            {s?.firstName} {s?.lastName}
+                          </option>
+                        ) : null,
+                      )}
+                    </select>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Status
+                    </label>
+                    <select
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="Not_started">Not Started</option>
+                      <option value="In_progress">In Progress</option>
+                      <option value="Ready_To_Test">Ready to Test</option>
+                      <option value="Testing_In_Progress">Testing In Progress</option>
+                      <option value="Failed_Test">Failed Test</option>
+                      <option value="Passed_Test">Passed Test</option>
+                      <option value="Dev_Completed">Dev Setup Completed</option>
+                      <option value="Completed">Completed</option>
+                      <option value="On_Hold">On Hold</option>
+                    </select>
+                  </div>
+
+                  {/* Priority Filter */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Priority
+                    </label>
+                    <select
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={priorityFilter}
+                      onChange={(e) => setPriorityFilter(e.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+
+                  {/* Urgency Filter */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Urgency
+                    </label>
+                    <select
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={urgencyFilter}
+                      onChange={(e) => setUrgencyFilter(e.target.value)}
+                    >
+                      <option value="all">All</option>
+                      <option value="Immediately">Immediately</option>
+                      <option value="Short_Term">Short Term</option>
+                      <option value="Med_Term">Medium Term</option>
+                      <option value="High_Term">High Term</option>
+                    </select>
+                  </div>
+
+                  {/* Date Range Filter */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Date Range
+                    </label>
+                    <input
+                      type="date"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+                      value={selectedDate}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={handleClearDate}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    Clear Date
+                  </button>
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="w-full px-4 py-2 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Apply Filter
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* View Toggle Icons */}
           <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
@@ -384,141 +561,6 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         </div>
       </div>
 
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="z-5 absolute left-0 right-0 top-38 ml-auto mr-auto bg-white dark:bg-[#141414] rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6 max-w-xs">
-          <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wider">
-            Filter by
-          </h3>
-
-          <div className="flex flex-col gap-3 mb-4">
-            {/* Department Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Department
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={selectedDeptId}
-                onChange={(e) =>
-                  setSelectedDeptId(
-                    e.target.value === "all" ? "all" : Number(e.target.value),
-                  )
-                }
-              >
-                <option value="all">All</option>
-                {allDepartments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Sprint Filter */}
-            {project?.id && (
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Sprint
-                </label>
-                <select
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                  value={sprintFilter}
-                  onChange={(e) =>
-                    setSprintFilter(
-                      e.target.value === "all" ? "all" : Number(e.target.value),
-                    )
-                  }
-                >
-                  <option value="all">All</option>
-                  {uniqueSprints.map((s) => (
-                    <option key={s} value={s}>
-                      Sprint {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Staff Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Staff
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={staffFilter}
-                onChange={(e) =>
-                  setStaffFilter(
-                    e.target.value === "all" ? "all" : Number(e.target.value),
-                  )
-                }
-              >
-                <option value="all">All</option>
-                {staffList.map((s) =>
-                  s ? (
-                    <option key={s?.id} value={s?.id}>
-                      {s?.firstName} {s?.lastName}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-            </div>
-
-            {/* Status Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Status
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All</option>
-                <option value="Not_started">Not Started</option>
-                <option value="In_progress">In Progress</option>
-                <option value="Ready_To_Test">Ready to Test</option>
-                <option value="Testing_In_Progress">Testing In Progress</option>
-                <option value="Failed_Test">Failed Test</option>
-                <option value="Passed_Test">Passed Test</option>
-                <option value="Dev_Completed">Dev Setup Completed</option>
-                <option value="Completed">Completed</option>
-                <option value="On_Hold">On Hold</option>
-              </select>
-            </div>
-
-            {/* Date Range Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Date Range
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleClearDate}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              Clear Date
-            </button>
-            <button
-              onClick={() => setShowFilters(false)}
-              className="w-full px-4 py-2 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              Apply Filter
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* View Content */}
       {isBoard ? (

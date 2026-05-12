@@ -278,6 +278,13 @@ export default function CreateTaskForm() {
       setModal({ type: "error", message: "Please fill required fields." });
       return;
     }
+    if (new Date(dueDate) < new Date(startDate)) {
+      setModal({
+        type: "error",
+        message: "Due date cannot be before start date.",
+      });
+      return;
+    }
     if (assignments.length === 0) {
       setModal({
         type: "error",
@@ -297,8 +304,6 @@ export default function CreateTaskForm() {
       urgency: urgency || "Short_Term",
       startDate,
       dueDate,
-      // startDate: new Date(startDate).toISOString(),
-      // dueDate: new Date(dueDate).toISOString(),
       timeline,
       projectId: projectUuid?.id || null, // allow null for departmental tasks
       departmentId: selectedDeptId || userDepartmentId,

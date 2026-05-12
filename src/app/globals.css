@@ -47,32 +47,47 @@ body {
 }
 
 /* ── PWA / Safe-area utilities ────────────────────────────────── */
-/* Pushes content below iPhone notch / Dynamic Island in standalone mode */
+/* Pushes content below iPhone notch / Dynamic Island */
 :root {
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/*
-  Only apply safe-area padding when running as an installed PWA (standalone).
-  In a regular browser the status bar is opaque and already reserves space,
-  so we must NOT add extra padding there — this keeps both experiences correct.
+/* 
+   We apply safe-area padding to the main navigation elements.
+   Using env() is safe because it defaults to 0px in browsers that don't support it 
+   or when not in a safe-area context.
 */
-@media all and (display-mode: standalone) {
-  /* Public-facing Navbar (Navbar.tsx) */
-  nav.pwa-nav {
-    padding-top: env(safe-area-inset-top, 0px) !important;
-  }
 
-  /* Staff-dashboard Header (Header.tsx) */
-  header.pwa-header {
-    padding-top: env(safe-area-inset-top, 0px) !important;
-  }
+/* Public-facing Navbar (Navbar.tsx) */
+nav.pwa-nav {
+  padding-top: var(--safe-area-top) !important;
+}
 
-  /* Mobile hamburger/menu button inside StaffLayout — shift it down too */
-  div.pwa-mobile-menu-btn {
-    top: calc(env(safe-area-inset-top, 0px) + 1rem) !important;
-  }
+/* Staff-dashboard Header (Header.tsx) */
+header.pwa-header {
+  padding-top: var(--safe-area-top) !important;
+}
+
+/* Mobile hamburger/menu button inside StaffLayout — shift it down too */
+div.pwa-mobile-menu-btn {
+  top: calc(var(--safe-area-top) + 1rem) !important;
+}
+
+/* Sidebar safe area support */
+aside.pwa-sidebar {
+  padding-bottom: var(--safe-area-bottom) !important;
+}
+
+.pwa-sidebar-header {
+  padding-top: var(--safe-area-top) !important;
+  /* Increase height to maintain spacing if padding is added */
+  height: calc(5rem + var(--safe-area-top)) !important;
+}
+
+/* Ensure the main content below fixed navbars also respects the safe area */
+.pwa-content-shift {
+  margin-top: var(--safe-area-top);
 }
 
 

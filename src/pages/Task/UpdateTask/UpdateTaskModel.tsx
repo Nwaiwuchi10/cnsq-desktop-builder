@@ -232,6 +232,13 @@ export default function TaskUpdateModal({
   }, [startDate, dueDate]);
 
   const handleSubmit = async () => {
+    if (startDate && dueDate && new Date(dueDate) < new Date(startDate)) {
+      setModal({
+        type: "error",
+        message: "Due date cannot be before start date.",
+      });
+      return;
+    }
     setSubmitting(true);
     try {
       await Api.patch(
