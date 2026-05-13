@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Search, ChevronDown, Grid3x3, List } from "lucide-react";
+import { Search, ChevronDown, Grid3x3, List, X } from "lucide-react";
 
 import Api from "@/utils/api";
 import { TaskDTO } from "@/dataTypes/Data-Types";
@@ -153,25 +153,12 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
               }`,
             );
           }
-        } else if (selectedDeptId !== "all" && typeof selectedDeptId === "number") {
-          const params = new URLSearchParams();
-          if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
-          if (staffFilter !== "all") params.append("staffId", String(staffFilter));
-          if (yearFilter) params.append("year", String(yearFilter));
-          if (monthFilter) params.append("month", String(monthFilter));
-          if (dayFilter) params.append("day", String(dayFilter));
-          if (statusFilter !== "all") params.append("status", statusFilter);
-          if (priorityFilter !== "all") params.append("priority", priorityFilter);
-          if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
-          const query = params.toString();
-          res = await Api.get(
-            `/task/department/${selectedDeptId}${query ? `?${query}` : ""}`,
-          );
         } else {
-          // Default for "All" departments without Project ID
+          // Default for "All" departments or specific department without Project ID
           const params = new URLSearchParams();
           if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
           if (staffFilter !== "all") params.append("staffId", String(staffFilter));
+          if (selectedDeptId !== "all") params.append("departmentId", String(selectedDeptId));
           if (statusFilter !== "all") params.append("status", statusFilter);
           if (priorityFilter !== "all") params.append("priority", priorityFilter);
           if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
@@ -233,8 +220,15 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
             .filter(Boolean);
           setStaffList(staffOnly);
         } else {
-          // Fetch ALL staff from the organization
-          res = await Api.get("/staff-register/all/staffs/dept?limit=1000");
+          // Fetch staff from the organization, filtered by department if selected
+          let url = "/staff-register/all/staffs/dept?limit=1000";
+          if (selectedDeptId !== "all") {
+            const deptName = allDepartments.find(d => d.id === selectedDeptId)?.name;
+            if (deptName) {
+              url += `&department=${encodeURIComponent(deptName)}`;
+            }
+          }
+          res = await Api.get(url);
           setStaffList(res?.data?.data || []);
         }
       } catch (err) {
@@ -242,7 +236,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       }
     };
 
-    if (project?.id || userDeptName || typeof selectedDeptId === "number") {
+    if (project?.id || userDeptName || selectedDeptId) {
       fetchStaffList();
     }
   }, [project?.id, userDeptName, selectedDeptId, allDepartments]);
@@ -315,9 +309,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       {/* Top Bar */}
       <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         {/* Search & Action Bar */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Search Bar */}
-          <div className="flex-1 min-w-64 relative">
+          <div className="flex-1 relative w-full">
             <Search
               className="absolute left-3 top-2.5 text-gray-400"
               size={18}
@@ -331,13 +325,15 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
             />
           </div>
 
-          {/* Filter Toggle */}
-          <div className="relative">
+          {/* Actions Container */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Filter Toggle */}
+            <div className="relative">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <span className="text-sm font-medium">Filter by</span>
+              <span className="text-sm font-medium whitespace-nowrap">Filter by</span>
               <ChevronDown
                 size={16}
                 className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
@@ -346,10 +342,24 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
 
             {/* Filter Panel */}
             {showFilters && (
-              <div className="z-50 absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-72 sm:w-80 bg-white dark:bg-[#141414] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-6 max-h-[70vh] overflow-y-auto">
-                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wider">
-                  Filter by
-                </h3>
+              <>
+                {/* Mobile Backdrop */}
+                <div 
+                  className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[100] sm:hidden" 
+                  onClick={() => setShowFilters(false)}
+                />
+                <div className="z-[101] fixed inset-x-4 top-[5%] bottom-[5%] sm:bottom-auto sm:absolute sm:inset-auto sm:right-0 sm:top-full mt-2 w-auto sm:w-80 bg-white dark:bg-[#141414] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 overflow-y-auto">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                      Filter by
+                    </h3>
+                    <button 
+                      onClick={() => setShowFilters(false)}
+                      className="sm:hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
 
                 <div className="flex flex-col gap-3 mb-4">
                   {/* Department Filter */}
@@ -512,7 +522,8 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
                     Apply Filter
                   </button>
                 </div>
-              </div>
+                </div>
+              </>
             )}
           </div>
 
@@ -543,9 +554,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           {/* Export CSV Button */}
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
           >
-            Export CSV
+            Export
           </button>
 
           {/* New Task Button */}
@@ -554,12 +565,13 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
               project?.uuid ? `/project/${project.uuid}/add-task` : "/add-task"
             }
           >
-            <button className="px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1">
+            <button className="px-3 sm:px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1 whitespace-nowrap">
               + New Task
             </button>
           </Link>
         </div>
       </div>
+    </div>
 
 
       {/* View Content */}
