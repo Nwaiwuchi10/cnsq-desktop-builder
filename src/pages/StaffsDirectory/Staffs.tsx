@@ -20,6 +20,7 @@ import Image, { StaticImageData } from "next/image";
 import { useRouter } from "next/navigation";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 import StaffCompletionModal from "@/component/StaffCompletionModal/StaffCompletionModal";
+import ImagePreviewModal from "@/component/ImagePreviewModal/ImagePreviewModal";
 
 // === Completion Data Interface ===
 interface CompletionData {
@@ -122,6 +123,8 @@ export default function StaffDirectory() {
   const [selectedCompletionData, setSelectedCompletionData] =
     useState<CompletionData | null>(null);
 
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+
   const handleShowCompletion = (person: Staff) => {
     if (person.taskPerformance) {
       setSelectedCompletionData({
@@ -142,7 +145,7 @@ export default function StaffDirectory() {
       setLoading(true);
       try {
         let query = `/staff-register/all/staffs/dept?page=${page}&limit=${limit}`;
-        
+
         if (search) query += `&search=${encodeURIComponent(search)}`;
         if (filters.department !== "All") query += `&department=${encodeURIComponent(filters.department)}`;
         if (filters.role !== "All") query += `&role=${encodeURIComponent(filters.role)}`;
@@ -602,13 +605,17 @@ END:VCARD`;
                   >
                     {/* Profile Picture + Name + Role */}
                     <div className="flex items-center gap-4">
-                      <div className="relative w-14 h-14 flex-shrink-0">
+                      <div className="relative w-14 h-14 flex-shrink-0 cursor-zoom-in group">
                         <Image
                           src={person?.photoUrl || "/default-avatar.png"}
                           alt={`${person?.firstName} ${person?.lastName}`}
                           width={56}
                           height={56}
-                          className="w-14 h-14 rounded-full object-cover border"
+                          className="w-14 h-14 rounded-full object-cover border transition-transform duration-300 group-hover:scale-110"
+                          onClick={() => setPreviewImage({
+                            src: typeof person?.photoUrl === 'string' ? person.photoUrl : "/default-avatar.png",
+                            alt: `${person?.firstName} ${person?.lastName}`
+                          })}
                         />
                         {/* Completion Indicator */}
                         {person.taskPerformance && (
@@ -631,11 +638,10 @@ END:VCARD`;
                         {/* Status Indicator */}
                         <div className="flex items-center gap-1 mt-1">
                           <span
-                            className={`w-2 h-2 rounded-full ${
-                              (onlineStaffs[person.id] ?? person.isOnline)
+                            className={`w-2 h-2 rounded-full ${(onlineStaffs[person.id] ?? person.isOnline)
                                 ? "bg-green-500"
                                 : "bg-gray-400"
-                            }`}
+                              }`}
                           ></span>
                           <span className="text-xs text-gray-500 dark:text-gray-400">
                             {(onlineStaffs[person.id] ?? person.isOnline) ? "Online" : "Offline"}
@@ -710,13 +716,17 @@ END:VCARD`;
                     {/* Top Row: Avatar, Info, Link */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="relative w-14 h-14 flex-shrink-0">
+                        <div className="relative w-14 h-14 flex-shrink-0 cursor-zoom-in group">
                           <Image
                             src={person?.photoUrl || "/default-avatar.png"}
                             alt={`${person?.firstName} ${person?.lastName}`}
                             width={56}
                             height={56}
-                            className="w-14 h-14 rounded-full object-cover shadow-sm border"
+                            className="w-14 h-14 rounded-full object-cover shadow-sm border transition-transform duration-300 group-hover:scale-110"
+                            onClick={() => setPreviewImage({
+                              src: typeof person?.photoUrl === 'string' ? person.photoUrl : "/default-avatar.png",
+                              alt: `${person?.firstName} ${person?.lastName}`
+                            })}
                           />
                           {/* Completion Indicator */}
                           {person.taskPerformance && (
@@ -739,11 +749,10 @@ END:VCARD`;
                           {/* Status Indicator */}
                           <div className="flex items-center gap-1 mb-1">
                             <span
-                              className={`w-2 h-2 rounded-full ${
-                                (onlineStaffs[person.id] ?? person.isOnline)
+                              className={`w-2 h-2 rounded-full ${(onlineStaffs[person.id] ?? person.isOnline)
                                   ? "bg-green-500"
                                   : "bg-gray-400"
-                              }`}
+                                }`}
                             ></span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                               {(onlineStaffs[person.id] ?? person.isOnline) ? "Online" : "Offline"}
@@ -890,6 +899,14 @@ END:VCARD`;
         onClose={() => setShowCompletionModal(false)}
         data={selectedCompletionData}
       />
+
+      <ImagePreviewModal
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        src={previewImage?.src || ""}
+        alt={previewImage?.alt || ""}
+      />
     </div>
+
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Search, ChevronDown, Grid3x3, List } from "lucide-react";
+import { Search, ChevronDown, Grid3x3, List, X } from "lucide-react";
 
 import Api from "@/utils/api";
 import { TaskDTO } from "@/dataTypes/Data-Types";
@@ -75,6 +75,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   const [yearFilter, setYearFilter] = useState<number | "">("");
   const [monthFilter, setMonthFilter] = useState<number | "">("");
   const [dayFilter, setDayFilter] = useState<number | "">("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [urgencyFilter, setUrgencyFilter] = useState<string>("all");
 
   // Department filters
   const [userDeptName, setUserDeptName] = useState<string | null>(null);
@@ -106,7 +109,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     }
   }, [project?.id]);
 
-  // Fetch departments
+  // Fetch departments//
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
@@ -133,6 +136,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         if (yearFilter) params.append("year", String(yearFilter));
         if (monthFilter) params.append("month", String(monthFilter));
         if (dayFilter) params.append("day", String(dayFilter));
+        if (statusFilter !== "all") params.append("status", statusFilter);
+        if (priorityFilter !== "all") params.append("priority", priorityFilter);
+        if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
 
         if (project?.id) {
           if (staffFilter === "all") {
@@ -147,23 +153,18 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
               }`,
             );
           }
-        } else if (selectedDeptId !== "all" && typeof selectedDeptId === "number") {
+        } else {
+          // Default for "All" departments or specific department without Project ID
           const params = new URLSearchParams();
           if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
           if (staffFilter !== "all") params.append("staffId", String(staffFilter));
+          if (selectedDeptId !== "all") params.append("departmentId", String(selectedDeptId));
+          if (statusFilter !== "all") params.append("status", statusFilter);
+          if (priorityFilter !== "all") params.append("priority", priorityFilter);
+          if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
           if (yearFilter) params.append("year", String(yearFilter));
           if (monthFilter) params.append("month", String(monthFilter));
           if (dayFilter) params.append("day", String(dayFilter));
-          const query = params.toString();
-          res = await Api.get(
-            `/task/department/${selectedDeptId}${query ? `?${query}` : ""}`,
-          );
-        } else {
-          // Default for "All" departments without Project ID
-          const params = new URLSearchParams();
-          if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
-          // If staff filter is selected, send it to backend to filter login staff tasks?
-          if (staffFilter !== "all") params.append("staffId", String(staffFilter));
           const query = params.toString();
 
           res = await Api.get(
@@ -199,6 +200,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     userDeptId,
     selectedDeptId,
     staffFilter,
+    statusFilter,
+    priorityFilter,
+    urgencyFilter,
     yearFilter,
     monthFilter,
     dayFilter,
@@ -216,24 +220,23 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
             .filter(Boolean);
           setStaffList(staffOnly);
         } else {
-          const deptToUse =
-            typeof selectedDeptId === "number"
-              ? allDepartments.find((d) => d.id === selectedDeptId)?.name
-              : userDeptName;
-
-          if (deptToUse) {
-            res = await Api.get(
-              `/staff-register/all/staffs/by-department?name=${encodeURIComponent(deptToUse)}`,
-            );
-            setStaffList(res.data || []);
+          // Fetch staff from the organization, filtered by department if selected
+          let url = "/staff-register/all/staffs/dept?limit=1000";
+          if (selectedDeptId !== "all") {
+            const deptName = allDepartments.find(d => d.id === selectedDeptId)?.name;
+            if (deptName) {
+              url += `&department=${encodeURIComponent(deptName)}`;
+            }
           }
+          res = await Api.get(url);
+          setStaffList(res?.data?.data || []);
         }
       } catch (err) {
         console.error("Error fetching staff list", err);
       }
     };
 
-    if (project?.id || userDeptName || typeof selectedDeptId === "number") {
+    if (project?.id || userDeptName || selectedDeptId) {
       fetchStaffList();
     }
   }, [project?.id, userDeptName, selectedDeptId, allDepartments]);
@@ -302,13 +305,13 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       {/* Top Bar */}
       <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         {/* Search & Action Bar */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Search Bar */}
-          <div className="flex-1 min-w-64 relative">
+          <div className="flex-1 relative w-full">
             <Search
               className="absolute left-3 top-2.5 text-gray-400"
               size={18}
@@ -322,175 +325,254 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
             />
           </div>
 
-          {/* Filter Toggle */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <span className="text-sm font-medium">Filter by</span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
-            />
-          </button>
+          {/* Actions Container */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Filter Toggle */}
+            <div className="relative">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <span className="text-sm font-medium whitespace-nowrap">Filter by</span>
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform ${showFilters ? "rotate-180" : ""}`}
+                />
+              </button>
 
-          {/* View Toggle Icons */}
-          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              {/* Filter Panel */}
+              {showFilters && (
+                <>
+                  {/* Mobile Backdrop */}
+                  <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-[100] sm:hidden"
+                    onClick={() => setShowFilters(false)}
+                  />
+                  <div className="z-[101] fixed inset-x-4 top-[5%] bottom-[5%] sm:bottom-auto sm:absolute sm:inset-auto sm:right-0 sm:top-full mt-2 w-auto sm:w-80 bg-white dark:bg-[#141414] rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 overflow-y-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        Filter by
+                      </h3>
+                      <button
+                        onClick={() => setShowFilters(false)}
+                        className="sm:hidden p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col gap-3 mb-4">
+                      {/* Department Filter */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Department
+                        </label>
+                        <select
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={selectedDeptId}
+                          onChange={(e) =>
+                            setSelectedDeptId(
+                              e.target.value === "all" ? "all" : Number(e.target.value),
+                            )
+                          }
+                        >
+                          <option value="all">All</option>
+                          {allDepartments.map((dept) => (
+                            <option key={dept.id} value={dept.id}>
+                              {dept.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Sprint Filter */}
+                      {project?.id && (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Sprint
+                          </label>
+                          <select
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={sprintFilter}
+                            onChange={(e) =>
+                              setSprintFilter(
+                                e.target.value === "all" ? "all" : Number(e.target.value),
+                              )
+                            }
+                          >
+                            <option value="all">All</option>
+                            {uniqueSprints.map((s) => (
+                              <option key={s} value={s}>
+                                Sprint {s}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Staff Filter */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Staff
+                        </label>
+                        <select
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={staffFilter}
+                          onChange={(e) =>
+                            setStaffFilter(
+                              e.target.value === "all" ? "all" : Number(e.target.value),
+                            )
+                          }
+                        >
+                          <option value="all">All</option>
+                          {staffList.map((s) =>
+                            s ? (
+                              <option key={s?.id} value={s?.id}>
+                                {s?.firstName} {s?.lastName}
+                              </option>
+                            ) : null,
+                          )}
+                        </select>
+                      </div>
+
+                      {/* Status Filter */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Status
+                        </label>
+                        <select
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={statusFilter}
+                          onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                          <option value="all">All</option>
+                          <option value="Not_started">Not Started</option>
+                          <option value="In_progress">In Progress</option>
+                          <option value="Ready_To_Test">Ready to Test</option>
+                          <option value="Testing_In_Progress">Testing In Progress</option>
+                          <option value="Failed_Test">Failed Test</option>
+                          <option value="Passed_Test">Passed Test</option>
+                          <option value="Dev_Completed">Dev Setup Completed</option>
+                          <option value="Completed">Completed</option>
+                          <option value="On_Hold">On Hold</option>
+                        </select>
+                      </div>
+
+                      {/* Priority Filter */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Priority
+                        </label>
+                        <select
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={priorityFilter}
+                          onChange={(e) => setPriorityFilter(e.target.value)}
+                        >
+                          <option value="all">All</option>
+                          <option value="High">High</option>
+                          <option value="Medium">Medium</option>
+                          <option value="Low">Low</option>
+                        </select>
+                      </div>
+
+                      {/* Urgency Filter */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Urgency
+                        </label>
+                        <select
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                          value={urgencyFilter}
+                          onChange={(e) => setUrgencyFilter(e.target.value)}
+                        >
+                          <option value="all">All</option>
+                          <option value="Immediately">Immediately</option>
+                          <option value="Short_Term">Short Term</option>
+                          <option value="Med_Term">Medium Term</option>
+                          <option value="High_Term">High Term</option>
+                        </select>
+                      </div>
+
+                      {/* Date Range Filter */}
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Date Range
+                        </label>
+                        <input
+                          type="date"
+                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+                          value={selectedDate}
+                          onChange={(e) => handleDateChange(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={handleClearDate}
+                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        Clear Date
+                      </button>
+                      <button
+                        onClick={() => setShowFilters(false)}
+                        className="w-full px-4 py-2 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                      >
+                        Apply Filter
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* View Toggle Icons */}
+            <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              <button
+                onClick={() => setIsBoard(false)}
+                className={`p-2 rounded transition-all ${!isBoard
+                  ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
+                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  }`}
+                title="Table View"
+              >
+                <List size={18} />
+              </button>
+              <button
+                onClick={() => setIsBoard(true)}
+                className={`p-2 rounded transition-all ${isBoard
+                  ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
+                  : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  }`}
+                title="Board View"
+              >
+                <Grid3x3 size={18} />
+              </button>
+            </div>
+
+            {/* Export CSV Button */}
             <button
-              onClick={() => setIsBoard(false)}
-              className={`p-2 rounded transition-all ${!isBoard
-                ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
-                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                }`}
-              title="Table View"
+              onClick={handleExportCSV}
+              className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors whitespace-nowrap"
             >
-              <List size={18} />
+              Export
             </button>
-            <button
-              onClick={() => setIsBoard(true)}
-              className={`p-2 rounded transition-all ${isBoard
-                ? "bg-white dark:bg-[#1a1a1a] shadow-sm"
-                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                }`}
-              title="Board View"
+
+            {/* New Task Button */}
+            <Link
+              href={
+                project?.uuid ? `/project/${project.uuid}/add-task` : "/add-task"
+              }
             >
-              <Grid3x3 size={18} />
-            </button>
+              <button className="px-3 sm:px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1 whitespace-nowrap">
+                + New Task
+              </button>
+            </Link>
           </div>
-
-          {/* Export CSV Button */}
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Export CSV
-          </button>
-
-          {/* New Task Button */}
-          <Link
-            href={
-              project?.uuid ? `/project/${project.uuid}/add-task` : "/add-task"
-            }
-          >
-            <button className="px-4 py-2 bg-[#86CD23] hover:bg-[#7ab520] text-black font-semibold text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1">
-              + New Task
-            </button>
-          </Link>
         </div>
       </div>
 
-      {/* Filter Panel */}
-      {showFilters && (
-        <div className="z-5 absolute left-0 right-0 top-38 ml-auto mr-auto bg-white dark:bg-[#141414] rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6 max-w-xs">
-          <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4 uppercase tracking-wider">
-            Filter by
-          </h3>
-
-          <div className="flex flex-col gap-3 mb-4">
-            {/* Department Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Department
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={selectedDeptId}
-                onChange={(e) =>
-                  setSelectedDeptId(
-                    e.target.value === "all" ? "all" : Number(e.target.value),
-                  )
-                }
-              >
-                <option value="all">All</option>
-                {allDepartments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Sprint Filter */}
-            {project?.id && (
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Sprint
-                </label>
-                <select
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                  value={sprintFilter}
-                  onChange={(e) =>
-                    setSprintFilter(
-                      e.target.value === "all" ? "all" : Number(e.target.value),
-                    )
-                  }
-                >
-                  <option value="all">All</option>
-                  {uniqueSprints.map((s) => (
-                    <option key={s} value={s}>
-                      Sprint {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Staff Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Staff
-              </label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={staffFilter}
-                onChange={(e) =>
-                  setStaffFilter(
-                    e.target.value === "all" ? "all" : Number(e.target.value),
-                  )
-                }
-              >
-                <option value="all">All</option>
-                {staffList.map((s) =>
-                  s ? (
-                    <option key={s?.id} value={s?.id}>
-                      {s?.firstName} {s?.lastName}
-                    </option>
-                  ) : null,
-                )}
-              </select>
-            </div>
-
-            {/* Date Range Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Date Range
-              </label>
-              <input
-                type="date"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={handleClearDate}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              Clear Date
-            </button>
-            <button
-              onClick={() => setShowFilters(false)}
-              className="w-full px-4 py-2 bg-[#95D700] text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              Apply Filter
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* View Content */}
       {isBoard ? (

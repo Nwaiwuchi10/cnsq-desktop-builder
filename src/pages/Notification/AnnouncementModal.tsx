@@ -156,6 +156,37 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
     markAnnouncementAsRead();
   }, [notification?.relatedAnnouncement?.id]);
 
+  useEffect(() => {
+    if (
+      autoReadDone.current ||
+      notification.type !== "ceo_message" ||
+      !notification?.relatedCeoMessageId
+    )
+      return;
+
+    const token = localStorage.getItem("user-token") || "";
+
+    const markCeoMessageAsRead = async () => {
+      try {
+        await Api.post(
+          `/ceo-messaging-center/mark-read/${notification.relatedCeoMessageId}`,
+          null, // no body
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        autoReadDone.current = true;
+      } catch (err) {
+        console.error("Failed to mark CEO message as read", err);
+      }
+    };
+
+    markCeoMessageAsRead();
+  }, [notification?.relatedCeoMessageId]);
+
   const toggleReadStatus = async () => {
     if (!notification?.relatedAnnouncement?.id) return;
 
@@ -228,11 +259,11 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
           {notification.type === "ceo_message" && (
-            <span className="px-2 py-0.5 bg-[#86CD23]/10 text-[#86CD23] text-[10px] font-black uppercase rounded-full tracking-wider">
+            <span className="px-2 py-0.5 bg-[#86CD23]/10 text-[#86CD23] text-[10px] font-black uppercase rounded-full tracking-wider whitespace-nowrap">
               CEO Message
             </span>
           )}
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 whitespace-nowrap overflow-hidden text-ellipsis">
             {notification.title}
           </h2>
         </div>
@@ -241,10 +272,10 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         {/* Dynamic content */}
         {isDemo && (
           <>
-            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
               {demoDetails.nameOfProduct}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 whitespace-pre-wrap">
               {renderTextWithLinks(demoDetails.description)}
             </p>
 
@@ -279,10 +310,10 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
         {isAnnouncement && (
           <>
-            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
               {announcementDetails.title}
             </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="text-sm text-gray-600 dark:text-gray-400 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar whitespace-pre-wrap">
               {renderTextWithLinks(announcementDetails.description)}
             </div>
 

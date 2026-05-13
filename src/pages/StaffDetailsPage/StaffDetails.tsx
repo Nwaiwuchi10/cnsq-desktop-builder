@@ -12,6 +12,7 @@ import UpdateProfileModal from "../UpdateStaffProfile/UpdateStaffProfileModal";
 import LoadingSpinner from "@/component/Loading/LoadingSpinner";
 import StaffCompletionModal from "@/component/StaffCompletionModal/StaffCompletionModal";
 import { useChatStore } from "@/store/ChatStore";
+import ImagePreviewModal from "@/component/ImagePreviewModal/ImagePreviewModal";
 interface Project {
   id: number;
   uuid: string;
@@ -138,6 +139,7 @@ export default function StaffDetails() {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [loadingCompletion, setLoadingCompletion] = useState(false);
   const onlineStaffs = useChatStore((s) => s.onlineStaffs);
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
     const Id = localStorage.getItem("userId");
@@ -269,14 +271,18 @@ export default function StaffDetails() {
         {/* Profile Section */}
         <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-sm border border-transparent dark:border-gray-800 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-6 transition-colors">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="relative w-28 h-28 flex-shrink-0">
-              <div className="w-28 h-28 rounded-full overflow-hidden border dark:border-gray-700">
+            <div className="relative w-28 h-28 flex-shrink-0 cursor-zoom-in group">
+              <div className="w-28 h-28 rounded-full overflow-hidden border dark:border-gray-700 transition-transform duration-300 group-hover:scale-105">
                 <Image
                   src={staff?.photoUrl || "/default-avatar.png"}
                   alt={`${staff?.firstName} ${staff?.lastName}`}
                   width={112}
                   height={112}
                   className="object-cover w-full h-full"
+                  onClick={() => setPreviewImage({ 
+                    src: staff?.photoUrl || "/default-avatar.png", 
+                    alt: `${staff?.firstName} ${staff?.lastName}` 
+                  })}
                 />
               </div>
               {/* Completion Indicator */}
@@ -501,6 +507,13 @@ export default function StaffDetails() {
           isOpen={showCompletionModal}
           onClose={() => setShowCompletionModal(false)}
           data={completionData}
+        />
+
+        <ImagePreviewModal
+          isOpen={!!previewImage}
+          onClose={() => setPreviewImage(null)}
+          src={previewImage?.src || ""}
+          alt={previewImage?.alt || ""}
         />
       </div>
     </>

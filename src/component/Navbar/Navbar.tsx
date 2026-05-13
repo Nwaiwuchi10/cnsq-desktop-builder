@@ -23,7 +23,7 @@ type User = {
 const navLinks = [
   // { name: "Anniversary", href: "/anniversary" },
   { name: "Staff Directory", href: "/staff" },
-  { name: "Organogram", href: "/organogram" },
+  // { name: "Organogram", href: "/organogram" },
 ];
 
 export default function Navbar() {
@@ -223,7 +223,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0 mt-2">
-              <Image src={imgHome} alt="logo" width={140} height={70} unoptimized />
+              <Image src={imgHome} alt="logo" width={100} height={50} unoptimized />
             </Link>
 
             {/* Desktop Center Links */}
@@ -265,35 +265,40 @@ export default function Navbar() {
             {/* Mobile Menu Button + Grid Icon */}
             <div className="md:hidden flex items-center gap-4">
               <button
-                onClick={() => {
-                  console.log("Navigating to /staff-dashboard");
-                  router.push("/staff-dashboard");
-                }}
+                onClick={() => setIsOpen(!isOpen)}
+
                 className="flex items-center justify-center focus:outline-none"
               >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="17" y="2" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="2" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="17" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="2" y="17" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
-                  <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
-                </svg>
+                {isOpen ? <X size={26} style={{ color: "#FC8102" }} /> :
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="17" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="2" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="17" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="2" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                    <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  </svg>
+                }
               </button>
-              <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-300 hover:text-[#95D700] focus:outline-none">
+              {/* <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-300 hover:text-[#95D700] focus:outline-none">
                 {isOpen ? <X size={26} /> : <Menu size={26} />}
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
 
-        {/* Mobile Dropdown */}
         {isOpen && (
-          <div className="md:hidden bg-white dark:bg-[#141414] shadow-2xl h-screen absolute w-full left-0 top-20 border-t border-gray-100 dark:border-gray-800 transition-colors">
+          <div className="md:hidden bg-white dark:bg-[#141414] shadow-2xl h-screen absolute w-full left-0 top-full border-t border-gray-100 dark:border-gray-800 transition-colors">
             <div className="flex flex-col items-start px-6 py-8 space-y-6">
+              <div className="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-[#95D700] transition block w-full" onClick={() => {
+                console.log("Navigating to /staff-dashboard");
+                router.push("/staff-dashboard");
+              }}>
+                View Dashboard
+              </div>
               {navLinks.map((link) => (
                 <div key={link.name} className="relative w-full">
                   <Link href={link.href} onClick={() => setIsOpen(false)} className="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-[#95D700] transition block w-full">
@@ -310,21 +315,13 @@ export default function Navbar() {
                       {user?.firstName} {user?.lastName}
                     </span>
                   </div>
-                  <Link href={`/staff/${user?.uuid}`} onClick={() => setIsOpen(false)} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition">
-                    View Profile
-                  </Link>
-                  <Link href={`/change-password`} className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition" onClick={() => setIsDropdownOpen(false)}>
-                    Change Password
-                  </Link>
-                  <Link href="/ceos-corner" className="block py-3 font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition cursor-pointer" onClick={() => setIsOpen(false)}>
-                    Urgent Message to the CEO
-                  </Link>
+
                   <div className="cursor-pointer block font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 transition mt-2">
                     <EnableNotificationsButton />
                   </div>
-                  <button style={{ cursor: "pointer" }} onClick={handleLogout} className="block w-full py-3 mt-4 text-left font-bold text-red-600 hover:text-red-700 transition">
+                  {/* <button style={{ cursor: "pointer" }} onClick={handleLogout} className="block w-full py-3 mt-4 text-left font-bold text-red-600 hover:text-red-700 transition">
                     Logout
-                  </button>
+                  </button> */}
                 </div>
               ) : (
                 <Link href="/login" onClick={() => setIsOpen(false)} className="text-xl font-bold text-gray-800 dark:text-gray-200 hover:text-[#95D700] transition border-t border-gray-100 dark:border-gray-800 pt-6 w-full inline-block">

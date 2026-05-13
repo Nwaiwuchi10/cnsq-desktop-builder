@@ -23,6 +23,7 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
   const [link, setLink] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
       setLink(doc.link || "");
       setFiles([]);
       setExistingFiles(doc.files || []);
+      setError(null);
     }
   }, [isOpen, doc]);
 
@@ -52,8 +54,36 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name) return;
-    onUpdate(doc.id, { name, link, files, existingFiles });
+    setError(null);
+
+    const trimmedName = name.trim();
+    const trimmedLink = link.trim();
+    const hasFiles = files.length > 0;
+    const hasExistingFiles = existingFiles.length > 0;
+
+    console.log("Updating documentation:", { 
+      name: trimmedName, 
+      link: trimmedLink, 
+      newFilesCount: files.length, 
+      existingFilesCount: existingFiles.length 
+    });
+
+    if (!trimmedName) {
+      setError("Documentation name is required");
+      return;
+    }
+
+    if (!trimmedLink && !hasFiles && !hasExistingFiles) {
+      setError("Please provide either a documentation link or upload at least one file");
+      return;
+    }
+
+    onUpdate(doc.id, { 
+      name: trimmedName, 
+      link: trimmedLink, 
+      files, 
+      existingFiles 
+    });
   };
 
   return (
@@ -68,6 +98,13 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
             <X size={20} />
           </button>
         </div>
+
+        {error && (
+          <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl flex items-center gap-2 text-red-600 dark:text-red-400 text-sm animate-in slide-in-from-top-2 duration-200">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-600 dark:bg-red-400 shrink-0" />
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
           <div>
@@ -102,7 +139,7 @@ const EditDocumentationModal: React.FC<EditDocumentationModalProps> = ({
               Files
             </label>
 
-            {/* Existing Files */}
+            {/* Existing Files **/}
             {existingFiles.length > 0 && (
               <div className="mb-4 space-y-2">
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Files</p>

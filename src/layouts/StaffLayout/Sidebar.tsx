@@ -14,7 +14,6 @@ import {
   Mail,
   Calendar,
   Settings,
-  Menu,
   X,
   PanelLeftClose,
   PanelRightClose,
@@ -51,14 +50,7 @@ const navSections = [
     title: "OVERVIEW",
     items: [{ name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard }],
   },
-  {
-    title: "CELEBRATIONS",
-    items: [
-      { name: "Birthdays", href: "/birthday", icon: Cake },
-      { name: "Anniversaries", href: "/anniversary", icon: Medal },
-      { name: "New Hires", href: "/new-hire", icon: UserPlus },
-    ],
-  },
+
   {
     title: "WORK",
     items: [
@@ -85,6 +77,14 @@ const navSections = [
       { name: "Documentation", href: "/documentation", icon: BookOpen },
     ],
   },
+  {
+    title: "CELEBRATIONS",
+    items: [
+      { name: "Birthdays", href: "/birthday", icon: Cake },
+      { name: "Anniversaries", href: "/anniversary", icon: Medal },
+      { name: "New Hires", href: "/new-hire", icon: UserPlus },
+    ],
+  },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen, user }) => {
@@ -103,12 +103,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-[#141414] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out
+        className={`pwa-sidebar fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-[#141414] border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${isCollapsed ? "lg:w-[80px]" : "lg:w-[260px]"} w-[260px]`}
       >
         {/* Logo and Toggle Header */}
-        <div className="h-20 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
+        <div className="pwa-sidebar-header h-20 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
           <div className={`flex items-center overflow-hidden transition-opacity duration-300 ${isCollapsed ? "lg:opacity-0 lg:w-0" : "opacity-100"}`}>
             <Link href="/">
               <Image src={imgHome} alt="logo" width={110} height={50} unoptimized />

@@ -13,8 +13,8 @@ export default function Footer() {
           <Image
             src={logo}
             alt="CNSquad Logo"
-            width={130}
-            height={65}
+            width={100}
+            height={50}
             unoptimized
           />
         </div>
