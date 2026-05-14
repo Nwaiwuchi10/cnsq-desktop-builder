@@ -26,6 +26,11 @@ export default function Footer() {
           </span>
           <span className="text-gray-700 dark:text-gray-400 text-sm hidden md:inline">All rights reserved.</span>
         </div>
+
+        {/* Right: Made with */}
+        <div className="flex items-center text-sm text-gray-700 dark:text-gray-400">
+          Made with ❤️ by ConnectNigeria
+        </div>
       </div>
     </footer>
   );
