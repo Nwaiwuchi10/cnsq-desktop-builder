@@ -29,9 +29,9 @@ export default function Footer() {
 
         {/* Right: Made with */}
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-400 order-2 md:order-none text-center">
-          Made with ❤️ by ConnectNigeria
+          cnsquad built with ❤️ by <a href='https://www.connectnigeria.com/'>connectnigeria.com</a>  powered by Jesus Christ
         </div>
       </div>
     </footer>
   );
-}
+} 
