@@ -19,7 +19,7 @@ export default function Footer() {
           />
         </div>
 
-        {/* Center: Text **/}
+        {/* Center: Text */}
         <div className="md:absolute md:left-1/2 md:transform md:-translate-x-1/2 text-center flex flex-col md:flex-row md:space-x-1 order-3 md:order-none mt-1 md:mt-0">
           <span className="text-gray-700 dark:text-gray-400 text-sm">
             © {new Date().getFullYear()} CNSquad.
@@ -29,9 +29,9 @@ export default function Footer() {
 
         {/* Right: Made with */}
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-400 order-2 md:order-none text-center">
-          Made with ❤️ by ConnectNigeria
+          cnsquad built with ❤️ by <a href='https://www.connectnigeria.com/'>connectnigeria.com</a>  powered by Jesus Christ
         </div>
       </div>
     </footer>
   );
-}
+} 
