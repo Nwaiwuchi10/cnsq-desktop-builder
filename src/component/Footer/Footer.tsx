@@ -29,7 +29,7 @@ export default function Footer() {
 
         {/* Right: Made with */}
         <div className="flex items-center text-sm text-gray-700 dark:text-gray-400 order-2 md:order-none text-center">
-          cnsquad built with ❤️ by <a href='https://www.connectnigeria.com/'>connectnigeria.com</a>  powered by Jesus Christ
+          <a href="https://cnsq.connectnigeria.com/">"cnsquad</a> built with ❤️ by <a href='https://www.connectnigeria.com/'>connectnigeria.com</a> powered by Jesus Christ
         </div>
       </div>
     </footer>
