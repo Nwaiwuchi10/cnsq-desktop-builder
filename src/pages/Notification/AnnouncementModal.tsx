@@ -29,7 +29,7 @@ interface DemoData {
 interface AnnouncementData {
   title: string;
   description: string;
-  attachments?: string[];
+  fileUrls?: string[];
 }
 
 const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
@@ -317,21 +317,25 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
               {renderTextWithLinks(announcementDetails.description)}
             </div>
 
-            {announcementDetails.attachments && announcementDetails.attachments.length > 0 && (
+            {announcementDetails.fileUrls && announcementDetails.fileUrls.length > 0 && (
               <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
-                <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">Attachments</h4>
-                <div className="flex flex-col gap-2">
-                  {announcementDetails.attachments.map((attachmentUrl, i) => (
-                    <a
-                      key={i}
-                      href={attachmentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-600 transition-colors w-max"
-                    >
-                      <Paperclip size={16} />
-                      <span className="underline">View Attachment {i + 1}</span>
-                    </a>
+                <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-2">Attached Images</h4>
+                <div className="flex flex-wrap gap-3">
+                  {announcementDetails.fileUrls.map((fileUrl, i) => (
+                    <div key={i} className="relative group">
+                      <a
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-32 h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity"
+                      >
+                        <img
+                          src={fileUrl}
+                          alt={`Attachment ${i + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </a>
+                    </div>
                   ))}
                 </div>
               </div>
