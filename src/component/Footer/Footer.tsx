@@ -28,10 +28,23 @@ export default function Footer() {
         </div>
 
         {/* Right: Made with */}
-        <div className="flex items-center text-sm text-gray-700 dark:text-gray-400 order-2 md:order-none text-center">
-          Made with ❤️ by ConnectNigeria
+        <div className="text-sm text-gray-700 dark:text-gray-400 order-2 md:order-none text-center">
+          <a
+            href="https://cnsq.connectnigeria.com/"
+            className="hover:underline font-semibold text-gray-900 dark:text-gray-400"
+          >
+            cnsquad
+          </a>
+          {" "}built with ❤️ by{" "}
+          <a
+            href="https://www.connectnigeria.com/"
+            className="hover:underline font-semibold text-gray-900 dark:text-gray-400"
+          >
+            connectnigeria.com
+          </a>
+          {" "}powered by Jesus Christ
         </div>
       </div>
     </footer>
   );
-}
+} 
