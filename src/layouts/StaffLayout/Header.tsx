@@ -249,9 +249,9 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
   };
 
   return (
-    <header className="pwa-header flex items-center justify-between px-6 py-4 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
+    <header className="pwa-header flex items-center justify-between gap-10 text-center px-6 h-20 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
       <div className="flex items-center gap-3">
-        {/* Mobile: Dashboard icon opens sidebar */}
+        {/* Mobile: Dashboard icon opens sidebar **/}
         <button
           onClick={() => setMobileOpen?.(true)}
           className="lg:hidden p-1.5 rounded-md text-[#86CD23] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -264,7 +264,7 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
         </h2>
       </div>
 
-      <div className="flex flex-1 justify-end items-center gap-6">
+      <div className="flex items-center gap-6">
         {/* Search Bar */}
         <div className="hidden md:flex items-center bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 w-72 transition-colors">
           <Search className="w-4 h-4 text-gray-400 mr-2" />
@@ -317,9 +317,8 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
               </span>
               {user && (
                 <div className="flex items-center gap-1 -mt-0.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${
-                    (loggedInUserId && onlineStaffs && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "bg-green-500" : "bg-gray-400"
-                  }`}></span>
+                  <span className={`w-1.5 h-1.5 rounded-full ${(loggedInUserId && onlineStaffs && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "bg-green-500" : "bg-gray-400"
+                    }`}></span>
                   <span className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
                     {(loggedInUserId && onlineStaffs && (onlineStaffs[loggedInUserId] ?? user.isOnline)) ? "Online" : "Offline"}
                   </span>
