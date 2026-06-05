@@ -69,6 +69,8 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
       "/organogram": "Organogram",
       "/staff": "Staff Directory",
       "/settings": "Settings",
+      "/leave-management": "Leave Management",
+      "/leave-approvals": "Leave Approvals",
     };
 
     if (!pathname) return "Dashboard";
