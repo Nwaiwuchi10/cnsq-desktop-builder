@@ -69,6 +69,8 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
       "/organogram": "Organogram",
       "/staff": "Staff Directory",
       "/settings": "Settings",
+      "/leave-management": "Leave Management",
+      "/leave-approvals": "Leave Approvals",
     };
 
     if (!pathname) return "Dashboard";
@@ -251,7 +253,7 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
   return (
     <header className="pwa-header flex items-center justify-between gap-10 text-center px-6 h-20 bg-white dark:bg-[#0d0d0d] border-b border-gray-200 dark:border-gray-800 transition-colors">
       <div className="flex items-center gap-3">
-        {/* Mobile: Dashboard icon opens sidebar */}
+        {/* Mobile: Dashboard icon opens sidebar **/}
         <button
           onClick={() => setMobileOpen?.(true)}
           className="lg:hidden p-1.5 rounded-md text-[#86CD23] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

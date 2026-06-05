@@ -19,8 +19,21 @@ import {
   PanelRightClose,
   Book,
   BookOpen,
-  Send
+  Send,
+  ClipboardCheck
 } from "lucide-react";
+
+type NavItem = {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  isCeoOnly?: boolean;
+};
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
 import Image from "next/image";
 import imgHome from "../../assests/images/CNSQ.png";
 
@@ -45,7 +58,7 @@ interface SidebarProps {
   user?: User | null;
 }
 
-const navSections = [
+const navSections: NavSection[] = [
   {
     title: "OVERVIEW",
     items: [{ name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard }],
@@ -68,7 +81,10 @@ const navSections = [
   },
   {
     title: "PLANNING",
-    items: [{ name: "Calendar", href: "/calender", icon: Calendar }],
+    items: [
+      { name: "Calendar", href: "/calender", icon: Calendar },
+      { name: "Leave Management", href: "/leave-management", icon: ClipboardList },
+    ],
   },
   {
     title: "SYSTEM",
@@ -87,9 +103,21 @@ const navSections = [
   },
 ];
 
+import { leaveApi } from "@/modules/LeaveManagement/services/leaveApi";
+
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen, user }) => {
   // Using a mock path for this implementation since it will be mounted somewhere
   const pathname = usePathname();
+  const [isSupervisor, setIsSupervisor] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      // Use lightweight check endpoint to determine supervisor status
+      leaveApi.isSupervisorCheck()
+        .then(res => setIsSupervisor(res.isSupervisor))
+        .catch(() => setIsSupervisor(false));
+    }
+  }, [user]);
 
   return (
     <>
@@ -126,9 +154,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto py-4 scrollbar-hide">
           {navSections.map((section, idx) => {
-            // Filter items based on CEO status
+            // Filter items based on role and section specific rules
             const filteredItems = section.items.filter(item => {
               if (item.isCeoOnly && !user?.isCeo) return false;
+
+              // Special case for CEO's Corner: hide for CEO
+              if (item.name === "CEO's Corner" && user?.isCeo) return false;
+
+              // Supervisor story: (optional logic if needed here, but keeping it simple for now)
+              // if (item.name === "Leave Approvals" && !isSupervisor) return false;
+
               return true;
             });
 
