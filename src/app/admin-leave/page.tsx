@@ -1,4 +1,4 @@
-import AdminLeaveHistoryPage from '@/pages/LeaveManagement/AdminLeaveHistory'
+import AdminLeaveHistoryPage from '@/modules/LeaveManagement/AdminLeaveHistory'
 
 const page = () => {
   return (
@@ -8,4 +8,4 @@ const page = () => {
   )
 }
 
-export default page 
+export default page

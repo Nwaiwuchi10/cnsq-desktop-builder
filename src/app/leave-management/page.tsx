@@ -1,4 +1,4 @@
-import LeaveManagementPage from '@/pages/LeaveManagement/LeaveManagement'
+import LeaveManagementPage from '@/modules/LeaveManagement/LeaveManagement'
 
 const page = () => {
   return (

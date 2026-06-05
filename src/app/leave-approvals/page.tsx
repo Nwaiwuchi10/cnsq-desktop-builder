@@ -1,4 +1,4 @@
-import LeaveApprovalsPage from '@/pages/LeaveManagement/LeaveApprovals'
+import LeaveApprovalsPage from '@/modules/LeaveManagement/LeaveApprovals'
 
 const page = () => {
   return (

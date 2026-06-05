@@ -103,7 +103,7 @@ const navSections: NavSection[] = [
   },
 ];
 
-import { leaveApi } from "@/pages/LeaveManagement/services/leaveApi";
+import { leaveApi } from "@/modules/LeaveManagement/services/leaveApi";
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobileOpen, setMobileOpen, user }) => {
   // Using a mock path for this implementation since it will be mounted somewhere
