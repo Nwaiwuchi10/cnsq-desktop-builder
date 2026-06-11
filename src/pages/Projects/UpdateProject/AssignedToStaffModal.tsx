@@ -79,10 +79,12 @@ export default function AssignedToStaffModal({
 
         const p: Project = projectRes.data;
         setAssignments(
-          p?.assignedTo?.map((a) => ({
-            staffId: Number(a?.staff?.id),
-            role: a?.role,
-          })) ?? [],
+          (p?.assignedTo ?? [])
+            .filter((a) => a?.staff?.id != null)   // skip orphaned/null staff
+            .map((a) => ({
+              staffId: Number(a.staff.id),
+              role: a.role,
+            }))
         );
 
         setStaffs(staffRes?.data || []);
@@ -101,9 +103,18 @@ export default function AssignedToStaffModal({
     setSubmitting(true);
     try {
       const token = localStorage.getItem("user-token");
+      // Strip out any assignments with an invalid staffId before sending
+      const validAssignments = assignments.filter(
+        (a) => a.staffId != null && Number.isFinite(a.staffId) && a.staffId > 0
+      );
+      if (validAssignments.length === 0) {
+        setModal({ type: "error", message: "Please add at least one valid staff member." });
+        setSubmitting(false);
+        return;
+      }
       await Api.post(
         `/projects/${projectId}/assign`,
-        { assignments },
+        { assignments: validAssignments },
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setModal({ type: "success", message: "Project updated successfully!" });
