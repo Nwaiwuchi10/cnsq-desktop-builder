@@ -117,10 +117,12 @@ export default function UpdateProjectModal({
         setEndDate(p.endDate?.split("T")[0]);
 
         setAssignments(
-          p.assignedTo.map((a) => ({
-            staffId: a.staff.id,
-            role: a.role,
-          }))
+          (p.assignedTo ?? [])
+            .filter((a) => a?.staff?.id != null)   // skip orphaned/null staff
+            .map((a) => ({
+              staffId: Number(a.staff.id),
+              role: a.role,
+            }))
         );
 
         setStaffs(staffRes.data || []);
@@ -159,6 +161,10 @@ export default function UpdateProjectModal({
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    // Strip out invalid staffId assignments before sending
+    const validAssignments = assignments.filter(
+      (a) => a.staffId != null && Number.isFinite(a.staffId) && a.staffId > 0
+    );
     const dto = {
       projectName,
       desc,
@@ -169,7 +175,7 @@ export default function UpdateProjectModal({
       stagingUrl,
       startDate,
       endDate,
-      assignments,
+      assignments: validAssignments,
       departmentId: Number(departmentId),
     };
     const formData = new FormData();
@@ -450,7 +456,7 @@ export default function UpdateProjectModal({
                     if (!selectedStaff || !role) return;
                     setAssignments((prev) => [
                       ...prev,
-                      { staffId: selectedStaff.id, role },
+                      { staffId: Number(selectedStaff.id), role },
                     ]);
                     setSearch("");
                     setSelectedStaff(null);
