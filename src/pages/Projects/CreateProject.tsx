@@ -475,7 +475,7 @@ export default function ProjectWizardForm() {
                       if (!selectedStaff || !role) return;
                       setAssignments((prev) => [
                         ...prev,
-                        { staffId: selectedStaff.id, role },
+                        { staffId: Number(selectedStaff.id), role },
                       ]);
                       setSearch("");
                       setSelectedStaff(null);
