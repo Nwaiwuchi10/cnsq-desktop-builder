@@ -80,9 +80,9 @@ export default function AssignedToStaffModal({
         const p: Project = projectRes.data;
         setAssignments(
           p?.assignedTo?.map((a) => ({
-            staffId: a?.staff?.id,
+            staffId: Number(a?.staff?.id),
             role: a?.role,
-          })),
+          })) ?? [],
         );
 
         setStaffs(staffRes?.data || []);
@@ -211,7 +211,7 @@ export default function AssignedToStaffModal({
                     if (!selectedStaff || !role) return;
                     setAssignments((prev) => [
                       ...prev,
-                      { staffId: selectedStaff.id, role },
+                      { staffId: Number(selectedStaff.id), role },
                     ]);
                     setSearch("");
                     setSelectedStaff(null);

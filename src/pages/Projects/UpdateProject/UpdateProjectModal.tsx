@@ -118,7 +118,7 @@ export default function UpdateProjectModal({
 
         setAssignments(
           p.assignedTo.map((a) => ({
-            staffId: a.staff.id,
+            staffId: Number(a.staff.id),
             role: a.role,
           }))
         );
@@ -450,7 +450,7 @@ export default function UpdateProjectModal({
                     if (!selectedStaff || !role) return;
                     setAssignments((prev) => [
                       ...prev,
-                      { staffId: selectedStaff.id, role },
+                      { staffId: Number(selectedStaff.id), role },
                     ]);
                     setSearch("");
                     setSelectedStaff(null);
