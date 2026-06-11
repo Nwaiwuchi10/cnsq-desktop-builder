@@ -258,14 +258,14 @@ export default function StaffDetails() {
           </button>
 
           {/* Edit icon */}
-          {userId === Number(id) && (
+          {/* {userId === Number(id) && (
             <span
               className="cursor-pointer"
               onClick={() => setShowEditModal(true)}
             >
               <Image src={editIcon} alt="edit icon" />
             </span>
-          )}
+          )} */}
         </div>
 
         {/* Profile Section */}
@@ -279,9 +279,9 @@ export default function StaffDetails() {
                   width={112}
                   height={112}
                   className="object-cover w-full h-full"
-                  onClick={() => setPreviewImage({ 
-                    src: staff?.photoUrl || "/default-avatar.png", 
-                    alt: `${staff?.firstName} ${staff?.lastName}` 
+                  onClick={() => setPreviewImage({
+                    src: staff?.photoUrl || "/default-avatar.png",
+                    alt: `${staff?.firstName} ${staff?.lastName}`
                   })}
                 />
               </div>
@@ -311,12 +311,10 @@ export default function StaffDetails() {
               <p className="text-gray-500 dark:text-gray-400 font-medium">
                 {staff.address.state}, {staff.address.city}
               </p>
-              <button className={`mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium ${
-                (onlineStaffs[staff.id] ?? staff.isOnline) ? "text-[#95D700]" : "text-gray-500"
-              } bg-[#FAFAFA] dark:bg-[#1a1a1a] rounded-full`}>
-                <span className={`w-2 h-2 rounded-full ${
-                  (onlineStaffs[staff.id] ?? staff.isOnline) ? "bg-[#95D700]" : "bg-gray-400"
-                }`}></span>
+              <button className={`mt-2 sm:mx-0 mx-auto flex items-center justify-center gap-2 px-3 py-1 text-sm font-medium ${(onlineStaffs[staff.id] ?? staff.isOnline) ? "text-[#95D700]" : "text-gray-500"
+                } bg-[#FAFAFA] dark:bg-[#1a1a1a] rounded-full`}>
+                <span className={`w-2 h-2 rounded-full ${(onlineStaffs[staff.id] ?? staff.isOnline) ? "bg-[#95D700]" : "bg-gray-400"
+                  }`}></span>
                 {(onlineStaffs[staff.id] ?? staff.isOnline) ? "Online" : "Offline"}
               </button>
             </div>
