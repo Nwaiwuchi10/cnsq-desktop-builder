@@ -258,14 +258,7 @@ export default function StaffDetails() {
           </button>
 
           {/* Edit icon */}
-          {/* {userId === Number(id) && (
-            <span
-              className="cursor-pointer"
-              onClick={() => setShowEditModal(true)}
-            >
-              <Image src={editIcon} alt="edit icon" />
-            </span>
-          )} */}
+
         </div>
 
         {/* Profile Section */}
