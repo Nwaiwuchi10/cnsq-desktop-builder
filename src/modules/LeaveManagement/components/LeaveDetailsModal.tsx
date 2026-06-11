@@ -32,6 +32,8 @@ const LeaveDetailsModal: React.FC<LeaveDetailsModalProps> = ({ isOpen, onClose, 
   const [loading, setLoading] = useState(false);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [file, setFile] = useState<File | null>(null);
+  // Store current user's ID so they don't appear in handover/supervisor lists
+  const [currentStaffId, setCurrentStaffId] = useState<number | null>(null);
   const [messageConfig, setMessageConfig] = useState<{ isOpen: boolean; type: 'success' | 'error'; text: string }>({
     isOpen: false, type: 'success', text: ''
   });
@@ -63,9 +65,21 @@ const LeaveDetailsModal: React.FC<LeaveDetailsModalProps> = ({ isOpen, onClose, 
 
   useEffect(() => {
     if (isEditing && staffList.length === 0) {
-      Api.get('/staff-register/all/staffs/dept?limit=1000', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('user-token')}` }
-      }).then(res => setStaffList(res.data.data || [])).catch(() => {});
+      Promise.allSettled([
+        Api.get('/staff-register/all/staffs/dept?limit=1000', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('user-token')}` }
+        }),
+        Api.get('/staff-register/staff/viewProfile', {
+          headers: { Authorization: `Bearer ${localStorage.getItem('user-token')}` }
+        }),
+      ]).then(([staffRes, profileRes]) => {
+        if (staffRes.status === 'fulfilled') {
+          setStaffList(staffRes.value.data.data || []);
+        }
+        if (profileRes.status === 'fulfilled' && profileRes.value.data?.id) {
+          setCurrentStaffId(profileRes.value.data.id);
+        }
+      }).catch(() => { });
     }
   }, [isEditing]);
 
@@ -185,7 +199,7 @@ const LeaveDetailsModal: React.FC<LeaveDetailsModalProps> = ({ isOpen, onClose, 
                   <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold border ${getStatusStyle(request.status)}`}>
                     {getStatusIcon(request.status)}{request.status}
                   </span>
-                  <span className="text-gray-400 font-medium">Request #{request.id.slice(0, 4)}</span>
+                  {/* <span className="text-gray-400 font-medium">Request #{request.id.slice(0, 4)}</span> */}
                 </div>
 
                 {/* Staff info in supervisor mode */}
@@ -348,7 +362,9 @@ const LeaveDetailsModal: React.FC<LeaveDetailsModalProps> = ({ isOpen, onClose, 
                     onChange={e => setEditForm({ ...editForm, handoverStaffId: e.target.value })}
                   >
                     <option value="">Select handover person</option>
-                    {staffList.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>)}
+                    {staffList
+                      .filter(s => s.id !== currentStaffId)
+                      .map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>)}
                   </select>
                 </div>
 
@@ -362,18 +378,39 @@ const LeaveDetailsModal: React.FC<LeaveDetailsModalProps> = ({ isOpen, onClose, 
                   />
                 </div>
 
-                {/* File */}
+                {/* File — Item 5: show existing document + upload to replace */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Replace Document (Optional)</label>
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Attached Document</label>
+
+                  {/* Current document preview */}
+                  {request.attachedDocument && (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl mb-2">
+                      <FileText className="w-4 h-4 text-[#86CD23] shrink-0" />
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Current Document</span>
+                        <a
+                          href={request.attachedDocument}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-semibold text-[#86CD23] hover:underline truncate"
+                        >
+                          {request.attachedDocument.split('/').pop()?.slice(-40) || 'document'}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload to replace */}
                   <div className="flex items-center gap-3 p-1.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900">
                     <label className="flex items-center gap-2 px-4 py-2 bg-[#86CD23] text-white rounded-lg cursor-pointer hover:bg-[#75b41e] transition-all text-sm font-bold whitespace-nowrap">
-                      <Upload className="w-4 h-4" /> Choose file
+                      <Upload className="w-4 h-4" />
+                      {request.attachedDocument ? 'Replace file' : 'Choose file'}
                       <input type="file" className="hidden"
                         accept=".doc,.docx,.pdf,image/jpeg,image/png"
                         onChange={e => setFile(e.target.files?.[0] || null)}
                       />
                     </label>
-                    <span className="text-sm text-gray-500 truncate">{file ? file.name : 'No file chosen'}</span>
+                    <span className="text-sm text-gray-500 truncate">{file ? file.name : 'No new file chosen'}</span>
                   </div>
                 </div>
 

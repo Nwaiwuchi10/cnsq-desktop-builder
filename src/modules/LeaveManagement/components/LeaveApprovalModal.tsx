@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Download, User, FileText } from 'lucide-react';
+import { X, Download, User, FileText, CheckCircle, XCircle } from 'lucide-react';
 import { LeaveRequest, leaveApi } from '../services/leaveApi';
 import CustomModal from '@/component/Message/Message';
 
@@ -8,9 +8,11 @@ interface LeaveApprovalModalProps {
   onClose: () => void;
   request: LeaveRequest | null;
   onSuccess: () => void;
+  // Item 3: current logged-in user (supervisor)
+  currentUser?: { firstName?: string; lastName?: string } | null;
 }
 
-const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose, request, onSuccess }) => {
+const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose, request, onSuccess, currentUser }) => {
   const [reviewNotes, setReviewNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [actionType, setActionType] = useState<'Approved' | 'Declined' | null>(null);
@@ -22,9 +24,12 @@ const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose
 
   if (!isOpen || !request) return null;
 
+  // Item 1: check if the request has already been actioned
+  const isAlreadyActioned = request.status === 'Approved' || request.status === 'Declined';
+
   const handleAction = async (status: 'Approved' | 'Declined') => {
-    if (!reviewNotes) {
-      setMessageConfig({ isOpen: true, type: 'error', text: 'Please provide approval notes' });
+    if (!reviewNotes.trim()) {
+      setMessageConfig({ isOpen: true, type: 'error', text: 'Please provide approval notes before proceeding' });
       return;
     }
 
@@ -33,7 +38,6 @@ const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose
     try {
       await leaveApi.updateStatus(request.id, status, reviewNotes);
       setMessageConfig({ isOpen: true, type: 'success', text: `Request ${status.toLowerCase()} successfully` });
-      // We don't close immediately so they can see the success message
     } catch (error: any) {
       setMessageConfig({ isOpen: true, type: 'error', text: error.response?.data?.message || 'Failed to update status' });
     } finally {
@@ -58,6 +62,15 @@ const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose
     const day = date.getDate();
     const year = date.getFullYear();
     return `${month} ${day}${getOrdinalSuffix(day)}, ${year}`;
+  };
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'Approved': return 'bg-green-100 text-green-700 border-green-200';
+      case 'Pending': return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'Declined': return 'bg-red-100 text-red-700 border-red-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
   };
 
   return (
@@ -88,7 +101,22 @@ const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose
             </button>
           </div>
 
-          <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
+          {/* Item 3: Reviewer name + current status banner */}
+          <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+            <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-bold border ${getStatusStyle(request.status)}`}>
+              {request.status === 'Approved' && <CheckCircle className="w-4 h-4" />}
+              {request.status === 'Declined' && <XCircle className="w-4 h-4" />}
+              {request.status}
+            </span>
+            {currentUser && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <User className="w-3.5 h-3.5" />
+                <span>Reviewing as: <span className="font-bold text-gray-700 dark:text-gray-300">{currentUser.firstName} {currentUser.lastName}</span></span>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-5 max-h-[55vh] overflow-y-auto pr-2 scrollbar-hide">
              {/* Staff Name */}
              <div className="p-5 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Staff Name</p>
@@ -161,36 +189,72 @@ const LeaveApprovalModal: React.FC<LeaveApprovalModalProps> = ({ isOpen, onClose
               </div>
             )}
 
-            {/* Approval Notes */}
-            <div className="flex flex-col gap-2 pt-2">
-              <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Approval Notes <span className="text-red-500">*</span></label>
-              <textarea 
-                rows={4}
-                placeholder="Add any notes or conditions for approval..."
-                className="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-[#86CD23] transition-all resize-none shadow-sm"
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value)}
-              />
-            </div>
+            {/* If already actioned: show review info + hide action inputs */}
+            {isAlreadyActioned ? (
+              <div className="p-5 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-gray-100 dark:border-gray-800 space-y-3">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Review Information</p>
+                {request.reviewedBy && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Reviewed By</p>
+                    <p className="font-bold text-gray-900 dark:text-white">{request.reviewedBy.firstName} {request.reviewedBy.lastName}</p>
+                  </div>
+                )}
+                {request.reviewNotes && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-0.5">Review Notes</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-sm italic">"{request.reviewNotes}"</p>
+                  </div>
+                )}
+                {/* Item 1: Visual indicator that this was already acted on */}
+                <div className={`flex items-center gap-2 mt-2 px-3 py-2 rounded-lg font-semibold text-sm ${
+                  request.status === 'Approved' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                }`}>
+                  {request.status === 'Approved' ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                  This request has already been {request.status.toLowerCase()}
+                </div>
+              </div>
+            ) : (
+              /* Approval Notes — only shown for Pending requests */
+              <div className="flex flex-col gap-2 pt-2">
+                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  {/* Item 3: Note label clarifies who is approving */}
+                  Your Approval Notes <span className="text-red-500">*</span>
+                  {currentUser && (
+                    <span className="ml-2 text-xs font-normal text-gray-400">
+                      — {currentUser.firstName} {currentUser.lastName}
+                    </span>
+                  )}
+                </label>
+                <textarea 
+                  rows={4}
+                  placeholder="Add any notes or conditions for approval..."
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-[#86CD23] transition-all resize-none shadow-sm"
+                  value={reviewNotes}
+                  onChange={(e) => setReviewNotes(e.target.value)}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-4 mt-8">
-            <button 
-              onClick={() => handleAction('Declined')}
-              disabled={loading}
-              className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-lg shadow-red-600/20 transition-all transform active:scale-95 disabled:opacity-50"
-            >
-              {loading && actionType === 'Declined' ? 'Declining...' : 'Decline'}
-            </button>
-            <button 
-              onClick={() => handleAction('Approved')}
-              disabled={loading}
-              className="flex-1 py-4 bg-[#86CD23] hover:bg-[#75b41e] text-white font-black rounded-xl shadow-lg shadow-[#86CD23]/20 transition-all transform active:scale-95 disabled:opacity-50"
-            >
-              {loading && actionType === 'Approved' ? 'Confirming...' : 'Confirm'}
-            </button>
-          </div>
+          {/* Item 1: Actions — hidden if already approved/declined */}
+          {!isAlreadyActioned && (
+            <div className="flex gap-4 mt-8">
+              <button 
+                onClick={() => handleAction('Declined')}
+                disabled={loading}
+                className="flex-1 py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl shadow-lg shadow-red-600/20 transition-all transform active:scale-95 disabled:opacity-50"
+              >
+                {loading && actionType === 'Declined' ? 'Declining...' : 'Decline'}
+              </button>
+              <button 
+                onClick={() => handleAction('Approved')}
+                disabled={loading}
+                className="flex-1 py-4 bg-[#86CD23] hover:bg-[#75b41e] text-white font-black rounded-xl shadow-lg shadow-[#86CD23]/20 transition-all transform active:scale-95 disabled:opacity-50"
+              >
+                {loading && actionType === 'Approved' ? 'Confirming...' : 'Confirm'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

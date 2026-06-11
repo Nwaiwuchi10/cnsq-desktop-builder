@@ -29,6 +29,8 @@ export default function LeaveManagementPage() {
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     // supervisor state: null = not resolved yet, true/false = resolved
     const [isSupervisor, setIsSupervisor] = useState<boolean | null>(null);
+    // Item 2: supervisor view tab — 'team' = requests where they are supervisor, 'my' = their own requests
+    const [supervisorViewTab, setSupervisorViewTab] = useState<'team' | 'my'>('team');
 
     // ── 1. Profile fetch (once on mount) ──────────────────────────────────────
     useEffect(() => {
@@ -60,9 +62,18 @@ export default function LeaveManagementPage() {
             const statusFilter = activeTab !== "All" ? activeTab : undefined;
             const search = debouncedSearch || undefined;
 
-            const historyPromise = isSupervisor
-                ? leaveApi.getSupervisorMe(search, statusFilter)
-                : leaveApi.getHistory(search, statusFilter);
+            let historyPromise: Promise<LeaveRequest[]>;
+
+            if (isSupervisor) {
+                // Item 2: switch between team view and my view
+                if (supervisorViewTab === 'my') {
+                    historyPromise = leaveApi.getHistory(search, statusFilter);
+                } else {
+                    historyPromise = leaveApi.getSupervisorMe(search, statusFilter);
+                }
+            } else {
+                historyPromise = leaveApi.getHistory(search, statusFilter);
+            }
 
             const statsPromise = isSupervisor
                 ? leaveApi.getSupervisorStats()
@@ -87,7 +98,7 @@ export default function LeaveManagementPage() {
         } finally {
             setLoading(false);
         }
-    }, [isSupervisor, debouncedSearch, activeTab]);
+    }, [isSupervisor, debouncedSearch, activeTab, supervisorViewTab]);
 
     useEffect(() => {
         fetchData();
@@ -103,6 +114,13 @@ export default function LeaveManagementPage() {
         window.addEventListener('open-leave-modal', handleOpenModal);
         return () => window.removeEventListener('open-leave-modal', handleOpenModal);
     }, []);
+
+    // When supervisor switches between team/my view, reset tab to All
+    const handleSupervisorViewTabChange = (tab: 'team' | 'my') => {
+        setSupervisorViewTab(tab);
+        setActiveTab('All');
+        setSearchQuery('');
+    };
 
     return (
         <StaffLayout>
@@ -147,6 +165,8 @@ export default function LeaveManagementPage() {
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                     isSupervisorMode={isSupervisor === true}
+                    supervisorViewTab={supervisorViewTab}
+                    onSupervisorViewTabChange={handleSupervisorViewTabChange}
                 />
             </div>
 
@@ -157,12 +177,13 @@ export default function LeaveManagementPage() {
                 onSuccess={fetchData}
             />
 
-            {isSupervisor ? (
+            {isSupervisor && supervisorViewTab === 'team' ? (
                 <LeaveApprovalModal
                     isOpen={isDetailsModalOpen}
                     onClose={() => setIsDetailsModalOpen(false)}
                     request={selectedRequest}
                     onSuccess={fetchData}
+                    currentUser={user}
                 />
             ) : (
                 <LeaveDetailsModal

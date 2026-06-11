@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Search, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { LeaveRequest } from '../services/leaveApi';
 
 interface LeaveTableProps {
@@ -11,6 +11,9 @@ interface LeaveTableProps {
   setSearchQuery: (query: string) => void;
   isSupervisorMode?: boolean;
   loading?: boolean;
+  // Item 2: supervisor dual-view
+  supervisorViewTab?: 'team' | 'my';
+  onSupervisorViewTabChange?: (tab: 'team' | 'my') => void;
 }
 
 const LeaveTable: React.FC<LeaveTableProps> = ({
@@ -21,7 +24,9 @@ const LeaveTable: React.FC<LeaveTableProps> = ({
   searchQuery,
   setSearchQuery,
   isSupervisorMode = false,
-  loading = false
+  loading = false,
+  supervisorViewTab = 'team',
+  onSupervisorViewTabChange,
 }) => {
   const tabs = [
     { label: 'All', value: 'All' },
@@ -56,6 +61,58 @@ const LeaveTable: React.FC<LeaveTableProps> = ({
     }
   };
 
+  // Item 6: determine empty state based on active tab
+  const renderEmptyState = () => {
+    if (activeTab === 'All') {
+      // Full empty state with CTA button
+      return (
+        <tr>
+          <td colSpan={isSupervisorMode ? 8 : 7} className="px-6 py-24 text-center">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="text-center group">
+                <p className="text-gray-700 dark:text-gray-300 font-bold text-lg">You do not have a leave history</p>
+                <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Tap the button to Request a Leave</p>
+              </div>
+              <button
+                onClick={() => (window as any).dispatchEvent(new CustomEvent('open-leave-modal'))}
+                className="bg-[#86CD23] hover:bg-[#75b41e] text-white px-8 py-3 rounded-lg font-bold shadow-md shadow-[#86CD23]/20 transition-all text-sm mt-2"
+              >
+                Request Leave
+              </button>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    // Filtered tabs (Pending, Approved, Declined) — simple message
+    const messages: Record<string, string> = {
+      Pending: 'No pending leave requests found.',
+      Approved: 'No approved leave requests found.',
+      Declined: 'No declined leave requests found.',
+    };
+
+    return (
+      <tr>
+        <td colSpan={isSupervisorMode ? 8 : 7} className="px-6 py-16 text-center">
+          <div className="flex flex-col items-center justify-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-2">
+              {activeTab === 'Approved' && <CheckCircle className="w-6 h-6 text-gray-400" />}
+              {activeTab === 'Pending' && <Clock className="w-6 h-6 text-gray-400" />}
+              {activeTab === 'Declined' && <XCircle className="w-6 h-6 text-gray-400" />}
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 font-semibold text-base">
+              {messages[activeTab] || 'No data found.'}
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
+              Try switching to a different filter or checking back later.
+            </p>
+          </div>
+        </td>
+      </tr>
+    );
+  };
+
   return (
     <div className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden flex flex-col mt-6">
       <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -72,6 +129,37 @@ const LeaveTable: React.FC<LeaveTableProps> = ({
           />
         </div>
       </div>
+
+      {/* Item 2: Supervisor dual-view switcher — only shown in supervisor mode */}
+      {isSupervisorMode && onSupervisorViewTabChange && (
+        <div className="px-6 pb-2 flex items-center gap-2">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => onSupervisorViewTabChange('team')}
+              className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                supervisorViewTab === 'team'
+                  ? 'bg-white dark:bg-[#141414] text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              Team Requests
+            </button>
+            <button
+              onClick={() => onSupervisorViewTabChange('my')}
+              className={`px-5 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+                supervisorViewTab === 'my'
+                  ? 'bg-white dark:bg-[#141414] text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              My Requests
+            </button>
+          </div>
+          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+            {supervisorViewTab === 'team' ? 'Requests assigned to you as supervisor' : 'Your own leave requests'}
+          </span>
+        </div>
+      )}
 
       <div className="px-6 pb-4 flex items-center gap-2 overflow-x-auto scrollbar-hide">
         <div className="flex bg-gray-50 dark:bg-gray-900 p-1 rounded-full border border-gray-100 dark:border-gray-800">
@@ -97,7 +185,7 @@ const LeaveTable: React.FC<LeaveTableProps> = ({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50/50 dark:bg-gray-900/50 border-y border-gray-100 dark:border-gray-800">
-              {isSupervisorMode && (
+              {isSupervisorMode && supervisorViewTab === 'team' && (
                 <th className="px-6 py-3.5 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Staff</th>
               )}
               <th className="px-6 py-3.5 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Leave Type</th>
@@ -112,7 +200,7 @@ const LeaveTable: React.FC<LeaveTableProps> = ({
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {loading ? (
               <tr>
-                <td colSpan={isSupervisorMode ? 8 : 7} className="px-6 py-20 text-center">
+                <td colSpan={isSupervisorMode && supervisorViewTab === 'team' ? 8 : 7} className="px-6 py-20 text-center">
                   <div className="flex items-center justify-center gap-2 text-gray-400">
                     <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -123,26 +211,12 @@ const LeaveTable: React.FC<LeaveTableProps> = ({
                 </td>
               </tr>
             ) : data.length === 0 ? (
-              <tr>
-                <td colSpan={isSupervisorMode ? 8 : 7} className="px-6 py-24 text-center">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    <div className="text-center group">
-                      <p className="text-gray-700 dark:text-gray-300 font-bold text-lg">You do not have a leave history</p>
-                      <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Tap the button to Request a Leave</p>
-                    </div>
-                    <button
-                      onClick={() => (window as any).dispatchEvent(new CustomEvent('open-leave-modal'))}
-                      className="bg-[#86CD23] hover:bg-[#75b41e] text-white px-8 py-3 rounded-lg font-bold shadow-md shadow-[#86CD23]/20 transition-all text-sm mt-2"
-                    >
-                      Request Leave
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              renderEmptyState()
             ) : (
               data.map((request) => (
                 <tr key={request.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors">
-                  {isSupervisorMode && (
+                  {/* Item 2: Only show Staff column in team view */}
+                  {isSupervisorMode && supervisorViewTab === 'team' && (
                     <td className="px-6 py-4.5 text-sm text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap">
                       {request.staff ? `${request.staff.firstName} ${request.staff.lastName}` : 'N/A'}
                     </td>
