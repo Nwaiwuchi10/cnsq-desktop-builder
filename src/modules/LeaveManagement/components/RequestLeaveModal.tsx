@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar as CalendarIcon, Upload, ArrowRight } from 'lucide-react';
+import { X, Calendar as CalendarIcon, Upload } from 'lucide-react';
 import Api from '@/utils/api';
 import { leaveApi } from '../services/leaveApi';
 import CustomModal from '@/component/Message/Message';
@@ -16,6 +16,16 @@ interface RequestLeaveModalProps {
   onSuccess: () => void;
 }
 
+const INITIAL_FORM = {
+  leaveType: '',
+  startDate: '',
+  endDate: '',
+  reason: '',
+  handoverStaffId: '',
+  handoverNotes: '',
+  supervisorIds: [] as number[],
+};
+
 const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
@@ -25,15 +35,11 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
     type: 'success',
     text: ''
   });
-  const [formData, setFormData] = useState({
-    leaveType: '',
-    startDate: '',
-    endDate: '',
-    reason: '',
-    handoverStaffId: '',
-    handoverNotes: '',
-    supervisorIds: [] as number[],
-  });
+  const [formData, setFormData] = useState({ ...INITIAL_FORM });
+  // Item 9: track auto-added supervisor IDs so they are visually distinguished
+  const [autoAddedIds, setAutoAddedIds] = useState<number[]>([]);
+  // Store current user's own staff ID so they don't appear in handover/supervisor lists
+  const [currentStaffId, setCurrentStaffId] = useState<number | null>(null);
 
   const leaveTypes = [
     'Annual Leave',
@@ -49,10 +55,17 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
 
   const [showNotice, setShowNotice] = useState(true);
 
+  // Item 4: Reset form every time modal opens (isOpen flips to true)
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      fetchStaff();
+      // Reset everything
+      setFormData({ ...INITIAL_FORM });
+      setFile(null);
+      setShowNotice(true);
+      setAutoAddedIds([]);
+      setCurrentStaffId(null);
+      fetchStaffAndPreloadSupervisors();
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -61,16 +74,71 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
     };
   }, [isOpen]);
 
-  const fetchStaff = async () => {
+  // Item 9: fetch staff list AND current user profile to pre-add default supervisors
+  const fetchStaffAndPreloadSupervisors = async () => {
     try {
-      const response = await Api.get('/staff-register/all/staffs/dept?limit=1000', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("user-token")}`
+      const [staffRes, profileRes] = await Promise.allSettled([
+        Api.get('/staff-register/all/staffs/dept?limit=1000', {
+          headers: { Authorization: `Bearer ${localStorage.getItem("user-token")}` }
+        }),
+        Api.get('/staff-register/staff/viewProfile', {
+          headers: { Authorization: `Bearer ${localStorage.getItem("user-token")}` }
+        }),
+      ]);
+
+      let allStaff: StaffMember[] = [];
+      if (staffRes.status === 'fulfilled') {
+        allStaff = staffRes.value.data.data || [];
+        setStaffList(allStaff);
+      }
+
+      // Try to resolve reporting manager & direct report to staff IDs
+      if (profileRes.status === 'fulfilled' && allStaff.length > 0) {
+        const profileData = profileRes.value.data;
+        // Store current user's ID to exclude them from dropdowns
+        if (profileData?.id) {
+          setCurrentStaffId(profileData.id);
         }
-      });
-      setStaffList(response.data.data);
+        const employment = profileData?.employment;
+        const preAddedIds: number[] = [];
+
+        const findByName = (name: string): StaffMember | undefined => {
+          if (!name) return undefined;
+          const parts = name.trim().toLowerCase().split(/\s+/);
+          return allStaff.find(s => {
+            const first = s.firstName.toLowerCase();
+            const last = s.lastName.toLowerCase();
+            if (parts.length >= 2) {
+              return first === parts[0] && last === parts.slice(1).join(' ');
+            }
+            return first === parts[0] || last === parts[0];
+          });
+        };
+
+        if (employment?.reportingManager) {
+          const manager = findByName(employment.reportingManager);
+          if (manager && !preAddedIds.includes(manager.id)) {
+            preAddedIds.push(manager.id);
+          }
+        }
+
+        if (employment?.directReport) {
+          const report = findByName(employment.directReport);
+          if (report && !preAddedIds.includes(report.id)) {
+            preAddedIds.push(report.id);
+          }
+        }
+
+        if (preAddedIds.length > 0) {
+          setAutoAddedIds(preAddedIds);
+          setFormData(prev => ({
+            ...prev,
+            supervisorIds: preAddedIds,
+          }));
+        }
+      }
     } catch (error) {
-      console.error('Error fetching staff:', error);
+      console.error('Error fetching staff/profile:', error);
     }
   };
 
@@ -108,7 +176,6 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
 
       await leaveApi.createRequest(data);
       setMessageConfig({ isOpen: true, type: 'success', text: 'Leave request submitted successfully' });
-      // We don't close immediately so they can see the success message
     } catch (error: any) {
       setMessageConfig({ isOpen: true, type: 'error', text: error.response?.data?.message || 'Failed to submit request' });
     } finally {
@@ -248,9 +315,11 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
                       onChange={(e) => setFormData({ ...formData, handoverStaffId: e.target.value })}
                     >
                       <option value="">Select person to handover to</option>
-                      {staffList.map(staff => (
-                        <option key={staff.id} value={staff.id}>{staff.firstName} {staff.lastName}</option>
-                      ))}
+                      {staffList
+                        .filter(staff => staff.id !== currentStaffId)
+                        .map(staff => (
+                          <option key={staff.id} value={staff.id}>{staff.firstName} {staff.lastName}</option>
+                        ))}
                     </select>
                   </div>
 
@@ -286,16 +355,56 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
                     </div>
                   </div>
 
-                  {/* Supervisor Selection */}
+                  {/* Supervisor Selection — Item 9: with auto-added defaults */}
                   <div className="flex flex-col gap-1.5">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Select Additional Supervisors <span className="text-red-500">*</span>
+                        Supervisors <span className="text-red-500">*</span>
                       </label>
-                      <span className="text-[10px] text-[#86CD23] font-bold bg-[#86CD23]/10 px-2 py-0.5 rounded-full">
-                        Supervisor & Direct Reports added by default
-                      </span>
+                      {autoAddedIds.length > 0 && (
+                        <span className="text-[10px] text-[#86CD23] font-bold bg-[#86CD23]/10 px-2 py-0.5 rounded-full">
+                          {autoAddedIds.length} auto-added from your profile
+                        </span>
+                      )}
                     </div>
+
+                    {/* Selected Supervisors Tags */}
+                    {formData.supervisorIds.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {formData.supervisorIds.map(id => {
+                          const s = staffList.find(st => st.id === id);
+                          const isAutoAdded = autoAddedIds.includes(id);
+                          return s ? (
+                            <div
+                              key={id}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                                isAutoAdded
+                                  ? 'bg-[#86CD23]/10 border-[#86CD23]/30 dark:bg-[#86CD23]/10 dark:border-[#86CD23]/30'
+                                  : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                              }`}
+                            >
+                              {isAutoAdded && (
+                                <span className="text-[9px] font-black text-[#86CD23] uppercase tracking-wider">Default</span>
+                              )}
+                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {s.firstName} {s.lastName}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormData({ ...formData, supervisorIds: formData.supervisorIds.filter(sid => sid !== id) });
+                                  if (isAutoAdded) setAutoAddedIds(autoAddedIds.filter(aid => aid !== id));
+                                }}
+                                className="text-gray-400 hover:text-red-500 transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : null;
+                        })}
+                      </div>
+                    )}
+
                     <select
                       className="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-[#86CD23] transition-all"
                       value=""
@@ -306,34 +415,13 @@ const RequestLeaveModal: React.FC<RequestLeaveModalProps> = ({ isOpen, onClose, 
                         }
                       }}
                     >
-                      <option value="">Select supervisors</option>
-                      {staffList.map(staff => (
-                        <option key={staff.id} value={staff.id}>{staff.firstName} {staff.lastName}</option>
-                      ))}
+                      <option value="">+ Add additional supervisor</option>
+                      {staffList
+                        .filter(staff => !formData.supervisorIds.includes(staff.id) && staff.id !== currentStaffId)
+                        .map(staff => (
+                          <option key={staff.id} value={staff.id}>{staff.firstName} {staff.lastName}</option>
+                        ))}
                     </select>
-
-                    {/* Selected Supervisors Tags */}
-                    {formData.supervisorIds.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {formData.supervisorIds.map(id => {
-                          const s = staffList.find(st => st.id === id);
-                          return s ? (
-                            <div key={id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
-                              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {s.firstName} {s.lastName}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setFormData({ ...formData, supervisorIds: formData.supervisorIds.filter(sid => sid !== id) })}
-                                className="text-gray-400 hover:text-red-500 transition-colors"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
