@@ -83,7 +83,7 @@ const navSections: NavSection[] = [
     title: "PLANNING",
     items: [
       { name: "Calendar", href: "/calender", icon: Calendar },
-      // { name: "Leave Management", href: "/leave-management", icon: ClipboardList },
+      { name: "Leave Management", href: "/leave-management", icon: ClipboardList },
     ],
   },
   {
