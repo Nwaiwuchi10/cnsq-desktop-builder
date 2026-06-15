@@ -38,7 +38,7 @@ export default function LeaveManagementPage() {
             headers: { Authorization: `Bearer ${localStorage.getItem("user-token")}` }
         })
             .then((res) => setUser(res.data))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     // ── 2. Supervisor check (once on mount) ───────────────────────────────────
@@ -115,7 +115,7 @@ export default function LeaveManagementPage() {
         return () => window.removeEventListener('open-leave-modal', handleOpenModal);
     }, []);
 
-    // When supervisor switches between team/my view, reset tab to All
+    // When supervisor switches between team/my view, reset tab to All//
     const handleSupervisorViewTabChange = (tab: 'team' | 'my') => {
         setSupervisorViewTab(tab);
         setActiveTab('All');
