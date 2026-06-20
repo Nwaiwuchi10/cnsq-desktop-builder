@@ -114,7 +114,7 @@ export default function HeadsStaffDirectory() {
             />
 
             {/* Filter + Add Staff (MOBILE only) */}
-            <div className="flex sm:hidden gap-2 ml-2">
+            {/* <div className="flex sm:hidden gap-2 ml-2">
               <button className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg text-gray-600 text-sm hover:bg-gray-100">
                 Filter <Filter size={16} />
               </button>
@@ -126,11 +126,11 @@ export default function HeadsStaffDirectory() {
                   Add Staff <Plus size={16} />
                 </button>
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Side (DESKTOP only) */}
-          <div className="hidden sm:flex items-center gap-3">
+          {/* <div className="hidden sm:flex items-center gap-3">
             <button className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-100">
               <Filter size={16} />
               Filter by
@@ -143,7 +143,7 @@ export default function HeadsStaffDirectory() {
                 Add New Staff <Plus size={18} />
               </button>
             </Link>
-          </div>
+          </div> */}
         </div>
 
         {/* 👥 People Grid */}
