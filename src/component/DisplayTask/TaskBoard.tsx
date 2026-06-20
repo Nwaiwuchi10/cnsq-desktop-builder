@@ -72,6 +72,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
   >([]);
 
   const [editTaskId, setEditTaskId] = useState<number | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("user-token");
@@ -134,7 +135,7 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
     if (projectId || userDeptId || selectedDeptId !== "all" || !projectId) {
       fetchTasks();
     }
-  }, [projectId, userDeptId, selectedDeptId]);
+  }, [projectId, userDeptId, selectedDeptId, refreshTrigger]);
 
   if (!tasks.length)
     return <p className="p-6">No Task Found for this project.</p>;
@@ -400,7 +401,11 @@ const TaskBoard: React.FC<DisplayTaskProps> = ({ projectId }) => {
       </div>
       {/* /// */}
       {selectedTask && (
-        <TaskModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onTasksUpdate={() => setRefreshTrigger((prev) => prev + 1)}
+        />
       )}
     </>
   );

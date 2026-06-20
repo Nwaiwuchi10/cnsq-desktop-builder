@@ -551,8 +551,8 @@ export default function TaskModal({ task, onClose, onTasksUpdate = () => {} }: T
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         onUpdated={() => {
-          refreshTask();
           onTasksUpdate();
+          onClose();
         }}
       />
     </>

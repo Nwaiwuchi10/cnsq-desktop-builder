@@ -50,7 +50,7 @@ const TableView: React.FC<TableViewProps> = ({
     High_Term: "bg-blue-100 text-blue-700",
   };
 
-  if (loading) {
+  if (loading && tasks.length === 0) {
     return (
       <div className="flex items-center justify-center h-48">
         <p className="text-gray-500 dark:text-gray-400">Loading tasks...</p>
