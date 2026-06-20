@@ -11,6 +11,7 @@ interface TableViewProps {
   selectedTask?: TaskDTO | null;
   onTaskSelect?: (task: TaskDTO) => void;
   onTaskClose?: () => void;
+  onTasksUpdate?: () => void;
 }
 
 const TableView: React.FC<TableViewProps> = ({
@@ -20,6 +21,7 @@ const TableView: React.FC<TableViewProps> = ({
   selectedTask = null,
   onTaskSelect = () => {},
   onTaskClose = () => {},
+  onTasksUpdate = () => {},
 }) => {
   const formatLabel = (val?: string) => {
     if (!val) return "—";
@@ -192,7 +194,13 @@ const TableView: React.FC<TableViewProps> = ({
         </table>
       </div>
 
-      {selectedTask && <TaskModal task={selectedTask} onClose={onTaskClose} />}
+      {selectedTask && (
+        <TaskModal
+          task={selectedTask}
+          onClose={onTaskClose}
+          onTasksUpdate={onTasksUpdate}
+        />
+      )}
     </>
   );
 };
