@@ -283,7 +283,7 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
   //   saveAs(blob, "tasks.csv");
   // };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading && tasks.length === 0) return <p>Loading...</p>;
 
   // ✅ Apply sprint filter
   let displayedTasks = [...tasks];
@@ -552,7 +552,11 @@ const ProjectTasksSheet: React.FC<DisplayTaskProps> = ({ projectId }) => {
         </table>
       </div>
       {selectedTask && (
-        <TaskModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onTasksUpdate={fetchTasks}
+        />
       )}
     </>
   );

@@ -115,7 +115,7 @@ const BoardView: React.FC<BoardViewProps> = ({
     setDraggedFromStatus(null);
   };
 
-  if (loading) {
+  if (loading && initialTasks.length === 0) {
     return (
       <div className="flex items-center justify-center h-96">
         <p className="text-gray-500 dark:text-gray-400">Loading tasks...</p>
@@ -315,7 +315,11 @@ const BoardView: React.FC<BoardViewProps> = ({
       </div>
 
       {selectedTask && (
-        <TaskModal task={selectedTask} onClose={() => setSelectedTask(null)} />
+        <TaskModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+          onTasksUpdate={onTasksUpdate}
+        />
       )}
     </>
   );

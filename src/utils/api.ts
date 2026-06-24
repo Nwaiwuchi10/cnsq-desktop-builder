@@ -13,4 +13,18 @@ Api.interceptors.request.use((config) => {
   return config;
 });
 
+Api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("user-token");
+        localStorage.removeItem("userId");
+        window.location.href = "/presignin";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default Api;

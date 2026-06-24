@@ -87,6 +87,13 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     { id: number; name: string }[]
   >([]);
 
+  // Pagination & Refresh
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
   // Fetch user profile
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -124,6 +131,23 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     }
   }, [project?.id]);
 
+  // Reset page to 1 on filter or search change
+  useEffect(() => {
+    setPage(1);
+  }, [
+    project?.id,
+    selectedDeptId,
+    staffFilter,
+    statusFilter,
+    priorityFilter,
+    urgencyFilter,
+    yearFilter,
+    monthFilter,
+    dayFilter,
+    sprintFilter,
+    searchQuery,
+  ]);
+
   // Fetch tasks
   useEffect(() => {
     const fetchTasks = async () => {
@@ -139,6 +163,11 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         if (statusFilter !== "all") params.append("status", statusFilter);
         if (priorityFilter !== "all") params.append("priority", priorityFilter);
         if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
+        params.append("page", String(page));
+        params.append("limit", String(limit));
+        if (searchQuery.trim()) {
+          params.append("search", searchQuery.trim());
+        }
 
         if (project?.id) {
           if (staffFilter === "all") {
@@ -165,6 +194,11 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           if (yearFilter) params.append("year", String(yearFilter));
           if (monthFilter) params.append("month", String(monthFilter));
           if (dayFilter) params.append("day", String(dayFilter));
+          params.append("page", String(page));
+          params.append("limit", String(limit));
+          if (searchQuery.trim()) {
+            params.append("search", searchQuery.trim());
+          }
           const query = params.toString();
 
           res = await Api.get(
@@ -177,15 +211,21 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           );
         }
 
-        setTasks(res?.data?.openTasks || res?.data || []);
+        const fetchedTasks = res?.data?.data || res?.data?.openTasks || (Array.isArray(res?.data) ? res.data : []);
+        setTasks(fetchedTasks);
+
+        if (res?.data?.pagination) {
+          setTotalPages(res.data.pagination.totalPages || 1);
+          setTotalCount(res.data.pagination.totalCount || 0);
+        } else {
+          setTotalPages(1);
+          setTotalCount(fetchedTasks.length);
+        }
       } catch (err) {
         console.error("Error fetching tasks", err);
-        // Handle 404 by treating as empty array instead of erroring out
-        if ((err as any)?.response?.status === 404) {
-          setTasks([]);
-        } else {
-          setTasks([]);
-        }
+        setTasks([]);
+        setTotalPages(1);
+        setTotalCount(0);
       } finally {
         setLoading(false);
       }
@@ -206,6 +246,11 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     yearFilter,
     monthFilter,
     dayFilter,
+    sprintFilter,
+    page,
+    limit,
+    searchQuery,
+    refreshTrigger,
   ]);
 
   // Fetch staff list
@@ -287,11 +332,6 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
 
   // Search filter
   let filteredTasks = [...displayedTasks];
-  if (searchQuery.trim()) {
-    filteredTasks = filteredTasks.filter((t) =>
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  }
 
   console.log("Project in DisplayTask:", project);
 
@@ -580,10 +620,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           tasks={filteredTasks}
           projectId={project?.id}
           loading={loading}
-          onTasksUpdate={() => {
-            const event = new Event("taskUpdated");
-            window.dispatchEvent(event);
-          }}
+          onTasksUpdate={() => setRefreshTrigger((prev) => prev + 1)}
         />
       ) : (
         <TableView
@@ -593,7 +630,101 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           selectedTask={selectedTask}
           onTaskSelect={setSelectedTask}
           onTaskClose={() => setSelectedTask(null)}
+          onTasksUpdate={() => setRefreshTrigger((prev) => prev + 1)}
         />
+      )}
+
+      {/* Pagination Controls */}
+      {(totalPages > 1 || totalCount > 0) && (
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+          {/* Page Size Selector */}
+          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <span>Show</span>
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value));
+                setPage(1);
+              }}
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer font-medium"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>entries</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+              (Showing {totalCount > 0 ? (page - 1) * limit + 1 : 0} to {Math.min(page * limit, totalCount)} of {totalCount} entries)
+            </span>
+          </div>
+
+          {/* Navigation Buttons */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 flex-wrap">
+              {/* Prev */}
+              <button
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  page === 1
+                    ? "bg-gray-250 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-[#95D700] hover:bg-[#80b800] text-black font-semibold"
+                }`}
+              >
+                Prev
+              </button>
+
+              {/* Page numbers */}
+              {(() => {
+                const pages: (number | string)[] = [];
+                if (totalPages <= 5) {
+                  for (let i = 1; i <= totalPages; i++) pages.push(i);
+                } else {
+                  if (page <= 3) {
+                    pages.push(1, 2, 3, "...", totalPages);
+                  } else if (page >= totalPages - 2) {
+                    pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
+                  } else {
+                    pages.push(1, "...", page - 1, page, page + 1, "...", totalPages);
+                  }
+                }
+                return pages;
+              })().map((p, idx) =>
+                typeof p === "string" ? (
+                  <span key={idx} className="px-2 py-1 text-gray-500 dark:text-gray-400">
+                    {p}
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold transition-colors ${
+                      page === p
+                        ? "bg-[#95D700] text-black"
+                        : "bg-gray-100 dark:bg-gray-850 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+
+              {/* Next */}
+              <button
+                onClick={() => setPage(page + 1)}
+                disabled={page === totalPages}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  page === totalPages
+                    ? "bg-gray-250 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    : "bg-[#95D700] hover:bg-[#80b800] text-black font-semibold"
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

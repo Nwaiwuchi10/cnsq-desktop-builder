@@ -270,7 +270,6 @@ export default function TaskUpdateModal({
         onClose();
         onUpdated();
       }, 1200);
-      window.location.reload();
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({
