@@ -168,7 +168,7 @@ const TableView: React.FC<TableViewProps> = ({
                 </td>
                 {!projectId && (
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">
-                    {task.project?.projectName || "—"}
+                    {task.project?.projectName || ((task as any).linkedProjectId ? `Project #${(task as any).linkedProjectId}` : "—")}
                   </td>
                 )}
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">

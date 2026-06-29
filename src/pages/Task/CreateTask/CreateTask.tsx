@@ -189,10 +189,9 @@ export default function CreateTaskForm() {
     }
   }, [router]);
 
-  // Load staffs (either project-specific or departmental)
+  // Load staffs (either project-specific or departmental or fallback to all)
   useEffect(() => {
-    if (projectId) {
-      if (!projectUuid?.id) return;
+    if (projectUuid?.id) {
       Api.get(`/projects/${projectUuid?.id}/staffs`)
         .then((res) => {
           const clean = (res.data || []).filter(
@@ -232,6 +231,30 @@ export default function CreateTaskForm() {
             setModal({
               type: "error",
               message: "Failed to load departmental staff list.",
+            }),
+          );
+      } else {
+        // Fallback: fetch all staff if no project and no department is selected
+        Api.get("/staff-register/all/staffs/dept?limit=1000")
+          .then((res) => {
+            const clean = (res.data?.data || [])
+              .filter((s: any) => s && s.id)
+              .map((s: any) => ({
+                staff: {
+                  id: s.id,
+                  firstName: s.firstName,
+                  lastName: s.lastName,
+                  email: s.email,
+                  employment: s.employment || { jobTitle: [] },
+                },
+                role: s.employment?.departmentalRole?.title || "Staff Member",
+              }));
+            setStaffs(clean);
+          })
+          .catch(() =>
+            setModal({
+              type: "error",
+              message: "Failed to load staff list.",
             }),
           );
       }
@@ -384,11 +407,11 @@ export default function CreateTaskForm() {
             </div>
           )}
 
-          {/* Project Selection (only if no projectId in URL) */}
-          {/* {!projectId && (
+          {/* Project Selection (only if no projectId in URL - Optional) */}
+          {!projectId && (
             <div>
               <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                Select Project <span className="text-red-500">*</span>
+                Select Project <span className="text-gray-400">(Optional)</span>
               </label>
               <select
                 value={projectUuid?.uuid || ""}
@@ -398,13 +421,16 @@ export default function CreateTaskForm() {
                 }}
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
               >
-                <option value="">-- Choose Project --</option>
+                <option value="">-- Choose Project (Optional) --</option>
                 {allProjects.map((p) => (
                   <option key={p.id} value={p.uuid}>{p.projectName}</option>
                 ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1 italic">
+                You can optionally link this task to a project.
+              </p>
             </div>
-          )} */}
+          )}
 
           {/* Title */}
           <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
