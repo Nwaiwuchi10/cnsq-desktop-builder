@@ -18,7 +18,7 @@ interface TaskModalProps {
   onTasksUpdate?: () => void;
 }
 
-export default function TaskModal({ task, onClose, onTasksUpdate = () => {} }: TaskModalProps) {
+export default function TaskModal({ task, onClose, onTasksUpdate = () => { } }: TaskModalProps) {
   const [taskData, setTaskData] = useState<TaskDTO | null>(null);
   const [commentText, setCommentText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -545,7 +545,7 @@ export default function TaskModal({ task, onClose, onTasksUpdate = () => {} }: T
         {modal && <CustomModal {...modal} onClose={() => setModal(null)} />}
       </div>
 
-      {/* Edit Task Modal */}
+      {/* Edit Task Modal **/}
       <TaskUpdateModal
         taskId={task?.id}
         isOpen={showEditModal}

@@ -96,6 +96,7 @@ export default function TaskUpdateModal({
   const [token, setToken] = useState<string | null>(null);
 
   const [assignments, setAssignments] = useState<TaskAssignment[]>([]);
+  const [allProjects, setAllProjects] = useState<any[]>([]);
   const [staffs, setStaffs] = useState<Staff[]>([]);
   const [staffId, setStaffId] = useState<number | "">("");
   const [role, setRole] = useState("");
@@ -149,9 +150,13 @@ export default function TaskUpdateModal({
             })) || [],
         );
 
-        // Step 2: Fetch departments
-        const deptRes = await Api.get("/departments");
+        // Step 2: Fetch departments & projects
+        const [deptRes, projRes] = await Promise.all([
+          Api.get("/departments"),
+          Api.get("/projects"),
+        ]);
         setDepartments(deptRes.data || []);
+        setAllProjects(projRes.data || []);
 
         // Step 3: Handle staff fetching
         if (t.project && t.project.id) {
@@ -162,6 +167,22 @@ export default function TaskUpdateModal({
             `/staff-register/all/staffs/by-department?name=${encodeURIComponent(initialDept)}`,
           );
           const clean = (staffRes.data || [])
+            .filter((s: any) => s && s.id)
+            .map((s: any) => ({
+              staff: {
+                id: s.id,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                email: s.email,
+                employment: s.employment || { jobTitle: [] },
+              },
+              role: s.employment?.departmentalRole?.title || "Staff Member",
+            }));
+          setStaffs(clean);
+        } else {
+          // Fallback: fetch all staff if no project and no department is set
+          const staffRes = await Api.get("/staff-register/all/staffs/dept?limit=1000");
+          const clean = (staffRes.data?.data || [])
             .filter((s: any) => s && s.id)
             .map((s: any) => ({
               staff: {
@@ -186,34 +207,69 @@ export default function TaskUpdateModal({
     fetchData();
   }, [isOpen, taskId]);
 
-  // Load staffs when department changes (only for non-project tasks)
+  // Load staffs when department or project changes
   useEffect(() => {
-    if (projectId || !selectedDeptName || !isOpen) return;
+    if (!isOpen) return;
 
-    Api.get(
-      `/staff-register/all/staffs/by-department?name=${encodeURIComponent(selectedDeptName)}`,
-    )
-      .then((res) => {
-        const clean = (res.data || [])
-          .filter((s: any) => s && s.id)
-          .map((s: any) => ({
-            staff: {
-              id: s.id,
-              firstName: s.firstName,
-              lastName: s.lastName,
-              email: s.email,
-              employment: s.employment || { jobTitle: [] },
-            },
-            role: s.employment?.departmentalRole?.title || "Staff Member",
-          }));
-        setStaffs(clean);
-      })
-      .catch(() =>
-        setModal({
-          type: "error",
-          message: "Failed to load departmental staff list.",
-        }),
-      );
+    if (projectId) {
+      Api.get(`/projects/${projectId}/staffs`)
+        .then((res) => setStaffs(res.data || []))
+        .catch(() =>
+          setModal({
+            type: "error",
+            message: "Failed to load project staff list.",
+          }),
+        );
+    } else if (selectedDeptName) {
+      Api.get(
+        `/staff-register/all/staffs/by-department?name=${encodeURIComponent(selectedDeptName)}`,
+      )
+        .then((res) => {
+          const clean = (res.data || [])
+            .filter((s: any) => s && s.id)
+            .map((s: any) => ({
+              staff: {
+                id: s.id,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                email: s.email,
+                employment: s.employment || { jobTitle: [] },
+              },
+              role: s.employment?.departmentalRole?.title || "Staff Member",
+            }));
+          setStaffs(clean);
+        })
+        .catch(() =>
+          setModal({
+            type: "error",
+            message: "Failed to load departmental staff list.",
+          }),
+        );
+    } else {
+      // Fallback to fetch all staff
+      Api.get("/staff-register/all/staffs/dept?limit=1000")
+        .then((res) => {
+          const clean = (res.data?.data || [])
+            .filter((s: any) => s && s.id)
+            .map((s: any) => ({
+              staff: {
+                id: s.id,
+                firstName: s.firstName,
+                lastName: s.lastName,
+                email: s.email,
+                employment: s.employment || { jobTitle: [] },
+              },
+              role: s.employment?.departmentalRole?.title || "Staff Member",
+            }));
+          setStaffs(clean);
+        })
+        .catch(() =>
+          setModal({
+            type: "error",
+            message: "Failed to load staff list.",
+          }),
+        );
+    }
   }, [selectedDeptName, projectId, isOpen]);
 
   useEffect(() => {
@@ -298,6 +354,31 @@ export default function TaskUpdateModal({
           <p>Loading...</p>
         ) : (
           <div className="space-y-4">
+            {/* Project Selection (Optional) */}
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                Project <span className="text-gray-400">(Optional)</span>
+              </label>
+              <select
+                value={projectId || ""}
+                onChange={(e) => {
+                  const val = e.target.value ? Number(e.target.value) : "";
+                  setProjectId(val);
+                }}
+                className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+              >
+                <option value="">-- Choose Project (Optional) --</option>
+                {allProjects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.projectName}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1 italic">
+                You can optionally change or link this task to a project.
+              </p>
+            </div>
+
             {/* Department Selection (only if no project) */}
             {!projectId && (
               <div>
