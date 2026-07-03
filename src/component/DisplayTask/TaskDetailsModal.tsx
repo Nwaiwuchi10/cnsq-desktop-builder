@@ -363,7 +363,7 @@ export default function TaskModal({ task, onClose, onTasksUpdate = () => { } }: 
             </div>
           </div>
 
-          {/* Description */}
+          {/* Description **/}
           <h3 className="font-semibold mb-1 text-gray-900 dark:text-white">Description</h3>
           <p className="text-sm text-gray-700 dark:text-gray-400 mb-4">
             {displayTask?.description || "No description provided."}

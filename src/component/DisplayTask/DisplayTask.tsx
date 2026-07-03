@@ -87,6 +87,10 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     { id: number; name: string }[]
   >([]);
 
+  // Project filters
+  const [projectFilter, setProjectFilter] = useState<number | "all">("all");
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+
   // Pagination & Refresh
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
@@ -131,12 +135,43 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     }
   }, [project?.id]);
 
+  // Fetch projects under selected department (or all projects)
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        let url = "/projects";
+        if (selectedDeptId !== "all") {
+          url += `?departmentId=${selectedDeptId}`;
+        }
+        const res = await Api.get(url);
+        setAllProjects(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch projects", err);
+      }
+    };
+    if (!project?.id) {
+      fetchProjects();
+    }
+  }, [selectedDeptId, project?.id]);
+
+  useEffect(() => {
+    if (projectFilter !== "all" && allProjects.length > 0) {
+      const exists = allProjects.some((p) => p.id === projectFilter);
+      if (!exists) {
+        setProjectFilter("all");
+      }
+    } else if (allProjects.length === 0) {
+      setProjectFilter("all");
+    }
+  }, [allProjects, projectFilter]);
+
   // Reset page to 1 on filter or search change
   useEffect(() => {
     setPage(1);
   }, [
     project?.id,
     selectedDeptId,
+    projectFilter,
     staffFilter,
     statusFilter,
     priorityFilter,
@@ -188,6 +223,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
           if (staffFilter !== "all") params.append("staffId", String(staffFilter));
           if (selectedDeptId !== "all") params.append("departmentId", String(selectedDeptId));
+          if (projectFilter !== "all") params.append("projectId", String(projectFilter));
           if (statusFilter !== "all") params.append("status", statusFilter);
           if (priorityFilter !== "all") params.append("priority", priorityFilter);
           if (urgencyFilter !== "all") params.append("urgency", urgencyFilter);
@@ -239,6 +275,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     project?.id,
     userDeptId,
     selectedDeptId,
+    projectFilter,
     staffFilter,
     statusFilter,
     priorityFilter,
@@ -424,6 +461,31 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
                           ))}
                         </select>
                       </div>
+
+                      {/* Project Filter */}
+                      {!project?.id && (
+                        <div className="flex flex-col gap-2">
+                          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Project
+                          </label>
+                          <select
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-[#0d0d0d] text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            value={projectFilter}
+                            onChange={(e) =>
+                              setProjectFilter(
+                                e.target.value === "all" ? "all" : Number(e.target.value),
+                              )
+                            }
+                          >
+                            <option value="all">All</option>
+                            {allProjects.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.projectName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
 
                       {/* Sprint Filter */}
                       {project?.id && (
