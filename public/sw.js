@@ -198,7 +198,8 @@ self.addEventListener("notificationclick", (event) => {
   const action = event.action;
   if (action === "dismiss") return; // User dismissed — do nothing
 
-  const url = event.notification.data?.url || "/";
+  const rawUrl = event.notification.data?.url || "/";
+  const url = new URL(rawUrl, self.location.origin).href;
 
   event.waitUntil(
     clients
