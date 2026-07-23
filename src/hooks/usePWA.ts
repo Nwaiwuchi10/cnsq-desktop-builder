@@ -49,11 +49,17 @@ async function sendSubscriptionToServer(
   subscription: PushSubscription
 ): Promise<void> {
   const payload = subscription.toJSON() as unknown as PushSubscriptionPayload;
+  const token = typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
 
   try {
-    await fetch("/api/notifications/subscribe", {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    await fetch("/api/push-notification/subscribe", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         endpoint: payload.endpoint,
         keys: payload.keys,
