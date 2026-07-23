@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // -------------------------------------------------------
 // Type Definitions
@@ -207,7 +208,9 @@ export function usePWA() {
     setupPush();
   }, [swRegistration]);
 
-  // ---- Step 3: Listen for Subscription Renewal from SW (iOS requirement) ----
+  const router = useRouter();
+
+  // ---- Step 3: Listen for Subscription Renewal and Navigation from SW (iOS requirement) ----
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
@@ -223,6 +226,10 @@ export function usePWA() {
         if (newSubscription) {
           await sendSubscriptionToServer(newSubscription);
         }
+      } else if (event.data?.type === "NAVIGATE_TO") {
+        const path = event.data.url;
+        console.log("[usePWA] Received navigation command to:", path);
+        router.push(path);
       }
     };
 
@@ -230,7 +237,7 @@ export function usePWA() {
     return () => {
       navigator.serviceWorker.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [router]);
 
   return {
     swRegistration,

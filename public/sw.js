@@ -209,10 +209,11 @@ self.addEventListener("notificationclick", (event) => {
         for (const client of clientList) {
           if ("focus" in client) {
             client.focus();
-            // Navigate the existing window to the target URL
-            if ("navigate" in client) {
-              return client.navigate(url);
-            }
+            // Send message to the client to navigate smoothly via Next.js router
+            client.postMessage({
+              type: "NAVIGATE_TO",
+              url: rawUrl,
+            });
             return;
           }
         }
