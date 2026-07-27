@@ -67,6 +67,7 @@ nav.pwa-nav {
 /* Staff-dashboard Header (Header.tsx) */
 header.pwa-header {
   padding-top: var(--safe-area-top) !important;
+  height: calc(5rem + var(--safe-area-top)) !important;
 }
 
 /* Mobile hamburger/menu button inside StaffLayout — shift it down too */
