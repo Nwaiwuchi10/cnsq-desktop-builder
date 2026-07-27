@@ -14,6 +14,7 @@ import {
   Check
 } from "lucide-react";
 import Api from "@/utils/api";
+import toast from "react-hot-toast";
 import CustomModal from "../Message/Message";
 
 interface StaffMember {
@@ -82,12 +83,12 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) {
-      setModal({ type: "error", message: "Please enter both title and message content." });
+      toast.error("Please enter both title and message content.");
       return;
     }
 
     if (!isAllStaff && selectedStaffIds.length === 0) {
-      setModal({ type: "error", message: "Please select at least one recipient." });
+      toast.error("Please select at least one recipient.");
       return;
     }
 
@@ -113,6 +114,7 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
             "Content-Type": "multipart/form-data" 
           }
         });
+        toast.success("Broadcast message updated successfully!");
       } else {
         await Api.post("/ceo-messaging-center", formData, {
           headers: { 
@@ -120,22 +122,13 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
             "Content-Type": "multipart/form-data" 
           }
         });
+        toast.success("Message broadcasted successfully!");
       }
 
-      setModal({ 
-        type: "success", 
-        message: "Message broadcasted successfully!"
-      });
-      
-      setTimeout(() => {
-        setModal(null);
-        onSuccess();
-      }, 1500);
+      onSuccess();
     } catch (error: any) {
-      setModal({ 
-        type: "error", 
-        message: error.response?.data?.message || "Failed to process message." 
-      });
+      const errorMsg = error.response?.data?.message || "Failed to process message.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -301,8 +294,9 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Write your announcement detail here..."
-                  rows={4}
-                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm resize-none text-gray-700 dark:text-gray-200"
+                  rows={6}
+                  style={{ lineHeight: "1.8" }}
+                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm resize-y text-gray-700 dark:text-gray-200 whitespace-pre-wrap"
                 />
               </div>
             </div>
@@ -359,14 +353,6 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
           </div>
         </div>
       </div>
-
-      {modal && (
-        <CustomModal 
-          type={modal.type} 
-          message={modal.message} 
-          onClose={() => setModal(null)} 
-        />
-      )}
     </div>
   );
 };
