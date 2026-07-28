@@ -47,6 +47,65 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleFormat = (type: "bold" | "italic" | "list" | "heading") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const selectedText = text.substring(start, end);
+
+    let replacement = "";
+    let cursorOffset = 0;
+
+    switch (type) {
+      case "bold":
+        replacement = `**${selectedText || "bold text"}**`;
+        cursorOffset = selectedText ? replacement.length : 2;
+        break;
+      case "italic":
+        replacement = `*${selectedText || "italic text"}*`;
+        cursorOffset = selectedText ? replacement.length : 1;
+        break;
+      case "list":
+        if (selectedText) {
+          replacement = selectedText
+            .split("\n")
+            .map(line => line.startsWith("- ") ? line : `- ${line}`)
+            .join("\n");
+        } else {
+          replacement = "- ";
+        }
+        cursorOffset = replacement.length;
+        break;
+      case "heading":
+        if (selectedText) {
+          replacement = selectedText.startsWith("### ") ? selectedText.substring(4) : `### ${selectedText}`;
+        } else {
+          replacement = "### ";
+        }
+        cursorOffset = replacement.length;
+        break;
+      default:
+        return;
+    }
+
+    const newText = text.substring(0, start) + replacement + text.substring(end);
+    setDescription(newText);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + cursorOffset;
+      if (selectedText) {
+        textarea.setSelectionRange(start, start + replacement.length);
+      } else {
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      }
+    }, 0);
+  };
 
   useEffect(() => {
     fetchStaff();
@@ -284,13 +343,38 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
               <div className="relative bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#86CD23]/20 focus-within:border-[#86CD23] transition-all">
                 {/* Editor Toolbar */}
                 <div className="flex items-center gap-1 p-2 border-b border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-black/20">
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><Bold size={14} /></button>
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><Italic size={14} /></button>
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><List size={14} /></button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("bold")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <Bold size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("italic")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <Italic size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("list")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <List size={14} />
+                  </button>
                   <div className="w-[1px] h-3 bg-gray-200 dark:bg-gray-800 mx-1"></div>
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><Type size={14} /></button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("heading")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <Type size={14} />
+                  </button>
                 </div>
                 <textarea
+                  ref={textareaRef}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Write your announcement detail here..."
