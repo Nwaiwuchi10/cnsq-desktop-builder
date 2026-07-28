@@ -360,9 +360,9 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
                   ref={contentEditableRef}
                   contentEditable
                   onInput={(e) => setDescription(e.currentTarget.innerHTML)}
-                  placeholder="Write your announcement detail here..."
+                  data-placeholder="Write your announcement detail here..."
                   style={{ lineHeight: "1.8", minHeight: "150px" }}
-                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm text-gray-700 dark:text-gray-200 overflow-y-auto max-h-[300px] custom-scrollbar [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&:empty]:before:content-[attr(placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none"
+                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm text-gray-700 dark:text-gray-200 overflow-y-auto max-h-[300px] custom-scrollbar [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none"
                 />
               </div>
             </div>
