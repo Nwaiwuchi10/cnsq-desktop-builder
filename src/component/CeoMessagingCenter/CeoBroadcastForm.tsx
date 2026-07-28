@@ -47,65 +47,47 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
 
   const handleFormat = (type: "bold" | "italic" | "list" | "heading") => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const selectedText = text.substring(start, end);
-
-    let replacement = "";
-    let cursorOffset = 0;
+    if (!contentEditableRef.current) return;
+    contentEditableRef.current.focus();
 
     switch (type) {
       case "bold":
-        replacement = `**${selectedText || "bold text"}**`;
-        cursorOffset = selectedText ? replacement.length : 2;
+        document.execCommand("bold", false);
         break;
       case "italic":
-        replacement = `*${selectedText || "italic text"}*`;
-        cursorOffset = selectedText ? replacement.length : 1;
+        document.execCommand("italic", false);
         break;
       case "list":
-        if (selectedText) {
-          replacement = selectedText
-            .split("\n")
-            .map(line => line.startsWith("- ") ? line : `- ${line}`)
-            .join("\n");
-        } else {
-          replacement = "- ";
-        }
-        cursorOffset = replacement.length;
+        document.execCommand("insertUnorderedList", false);
         break;
       case "heading":
-        if (selectedText) {
-          replacement = selectedText.startsWith("### ") ? selectedText.substring(4) : `### ${selectedText}`;
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const parentNode = selection.getRangeAt(0).startContainer.parentNode as HTMLElement;
+          if (parentNode && (parentNode.tagName === "H3" || parentNode.closest("h3"))) {
+            document.execCommand("formatBlock", false, "<p>");
+          } else {
+            document.execCommand("formatBlock", false, "<h3>");
+          }
         } else {
-          replacement = "### ";
+          document.execCommand("formatBlock", false, "<h3>");
         }
-        cursorOffset = replacement.length;
         break;
       default:
         return;
     }
 
-    const newText = text.substring(0, start) + replacement + text.substring(end);
-    setDescription(newText);
-
-    setTimeout(() => {
-      textarea.focus();
-      const newCursorPos = start + cursorOffset;
-      if (selectedText) {
-        textarea.setSelectionRange(start, start + replacement.length);
-      } else {
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 0);
+    setDescription(contentEditableRef.current.innerHTML);
   };
+
+  useEffect(() => {
+    if (contentEditableRef.current && message?.description) {
+      contentEditableRef.current.innerHTML = message.description;
+    }
+  }, [message]);
 
   useEffect(() => {
     fetchStaff();
@@ -141,7 +123,8 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
   const selectedStaffNames = staffList.filter(s => selectedStaffIds.includes(s.id));
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim()) {
+    const cleanText = description.replace(/<[^>]*>/g, "").trim();
+    if (!title.trim() || !cleanText) {
       toast.error("Please enter both title and message content.");
       return;
     }
@@ -373,14 +356,13 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
                     <Type size={14} />
                   </button>
                 </div>
-                <textarea
-                  ref={textareaRef}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Write your announcement detail here..."
-                  rows={6}
-                  style={{ lineHeight: "1.8" }}
-                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm resize-y text-gray-700 dark:text-gray-200 whitespace-pre-wrap"
+                <div
+                  ref={contentEditableRef}
+                  contentEditable
+                  onInput={(e) => setDescription(e.currentTarget.innerHTML)}
+                  data-placeholder="Write your announcement detail here..."
+                  style={{ lineHeight: "1.8", minHeight: "150px" }}
+                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm text-gray-700 dark:text-gray-200 overflow-y-auto max-h-[300px] custom-scrollbar [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none"
                 />
               </div>
             </div>
