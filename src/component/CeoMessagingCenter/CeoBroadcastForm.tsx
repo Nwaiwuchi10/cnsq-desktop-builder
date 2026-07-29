@@ -1,3 +1,4 @@
+// Safe non-functional comment for MD_feedback branch update
 import React, { useState, useRef, useEffect } from "react";
 import { 
   X, 
@@ -14,6 +15,7 @@ import {
   Check
 } from "lucide-react";
 import Api from "@/utils/api";
+import toast from "react-hot-toast";
 import CustomModal from "../Message/Message";
 
 interface StaffMember {
@@ -46,6 +48,47 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+
+  const handleFormat = (type: "bold" | "italic" | "list" | "heading") => {
+    if (!contentEditableRef.current) return;
+    contentEditableRef.current.focus();
+
+    switch (type) {
+      case "bold":
+        document.execCommand("bold", false);
+        break;
+      case "italic":
+        document.execCommand("italic", false);
+        break;
+      case "list":
+        document.execCommand("insertUnorderedList", false);
+        break;
+      case "heading":
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          const parentNode = selection.getRangeAt(0).startContainer.parentNode as HTMLElement;
+          if (parentNode && (parentNode.tagName === "H3" || parentNode.closest("h3"))) {
+            document.execCommand("formatBlock", false, "<p>");
+          } else {
+            document.execCommand("formatBlock", false, "<h3>");
+          }
+        } else {
+          document.execCommand("formatBlock", false, "<h3>");
+        }
+        break;
+      default:
+        return;
+    }
+
+    setDescription(contentEditableRef.current.innerHTML);
+  };
+
+  useEffect(() => {
+    if (contentEditableRef.current && message?.description) {
+      contentEditableRef.current.innerHTML = message.description;
+    }
+  }, [message]);
 
   useEffect(() => {
     fetchStaff();
@@ -81,13 +124,14 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
   const selectedStaffNames = staffList.filter(s => selectedStaffIds.includes(s.id));
 
   const handleSubmit = async () => {
-    if (!title.trim() || !description.trim()) {
-      setModal({ type: "error", message: "Please enter both title and message content." });
+    const cleanText = description.replace(/<[^>]*>/g, "").trim();
+    if (!title.trim() || !cleanText) {
+      toast.error("Please enter both title and message content.");
       return;
     }
 
     if (!isAllStaff && selectedStaffIds.length === 0) {
-      setModal({ type: "error", message: "Please select at least one recipient." });
+      toast.error("Please select at least one recipient.");
       return;
     }
 
@@ -113,6 +157,7 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
             "Content-Type": "multipart/form-data" 
           }
         });
+        toast.success("Broadcast message updated successfully!");
       } else {
         await Api.post("/ceo-messaging-center", formData, {
           headers: { 
@@ -120,22 +165,13 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
             "Content-Type": "multipart/form-data" 
           }
         });
+        toast.success("Message broadcasted successfully!");
       }
 
-      setModal({ 
-        type: "success", 
-        message: "Message broadcasted successfully!"
-      });
-      
-      setTimeout(() => {
-        setModal(null);
-        onSuccess();
-      }, 1500);
+      onSuccess();
     } catch (error: any) {
-      setModal({ 
-        type: "error", 
-        message: error.response?.data?.message || "Failed to process message." 
-      });
+      const errorMsg = error.response?.data?.message || "Failed to process message.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -291,18 +327,43 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
               <div className="relative bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#86CD23]/20 focus-within:border-[#86CD23] transition-all">
                 {/* Editor Toolbar */}
                 <div className="flex items-center gap-1 p-2 border-b border-gray-100 dark:border-gray-800 bg-white/50 dark:bg-black/20">
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><Bold size={14} /></button>
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><Italic size={14} /></button>
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><List size={14} /></button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("bold")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <Bold size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("italic")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <Italic size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("list")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <List size={14} />
+                  </button>
                   <div className="w-[1px] h-3 bg-gray-200 dark:bg-gray-800 mx-1"></div>
-                  <button className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"><Type size={14} /></button>
+                  <button
+                    type="button"
+                    onClick={() => handleFormat("heading")}
+                    className="p-1.5 hover:bg-white dark:hover:bg-gray-800 rounded-md text-gray-400 transition-colors"
+                  >
+                    <Type size={14} />
+                  </button>
                 </div>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Write your announcement detail here..."
-                  rows={4}
-                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm resize-none text-gray-700 dark:text-gray-200"
+                <div
+                  ref={contentEditableRef}
+                  contentEditable
+                  onInput={(e) => setDescription(e.currentTarget.innerHTML)}
+                  data-placeholder="Write your announcement detail here..."
+                  style={{ lineHeight: "1.8", minHeight: "150px" }}
+                  className="w-full bg-transparent p-4 focus:outline-none font-medium text-sm text-gray-700 dark:text-gray-200 overflow-y-auto max-h-[300px] custom-scrollbar [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-400 [&:empty]:before:pointer-events-none"
                 />
               </div>
             </div>
@@ -359,14 +420,6 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
           </div>
         </div>
       </div>
-
-      {modal && (
-        <CustomModal 
-          type={modal.type} 
-          message={modal.message} 
-          onClose={() => setModal(null)} 
-        />
-      )}
     </div>
   );
 };

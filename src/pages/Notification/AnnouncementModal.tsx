@@ -313,9 +313,10 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
             <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
               {announcementDetails.title}
             </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar whitespace-pre-wrap">
-              {renderTextWithLinks(announcementDetails.description)}
-            </div>
+            <div 
+              className="text-sm text-gray-600 dark:text-gray-400 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar whitespace-pre-wrap [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2 [&_a]:text-blue-600 [&_a]:underline [&_a]:break-words"
+              dangerouslySetInnerHTML={{ __html: announcementDetails.description }}
+            />
 
             {announcementDetails.fileUrls && announcementDetails.fileUrls.length > 0 && (
               <div className="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">

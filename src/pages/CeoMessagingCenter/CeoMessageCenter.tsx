@@ -43,6 +43,11 @@ const CeoMessagingCenter: React.FC = () => {
     const [viewingReaders, setViewingReaders] = useState<CeoMessage | null>(null);
     const [viewingDetails, setViewingDetails] = useState<CeoMessage | null>(null);
 
+    const stripHtml = (html: string) => {
+        if (!html) return "";
+        return html.replace(/<[^>]*>/g, "");
+    };
+
     useEffect(() => {
         fetchMessages();
     }, []);
@@ -175,11 +180,11 @@ const CeoMessagingCenter: React.FC = () => {
                                                 </h3>
                                             </div>
                                             <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-2 pr-12 font-medium">
-                                                {msg.description}
+                                                {stripHtml(msg.description)}
                                             </p>
                                         </div>
 
-                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -283,9 +288,10 @@ const CeoMessagingCenter: React.FC = () => {
                             <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(viewingDetails.createdAt).toLocaleString()}</span>
                             <span className="flex items-center gap-1"><Users size={14} /> {viewingDetails.isAllStaff ? "All Staff" : "Selected Members"}</span>
                         </div>
-                        <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-y-auto custom-scrollbar flex-1 pr-2">
-                            {viewingDetails.description}
-                        </div>
+                        <div 
+                            className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap overflow-y-auto custom-scrollbar flex-1 pr-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:mb-2"
+                            dangerouslySetInnerHTML={{ __html: viewingDetails.description }}
+                        />
                         {viewingDetails.attachments && viewingDetails.attachments.length > 0 && (
                             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 shrink-0">
                                 <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">Attachments</h4>
@@ -298,7 +304,17 @@ const CeoMessagingCenter: React.FC = () => {
                                 </div>
                             </div>
                         )}
-                        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end shrink-0">
+                        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center shrink-0">
+                            <button
+                                onClick={() => {
+                                    setViewingReaders(viewingDetails);
+                                    setViewingDetails(null);
+                                }}
+                                className="flex items-center gap-2 text-blue-500 hover:text-blue-600 transition-colors text-sm font-bold"
+                            >
+                                <Eye size={16} />
+                                <span>Who read this?</span>
+                            </button>
                             <button onClick={() => setViewingDetails(null)} className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 font-bold transition-all active:scale-95">Close</button>
                         </div>
                     </div>

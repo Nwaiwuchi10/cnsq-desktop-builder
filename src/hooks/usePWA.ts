@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 // -------------------------------------------------------
 // Type Definitions
@@ -49,11 +50,17 @@ async function sendSubscriptionToServer(
   subscription: PushSubscription
 ): Promise<void> {
   const payload = subscription.toJSON() as unknown as PushSubscriptionPayload;
+  const token = typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
 
   try {
-    await fetch("/api/notifications/subscribe", {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    await fetch("/api/push-notification/subscribe", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         endpoint: payload.endpoint,
         keys: payload.keys,
@@ -201,7 +208,9 @@ export function usePWA() {
     setupPush();
   }, [swRegistration]);
 
-  // ---- Step 3: Listen for Subscription Renewal from SW (iOS requirement) ----
+  const router = useRouter();
+
+  // ---- Step 3: Listen for Subscription Renewal and Navigation from SW (iOS requirement) ----
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
 
@@ -217,6 +226,10 @@ export function usePWA() {
         if (newSubscription) {
           await sendSubscriptionToServer(newSubscription);
         }
+      } else if (event.data?.type === "NAVIGATE_TO") {
+        const path = event.data.url;
+        console.log("[usePWA] Received navigation command to:", path);
+        router.push(path);
       }
     };
 
@@ -224,7 +237,7 @@ export function usePWA() {
     return () => {
       navigator.serviceWorker.removeEventListener("message", handleMessage);
     };
-  }, []);
+  }, [router]);
 
   return {
     swRegistration,

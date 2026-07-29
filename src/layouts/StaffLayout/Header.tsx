@@ -373,7 +373,7 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="w-full text-center block px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-none outline-none bg-transparent cursor-pointer"
                 >
                   Logout
                 </button>

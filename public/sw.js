@@ -198,7 +198,8 @@ self.addEventListener("notificationclick", (event) => {
   const action = event.action;
   if (action === "dismiss") return; // User dismissed — do nothing
 
-  const url = event.notification.data?.url || "/";
+  const rawUrl = event.notification.data?.url || "/";
+  const url = new URL(rawUrl, self.location.origin).href;
 
   event.waitUntil(
     clients
@@ -208,10 +209,11 @@ self.addEventListener("notificationclick", (event) => {
         for (const client of clientList) {
           if ("focus" in client) {
             client.focus();
-            // Navigate the existing window to the target URL
-            if ("navigate" in client) {
-              return client.navigate(url);
-            }
+            // Send message to the client to navigate smoothly via Next.js router
+            client.postMessage({
+              type: "NAVIGATE_TO",
+              url: rawUrl,
+            });
             return;
           }
         }
