@@ -1,3 +1,4 @@
+// Safe non-functional comment for MD_feedback branch update
 import React, { useState, useRef, useEffect } from "react";
 import { 
   X, 
