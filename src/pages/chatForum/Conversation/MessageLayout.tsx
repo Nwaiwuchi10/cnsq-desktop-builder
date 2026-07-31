@@ -15,6 +15,8 @@ import ChannelConversationView from "../Channels/ChannelConverationView";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import { useChatStore } from "@/store/ChatStore";
 
+import { PanelLeftClose, PanelLeftOpen, MessageSquare, Users, Plus } from "lucide-react";
+
 interface Member {
   id: number;
   user: {
@@ -59,6 +61,7 @@ const MessagesLayout: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState("all");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const onlineStaffs = useChatStore((s) => s.onlineStaffs);
 
@@ -347,65 +350,155 @@ const MessagesLayout: React.FC = () => {
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors dark:bg-[#0d0d0d] text-gray-600 dark:text-gray-400 p-0 pt-4 md:p-8 md:pt-10">
         <div className="mx-auto max-w-full sm:max-w-full md:max-w-5xl lg:max-w-6xl">
           {/* Desktop */}
-          <div className="hidden md:grid grid-cols-3 gap-8">
-            <div className="col-span-1">
-              <h1 className="text-3xl font-semibold text-gray-700 dark:text-gray-300">
-                Your Messages
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                Manage your conversations and connect with fellow members.
-              </p>
+          <div className="hidden md:flex gap-6 items-start transition-all duration-300">
+            {/* Left Sidebar */}
+            <div
+              className={`transition-all duration-300 flex-shrink-0 ${
+                isSidebarCollapsed ? "w-16" : "w-80 lg:w-[340px]"
+              }`}
+            >
+              {isSidebarCollapsed ? (
+                /* Collapsed Mini Sidebar */
+                <div className="flex flex-col items-center bg-white dark:bg-[#141414] transition-colors p-3 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm gap-4">
+                  <button
+                    onClick={() => setIsSidebarCollapsed(false)}
+                    title="Expand Messages Sidebar"
+                    className="p-2.5 rounded-xl bg-lime-100 dark:bg-lime-900/40 text-lime-700 dark:text-lime-400 hover:bg-lime-200 dark:hover:bg-lime-900/60 transition shadow-sm"
+                  >
+                    <PanelLeftOpen size={20} />
+                  </button>
 
-              <div className="mt-6">
-                <input
-                  className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
-                  placeholder="Search all staff and conversations..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                <MessagesTabs
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                />
+                  <div className="w-full border-t border-gray-200 dark:border-gray-800 my-1"></div>
 
-                {loading ? (
-                  <div className="space-y-4">Loading....</div>
-                ) : activeTab === "channels" ? (
-                  <ChannelConversationList
-                    items={channels}
-                    onSelect={handleSelect}
-                  />
-                ) : (
-                  <ConversationList
-                    items={filteredConversations.map((c: any) => ({
-                      ...c,
-                      online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                    }))}
-                    onSelect={handleSelect}
-                  />
-                )}
+                  <button
+                    onClick={() => {
+                      setActiveTab("all");
+                      setIsSidebarCollapsed(false);
+                    }}
+                    title="Direct Messages"
+                    className={`p-2.5 rounded-lg transition ${
+                      activeTab === "all"
+                        ? "bg-[#95D700] text-white"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <MessageSquare size={18} />
+                  </button>
 
-                {staffMatches.length > 0 && (
-                  <div className="mt-6">
-                    <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                      Search Results
-                    </h2>
-                    <ConversationList
-                      items={staffMatches.map((c: any) => ({
-                        ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                      }))}
-                      onSelect={handleSelect}
-                    />
+                  <button
+                    onClick={() => {
+                      setActiveTab("channels");
+                      setIsSidebarCollapsed(false);
+                    }}
+                    title="Channels"
+                    className={`p-2.5 rounded-lg transition ${
+                      activeTab === "channels"
+                        ? "bg-[#95D700] text-white"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <Users size={18} />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveTab("create");
+                      setIsSidebarCollapsed(false);
+                    }}
+                    title="Create Channel"
+                    className={`p-2.5 rounded-lg transition ${
+                      activeTab === "create"
+                        ? "bg-[#95D700] text-white"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+              ) : (
+                /* Expanded Sidebar */
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-semibold text-gray-700 dark:text-gray-300">
+                      Your Messages
+                    </h1>
+                    <button
+                      onClick={() => setIsSidebarCollapsed(true)}
+                      title="Collapse sidebar"
+                      className="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition"
+                    >
+                      <PanelLeftClose size={20} />
+                    </button>
                   </div>
-                )}
-              </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    Manage your conversations and connect with fellow members.
+                  </p>
+
+                  <div className="mt-6">
+                    <input
+                      className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
+                      placeholder="Search all staff and conversations..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <MessagesTabs
+                      activeTab={activeTab}
+                      setActiveTab={setActiveTab}
+                    />
+
+                    {loading ? (
+                      <div className="space-y-4">Loading....</div>
+                    ) : activeTab === "channels" ? (
+                      <ChannelConversationList
+                        items={channels}
+                        onSelect={handleSelect}
+                      />
+                    ) : (
+                      <ConversationList
+                        items={filteredConversations.map((c: any) => ({
+                          ...c,
+                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        }))}
+                        onSelect={handleSelect}
+                      />
+                    )}
+
+                    {staffMatches.length > 0 && (
+                      <div className="mt-6">
+                        <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                          Search Results
+                        </h2>
+                        <ConversationList
+                          items={staffMatches.map((c: any) => ({
+                            ...c,
+                            online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                          }))}
+                          onSelect={handleSelect}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
+            {/* Chat Conversation View Container */}
             <div
-              className={`col-span-3 md:col-span-2 bg-white dark:bg-[#141414] transition-colors rounded-lg overflow-hidden shadow-sm ${activeTab === "create" ? "h-auto" : "h-[80vh]"
-                }`}
+              className={`flex-1 min-w-0 transition-all duration-300 bg-white dark:bg-[#141414] rounded-lg overflow-hidden shadow-sm relative ${
+                activeTab === "create" ? "h-auto" : "h-[80vh]"
+              }`}
             >
+              {isSidebarCollapsed && (
+                <button
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  title="Expand Messages Sidebar"
+                  className="absolute top-3 left-3 z-30 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 transition shadow-sm flex items-center gap-1.5 text-xs font-semibold"
+                >
+                  <PanelLeftOpen size={16} />
+                  <span>Messages</span>
+                </button>
+              )}
+
               {activeTab === "create" ? (
                 <CreateChannelForm />
               ) : selected ? (
