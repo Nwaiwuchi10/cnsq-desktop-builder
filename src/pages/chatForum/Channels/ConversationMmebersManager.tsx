@@ -63,7 +63,10 @@ export default function ConversationMembersManager({
   // Load relevant data per mode
   useEffect(() => {
     if (currentMode === "view" || currentMode === "remove") loadMembers();
-    if (currentMode === "add") loadStaff();
+    if (currentMode === "add") {
+      loadStaff();
+      loadMembers();
+    }
   }, [currentMode, conversationId]);
 
   // Toggle checkbox
@@ -251,6 +254,29 @@ export default function ConversationMembersManager({
                 </div>
               )}
             </div>
+
+            {/* Already in Channel List */}
+            {members.length > 0 && (
+              <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-800">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">
+                  Already in Channel ({members.length})
+                </h3>
+                <div className="max-h-36 overflow-y-auto space-y-1.5 border dark:border-gray-800 rounded-lg p-2 bg-gray-100/50 dark:bg-gray-800/40">
+                  {members.map((m: any) => {
+                    const user = m.user || m.staff || m;
+                    return (
+                      <div key={m.id || user.id} className="flex items-center gap-2.5 py-1 px-1.5 text-xs text-gray-700 dark:text-gray-300">
+                        <div className="w-6 h-6 rounded-full bg-lime-500/20 text-lime-600 dark:text-lime-400 font-bold flex items-center justify-center text-[10px]">
+                          {user.firstName?.charAt(0) || "U"}
+                        </div>
+                        <span className="font-medium">{user.firstName} {user.lastName}</span>
+                        <span className="text-[10px] text-gray-400 ml-auto bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded">Existing Member</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Submit */}
             <button
