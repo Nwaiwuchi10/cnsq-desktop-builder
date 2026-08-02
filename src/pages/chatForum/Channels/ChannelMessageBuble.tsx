@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import parseMentions from "@/utils/ParseMention";
+import TruncatedText from "../components/TruncatedText";
 // import parseLinks from "@/utils/ParseLink";
 
 export type ReactionsState = {
@@ -26,6 +27,7 @@ export interface MessageBubbleProps {
   onReact?: (emoji: string) => void;
   onViewThread?: () => void;
   onTogglePin?: () => void;
+  onViewReactors?: () => void;
 }
 
 const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
@@ -44,6 +46,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
   onReact,
   onViewThread,
   onTogglePin,
+  onViewReactors,
 }) => {
   return (
     <div className={`flex items-start gap-3 w-full group ${me ? "flex-row-reverse" : "flex-row"}`}>
@@ -91,7 +94,9 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
               : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
             }`}
         >
-          <div className="text-sm leading-relaxed whitespace-pre-wrap">{text}</div>
+          <div className="text-sm leading-relaxed whitespace-pre-wrap">
+            <TruncatedText text={text} maxLength={300} isMe={me} />
+          </div>
 
           {time && (
             <div
@@ -119,13 +124,13 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
               ❤️
             </button>
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
-            <button
+            {/* <button
               onClick={(e) => { e.stopPropagation(); onViewThread?.(); }}
               className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
               title="Reply in Thread"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-            </button>
+            </button> */}
             <button
               onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
               className={`p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${pinned ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}
@@ -138,7 +143,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* Reactions Section */}
         {reactions && Object.keys(reactions).length > 0 && (
-          <div className={`flex flex-wrap gap-1 mt-2 ${me ? "justify-end" : "justify-start"}`}>
+          <div className={`flex flex-wrap items-center gap-1 mt-2 ${me ? "justify-end" : "justify-start"}`}>
             {Object.entries(reactions).map(([emoji, data]) => (
               <button
                 key={emoji}
@@ -146,6 +151,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                   e.stopPropagation();
                   onReact?.(emoji);
                 }}
+                title="Click to toggle reaction. Click the list icon next to it to see who reacted."
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs transition-all duration-200 border
                   ${data.me
                     ? "bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 scale-105 shadow-sm"
@@ -156,6 +162,19 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                 <span className="font-medium">{data.count}</span>
               </button>
             ))}
+
+            {/* View reactors list icon button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewReactors?.();
+              }}
+              title="Who reacted? (View list)"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400 text-xs flex items-center gap-0.5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+              <span className="text-[10px] font-medium">Reactors</span>
+            </button>
           </div>
         )}
 

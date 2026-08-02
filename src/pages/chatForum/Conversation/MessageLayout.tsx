@@ -14,6 +14,7 @@ import ChannelConversationList from "../Channels/ConversationList";
 import ChannelConversationView from "../Channels/ChannelConverationView";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import { useChatStore } from "@/store/ChatStore";
+import StaffSelectorModal from "../components/StaffSelectorModal";
 
 import { PanelLeftClose, PanelLeftOpen, MessageSquare, Users, Plus } from "lucide-react";
 
@@ -132,37 +133,37 @@ const MessagesLayout: React.FC = () => {
     }
   };
 
-  // Fetch channels
+  const [isStaffSelectorOpen, setIsStaffSelectorOpen] = useState(false);
+
+  // Fetch channels on mount & search change
   useEffect(() => {
     const token = localStorage.getItem("user-token");
-    if (activeTab === "channels") {
-      Api.get(`/chat/channels/all/user`, {
-        params: { search },
-        headers: { Authorization: `Bearer ${token}` },
+    Api.get(`/chat/channels/all/user`, {
+      params: { search },
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        const mapped: Msg[] = res.data.map((c: any) => ({
+          id: c.id,
+          name: `# ${c.name}`,
+          avatar: "",
+          preview: c.lastMessage?.text || "",
+          text: c.lastMessage?.text || "",
+          me: false,
+          createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
+          time: c.lastMessage?.createdAt
+            ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+            : "",
+          unread: c.unreadCount ?? 0,
+          isChannel: true,
+        }));
+        setChannels(mapped);
       })
-        .then((res) => {
-          const mapped: Msg[] = res.data.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            avatar: "", // Optional
-            preview: c.lastMessage?.text || "",
-            text: c.lastMessage?.text || "",
-            me: false,
-            createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
-            time: c.lastMessage?.createdAt
-              ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-              : "",
-            unread: c.unreadCount ?? 0,
-            isChannel: true,
-          }));
-          setChannels(mapped);
-        })
-        .catch((err) => console.error(err));
-    }
-  }, [activeTab, search]);
+      .catch((err) => console.error(err));
+  }, [search]);
 
   // Fetch DMs on mount & search change
   useEffect(() => {
@@ -211,7 +212,41 @@ const MessagesLayout: React.FC = () => {
       });
     });
 
+    const playNotificationChime = () => {
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = "sine";
+        osc2.type = "sine";
+        osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc2.frequency.setValueAtTime(880.00, ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start();
+        osc2.start();
+        osc1.stop(ctx.currentTime + 0.4);
+        osc2.stop(ctx.currentTime + 0.4);
+      } catch (e) {
+        console.error("Audio chime error:", e);
+      }
+    };
+
     socketRef.current.on("message:new", (msg: any) => {
+      if (msg.authorId !== currentUserId && msg.author?.id !== currentUserId) {
+        playNotificationChime();
+      }
+
       setConversations((prev) =>
         prev.map((c) => {
           if (c.id !== msg.conversationId) return c;
@@ -235,13 +270,16 @@ const MessagesLayout: React.FC = () => {
       if (selected === msg.conversationId)
         markConversationAsRead(msg.conversationId);
     });
-    socketRef.current.on("message:new", (msg: any) => {
+
+    socketRef.current.on("message:channelnew", (msg: any) => {
+      if (msg.authorId !== currentUserId && msg.author?.id !== currentUserId) {
+        playNotificationChime();
+      }
+
       setChannels((prev) =>
         prev.map((c) => {
           if (c.id !== msg.conversationId) return c;
-
           const isOpen = selected === msg.conversationId;
-
           return {
             ...c,
             preview: msg.text,
@@ -261,6 +299,32 @@ const MessagesLayout: React.FC = () => {
       if (selected === msg.conversationId) {
         markConversationAsRead(msg.conversationId);
       }
+    });
+
+    socketRef.current.on("thread:reply_new", (msg: any) => {
+      if (msg.authorId !== currentUserId && msg.author?.id !== currentUserId) {
+        playNotificationChime();
+      }
+
+      const updateConv = (c: any) => {
+        if (c.id !== msg.conversationId) return c;
+        const isOpen = selected === msg.conversationId;
+        return {
+          ...c,
+          preview: msg.text || "Thread reply",
+          unread: isOpen ? 0 : (c.unread || 0) + 1,
+          createdAt: msg.createdAt || c.createdAt,
+          time: msg.createdAt
+            ? new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+            : c.time,
+        };
+      };
+
+      setConversations((prev) => prev.map(updateConv));
+      setChannels((prev) => prev.map(updateConv));
     });
 
     return () => {
@@ -303,30 +367,33 @@ const MessagesLayout: React.FC = () => {
         );
 
         const conv = res.data;
-        const otherMember = conv.members.find(
-          (m: any) => m.user.id !== currentUserId
-        );
+        const peerUser =
+          conv.members.find((m: any) => m.user?.id !== currentUserId)?.user ||
+          conv.members[0]?.user;
+        const isSelf = targetId === currentUserId;
+
+        const newConvItem = {
+          id: conv.id,
+          name: isSelf
+            ? `${peerUser?.firstName || "You"} ${peerUser?.lastName || ""} (You)`
+            : `${peerUser?.firstName || ""} ${peerUser?.lastName || ""}`.trim() || "Direct Message",
+          avatar: peerUser?.photoUrl || null,
+          peerId: peerUser?.id,
+          preview: "",
+          unread: 0,
+        };
 
         setConversations((prev: any) => {
           if (!prev.some((c: any) => c.id === conv.id)) {
-            return [
-              ...prev,
-              {
-                id: conv.id,
-                name: `${otherMember.user.firstName} ${otherMember.user.lastName}`,
-                avatar: otherMember.user.photoUrl,
-                preview: "",
-                unread: 0,
-              },
-            ];
+            return [newConvItem, ...prev];
           }
           return prev;
         });
 
         setSelected(conv.id);
         setStaffMatches([]);
-        socketRef.current?.emit("joinConversation", id);
-        await markConversationAsRead(id);
+        socketRef.current?.emit("joinConversation", conv.id);
+        await markConversationAsRead(conv.id);
       } catch (err) {
         console.error("Failed to start DM:", err);
       }
@@ -336,16 +403,50 @@ const MessagesLayout: React.FC = () => {
     }
   };
 
-  // Filter DMs
-  const filteredConversations = conversations.filter((c: any) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "unread") return c.unread > 0;
-    return true;
-  });
+  // Tab filters
+  const allConversationsList = [...conversations, ...channels].sort(
+    (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
+
+  const sortedConversations = [...conversations].sort(
+    (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
+
+  const sortedChannels = [...channels].sort(
+    (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
+
+  const unreadConversationsList = allConversationsList.filter(
+    (c: any) => (c.unread || 0) > 0
+  );
+
+  const mentionsConversationsList = allConversationsList.filter(
+    (c: any) =>
+      c.text?.includes("@") ||
+      c.preview?.includes("@") ||
+      c.isMentioned
+  );
+
+  const dmsUnread = conversations.reduce((acc, c) => acc + (c.unread || 0), 0);
+  const channelsUnread = channels.reduce((acc, c) => acc + (c.unread || 0), 0);
+  const totalUnread = dmsUnread + channelsUnread;
+
+  const unreadCounts = {
+    all: totalUnread,
+    dms: dmsUnread,
+    channels: channelsUnread,
+    mentions: 0,
+    unread: totalUnread,
+  };
 
   return (
     <StaffLayout>
-
+      <StaffSelectorModal
+        currentUserId={currentUserId}
+        isOpen={isStaffSelectorOpen}
+        onClose={() => setIsStaffSelectorOpen(false)}
+        onSelectStaff={(staffId) => handleSelect(`staff-${staffId}`)}
+      />
 
       <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors dark:bg-[#0d0d0d] text-gray-600 dark:text-gray-400 p-0 pt-4 md:p-8 md:pt-10">
         <div className="mx-auto max-w-full sm:max-w-full md:max-w-5xl lg:max-w-6xl">
@@ -372,10 +473,20 @@ const MessagesLayout: React.FC = () => {
 
                   <button
                     onClick={() => {
+                      setIsStaffSelectorOpen(true);
+                    }}
+                    title="New Chat / Staff List"
+                    className="p-2.5 rounded-lg transition text-lime-600 bg-lime-50 dark:bg-lime-950/40 hover:bg-lime-100"
+                  >
+                    <Plus size={18} />
+                  </button>
+
+                  <button
+                    onClick={() => {
                       setActiveTab("all");
                       setIsSidebarCollapsed(false);
                     }}
-                    title="Direct Messages"
+                    title="All Messages"
                     className={`p-2.5 rounded-lg transition ${
                       activeTab === "all"
                         ? "bg-[#95D700] text-white"
@@ -399,29 +510,23 @@ const MessagesLayout: React.FC = () => {
                   >
                     <Users size={18} />
                   </button>
-
-                  <button
-                    onClick={() => {
-                      setActiveTab("create");
-                      setIsSidebarCollapsed(false);
-                    }}
-                    title="Create Channel"
-                    className={`p-2.5 rounded-lg transition ${
-                      activeTab === "create"
-                        ? "bg-[#95D700] text-white"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    }`}
-                  >
-                    <Plus size={18} />
-                  </button>
                 </div>
               ) : (
                 /* Expanded Sidebar */
                 <div>
                   <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-semibold text-gray-700 dark:text-gray-300">
-                      Your Messages
-                    </h1>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        Your Messages
+                      </h1>
+                      <button
+                        onClick={() => setIsStaffSelectorOpen(true)}
+                        title="New Chat / Chat Yourself (+)"
+                        className="p-1.5 rounded-xl bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
                     <button
                       onClick={() => setIsSidebarCollapsed(true)}
                       title="Collapse sidebar"
@@ -430,32 +535,58 @@ const MessagesLayout: React.FC = () => {
                       <PanelLeftClose size={20} />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    Manage your conversations and connect with fellow members.
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Connect, message staff, or chat with yourself.
                   </p>
 
-                  <div className="mt-6">
+                  <div className="mt-4">
                     <input
-                      className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
-                      placeholder="Search all staff and conversations..."
+                      className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-2.5 text-sm shadow-inner mb-3 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
+                      placeholder="Search staff and conversations..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                     />
                     <MessagesTabs
                       activeTab={activeTab}
                       setActiveTab={setActiveTab}
+                      unreadCounts={unreadCounts}
                     />
 
                     {loading ? (
-                      <div className="space-y-4">Loading....</div>
+                      <div className="space-y-4 text-center py-6 text-sm text-gray-400">Loading messages...</div>
                     ) : activeTab === "channels" ? (
                       <ChannelConversationList
-                        items={channels}
+                        items={sortedChannels}
+                        onSelect={handleSelect}
+                      />
+                    ) : activeTab === "dms" ? (
+                      <ConversationList
+                        items={sortedConversations.map((c: any) => ({
+                          ...c,
+                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        }))}
+                        onSelect={handleSelect}
+                      />
+                    ) : activeTab === "mentions" ? (
+                      <ConversationList
+                        items={mentionsConversationsList.map((c: any) => ({
+                          ...c,
+                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        }))}
+                        onSelect={handleSelect}
+                      />
+                    ) : activeTab === "unread" ? (
+                      <ConversationList
+                        items={unreadConversationsList.map((c: any) => ({
+                          ...c,
+                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        }))}
                         onSelect={handleSelect}
                       />
                     ) : (
+                      /* "all" Tab: DM & Channels combined */
                       <ConversationList
-                        items={filteredConversations.map((c: any) => ({
+                        items={allConversationsList.map((c: any) => ({
                           ...c,
                           online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
                         }))}
@@ -465,8 +596,8 @@ const MessagesLayout: React.FC = () => {
 
                     {staffMatches.length > 0 && (
                       <div className="mt-6">
-                        <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                          Search Results
+                        <h2 className="text-gray-500 dark:text-gray-400 text-xs font-semibold mb-2 uppercase">
+                          Staff Matches
                         </h2>
                         <ConversationList
                           items={staffMatches.map((c: any) => ({
@@ -506,7 +637,7 @@ const MessagesLayout: React.FC = () => {
                   const conv: any =
                     activeTab === "channels"
                       ? channels.find((c: any) => c.id === selected) || null
-                      : filteredConversations.find((c) => c.id === selected) ||
+                      : allConversationsList.find((c) => c.id === selected) ||
                       null;
 
                   if (!conv) {
@@ -543,16 +674,28 @@ const MessagesLayout: React.FC = () => {
               <CreateChannelForm />
             ) : (
               !selected && (
-                <div className="p-8">
-                  <h1 className="text-2xl font-semibold text-gray-700 dark:text-gray-300">
-                    Your Messages
-                  </h1>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-4">
-                    Tap to open a conversation.
+                <div className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        Your Messages
+                      </h1>
+                      <button
+                        onClick={() => setIsStaffSelectorOpen(true)}
+                        title="New Chat / Chat Yourself (+)"
+                        className="p-1.5 rounded-xl bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105 cursor-pointer"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
+                    Connect, message staff, or chat with yourself.
                   </p>
                   <MessagesTabs
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
+                    unreadCounts={unreadCounts}
                   />
 
                   <input
@@ -566,12 +709,36 @@ const MessagesLayout: React.FC = () => {
                     <div>Loading...</div>
                   ) : activeTab === "channels" ? (
                     <ChannelConversationList
-                      items={channels}
+                      items={sortedChannels}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "dms" ? (
+                    <ConversationList
+                      items={sortedConversations.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "mentions" ? (
+                    <ConversationList
+                      items={mentionsConversationsList.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "unread" ? (
+                    <ConversationList
+                      items={unreadConversationsList.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
                       onSelect={handleSelect}
                     />
                   ) : (
                     <ConversationList
-                      items={filteredConversations.map((c: any) => ({
+                      items={allConversationsList.map((c: any) => ({
                         ...c,
                         online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
                       }))}
@@ -603,7 +770,7 @@ const MessagesLayout: React.FC = () => {
                   const conv: any =
                     activeTab === "channels"
                       ? channels.find((c) => c.id === selected) || null
-                      : filteredConversations.find((c) => c.id === selected) ||
+                      : allConversationsList.find((c) => c.id === selected) ||
                       null;
 
                   if (!conv) return null;

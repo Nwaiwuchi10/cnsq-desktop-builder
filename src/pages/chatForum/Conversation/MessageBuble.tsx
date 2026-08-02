@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { CheckCheck } from "lucide-react";
 import { ReactionsState } from "../Channels/ChannelMessageBuble";
+import TruncatedText from "../components/TruncatedText";
 
 interface MessageBubbleProps {
   text: ReactNode;
@@ -12,6 +13,7 @@ interface MessageBubbleProps {
   onClick?: () => void;
   onReact?: (emoji: string) => void;
   onTogglePin?: () => void;
+  onViewReactors?: () => void;
   currentUserId?: number | null;
   delivered?: boolean;
 }
@@ -26,6 +28,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   onClick,
   onReact,
   onTogglePin,
+  onViewReactors,
   currentUserId,
   delivered = true,
 }) => {
@@ -50,7 +53,9 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-100 dark:border-gray-700 rounded-bl-none"
       }`}
       >
-        <div className="text-sm leading-relaxed whitespace-pre-wrap">{text}</div>
+        <div className="text-sm leading-relaxed whitespace-pre-wrap">
+          <TruncatedText text={text} maxLength={300} isMe={me} />
+        </div>
 
         {/* Quick Actions Hover Menu */}
         <div className={`absolute -top-4 ${me ? 'left-0' : 'right-0'} hidden group-hover/content:flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md p-1 z-10 text-gray-800`}>
@@ -78,11 +83,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
       {/* Reactions List */}
       {reactions && Object.keys(reactions).length > 0 && (
-        <div className={`flex flex-wrap gap-1 mt-1 ${me ? "justify-end" : "justify-start"}`}>
+        <div className={`flex flex-wrap items-center gap-1 mt-1 ${me ? "justify-end" : "justify-start"}`}>
           {Object.entries(reactions).map(([emoji, group]) => (
             <button
               key={emoji}
               onClick={(e) => { e.stopPropagation(); onReact?.(emoji); }}
+              title="Click to toggle reaction. Click the list icon next to it to see who reacted."
               className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors
                 ${group.me 
                   ? "bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/30 dark:border-blue-700" 
@@ -93,6 +99,19 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               <span className="font-medium">{group.count}</span>
             </button>
           ))}
+
+          {/* View reactors list icon button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewReactors?.();
+            }}
+            title="Who reacted? (View list)"
+            className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-gray-500 dark:text-gray-400 text-xs flex items-center gap-0.5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span className="text-[10px] font-medium">Reactors</span>
+          </button>
         </div>
       )}
 
