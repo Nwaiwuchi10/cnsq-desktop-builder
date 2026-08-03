@@ -1550,6 +1550,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           );
                         })}
                       </div>
+                      {!m.text && (
+                        <div className="text-[10px] text-gray-400 mt-1 px-1">
+                          {m.time}
+                        </div>
+                      )}
                     </div>
                   )}
                   </>
@@ -1929,7 +1934,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             {/* Parent Message in Thread */}
             <div className="pb-4 border-b border-gray-200 dark:border-gray-800">
               <ChannelMessageBubble
-                text={parseMentions(parseLinks(threadParent.text))}
+                text={threadParent.text ? parseMentions(parseLinks(threadParent.text)) : null}
                 authorName={
                   threadParent.author
                     ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
@@ -1953,6 +1958,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       </a>
                     ))}
                   </div>
+                  {!threadParent.text && (
+                    <div className="text-[10px] text-gray-400 mt-1 px-1">
+                      {threadParent.time}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -2021,6 +2031,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                 );
                               })}
                             </div>
+                            {!tm.text && (
+                              <div className="text-[10px] text-gray-400 mt-1 px-1">
+                                {new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            )}
                           </div>
                         )}
                       </>
@@ -2381,6 +2396,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                               );
                             })}
                           </div>
+                          {!tm.text && (
+                            <div className="text-[10px] text-gray-400 mt-1 px-1">
+                              {new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          )}
                         </div>
                       )}
                     </>

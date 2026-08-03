@@ -85,61 +85,56 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
 
         {/* The Text Bubble */}
-        <div
-          onClick={onClick}
-          className={`p-3 shadow-sm break-words relative cursor-pointer group/content transition-all duration-200
-            ${selected ? "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900" : ""}
-            ${me
-              ? "bg-green-600 text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
-              : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
-            }`}
-        >
-          <div className="text-sm leading-relaxed whitespace-pre-wrap">
-            <TruncatedText text={text} maxLength={300} isMe={me} />
-          </div>
-
-          {time && (
-            <div
-              className={`text-[10px] mt-1.5 text-right opacity-70 ${me ? "text-white" : "text-gray-500 dark:text-gray-400"
-                }`}
-            >
-              {time}
+        {text && (
+          <div
+            onClick={onClick}
+            className={`p-3 shadow-sm break-words relative cursor-pointer group/content transition-all duration-200
+              ${selected ? "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900" : ""}
+              ${me
+                ? "bg-green-600 text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
+                : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
+              }`}
+          >
+            <div className="text-sm leading-relaxed whitespace-pre-wrap">
+              <TruncatedText text={text} maxLength={300} isMe={me} />
             </div>
-          )}
 
-          {/* Quick Actions Hover Menu */}
-          <div className={`absolute -top-10 ${me ? 'left-0' : 'right-0'} hidden group-hover/content:flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-1 z-20 backdrop-blur-sm bg-opacity-90`}>
-            <button
-              onClick={(e) => { e.stopPropagation(); onReact?.("👍"); }}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
-              title="Quick React 👍"
-            >
-              👍
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onReact?.("❤️"); }}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
-              title="Quick React ❤️"
-            >
-              ❤️
-            </button>
-            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
-            {/* <button
-              onClick={(e) => { e.stopPropagation(); onViewThread?.(); }}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
-              title="Reply in Thread"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-            </button> */}
-            <button
-              onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
-              className={`p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${pinned ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}
-              title={pinned ? "Unpin" : "Pin"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
-            </button>
+            {time && (
+              <div
+                className={`text-[10px] mt-1.5 text-right opacity-70 ${me ? "text-white" : "text-gray-500 dark:text-gray-400"
+                  }`}
+              >
+                {time}
+              </div>
+            )}
+
+            {/* Quick Actions Hover Menu */}
+            <div className={`absolute -top-10 ${me ? 'left-0' : 'right-0'} hidden group-hover/content:flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-1 z-20 backdrop-blur-sm bg-opacity-90`}>
+              <button
+                onClick={(e) => { e.stopPropagation(); onReact?.("👍"); }}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
+                title="Quick React 👍"
+              >
+                👍
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onReact?.("❤️"); }}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
+                title="Quick React ❤️"
+              >
+                ❤️
+              </button>
+              <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
+              <button
+                onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
+                className={`p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${pinned ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}
+                title={pinned ? "Unpin" : "Pin"}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Reactions Section */}
         {reactions && Object.keys(reactions).length > 0 && (
