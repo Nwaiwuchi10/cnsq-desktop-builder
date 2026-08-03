@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import parseMentions from "@/utils/ParseMention";
+import TruncatedText from "../components/TruncatedText";
 // import parseLinks from "@/utils/ParseLink";
 
 export type ReactionsState = {
@@ -21,11 +22,13 @@ export interface MessageBubbleProps {
   pinned?: boolean;
   reactions?: ReactionsState;
   threadRepliesCount?: number;
+  attachments?: any[];
   currentUserId?: number | null;
   onClick?: () => void;
   onReact?: (emoji: string) => void;
   onViewThread?: () => void;
   onTogglePin?: () => void;
+  onViewReactors?: () => void;
 }
 
 const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
@@ -44,6 +47,8 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
   onReact,
   onViewThread,
   onTogglePin,
+  onViewReactors,
+  attachments,
 }) => {
   return (
     <div className={`flex items-start gap-3 w-full group ${me ? "flex-row-reverse" : "flex-row"}`}>
@@ -81,24 +86,92 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
 
-        {/* The Text Bubble */}
-        <div
-          onClick={onClick}
-          className={`p-3 shadow-sm break-words relative cursor-pointer group/content transition-all duration-200
-            ${selected ? "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900" : ""}
-            ${me
-              ? "bg-green-600 text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
-              : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
-            }`}
-        >
-          <div className="text-sm leading-relaxed whitespace-pre-wrap">{text}</div>
-
-          {time && (
+        {/* Content Wrapper supporting unified hover reactions menu */}
+        <div className="relative group/content w-full flex flex-col items-stretch">
+          {/* The Text Bubble */}
+          {text && (
             <div
-              className={`text-[10px] mt-1.5 text-right opacity-70 ${me ? "text-white" : "text-gray-500 dark:text-gray-400"
+              onClick={onClick}
+              className={`p-3 shadow-sm break-words cursor-pointer transition-all duration-200
+                ${selected ? "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900" : ""}
+                ${me
+                  ? "bg-green-600 text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
+                  : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
                 }`}
             >
-              {time}
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                <TruncatedText text={text} maxLength={300} isMe={me} />
+              </div>
+
+              {time && (
+                <div
+                  className={`text-[10px] mt-1.5 text-right opacity-70 ${me ? "text-white" : "text-gray-500 dark:text-gray-400"
+                    }`}
+                >
+                  {time}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Attachments */}
+          {attachments && attachments.length > 0 && (
+            <div
+              onClick={onClick}
+              className={`flex flex-col mt-1 cursor-pointer ${me ? "items-end" : "items-start"}`}
+            >
+              <div
+                className="flex flex-wrap gap-2"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (
+                    target.tagName === "A" ||
+                    target.tagName === "AUDIO" ||
+                    target.tagName === "VIDEO" ||
+                    target.closest("audio") ||
+                    target.closest("video")
+                  ) {
+                    e.stopPropagation();
+                  }
+                }}
+              >
+                {attachments.map((a: any) => {
+                  const ext = a.filename?.split(".").pop()?.toLowerCase();
+                  if (a.mimeType?.startsWith("audio/")) {
+                    return (
+                      <div key={a.id} className="mt-1">
+                        <audio controls className="w-64 h-8">
+                          <source src={a.url} type={a.mimeType} />
+                        </audio>
+                      </div>
+                    );
+                  }
+                  if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                    return (
+                      <div key={a.id} className="mt-1">
+                        <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
+                      </div>
+                    );
+                  }
+                  if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
+                    return (
+                      <div key={a.id} className="mt-1">
+                        <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
+                      </div>
+                    );
+                  }
+                  return (
+                    <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
+                      {a.filename || "Attachment"}
+                    </a>
+                  );
+                })}
+              </div>
+              {!text && (
+                <div className="text-[10px] text-gray-400 mt-1 px-1">
+                  {time}
+                </div>
+              )}
             </div>
           )}
 
@@ -120,13 +193,6 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
             </button>
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
             <button
-              onClick={(e) => { e.stopPropagation(); onViewThread?.(); }}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
-              title="Reply in Thread"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-            </button>
-            <button
               onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
               className={`p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${pinned ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}
               title={pinned ? "Unpin" : "Pin"}
@@ -138,7 +204,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* Reactions Section */}
         {reactions && Object.keys(reactions).length > 0 && (
-          <div className={`flex flex-wrap gap-1 mt-2 ${me ? "justify-end" : "justify-start"}`}>
+          <div className={`flex flex-wrap items-center gap-1 mt-2 ${me ? "justify-end" : "justify-start"}`}>
             {Object.entries(reactions).map(([emoji, data]) => (
               <button
                 key={emoji}
@@ -146,6 +212,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                   e.stopPropagation();
                   onReact?.(emoji);
                 }}
+                title="Click to toggle reaction. Click the list icon next to it to see who reacted."
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs transition-all duration-200 border
                   ${data.me
                     ? "bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 scale-105 shadow-sm"
@@ -156,6 +223,19 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                 <span className="font-medium">{data.count}</span>
               </button>
             ))}
+
+            {/* View reactors list icon button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewReactors?.();
+              }}
+              title="Who reacted? (View list)"
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400 text-xs flex items-center gap-0.5 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+              <span className="text-[10px] font-medium">Reactors</span>
+            </button>
           </div>
         )}
 

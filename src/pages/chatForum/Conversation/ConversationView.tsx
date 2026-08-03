@@ -9,7 +9,14 @@ import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
 import { useChatStore } from "@/store/ChatStore";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import { ReactionsState } from "../Channels/ChannelMessageBuble";
+import DMHeaderMenu from "../components/DMHeaderMenu";
+import ContactInfoDrawer from "../components/ContactInfoDrawer";
+import ImageZoomModal from "../components/ImageZoomModal";
+import TruncatedText from "../components/TruncatedText";
+import ReactionUserListModal from "../components/ReactionUserListModal";
+import MessageInfoModal from "../components/MessageInfoModal";
 
+// Slight update to trigger deployment/build verification
 type ConversationViewProps = {
   conversation: Msg | null;
   onBack?: () => void;
@@ -58,6 +65,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(new Set());
+  const [reactorsModalMessageId, setReactorsModalMessageId] = useState<string | null>(null);
 
   // ======= Helper: Normalize raw reactions array → ReactionsState =======
   const normalizeReactions = (rawReactions: any[]): ReactionsState | undefined => {
@@ -85,9 +93,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
     null,
   );
-  const [forwardingMessage, setForwardingMessage] = useState<Msg | null>(null);
+
+  const [messageInfoId, setMessageInfoId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [allConversations, setAllConversations] = useState<any[]>([]);
   const [isForwardingModalOpen, setIsForwardingModalOpen] = useState(false);
+  const [forwardingMessage, setForwardingMessage] = useState<Msg | null>(null);
+  const [isContactInfoOpen, setIsContactInfoOpen] = useState(false);
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+  const [zoomUrl, setZoomUrl] = useState("");
+  const [zoomFilename, setZoomFilename] = useState("attachment");
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const [uploadingVoice, setUploadingVoice] = useState(false);
@@ -390,6 +406,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
+  const scrollToMessage = (messageId: string) => {
+    const element = document.getElementById(`msg-${messageId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      element.classList.add("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      setTimeout(() => {
+        element.classList.remove("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      }, 2000);
+    }
+  };
+
   const toggleReaction = async (messageId: string, emoji: string) => {
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -485,7 +512,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   ///post message
 
   const postMessage = async () => {
-    if (!text.trim() && files.length === 0) return;
+    if (!text.trim() && files.length === 0 && !voiceBlob) return;
 
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -496,11 +523,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       JSON.stringify({
         conversationId: conversation?.id,
         text,
-        parentId: replyingTo?.id ?? null, // <-- send parentId for reply
+        parentId: replyingTo?.id ?? null,
       }),
     );
 
     files.forEach((f) => formData.append("file", f));
+    if (voiceBlob) {
+      formData.append("file", voiceBlob, "voice-note.webm");
+    }
 
     try {
       setIsSaving(true);
@@ -511,9 +541,11 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         },
       });
 
-      // Clear input and files after sending
+      // Clear input, files and voice recording after sending
       setText("");
       setFiles([]);
+      setVoiceBlob(null);
+      setVoiceUrl(null);
       setReplyingTo(null);
     } catch (err) {
       console.error(err);
@@ -682,7 +714,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       </div>
     );
   };
-  ////
+  const pinnedMessages = messages.filter((m) => m.pinned);
+  const latestPinnedMessage = pinnedMessages[pinnedMessages.length - 1];
 
   return (
 
@@ -722,10 +755,104 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             )}
           </div>
         </div>
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-gray-400">
-          ⋮
-        </button>
+        <DMHeaderMenu
+          onContactInfo={() => setIsContactInfoOpen(true)}
+          onSearch={() => setIsSearchOpen((prev) => !prev)}
+          onSelectMessages={() => alert("Message selection mode active")}
+          onMuteNotifications={() => alert("Notifications muted for this chat")}
+          onDisappearingMessages={() => alert("Disappearing messages timer set")}
+          onAddToFavorites={() => alert("Chat added to Favorites")}
+          onAddToList={() => alert("Added to custom list")}
+          onCloseChat={() => onBack?.()}
+          onSendCallLink={() => alert("Call link generated and copied")}
+          onNewGroupCall={() => alert("Group call initiated")}
+          onReport={() => alert("User reported")}
+          onBlock={() => alert("User blocked")}
+          onClearChat={() => {
+            if (confirm("Are you sure you want to clear chat messages?")) {
+              setMessages([]);
+            }
+          }}
+          onDeleteChat={() => {
+            if (confirm("Are you sure you want to delete this chat?")) {
+              onBack?.();
+            }
+          }}
+        />
       </div>
+
+      {/* Pinned Message Banner */}
+      {latestPinnedMessage && (
+        <div
+          onClick={() => scrollToMessage(latestPinnedMessage.id)}
+          className="flex items-center justify-between px-5 py-2.5 bg-gray-50 dark:bg-[#1c1d1e] border-b border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all duration-200 z-10 shadow-sm"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-lime-500 flex-shrink-0 rotate-45"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/></svg>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider mb-0.5">
+                Pinned Message
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                <span className="font-semibold mr-1">
+                  {latestPinnedMessage.me ? "You" : (conversation?.name || "User")}:
+                </span>
+                {latestPinnedMessage.text || (latestPinnedMessage.attachments?.length ? `📎 Sent ${latestPinnedMessage.attachments.length} attachment(s)` : "Sent a message")}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePin(latestPinnedMessage.id);
+            }}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            title="Unpin message"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Message Search Bar Header */}
+      {isSearchOpen && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search messages in this chat..."
+            className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white placeholder-gray-400"
+            autoFocus
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              Clear
+            </button>
+          )}
+          <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            ✕
+          </button>
+        </div>
+      )}
+
+      <ContactInfoDrawer
+        isOpen={isContactInfoOpen}
+        onClose={() => setIsContactInfoOpen(false)}
+        contact={{
+          name: conversation?.name || "User",
+          avatar: conversation?.avatar,
+          online: conversation?.peerId ? onlineStaffs[conversation.peerId] : false,
+        }}
+      />
+
+      <ImageZoomModal
+        isOpen={isImageZoomOpen}
+        onClose={() => setIsImageZoomOpen(false)}
+        url={zoomUrl}
+        filename={zoomFilename}
+      />
 
       {/* Messages */}
       <div
@@ -737,7 +864,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             Loading more...
           </div>
         )}
-        {messages.map((m) => {
+        {messages
+          .filter((m) => !searchQuery.trim() || (m.text || "").toLowerCase().includes(searchQuery.toLowerCase()))
+          .map((m) => {
           const msgDate = formatDate(m.createdAt);
           const showDateSeparator = msgDate !== lastDate;
           lastDate = msgDate;
@@ -745,7 +874,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
           return (
-            <div key={m.id} className="mb-2">
+            <div key={m.id} id={`msg-${m.id}`} className="mb-2">
               {/* DATE SEPARATOR */}
               {showDateSeparator && (
                 <div className="flex justify-center my-4">
@@ -852,6 +981,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         }
                         onTogglePin={() => togglePin(m.id)}
                         onReact={(emoji) => toggleReaction(m.id, emoji)}
+                        onViewReactors={() => setReactorsModalMessageId(m.id)}
                         currentUserId={currentUserId}
                       />
                     )}
@@ -910,6 +1040,18 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
                           <span className="text-xs font-medium">Forward</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setMessageInfoId(m.id);
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-[#95D700] transition-colors"
+                          title="Message Info (Read Receipts)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                          <span className="text-xs font-medium">Info</span>
                         </button>
                       </div>
                     )}
@@ -992,19 +1134,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               ) : (
                 <>
                   {/* MESSAGE BUBBLE */}
-                  {m.text && (
+                  {(m.text || (m.attachments?.length ?? 0) > 0) && (
                     <MessageBubble
-                      // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
                       text={
-                        <>
-                          {parseLinks(m.text)}
-                          {m.edited && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {" "}
-                              (edited)
-                            </span>
-                          )}
-                        </>
+                        m.text ? (
+                          <>
+                            {parseLinks(m.text)}
+                            {m.edited && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {" "}
+                                (edited)
+                              </span>
+                            )}
+                          </>
+                        ) : null
                       }
                       me={m.me}
                       time={m.time}
@@ -1018,7 +1161,9 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       }
                       onTogglePin={() => togglePin(m.id)}
                       onReact={(emoji) => toggleReaction(m.id, emoji)}
+                      onViewReactors={() => setReactorsModalMessageId(m.id)}
                       currentUserId={currentUserId}
+                      attachments={m.attachments}
                     />
                   )}
 
@@ -1027,7 +1172,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
          ====================================================== */}
                   {selectedMessageId === m.id && (
                     <div
-                      className={`flex items-center gap-4 mt-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 w-fit shadow-sm border border-gray-100 dark:border-gray-700
+                      className={`flex flex-wrap items-center gap-4 mt-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 w-fit shadow-sm border border-gray-100 dark:border-gray-700
                         ${m.me ? "ml-auto flex-row-reverse" : "mr-auto"}
                       `}
                     >
@@ -1039,7 +1184,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                               setText(m.text);
                               setReplyTo(null);
                             }}
-                            className="flex items-center gap-1 text-blue-500 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors"
                             title="Edit"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -1069,83 +1214,66 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                         <span className="text-xs font-medium">Reply</span>
                       </button>
-                    </div>
-                  )}
 
-                  {/* ======================================================
-         ATTACHMENTS
-         ====================================================== */}
-                  {(m.attachments?.length ?? 0) > 0 && (
-                    <div
-                      className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"
-                        }`}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {(m.attachments ?? []).map((a) => {
-                          const ext = a.filename
-                            ?.split(".")
-                            .pop()
-                            ?.toLowerCase();
-                          const time = (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                              {m.time}
-                            </div>
-                          );
+                      <button
+                        onClick={() => {
+                          toggleReaction(m.id, "👍");
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-yellow-500 transition-colors"
+                        title="Like 👍"
+                      >
+                        <span className="text-sm">👍</span>
+                        <span className="text-xs font-medium">Like</span>
+                      </button>
 
-                          if (a.mimeType?.startsWith("audio/")) {
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <audio controls className="w-64">
-                                  <source src={a.url} type={a.mimeType} />
-                                </audio>
-                                {time}
-                              </div>
-                            );
-                          }
+                      <button
+                        onClick={() => {
+                          toggleReaction(m.id, "❤️");
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors"
+                        title="Love ❤️"
+                      >
+                        <span className="text-sm">❤️</span>
+                        <span className="text-xs font-medium">Love</span>
+                      </button>
 
-                          if (
-                            ext &&
-                            ["png", "jpg", "jpeg", "gif"].includes(ext)
-                          ) {
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <img
-                                  src={a.url}
-                                  className="w-32 h-32 object-cover rounded"
-                                />
-                                {time}
-                              </div>
-                            );
-                          }
+                      <button
+                        onClick={() => {
+                          togglePin(m.id);
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+                        title={m.pinned ? "Unpin" : "Pin"}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8"/><path d="m16 4-4 4-4-4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 12H9"/></svg>
+                        <span className="text-xs font-medium">{m.pinned ? "Unpin" : "Pin"}</span>
+                      </button>
 
-                          if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <video
-                                  src={a.url}
-                                  controls
-                                  className="w-40 rounded"
-                                />
-                                {time}
-                              </div>
-                            );
-                          }
+                      <button
+                        onClick={() => {
+                          setForwardingMessage(m);
+                          fetchForwardConversations();
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+                        title="Forward"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
+                        <span className="text-xs font-medium">Forward</span>
+                      </button>
 
-                          return (
-                            <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                              <a
-                                href={a.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-600"
-                              >
-                                {a.filename || "Attachment"}
-                              </a>
-                              {time}
-                            </div>
-                          );
-                        })}
-                      </div>
+                      <button
+                        onClick={() => {
+                          setMessageInfoId(m.id);
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-[#95D700] transition-colors"
+                        title="Message Info (Read Receipts)"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span className="text-xs font-medium">Info</span>
+                      </button>
                     </div>
                   )}
                 </>
@@ -1215,7 +1343,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                   else postMessage();
                 }}
                 disabled={isSaving || (!text.trim() && files.length === 0 && !voiceBlob)}
-                className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
+                className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 cursor-pointer disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
               </button>
@@ -1265,11 +1393,18 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               </div>
 
               {voiceUrl && (
-                <div className="ml-2 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1 pr-1 border border-gray-200 dark:border-gray-700">
+                <div className="ml-2 flex items-center gap-2 bg-lime-50 dark:bg-lime-950/60 rounded-full px-3 py-1 border border-lime-200 dark:border-lime-900 shadow-sm">
                   <audio src={voiceUrl} controls className="h-6 w-32" />
+                  <button
+                    onClick={postMessage}
+                    className="px-2.5 py-1 bg-lime-500 hover:bg-lime-600 text-black text-xs font-bold rounded-full transition shadow-sm"
+                  >
+                    Send Voice Note
+                  </button>
                   <button
                     onClick={() => { setVoiceUrl(null); setVoiceBlob(null); }}
                     className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors text-red-500"
+                    title="Cancel Recording"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                   </button>
@@ -1338,7 +1473,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 else postMessage();
               }}
               disabled={isSaving || (!text.trim() && files.length === 0 && !voiceBlob)}
-              className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
+              className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 cursor-pointer disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
@@ -1431,6 +1566,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Reactors User List Modal */}
+      <ReactionUserListModal
+        messageId={reactorsModalMessageId}
+        isOpen={!!reactorsModalMessageId}
+        onClose={() => setReactorsModalMessageId(null)}
+      />
+
+      {/* Message Info Modal (Read Receipts) */}
+      <MessageInfoModal
+        messageId={messageInfoId}
+        isOpen={!!messageInfoId}
+        onClose={() => setMessageInfoId(null)}
+      />
     </div>
   );
 };

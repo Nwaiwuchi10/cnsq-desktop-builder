@@ -11,10 +11,18 @@ import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
 // import parseLinks from "@/utils/ParseLink";
-import { useChatStore } from "@/store/ChatStore";
-import NativeVoiceRecorder from "../../../component/VoiceRecorder/NativeVoiceRecorder";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
+import { useChatStore } from "@/store/ChatStore";
 import { ReactionsState } from "./ChannelMessageBuble";
+import ChannelHeaderMenu from "../components/ChannelHeaderMenu";
+import ChannelInfoDrawer from "../components/ChannelInfoDrawer";
+import MessageReminderModal from "../components/MessageReminderModal";
+import ImageZoomModal from "../components/ImageZoomModal";
+import TruncatedText from "../components/TruncatedText";
+import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
+import ReactionUserListModal from "../components/ReactionUserListModal";
+import MessageInfoModal from "../components/MessageInfoModal";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -74,6 +82,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const updateThreadParent = (val: Msg | null) => {
     setThreadParent(val);
     threadParentRef.current = val;
+    if (val !== null) setIsChatCollapsed(false); // always expand when opening new thread
   };
   const [threadMessages, setThreadMessages] = useState<any[]>([]);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
@@ -88,6 +97,12 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [forwardingMessage, setForwardingMessage] = useState<Msg | null>(null);
   const [allConversations, setAllConversations] = useState<any[]>([]);
   const [isForwardingModalOpen, setIsForwardingModalOpen] = useState(false);
+
+  const [isGroupInfoOpen, setIsGroupInfoOpen] = useState(false);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+  const [zoomUrl, setZoomUrl] = useState("");
+  const [zoomFilename, setZoomFilename] = useState("attachment");
 
   const [voiceBlob, setVoiceBlob] = useState<Blob | null>(null);
   const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
@@ -115,6 +130,14 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [threadReplyingTo, setThreadReplyingTo] = useState<any>(null);
   const [deletingThreadReplyIds, setDeletingThreadReplyIds] = useState<Set<string>>(new Set());
   const [selectedThreadMessageId, setSelectedThreadMessageId] = useState<string | null>(null);
+  const [reactorsModalMessageId, setReactorsModalMessageId] = useState<string | null>(null);
+  const [messageInfoId, setMessageInfoId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [isThreadGroupInfoOpen, setIsThreadGroupInfoOpen] = useState(false);
+  const [threadMessageInfoId, setThreadMessageInfoId] = useState<string | null>(null);
+  const [threadReactorsModalMessageId, setThreadReactorsModalMessageId] = useState<string | null>(null);
 
   const pageSize = 30;
   const hasUserScrolled = useRef(false);
@@ -281,12 +304,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             attachments: m.parent.attachments,
           }
           : undefined,
-        name: m.author.firstName + " " + m.author.lastName,
+        name: `${m.author?.firstName || ""} ${m.author?.lastName || ""}`.trim() || "Staff Member",
 
         author: {
-          id: m.author.id,
-          firstName: m.author.firstName,
-          photoUrl: m.author.photoUrl || null,
+          id: m.author?.id,
+          firstName: m.author?.firstName || "",
+          lastName: m.author?.lastName || "",
+          photoUrl: m.author?.photoUrl || null,
         },
         edited: m.edited,
         pinned: m.pinned,
@@ -343,11 +367,12 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             attachments: m.parent.attachments,
           }
           : undefined,
-        name: m.author.firstName + " " + m.author.lastName,
+        name: `${m.author?.firstName || ""} ${m.author?.lastName || ""}`.trim() || "Staff Member",
         author: {
-          id: m.author.id,
-          firstName: m.author.firstName,
-          photoUrl: m.author.photoUrl || null,
+          id: m.author?.id,
+          firstName: m.author?.firstName || "",
+          lastName: m.author?.lastName || "",
+          photoUrl: m.author?.photoUrl || null,
         },
         edited: m.edited,
         pinned: m.pinned,
@@ -392,11 +417,12 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             minute: "2-digit",
           }),
           author: {
-            id: msg.authorId,
+            id: msg.authorId || msg.author?.id,
             firstName: msg.author?.firstName || "",
+            lastName: msg.author?.lastName || "",
             photoUrl: msg.author?.photoUrl || null,
           },
-          name: (msg.author?.firstName || "") + " " + (msg.author?.lastName || ""),
+          name: `${msg.author?.firstName || ""} ${msg.author?.lastName || ""}`.trim() || "Staff Member",
           attachments: msg.attachments || [],
           reactions: undefined,
           pinned: false,
@@ -510,10 +536,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     const match = value.match(/@(\w*)$/);
     if (match) {
       const query = match[1].toLowerCase();
+      const allItem = { id: 'all', firstName: 'all', lastName: '(Notify everyone in channel)', isAll: true };
       const filtered = staffList.filter((s) =>
-        `${s.firstName}${s.lastName}`.toLowerCase().includes(query),
+        `${s.firstName}${s.lastName}`.toLowerCase().includes(query) ||
+        s.firstName.toLowerCase().includes(query) ||
+        s.lastName.toLowerCase().includes(query)
       );
-      setSuggestions(filtered);
+      setSuggestions("all".includes(query) ? [allItem, ...filtered] : filtered);
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
@@ -522,10 +551,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   };
 
   const handleSelectStaff = (staff: any) => {
-    // Replace last @mention with selected staff
-    setText((prev) =>
-      prev.replace(/@\w*$/, `@${staff.firstName}${staff.lastName} `),
-    );
+    if (staff.isAll) {
+      setText((prev) => prev.replace(/@\w*$/, `@all `));
+    } else {
+      setText((prev) =>
+        prev.replace(/@\w*$/, `@${staff.firstName}${staff.lastName} `),
+      );
+    }
     setShowSuggestions(false);
     setSuggestions([]);
   };
@@ -583,6 +615,17 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       });
     } catch (err) {
       console.error("Pin toggle failed", err);
+    }
+  };
+
+  const scrollToMessage = (messageId: string) => {
+    const element = document.getElementById(`msg-${messageId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      element.classList.add("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      setTimeout(() => {
+        element.classList.remove("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      }, 2000);
     }
   };
 
@@ -708,7 +751,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
   // ================== Post Message ==================
   const postMessage = async () => {
-    if (!text.trim() && files.length === 0) return;
+    if (!text.trim() && files.length === 0 && !voiceBlob) return;
 
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -725,6 +768,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       }),
     );
     files.forEach((f) => formData.append("file", f));
+    if (voiceBlob) {
+      formData.append("file", voiceBlob, "voice-note.webm");
+    }
 
     try {
       setIsSaving(true);
@@ -736,6 +782,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       });
       setText("");
       setFiles([]);
+      setVoiceBlob(null);
+      setVoiceUrl(null);
       setReplyTo(null);
       setReplyingTo(null);
     } catch (err) {
@@ -965,13 +1013,15 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     );
   };
   ////
+  const pinnedMessages = messages.filter((m) => m.pinned);
+  const latestPinnedMessage = pinnedMessages[pinnedMessages.length - 1];
 
   return (
 
     <div className="flex w-full h-full text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141414]">
       {/* Main Chat Area */}
       {/* Main Conversation List (Hidden on mobile when thread is open) */}
-      <div className={`flex flex-col h-full transition-all duration-300 ${threadParent ? "hidden lg:flex lg:w-2/3 border-r border-gray-200 dark:border-gray-800" : "w-full"}`}>
+      <div className={`flex flex-col h-full transition-all duration-300 ${threadParent ? (isChatCollapsed ? "hidden lg:hidden" : "hidden lg:flex lg:w-2/3 border-r border-gray-200 dark:border-gray-800") : "w-full"}`}>
         {/* Header */}
         <div className="flex items-center gap-4 px-4 py-3 border-b">
           <button onClick={onBack} className="md:hidden p-2">
@@ -981,12 +1031,12 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             {conversation?.avatar ? (
               <img
                 src={conversation.avatar}
-                alt={conversation.name}
+                alt="avatar"
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                {conversation?.name?.slice(0, 2).toUpperCase()}
+              <div className="w-full h-full bg-[#95D700] text-white flex items-center justify-center font-bold">
+                {conversation?.name?.charAt(0) || "C"}
               </div>
             )}
           </div>
@@ -994,12 +1044,52 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           <div className="flex-1 min-w-0">
             <div className="font-semibold truncate">{conversation?.name}</div>
           </div>
-          <div>
-            <VerticalOptionsMenu
+          <div className="flex items-center gap-2">
+            <ChannelHeaderMenu
               onAddMember={() => setMode("add")}
-              onViewMembers={() => setMode("view")}
-              onRemoveMember={() => setMode("remove")}
+              onGroupInfo={() => setIsGroupInfoOpen(true)}
+              onSearch={() => setIsSearchOpen((prev) => !prev)}
+              onSelectMessages={() => alert("Message selection mode active")}
+              onMuteNotifications={() => alert("Notifications muted for this channel")}
+              onDisappearingMessages={() => alert("Disappearing messages timer set")}
+              onAddToFavorites={() => alert("Channel added to Favorites")}
+              onAddToList={() => alert("Added to list")}
+              onScheduleReminder={() => setIsReminderModalOpen(true)}
+              onCloseChat={() => onBack?.()}
+              onClearChat={() => {
+                if (confirm("Clear channel messages view?")) {
+                  setMessages([]);
+                }
+              }}
+              onExitGroup={() => {
+                if (confirm("Are you sure you want to exit/leave this channel?")) {
+                  onBack?.();
+                }
+              }}
             />
+
+            {/* Message Search Bar Header */}
+            {isSearchOpen && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search messages in this channel..."
+                  className="flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white placeholder-gray-400"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery("")} className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    Clear
+                  </button>
+                )}
+                <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }} className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                  ✕
+                </button>
+              </div>
+            )}
 
             {mode && (
               <ConversationMembersManager
@@ -1011,6 +1101,67 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </div>
         </div>
 
+        {/* Pinned Message Banner */}
+        {latestPinnedMessage && (
+          <div
+            onClick={() => scrollToMessage(latestPinnedMessage.id)}
+            className="flex items-center justify-between px-5 py-2.5 bg-gray-50 dark:bg-[#1c1d1e] border-b border-gray-200 dark:border-gray-850 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all duration-200 z-10 shadow-sm"
+          >
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-lime-500 flex-shrink-0 rotate-45"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/></svg>
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider mb-0.5">
+                  Pinned Message
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                  <span className="font-semibold mr-1">
+                    {latestPinnedMessage.author 
+                      ? `${latestPinnedMessage.author.firstName || ""} ${(latestPinnedMessage.author as any).lastName || ""}`.trim()
+                      : latestPinnedMessage.name || "Member"}:
+                  </span>
+                  {latestPinnedMessage.text || (latestPinnedMessage.attachments?.length ? `📎 Sent ${latestPinnedMessage.attachments.length} attachment(s)` : "Sent a message")}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePin(latestPinnedMessage.id);
+              }}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+              title="Unpin message"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <ChannelInfoDrawer
+          isOpen={isGroupInfoOpen}
+          onClose={() => setIsGroupInfoOpen(false)}
+          channel={{
+            id: conversation?.id || "",
+            name: conversation?.name || "Channel",
+            description: (conversation as any)?.description || "Channel discussion group",
+            members: (conversation as any)?.members || [],
+          }}
+        />
+
+        {conversation?.id && (
+          <MessageReminderModal
+            conversationId={conversation.id}
+            isOpen={isReminderModalOpen}
+            onClose={() => setIsReminderModalOpen(false)}
+          />
+        )}
+
+        <ImageZoomModal
+          isOpen={isImageZoomOpen}
+          onClose={() => setIsImageZoomOpen(false)}
+          url={zoomUrl}
+          filename={zoomFilename}
+        />
+
         {/* Messages */}
         <div
           ref={scrollRef}
@@ -1021,7 +1172,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               Loading more...
             </div>
           )}
-          {messages.map((m) => {
+          {messages
+            .filter((m) => !searchQuery.trim() || (m.text || "").toLowerCase().includes(searchQuery.toLowerCase()))
+            .map((m) => {
             const msgDate = formatDate(m.createdAt);
             const showDateSeparator = msgDate !== lastDate;
             lastDate = msgDate;
@@ -1030,7 +1183,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
             if (m.type === "join" || m.type === "leave") {
               return (
-                <div key={m.id} className="flex flex-col items-center my-4">
+                <div key={m.id} id={`msg-${m.id}`} className="flex flex-col items-center my-4">
                   <div className="text-[11px] text-gray-500 bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full border border-gray-100 dark:border-gray-700 font-medium">
                     {m.text}
                   </div>
@@ -1039,7 +1192,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             }
 
             return (
-              <div key={m.id} className="mb-6">
+              <div key={m.id} id={`msg-${m.id}`} className="mb-6">
                 {/* DATE SEPARATOR */}
                 {showDateSeparator && (
                   <div className="flex justify-center my-2">
@@ -1140,7 +1293,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                               selectedMessageId === m.id ? null : m.id,
                             )
                           }
-                          authorName={m.author?.firstName}
+                          authorName={
+                          m.author
+                            ? `${m.author.firstName || ""} ${(m.author as any).lastName || ""}`.trim()
+                            : m.name
+                        }
                           avatar={m.author?.photoUrl}
                           online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
                           pinned={m.pinned}
@@ -1150,6 +1307,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           onTogglePin={() => togglePin(m.id)}
                           onReact={(emoji) => toggleReaction(m.id, emoji)}
                           onViewThread={() => openThread(m)}
+                          onViewReactors={() => setReactorsModalMessageId(m.id)}
                         />
                       )}
 
@@ -1165,6 +1323,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                     <audio controls className="w-64 h-8">
                                       <source src={a.url} type={a.mimeType} />
                                     </audio>
+                                  </div>
+                                );
+                              }
+                              if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                return (
+                                  <div key={a.id} className="mt-1">
+                                    <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
                                   </div>
                                 );
                               }
@@ -1252,6 +1417,18 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
                             <span className="text-[13px] font-semibold">Forward</span>
                           </button>
+
+                          <button
+                            onClick={() => {
+                              setMessageInfoId(m.id);
+                              setSelectedMessageId(null);
+                            }}
+                            className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
+                            title="Message Info (Read Receipts)"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            <span className="text-[13px] font-semibold">Info</span>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -1259,19 +1436,21 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 ) : (
                   <>
                     {/* MESSAGE BUBBLE */}
-                    {m.text && (
+                    {(m.text || (m.attachments?.length ?? 0) > 0) && (
                       <ChannelMessageBubble
                         // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
                         text={
-                          <>
-                            {parseMentions(parseLinks(m.text))}
-                            {m.edited && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {" "}
-                                (edited)
-                              </span>
-                            )}
-                          </>
+                          m.text ? (
+                            <>
+                              {parseMentions(parseLinks(m.text))}
+                              {m.edited && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {" "}
+                                  (edited)
+                                </span>
+                              )}
+                            </>
+                          ) : null
                         }
                         me={m.me}
                         time={m.time}
@@ -1281,7 +1460,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             selectedMessageId === m.id ? null : m.id,
                           )
                         }
-                        authorName={m.author?.firstName}
+                        authorName={
+                          m.author
+                            ? `${m.author.firstName || ""} ${(m.author as any).lastName || ""}`.trim()
+                            : m.name
+                        }
                         avatar={m.author?.photoUrl}
                         online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
                         pinned={m.pinned}
@@ -1290,15 +1473,17 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         onTogglePin={() => togglePin(m.id)}
                         onReact={(emoji) => toggleReaction(m.id, emoji)}
                         onViewThread={() => openThread(m)}
+                        onViewReactors={() => setReactorsModalMessageId(m.id)}
+                        attachments={m.attachments}
                       />
                     )}
 
                     {/* ======================================================
-         ACTION BUTTONS (Edit / Delete / Reply)
+         ACTION BUTTONS (Edit / Delete / Reply / React / Pin)
          ====================================================== */}
                     {selectedMessageId === m.id && (
                       <div
-                        className={`flex items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md
+                        className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                         ${m.me ? "ml-auto flex-row-reverse" : "mr-auto"}
                       `}
                       >
@@ -1355,6 +1540,42 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
                         <button
                           onClick={() => {
+                            toggleReaction(m.id, "👍");
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                          title="Like 👍"
+                        >
+                          <span className="text-base">👍</span>
+                          <span className="text-[13px] font-semibold">Like</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            toggleReaction(m.id, "❤️");
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                          title="Love ❤️"
+                        >
+                          <span className="text-base">❤️</span>
+                          <span className="text-[13px] font-semibold">Love</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            togglePin(m.id);
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                          title={m.pinned ? "Unpin" : "Pin"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                          <span className="text-[13px] font-semibold">{m.pinned ? "Unpin" : "Pin"}</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
                             setForwardingMessage(m);
                             fetchForwardConversations();
                           }}
@@ -1364,39 +1585,20 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
                           <span className="text-[13px] font-semibold">Forward</span>
                         </button>
+
+                        <button
+                          onClick={() => {
+                            setMessageInfoId(m.id);
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
+                          title="Message Info (Read Receipts)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                          <span className="text-[13px] font-semibold text-[#95D700]">Info</span>
+                        </button>
                       </div>
                     )}
-                  {/* ATTACHMENTS FOR MAIN MESSAGE */}
-                  {(m.attachments?.length ?? 0) > 0 && (
-                    <div className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"}`}>
-                      <div className="flex flex-wrap gap-2">
-                        {(m.attachments ?? []).map((a: any) => {
-                          const ext = a.filename?.split(".").pop()?.toLowerCase();
-                          if (a.mimeType?.startsWith("audio/")) {
-                            return (
-                              <div key={a.id} className="mt-1">
-                                <audio controls className="w-64 h-8">
-                                  <source src={a.url} type={a.mimeType} />
-                                </audio>
-                              </div>
-                            );
-                          }
-                          if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                            return (
-                              <div key={a.id} className="mt-1">
-                                <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                              </div>
-                            );
-                          }
-                          return (
-                            <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                              {a.filename || "Attachment"}
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                   </>
                 )}
               </div>
@@ -1486,7 +1688,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     else postMessage();
                   }}
                   disabled={isSaving || (!text.trim() && files.length === 0 && !voiceBlob)}
-                  className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
+                  className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 cursor-pointer disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
@@ -1536,11 +1738,18 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 </div>
 
                 {voiceUrl && (
-                  <div className="ml-2 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1 pr-1 border border-gray-200 dark:border-gray-700">
+                  <div className="ml-2 flex items-center gap-2 bg-lime-50 dark:bg-lime-950/60 rounded-full px-3 py-1 border border-lime-200 dark:border-lime-900 shadow-sm">
                     <audio src={voiceUrl} controls className="h-6 w-32" />
+                    <button
+                      onClick={postMessage}
+                      className="px-2.5 py-1 bg-lime-500 hover:bg-lime-600 text-black text-xs font-bold rounded-full transition shadow-sm"
+                    >
+                      Send Voice Note
+                    </button>
                     <button
                       onClick={() => { setVoiceUrl(null); setVoiceBlob(null); }}
                       className="p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors text-red-500"
+                      title="Cancel Recording"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
@@ -1631,7 +1840,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   else postMessage();
                 }}
                 disabled={isSaving || (!text.trim() && files.length === 0 && !voiceBlob)}
-                className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
+                className="p-3 bg-green-500 text-white rounded-full hover:bg-green-600 cursor-pointer disabled:opacity-30 disabled:bg-gray-400 transition-all shadow-md active:scale-95 flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
               </button>
@@ -1696,28 +1905,83 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         </div>
       </div>
 
-      {/* Thread Side Panel (Pumble Style) */}
+      {/* Thread Side Panel */}
       {threadParent && (
-        <div className="hidden lg:flex flex-col w-1/3 h-full bg-gray-50 dark:bg-[#1a1a1a] transition-colors overflow-hidden">
+        <>
+          <div
+            className={`hidden lg:flex flex-col h-full bg-gray-50 dark:bg-[#1a1a1a] transition-all duration-300 overflow-hidden flex-shrink-0 ${
+              isChatCollapsed ? 'w-full flex-1' : 'lg:w-1/3'
+            }`}
+          >
           <div className="flex items-center justify-between px-4 py-3 border-b bg-white dark:bg-[#141414]">
-            <div className="flex flex-col">
-              <span className="font-bold text-gray-800 dark:text-gray-200">Thread</span>
-              <span className="text-xs text-gray-500">{conversation?.name}</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsChatCollapsed((c) => !c)}
+                className="hidden lg:flex p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                title={isChatCollapsed ? "Show main chat" : "Expand thread full-screen"}
+              >
+                {isChatCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+              </button>
+              <div className="flex flex-col">
+                <span className="font-bold text-gray-800 dark:text-gray-200">Thread</span>
+                <span className="text-xs text-gray-500">{conversation?.name}</span>
+              </div>
             </div>
-            <button
-              onClick={() => updateThreadParent(null)}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div className="flex items-center gap-2">
+              <ChannelHeaderMenu
+                onAddMember={() => setMode("add")}
+                onGroupInfo={() => setIsThreadGroupInfoOpen(true)}
+                onSearch={() => setIsSearchOpen((prev) => !prev)}
+                onSelectMessages={() => alert("Message selection mode active")}
+                onMuteNotifications={() => alert("Notifications muted for this channel")}
+                onDisappearingMessages={() => alert("Disappearing messages timer set")}
+                onAddToFavorites={() => alert("Channel added to Favorites")}
+                onAddToList={() => alert("Added to list")}
+                onScheduleReminder={() => setIsReminderModalOpen(true)}
+                onCloseChat={() => updateThreadParent(null)}
+                onClearChat={() => {
+                  if (confirm("Clear thread messages?")) {
+                    setThreadMessages([]);
+                  }
+                }}
+                onExitGroup={() => {
+                  if (confirm("Are you sure you want to exit/leave this channel?")) {
+                    updateThreadParent(null);
+                  }
+                }}
+              />
+              <button
+                onClick={() => updateThreadParent(null)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors text-gray-500"
+                title="Close Thread"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
           </div>
+
+          {/* Thread's own ChannelInfoDrawer */}
+          <ChannelInfoDrawer
+            isOpen={isThreadGroupInfoOpen}
+            onClose={() => setIsThreadGroupInfoOpen(false)}
+            channel={{
+              id: conversation?.id || "",
+              name: conversation?.name || "Channel",
+              description: (conversation as any)?.description || "Channel discussion group",
+              members: (conversation as any)?.members || [],
+            }}
+          />
 
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {/* Parent Message in Thread */}
             <div className="pb-4 border-b border-gray-200 dark:border-gray-800">
               <ChannelMessageBubble
-                text={parseMentions(parseLinks(threadParent.text))}
-                authorName={threadParent.author?.firstName}
+                text={threadParent.text ? parseMentions(parseLinks(threadParent.text)) : null}
+                authorName={
+                  threadParent.author
+                    ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
+                    : threadParent.name
+                }
                 avatar={threadParent.author?.photoUrl}
                 time={threadParent.time}
                 me={threadParent.me}
@@ -1725,6 +1989,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 reactions={threadParent.reactions}
                 onTogglePin={() => togglePin(threadParent.id)}
                 onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
+                onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
               />
               {(threadParent.attachments?.length ?? 0) > 0 && (
                 <div className={`flex flex-col mt-2 ${threadParent.me ? "items-end" : "items-start"}`}>
@@ -1735,6 +2000,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       </a>
                     ))}
                   </div>
+                  {!threadParent.text && (
+                    <div className="text-[10px] text-gray-400 mt-1 px-1">
+                      {threadParent.time}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1761,7 +2031,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                               </>
                             ) : null
                           }
-                          authorName={tm.author?.firstName}
+                          authorName={
+                            tm.author
+                              ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
+                              : tm.name
+                          }
                           avatar={tm.author?.photoUrl}
                           time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           me={tm.author.id === currentUserId}
@@ -1769,37 +2043,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           reactions={tm.reactions}
                           onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
                           onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
+                          onViewReactors={() => setThreadReactorsModalMessageId(tm.id)}
+                          attachments={tm.attachments}
                         />
-                        {(tm.attachments?.length ?? 0) > 0 && (
-                          <div className={`flex flex-col mt-1 ${tm.author.id === currentUserId ? "items-end" : "items-start"}`}>
-                            <div className="flex flex-wrap gap-2">
-                              {(tm.attachments ?? []).map((a: any) => {
-                                const ext = a.filename?.split(".").pop()?.toLowerCase();
-                                if (a.mimeType?.startsWith("audio/")) {
-                                  return (
-                                    <div key={a.id} className="mt-1">
-                                      <audio controls className="w-64 h-8">
-                                        <source src={a.url} type={a.mimeType} />
-                                      </audio>
-                                    </div>
-                                  );
-                                }
-                                if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                                  return (
-                                    <div key={a.id} className="mt-1">
-                                      <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                                    {a.filename || "Attachment"}
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
                       </>
                     )}
 
@@ -1825,7 +2071,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     )}
 
                     {selectedThreadMessageId === tm.id && (
-                      <div className={`flex items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                      <div className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                         ${tm.author?.id === currentUserId ? 'ml-auto flex-row-reverse' : 'mr-auto'}
                       `}>
                         {tm.author?.id === currentUserId && (
@@ -1864,6 +2110,55 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                           <span className="text-[13px] font-semibold">Reply</span>
                         </button>
+
+                        <button
+                          onClick={() => {
+                            toggleReaction(tm.id, "👍", true);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                          title="Like 👍"
+                        >
+                          <span className="text-base">👍</span>
+                          <span className="text-[13px] font-semibold">Like</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            toggleReaction(tm.id, "❤️", true);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                          title="Love ❤️"
+                        >
+                          <span className="text-base">❤️</span>
+                          <span className="text-[13px] font-semibold">Love</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            togglePin(tm.id);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                          title={tm.pinned ? "Unpin" : "Pin"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                          <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setThreadMessageInfoId(tm.id);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
+                          title="Message Info (Read Receipts)"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                          <span className="text-[13px] font-semibold">Info</span>
+                        </button>
+
                         <button
                           onClick={() => setSelectedThreadMessageId(null)}
                           className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
@@ -2021,6 +2316,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
           </div>
         </div>
+        </>
       )}
 
       {/* Mobile Thread Panel (Full-screen Overlay on sm/md) */}
@@ -2046,7 +2342,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
               <ChannelMessageBubble
                 text={parseMentions(parseLinks(threadParent.text || ""))}
-                authorName={threadParent.author?.firstName}
+                authorName={
+                  threadParent.author
+                    ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
+                    : threadParent.name
+                }
                 avatar={threadParent.author?.photoUrl}
                 time={threadParent.time}
                 me={threadParent.me}
@@ -2054,6 +2354,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 reactions={threadParent.reactions}
                 onTogglePin={() => togglePin(threadParent.id)}
                 onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
+                onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
               />
               {(threadParent.attachments?.length ?? 0) > 0 && (
                 <div className={`flex flex-col mt-2 ${threadParent.me ? "items-end" : "items-start"}`}>
@@ -2093,7 +2394,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             </>
                           ) : null
                         }
-                        authorName={tm.author?.firstName}
+                        authorName={
+                          tm.author
+                            ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
+                            : tm.name
+                        }
                         avatar={tm.author?.photoUrl}
                         time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         me={tm.author?.id === currentUserId}
@@ -2105,37 +2410,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         }
                         onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
                         onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
+                        onViewReactors={() => setReactorsModalMessageId(tm.id)}
+                        attachments={tm.attachments}
                       />
-                      {(tm.attachments?.length ?? 0) > 0 && (
-                        <div className={`flex flex-col mt-1 ${tm.author?.id === currentUserId ? "items-end" : "items-start"}`}>
-                          <div className="flex flex-wrap gap-2">
-                            {(tm.attachments ?? []).map((a: any) => {
-                              const ext = a.filename?.split(".").pop()?.toLowerCase();
-                              if (a.mimeType?.startsWith("audio/")) {
-                                return (
-                                  <div key={a.id} className="mt-1">
-                                    <audio controls className="w-64 h-8">
-                                      <source src={a.url} type={a.mimeType} />
-                                    </audio>
-                                  </div>
-                                );
-                              }
-                              if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                                return (
-                                  <div key={a.id} className="mt-1">
-                                    <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                                  </div>
-                                );
-                              }
-                              return (
-                                <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                                  {a.filename || "Attachment"}
-                                </a>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
                     </>
                   )}
 
@@ -2161,7 +2438,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   )}
 
                   {selectedThreadMessageId === tm.id && (
-                    <div className={`flex items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                    <div className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                       ${tm.author?.id === currentUserId ? 'ml-auto flex-row-reverse' : 'mr-auto'}
                     `}>
                       {tm.author?.id === currentUserId && (
@@ -2200,6 +2477,43 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                         <span className="text-[13px] font-semibold">Reply</span>
                       </button>
+
+                      <button
+                        onClick={() => {
+                          toggleReaction(tm.id, "👍", true);
+                          setSelectedThreadMessageId(null);
+                        }}
+                        className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                        title="Like 👍"
+                      >
+                        <span className="text-base">👍</span>
+                        <span className="text-[13px] font-semibold">Like</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          toggleReaction(tm.id, "❤️", true);
+                          setSelectedThreadMessageId(null);
+                        }}
+                        className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                        title="Love ❤️"
+                      >
+                        <span className="text-base">❤️</span>
+                        <span className="text-[13px] font-semibold">Love</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          togglePin(tm.id);
+                          setSelectedThreadMessageId(null);
+                        }}
+                        className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                        title={tm.pinned ? "Unpin" : "Pin"}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                        <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
+                      </button>
+
                       <button
                         onClick={() => setSelectedThreadMessageId(null)}
                         className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
@@ -2392,6 +2706,34 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Reactors User List Modal */}
+      <ReactionUserListModal
+        messageId={reactorsModalMessageId}
+        isOpen={!!reactorsModalMessageId}
+        onClose={() => setReactorsModalMessageId(null)}
+      />
+
+      {/* Message Info Modal (Read Receipts) - Main channel messages */}
+      <MessageInfoModal
+        messageId={messageInfoId}
+        isOpen={!!messageInfoId}
+        onClose={() => setMessageInfoId(null)}
+      />
+
+      {/* Message Info Modal - Thread replies */}
+      <MessageInfoModal
+        messageId={threadMessageInfoId}
+        isOpen={!!threadMessageInfoId}
+        onClose={() => setThreadMessageInfoId(null)}
+      />
+
+      {/* Reaction User List Modal - Thread replies */}
+      <ReactionUserListModal
+        messageId={threadReactorsModalMessageId}
+        isOpen={!!threadReactorsModalMessageId}
+        onClose={() => setThreadReactorsModalMessageId(null)}
+      />
     </div>
   );
 };

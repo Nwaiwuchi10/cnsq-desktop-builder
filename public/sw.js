@@ -177,6 +177,7 @@ self.addEventListener("push", (event) => {
     requireInteraction: true, // Keep notification on screen until user taps
     // iOS Safari supports vibrate in Standalone mode
     vibrate: [200, 100, 200],
+    sound: "default",
     // Actions appear as buttons below the notification (Android/macOS Safari)
     actions: [
       { action: "open", title: "Open App" },

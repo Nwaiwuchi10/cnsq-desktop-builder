@@ -31,7 +31,11 @@ const CHANNEL_TYPES = [
   { label: "Group DM", value: "group_dm" },
 ];
 
-export default function CreateChannelForm() {
+interface CreateChannelFormProps {
+  onClose?: () => void;
+}
+
+export default function CreateChannelForm({ onClose }: CreateChannelFormProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 2;
@@ -203,7 +207,7 @@ export default function CreateChannelForm() {
       {/* HEADER */}
       <div className="max-w-xl mx-auto px-4 mb-8 mt-14 flex items-center justify-between">
         <button
-          onClick={step > 1 ? back : () => router.back()}
+          onClick={step > 1 ? back : (onClose || (() => router.push("/chat")))}
           className="flex items-center gap-2 text-black dark:text-white hover:opacity-75"
         >
           <ArrowLeft size={20} />
@@ -285,29 +289,31 @@ export default function CreateChannelForm() {
 
               <div className="mt-4">
                 <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                  Selected Members
+                  Selected Members ({selectedMembers.length})
                 </h3>
                 {selectedMembers.length === 0 ? (
                   <p className="text-gray-500 dark:text-gray-400 text-sm">None selected.</p>
                 ) : (
-                  <ul className="space-y-2">
-                    {selectedMembers.map((s) => (
-                      <li
-                        key={s.id}
-                        className="border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors flex justify-between"
-                      >
-                        <span>
-                          {s.firstName} {s.lastName} ({s.email})
-                        </span>
-                        <button
-                          className="text-red-500"
-                          onClick={() => toggleMember(s)}
+                  <div className="max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50 dark:bg-gray-800/30">
+                    <ul className="space-y-2">
+                      {selectedMembers.map((s) => (
+                        <li
+                          key={s.id}
+                          className="border p-2 rounded-lg bg-white dark:bg-[#141414] transition-colors flex justify-between items-center text-sm"
                         >
-                          Remove
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                          <span className="truncate pr-2">
+                            {s.firstName} {s.lastName} ({s.email})
+                          </span>
+                          <button
+                            className="text-red-500 font-medium hover:text-red-600 text-xs flex-shrink-0"
+                            onClick={() => toggleMember(s)}
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
             </>
