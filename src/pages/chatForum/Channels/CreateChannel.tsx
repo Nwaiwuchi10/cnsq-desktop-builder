@@ -31,7 +31,11 @@ const CHANNEL_TYPES = [
   { label: "Group DM", value: "group_dm" },
 ];
 
-export default function CreateChannelForm() {
+interface CreateChannelFormProps {
+  onClose?: () => void;
+}
+
+export default function CreateChannelForm({ onClose }: CreateChannelFormProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const totalSteps = 2;
@@ -203,7 +207,7 @@ export default function CreateChannelForm() {
       {/* HEADER */}
       <div className="max-w-xl mx-auto px-4 mb-8 mt-14 flex items-center justify-between">
         <button
-          onClick={step > 1 ? back : () => router.back()}
+          onClick={step > 1 ? back : (onClose || (() => router.push("/chat")))}
           className="flex items-center gap-2 text-black dark:text-white hover:opacity-75"
         >
           <ArrowLeft size={20} />

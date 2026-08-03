@@ -631,7 +631,7 @@ const MessagesLayout: React.FC = () => {
               )}
 
               {activeTab === "create" ? (
-                <CreateChannelForm />
+                <CreateChannelForm onClose={() => setActiveTab("all")} />
               ) : selected ? (
                 (() => {
                   const conv: any =
@@ -671,7 +671,7 @@ const MessagesLayout: React.FC = () => {
           {/* Mobile */}
           <div className="block md:hidden">
             {activeTab === "create" ? (
-              <CreateChannelForm />
+              <CreateChannelForm onClose={() => setActiveTab("all")} />
             ) : (
               !selected && (
                 <div className="p-4 sm:p-6">

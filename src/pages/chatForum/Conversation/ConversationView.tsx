@@ -405,6 +405,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
+  const scrollToMessage = (messageId: string) => {
+    const element = document.getElementById(`msg-${messageId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      element.classList.add("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      setTimeout(() => {
+        element.classList.remove("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      }, 2000);
+    }
+  };
+
   const toggleReaction = async (messageId: string, emoji: string) => {
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -702,7 +713,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       </div>
     );
   };
-  ////
+  const pinnedMessages = messages.filter((m) => m.pinned);
+  const latestPinnedMessage = pinnedMessages[pinnedMessages.length - 1];
 
   return (
 
@@ -768,6 +780,39 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         />
       </div>
 
+      {/* Pinned Message Banner */}
+      {latestPinnedMessage && (
+        <div
+          onClick={() => scrollToMessage(latestPinnedMessage.id)}
+          className="flex items-center justify-between px-5 py-2.5 bg-gray-50 dark:bg-[#1c1d1e] border-b border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all duration-200 z-10 shadow-sm"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-lime-500 flex-shrink-0 rotate-45"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/></svg>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider mb-0.5">
+                Pinned Message
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                <span className="font-semibold mr-1">
+                  {latestPinnedMessage.me ? "You" : (conversation?.name || "User")}:
+                </span>
+                {latestPinnedMessage.text || (latestPinnedMessage.attachments?.length ? `📎 Sent ${latestPinnedMessage.attachments.length} attachment(s)` : "Sent a message")}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePin(latestPinnedMessage.id);
+            }}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            title="Unpin message"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Message Search Bar Header */}
       {isSearchOpen && (
         <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800 transition-all">
@@ -828,7 +873,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
           return (
-            <div key={m.id} className="mb-2">
+            <div key={m.id} id={`msg-${m.id}`} className="mb-2">
               {/* DATE SEPARATOR */}
               {showDateSeparator && (
                 <div className="flex justify-center my-4">
@@ -1088,19 +1133,20 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               ) : (
                 <>
                   {/* MESSAGE BUBBLE */}
-                  {m.text && (
+                  {(m.text || (m.attachments?.length ?? 0) > 0) && (
                     <MessageBubble
-                      // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
                       text={
-                        <>
-                          {parseLinks(m.text)}
-                          {m.edited && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {" "}
-                              (edited)
-                            </span>
-                          )}
-                        </>
+                        m.text ? (
+                          <>
+                            {parseLinks(m.text)}
+                            {m.edited && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {" "}
+                                (edited)
+                              </span>
+                            )}
+                          </>
+                        ) : null
                       }
                       me={m.me}
                       time={m.time}
@@ -1116,6 +1162,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                       onReact={(emoji) => toggleReaction(m.id, emoji)}
                       onViewReactors={() => setReactorsModalMessageId(m.id)}
                       currentUserId={currentUserId}
+                      attachments={m.attachments}
                     />
                   )}
 
@@ -1124,7 +1171,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
          ====================================================== */}
                   {selectedMessageId === m.id && (
                     <div
-                      className={`flex items-center gap-4 mt-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 w-fit shadow-sm border border-gray-100 dark:border-gray-700
+                      className={`flex flex-wrap items-center gap-4 mt-2 px-2 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/50 w-fit shadow-sm border border-gray-100 dark:border-gray-700
                         ${m.me ? "ml-auto flex-row-reverse" : "mr-auto"}
                       `}
                     >
@@ -1136,7 +1183,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                               setText(m.text);
                               setReplyTo(null);
                             }}
-                            className="flex items-center gap-1 text-blue-500 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors"
                             title="Edit"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -1169,92 +1216,63 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
                       <button
                         onClick={() => {
+                          toggleReaction(m.id, "👍");
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-yellow-500 transition-colors"
+                        title="Like 👍"
+                      >
+                        <span className="text-sm">👍</span>
+                        <span className="text-xs font-medium">Like</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          toggleReaction(m.id, "❤️");
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors"
+                        title="Love ❤️"
+                      >
+                        <span className="text-sm">❤️</span>
+                        <span className="text-xs font-medium">Love</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          togglePin(m.id);
+                          setSelectedMessageId(null);
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+                        title={m.pinned ? "Unpin" : "Pin"}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8"/><path d="m16 4-4 4-4-4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 12H9"/></svg>
+                        <span className="text-xs font-medium">{m.pinned ? "Unpin" : "Pin"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setForwardingMessage(m);
+                          fetchForwardConversations();
+                        }}
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+                        title="Forward"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
+                        <span className="text-xs font-medium">Forward</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
                           setMessageInfoId(m.id);
                           setSelectedMessageId(null);
                         }}
-                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-lime-500 transition-colors"
+                        className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-[#95D700] transition-colors"
                         title="Message Info (Read Receipts)"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                         <span className="text-xs font-medium">Info</span>
                       </button>
-                    </div>
-                  )}
-
-                  {/* ======================================================
-         ATTACHMENTS
-         ====================================================== */}
-                  {(m.attachments?.length ?? 0) > 0 && (
-                    <div
-                      className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"
-                        }`}
-                    >
-                      <div className="flex flex-wrap gap-2">
-                        {(m.attachments ?? []).map((a) => {
-                          const ext = a.filename
-                            ?.split(".")
-                            .pop()
-                            ?.toLowerCase();
-                          const time = (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                              {m.time}
-                            </div>
-                          );
-
-                          if (a.mimeType?.startsWith("audio/")) {
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <audio controls className="w-64">
-                                  <source src={a.url} type={a.mimeType} />
-                                </audio>
-                                {time}
-                              </div>
-                            );
-                          }
-
-                          if (
-                            ext &&
-                            ["png", "jpg", "jpeg", "gif"].includes(ext)
-                          ) {
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <img
-                                  src={a.url}
-                                  className="w-32 h-32 object-cover rounded"
-                                />
-                                {time}
-                              </div>
-                            );
-                          }
-
-                          if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <video
-                                  src={a.url}
-                                  controls
-                                  className="w-40 rounded"
-                                />
-                                {time}
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                              <a
-                                href={a.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-600"
-                              >
-                                {a.filename || "Attachment"}
-                              </a>
-                              {time}
-                            </div>
-                          );
-                        })}
-                      </div>
                     </div>
                   )}
                 </>

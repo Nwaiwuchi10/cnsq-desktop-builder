@@ -41,6 +41,8 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
   const [membersList, setMembersList] = useState<ChannelMember[]>([]);
   const [loading, setLoading] = useState(false);
 
+  const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<number | null>(null);
+
   useEffect(() => {
     if (isOpen && channel?.id) {
       const token = localStorage.getItem("user-token");
@@ -60,8 +62,15 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
 
   if (!isOpen || !channel) return null;
 
-  const handleRemove = async (userId: number) => {
-    if (!confirm("Are you sure you want to remove this member from the channel?")) return;
+  const handleRemove = (userId: number) => {
+    setConfirmRemoveUserId(userId);
+  };
+
+  const confirmRemoveMember = async () => {
+    if (confirmRemoveUserId === null) return;
+    const userId = confirmRemoveUserId;
+    setConfirmRemoveUserId(null);
+
     if (onRemoveMember) {
       onRemoveMember(userId);
     } else {
@@ -187,6 +196,37 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
           )}
         </div>
       </div>
+
+      {/* Custom Member Removal Confirmation Pop Modal */}
+      {confirmRemoveUserId !== null && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-[9999] p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#141414] rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-center mb-4 text-red-500">
+              <Trash2 size={44} className="animate-bounce" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+              Remove Member?
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Are you sure you want to remove this participant from the group?
+            </p>
+            <div className="flex items-center gap-3 justify-center">
+              <button
+                onClick={() => setConfirmRemoveUserId(null)}
+                className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition text-sm font-semibold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRemoveMember}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition text-sm font-semibold cursor-pointer shadow-md active:scale-95"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
