@@ -1516,8 +1516,25 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     )}
                   {/* ATTACHMENTS FOR MAIN MESSAGE */}
                   {(m.attachments?.length ?? 0) > 0 && (
-                    <div className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"}`}>
-                      <div className="flex flex-wrap gap-2">
+                    <div
+                      onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}
+                      className={`flex flex-col mt-1 cursor-pointer ${m.me ? "items-end" : "items-start"}`}
+                    >
+                      <div
+                        className="flex flex-wrap gap-2"
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement;
+                          if (
+                            target.tagName === "A" ||
+                            target.tagName === "AUDIO" ||
+                            target.tagName === "VIDEO" ||
+                            target.closest("audio") ||
+                            target.closest("video")
+                          ) {
+                            e.stopPropagation();
+                          }
+                        }}
+                      >
                         {(m.attachments ?? []).map((a: any) => {
                           const ext = a.filename?.split(".").pop()?.toLowerCase();
                           if (a.mimeType?.startsWith("audio/")) {
@@ -2004,8 +2021,25 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           onViewReactors={() => setThreadReactorsModalMessageId(tm.id)}
                         />
                         {(tm.attachments?.length ?? 0) > 0 && (
-                          <div className={`flex flex-col mt-1 ${tm.author.id === currentUserId ? "items-end" : "items-start"}`}>
-                            <div className="flex flex-wrap gap-2">
+                          <div
+                            onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
+                            className={`flex flex-col mt-1 cursor-pointer ${tm.author.id === currentUserId ? "items-end" : "items-start"}`}
+                          >
+                            <div
+                              className="flex flex-wrap gap-2"
+                              onClick={(e) => {
+                                const target = e.target as HTMLElement;
+                                if (
+                                  target.tagName === "A" ||
+                                  target.tagName === "AUDIO" ||
+                                  target.tagName === "VIDEO" ||
+                                  target.closest("audio") ||
+                                  target.closest("video")
+                                ) {
+                                  e.stopPropagation();
+                                }
+                              }}
+                            >
                               {(tm.attachments ?? []).map((a: any) => {
                                 const ext = a.filename?.split(".").pop()?.toLowerCase();
                                 if (a.mimeType?.startsWith("audio/")) {
@@ -2369,8 +2403,25 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         onViewReactors={() => setReactorsModalMessageId(tm.id)}
                       />
                       {(tm.attachments?.length ?? 0) > 0 && (
-                        <div className={`flex flex-col mt-1 ${tm.author?.id === currentUserId ? "items-end" : "items-start"}`}>
-                          <div className="flex flex-wrap gap-2">
+                        <div
+                          onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
+                          className={`flex flex-col mt-1 cursor-pointer ${tm.author?.id === currentUserId ? "items-end" : "items-start"}`}
+                        >
+                          <div
+                            className="flex flex-wrap gap-2"
+                            onClick={(e) => {
+                              const target = e.target as HTMLElement;
+                              if (
+                                target.tagName === "A" ||
+                                target.tagName === "AUDIO" ||
+                                target.tagName === "VIDEO" ||
+                                target.closest("audio") ||
+                                target.closest("video")
+                              ) {
+                                e.stopPropagation();
+                              }
+                            }}
+                          >
                             {(tm.attachments ?? []).map((a: any) => {
                               const ext = a.filename?.split(".").pop()?.toLowerCase();
                               if (a.mimeType?.startsWith("audio/")) {
