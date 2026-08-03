@@ -405,6 +405,17 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     }
   };
 
+  const scrollToMessage = (messageId: string) => {
+    const element = document.getElementById(`msg-${messageId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      element.classList.add("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      setTimeout(() => {
+        element.classList.remove("bg-green-50/50", "dark:bg-green-950/20", "ring-2", "ring-green-400", "rounded-2xl");
+      }, 2000);
+    }
+  };
+
   const toggleReaction = async (messageId: string, emoji: string) => {
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -702,7 +713,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       </div>
     );
   };
-  ////
+  const pinnedMessages = messages.filter((m) => m.pinned);
+  const latestPinnedMessage = pinnedMessages[pinnedMessages.length - 1];
 
   return (
 
@@ -768,6 +780,39 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         />
       </div>
 
+      {/* Pinned Message Banner */}
+      {latestPinnedMessage && (
+        <div
+          onClick={() => scrollToMessage(latestPinnedMessage.id)}
+          className="flex items-center justify-between px-5 py-2.5 bg-gray-50 dark:bg-[#1c1d1e] border-b border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all duration-200 z-10 shadow-sm"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-lime-500 flex-shrink-0 rotate-45"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/></svg>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider mb-0.5">
+                Pinned Message
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                <span className="font-semibold mr-1">
+                  {latestPinnedMessage.me ? "You" : (conversation?.name || "User")}:
+                </span>
+                {latestPinnedMessage.text || (latestPinnedMessage.attachments?.length ? `📎 Sent ${latestPinnedMessage.attachments.length} attachment(s)` : "Sent a message")}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePin(latestPinnedMessage.id);
+            }}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            title="Unpin message"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Message Search Bar Header */}
       {isSearchOpen && (
         <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800 transition-all">
@@ -828,7 +873,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
           return (
-            <div key={m.id} className="mb-2">
+            <div key={m.id} id={`msg-${m.id}`} className="mb-2">
               {/* DATE SEPARATOR */}
               {showDateSeparator && (
                 <div className="flex justify-center my-4">
