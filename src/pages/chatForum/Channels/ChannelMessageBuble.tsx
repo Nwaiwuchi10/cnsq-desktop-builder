@@ -22,6 +22,7 @@ export interface MessageBubbleProps {
   pinned?: boolean;
   reactions?: ReactionsState;
   threadRepliesCount?: number;
+  attachments?: any[];
   currentUserId?: number | null;
   onClick?: () => void;
   onReact?: (emoji: string) => void;
@@ -47,6 +48,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
   onViewThread,
   onTogglePin,
   onViewReactors,
+  attachments,
 }) => {
   return (
     <div className={`flex items-start gap-3 w-full group ${me ? "flex-row-reverse" : "flex-row"}`}>
@@ -84,57 +86,121 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           )}
         </div>
 
-        {/* The Text Bubble */}
-        {text && (
-          <div
-            onClick={onClick}
-            className={`p-3 shadow-sm break-words relative cursor-pointer group/content transition-all duration-200
-              ${selected ? "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900" : ""}
-              ${me
-                ? "bg-green-600 text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
-                : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
-              }`}
-          >
-            <div className="text-sm leading-relaxed whitespace-pre-wrap">
-              <TruncatedText text={text} maxLength={300} isMe={me} />
-            </div>
-
-            {time && (
-              <div
-                className={`text-[10px] mt-1.5 text-right opacity-70 ${me ? "text-white" : "text-gray-500 dark:text-gray-400"
-                  }`}
-              >
-                {time}
+        {/* Content Wrapper supporting unified hover reactions menu */}
+        <div className="relative group/content w-full flex flex-col items-stretch">
+          {/* The Text Bubble */}
+          {text && (
+            <div
+              onClick={onClick}
+              className={`p-3 shadow-sm break-words cursor-pointer transition-all duration-200
+                ${selected ? "ring-2 ring-green-500 ring-offset-2 dark:ring-offset-gray-900" : ""}
+                ${me
+                  ? "bg-green-600 text-white rounded-bl-xl rounded-tl-xl rounded-tr-xl"
+                  : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-gray-700 rounded-br-xl rounded-tr-xl rounded-tl-xl"
+                }`}
+            >
+              <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                <TruncatedText text={text} maxLength={300} isMe={me} />
               </div>
-            )}
 
-            {/* Quick Actions Hover Menu */}
-            <div className={`absolute -top-10 ${me ? 'left-0' : 'right-0'} hidden group-hover/content:flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-1 z-20 backdrop-blur-sm bg-opacity-90`}>
-              <button
-                onClick={(e) => { e.stopPropagation(); onReact?.("👍"); }}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
-                title="Quick React 👍"
-              >
-                👍
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); onReact?.("❤️"); }}
-                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
-                title="Quick React ❤️"
-              >
-                ❤️
-              </button>
-              <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
-              <button
-                onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
-                className={`p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${pinned ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}
-                title={pinned ? "Unpin" : "Pin"}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
-              </button>
+              {time && (
+                <div
+                  className={`text-[10px] mt-1.5 text-right opacity-70 ${me ? "text-white" : "text-gray-500 dark:text-gray-400"
+                    }`}
+                >
+                  {time}
+                </div>
+              )}
             </div>
+          )}
+
+          {/* Attachments */}
+          {attachments && attachments.length > 0 && (
+            <div
+              onClick={onClick}
+              className={`flex flex-col mt-1 cursor-pointer ${me ? "items-end" : "items-start"}`}
+            >
+              <div
+                className="flex flex-wrap gap-2"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (
+                    target.tagName === "A" ||
+                    target.tagName === "AUDIO" ||
+                    target.tagName === "VIDEO" ||
+                    target.closest("audio") ||
+                    target.closest("video")
+                  ) {
+                    e.stopPropagation();
+                  }
+                }}
+              >
+                {attachments.map((a: any) => {
+                  const ext = a.filename?.split(".").pop()?.toLowerCase();
+                  if (a.mimeType?.startsWith("audio/")) {
+                    return (
+                      <div key={a.id} className="mt-1">
+                        <audio controls className="w-64 h-8">
+                          <source src={a.url} type={a.mimeType} />
+                        </audio>
+                      </div>
+                    );
+                  }
+                  if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                    return (
+                      <div key={a.id} className="mt-1">
+                        <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
+                      </div>
+                    );
+                  }
+                  if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
+                    return (
+                      <div key={a.id} className="mt-1">
+                        <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
+                      </div>
+                    );
+                  }
+                  return (
+                    <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
+                      {a.filename || "Attachment"}
+                    </a>
+                  );
+                })}
+              </div>
+              {!text && (
+                <div className="text-[10px] text-gray-400 mt-1 px-1">
+                  {time}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Quick Actions Hover Menu */}
+          <div className={`absolute -top-10 ${me ? 'left-0' : 'right-0'} hidden group-hover/content:flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-1 z-20 backdrop-blur-sm bg-opacity-90`}>
+            <button
+              onClick={(e) => { e.stopPropagation(); onReact?.("👍"); }}
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
+              title="Quick React 👍"
+            >
+              👍
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onReact?.("❤️"); }}
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-sm transition-colors"
+              title="Quick React ❤️"
+            >
+              ❤️
+            </button>
+            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
+              className={`p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors ${pinned ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}
+              title={pinned ? "Unpin" : "Pin"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Reactions Section */}
         {reactions && Object.keys(reactions).length > 0 && (

@@ -1426,15 +1426,16 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         onReact={(emoji) => toggleReaction(m.id, emoji)}
                         onViewThread={() => openThread(m)}
                         onViewReactors={() => setReactorsModalMessageId(m.id)}
+                        attachments={m.attachments}
                       />
                     )}
 
                     {/* ======================================================
-         ACTION BUTTONS (Edit / Delete / Reply)
+         ACTION BUTTONS (Edit / Delete / Reply / React / Pin)
          ====================================================== */}
                     {selectedMessageId === m.id && (
                       <div
-                        className={`flex items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md
+                        className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                         ${m.me ? "ml-auto flex-row-reverse" : "mr-auto"}
                       `}
                       >
@@ -1491,6 +1492,42 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
                         <button
                           onClick={() => {
+                            toggleReaction(m.id, "👍");
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                          title="Like 👍"
+                        >
+                          <span className="text-base">👍</span>
+                          <span className="text-[13px] font-semibold">Like</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            toggleReaction(m.id, "❤️");
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                          title="Love ❤️"
+                        >
+                          <span className="text-base">❤️</span>
+                          <span className="text-[13px] font-semibold">Love</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            togglePin(m.id);
+                            setSelectedMessageId(null);
+                          }}
+                          className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                          title={m.pinned ? "Unpin" : "Pin"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                          <span className="text-[13px] font-semibold">{m.pinned ? "Unpin" : "Pin"}</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
                             setForwardingMessage(m);
                             fetchForwardConversations();
                           }}
@@ -1514,66 +1551,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         </button>
                       </div>
                     )}
-                  {/* ATTACHMENTS FOR MAIN MESSAGE */}
-                  {(m.attachments?.length ?? 0) > 0 && (
-                    <div
-                      onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}
-                      className={`flex flex-col mt-1 cursor-pointer ${m.me ? "items-end" : "items-start"}`}
-                    >
-                      <div
-                        className="flex flex-wrap gap-2"
-                        onClick={(e) => {
-                          const target = e.target as HTMLElement;
-                          if (
-                            target.tagName === "A" ||
-                            target.tagName === "AUDIO" ||
-                            target.tagName === "VIDEO" ||
-                            target.closest("audio") ||
-                            target.closest("video")
-                          ) {
-                            e.stopPropagation();
-                          }
-                        }}
-                      >
-                        {(m.attachments ?? []).map((a: any) => {
-                          const ext = a.filename?.split(".").pop()?.toLowerCase();
-                          if (a.mimeType?.startsWith("audio/")) {
-                            return (
-                              <div key={a.id} className="mt-1">
-                                <audio controls className="w-64 h-8">
-                                  <source src={a.url} type={a.mimeType} />
-                                </audio>
-                              </div>
-                            );
-                          }
-                          if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                            return (
-                              <div key={a.id} className="mt-1">
-                                <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
-                              </div>
-                            );
-                          }
-                          if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                            return (
-                              <div key={a.id} className="mt-1">
-                                <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                              </div>
-                            );
-                          }
-                          return (
-                            <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                              {a.filename || "Attachment"}
-                            </a>
-                          );
-                        })}
-                      </div>
-                      {!m.text && (
-                        <div className="text-[10px] text-gray-400 mt-1 px-1">
-                          {m.time}
-                        </div>
-                      )}
-                    </div>
-                  )}
                   </>
                 )}
               </div>
@@ -2019,59 +1996,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                           onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
                           onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
                           onViewReactors={() => setThreadReactorsModalMessageId(tm.id)}
+                          attachments={tm.attachments}
                         />
-                        {(tm.attachments?.length ?? 0) > 0 && (
-                          <div
-                            onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
-                            className={`flex flex-col mt-1 cursor-pointer ${tm.author.id === currentUserId ? "items-end" : "items-start"}`}
-                          >
-                            <div
-                              className="flex flex-wrap gap-2"
-                              onClick={(e) => {
-                                const target = e.target as HTMLElement;
-                                if (
-                                  target.tagName === "A" ||
-                                  target.tagName === "AUDIO" ||
-                                  target.tagName === "VIDEO" ||
-                                  target.closest("audio") ||
-                                  target.closest("video")
-                                ) {
-                                  e.stopPropagation();
-                                }
-                              }}
-                            >
-                              {(tm.attachments ?? []).map((a: any) => {
-                                const ext = a.filename?.split(".").pop()?.toLowerCase();
-                                if (a.mimeType?.startsWith("audio/")) {
-                                  return (
-                                    <div key={a.id} className="mt-1">
-                                      <audio controls className="w-64 h-8">
-                                        <source src={a.url} type={a.mimeType} />
-                                      </audio>
-                                    </div>
-                                  );
-                                }
-                                if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                                  return (
-                                    <div key={a.id} className="mt-1">
-                                      <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                                    {a.filename || "Attachment"}
-                                  </a>
-                                );
-                              })}
-                            </div>
-                            {!tm.text && (
-                              <div className="text-[10px] text-gray-400 mt-1 px-1">
-                                {new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </>
                     )}
 
@@ -2097,7 +2023,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     )}
 
                     {selectedThreadMessageId === tm.id && (
-                      <div className={`flex items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                      <div className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                         ${tm.author?.id === currentUserId ? 'ml-auto flex-row-reverse' : 'mr-auto'}
                       `}>
                         {tm.author?.id === currentUserId && (
@@ -2135,6 +2061,42 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                           <span className="text-[13px] font-semibold">Reply</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            toggleReaction(tm.id, "👍", true);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                          title="Like 👍"
+                        >
+                          <span className="text-base">👍</span>
+                          <span className="text-[13px] font-semibold">Like</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            toggleReaction(tm.id, "❤️", true);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                          title="Love ❤️"
+                        >
+                          <span className="text-base">❤️</span>
+                          <span className="text-[13px] font-semibold">Love</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            togglePin(tm.id);
+                            setSelectedThreadMessageId(null);
+                          }}
+                          className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                          title={tm.pinned ? "Unpin" : "Pin"}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                          <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
                         </button>
 
                         <button
@@ -2401,59 +2363,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
                         onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
                         onViewReactors={() => setReactorsModalMessageId(tm.id)}
+                        attachments={tm.attachments}
                       />
-                      {(tm.attachments?.length ?? 0) > 0 && (
-                        <div
-                          onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
-                          className={`flex flex-col mt-1 cursor-pointer ${tm.author?.id === currentUserId ? "items-end" : "items-start"}`}
-                        >
-                          <div
-                            className="flex flex-wrap gap-2"
-                            onClick={(e) => {
-                              const target = e.target as HTMLElement;
-                              if (
-                                target.tagName === "A" ||
-                                target.tagName === "AUDIO" ||
-                                target.tagName === "VIDEO" ||
-                                target.closest("audio") ||
-                                target.closest("video")
-                              ) {
-                                e.stopPropagation();
-                              }
-                            }}
-                          >
-                            {(tm.attachments ?? []).map((a: any) => {
-                              const ext = a.filename?.split(".").pop()?.toLowerCase();
-                              if (a.mimeType?.startsWith("audio/")) {
-                                return (
-                                  <div key={a.id} className="mt-1">
-                                    <audio controls className="w-64 h-8">
-                                      <source src={a.url} type={a.mimeType} />
-                                    </audio>
-                                  </div>
-                                );
-                              }
-                              if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                                return (
-                                  <div key={a.id} className="mt-1">
-                                    <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                                  </div>
-                                );
-                              }
-                              return (
-                                <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                                  {a.filename || "Attachment"}
-                                </a>
-                              );
-                            })}
-                          </div>
-                          {!tm.text && (
-                            <div className="text-[10px] text-gray-400 mt-1 px-1">
-                              {new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </>
                   )}
 
@@ -2479,7 +2390,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   )}
 
                   {selectedThreadMessageId === tm.id && (
-                    <div className={`flex items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                    <div className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                       ${tm.author?.id === currentUserId ? 'ml-auto flex-row-reverse' : 'mr-auto'}
                     `}>
                       {tm.author?.id === currentUserId && (
@@ -2518,6 +2429,43 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
                         <span className="text-[13px] font-semibold">Reply</span>
                       </button>
+
+                      <button
+                        onClick={() => {
+                          toggleReaction(tm.id, "👍", true);
+                          setSelectedThreadMessageId(null);
+                        }}
+                        className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                        title="Like 👍"
+                      >
+                        <span className="text-base">👍</span>
+                        <span className="text-[13px] font-semibold">Like</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          toggleReaction(tm.id, "❤️", true);
+                          setSelectedThreadMessageId(null);
+                        }}
+                        className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                        title="Love ❤️"
+                      >
+                        <span className="text-base">❤️</span>
+                        <span className="text-[13px] font-semibold">Love</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          togglePin(tm.id);
+                          setSelectedThreadMessageId(null);
+                        }}
+                        className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                        title={tm.pinned ? "Unpin" : "Pin"}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                        <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
+                      </button>
+
                       <button
                         onClick={() => setSelectedThreadMessageId(null)}
                         className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
