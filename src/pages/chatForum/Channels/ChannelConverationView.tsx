@@ -1388,19 +1388,21 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 ) : (
                   <>
                     {/* MESSAGE BUBBLE */}
-                    {m.text && (
+                    {(m.text || (m.attachments?.length ?? 0) > 0) && (
                       <ChannelMessageBubble
                         // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
                         text={
-                          <>
-                            {parseMentions(parseLinks(m.text))}
-                            {m.edited && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {" "}
-                                (edited)
-                              </span>
-                            )}
-                          </>
+                          m.text ? (
+                            <>
+                              {parseMentions(parseLinks(m.text))}
+                              {m.edited && (
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {" "}
+                                  (edited)
+                                </span>
+                              )}
+                            </>
+                          ) : null
                         }
                         me={m.me}
                         time={m.time}
