@@ -203,7 +203,7 @@ export default function CreateChannelForm() {
       {/* HEADER */}
       <div className="max-w-xl mx-auto px-4 mb-8 mt-14 flex items-center justify-between">
         <button
-          onClick={step > 1 ? back : () => router.back()}
+          onClick={step > 1 ? back : () => router.push("/chat")}
           className="flex items-center gap-2 text-black dark:text-white hover:opacity-75"
         >
           <ArrowLeft size={20} />
