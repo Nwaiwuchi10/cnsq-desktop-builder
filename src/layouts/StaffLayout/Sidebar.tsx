@@ -25,9 +25,10 @@ import {
 
 type NavItem = {
   name: string;
-  href: string;
+  href?: string;
   icon: React.ElementType;
   isCeoOnly?: boolean;
+  subItems?: { name: string; href: string; icon?: React.ElementType }[];
 };
 
 type NavSection = {
@@ -101,6 +102,19 @@ const navSections: NavSection[] = [
       { name: "New Hires", href: "/new-hire", icon: UserPlus },
     ],
   },
+  {
+    title: "CEO TOOLS",
+    items: [
+      { 
+        name: "Governance", 
+        icon: Settings, 
+        isCeoOnly: true,
+        subItems: [
+          { name: "Activity Logs", href: "/ceo-activity-logs", icon: ClipboardCheck }
+        ]
+      },
+    ],
+  },
 ];
 
 import { leaveApi } from "@/modules/LeaveManagement/services/leaveApi";
@@ -109,6 +123,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
   // Using a mock path for this implementation since it will be mounted somewhere
   const pathname = usePathname();
   const [isSupervisor, setIsSupervisor] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+
+  const toggleDropdown = (name: string) => {
+    setOpenDropdowns(prev => ({ ...prev, [name]: !prev[name] }));
+  };
 
   React.useEffect(() => {
     if (user) {
@@ -179,10 +198,64 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
                 <ul className="space-y-1">
                   {filteredItems.map((item, itemIdx) => {
                     const isActive = pathname === item.href;
+                    const isDropdownOpen = openDropdowns[item.name];
+                    const hasSubItems = item.subItems && item.subItems.length > 0;
+
+                    if (hasSubItems) {
+                      const isSubActive = item.subItems?.some(sub => pathname === sub.href);
+                      return (
+                        <li key={itemIdx} className="flex flex-col">
+                          <button
+                            onClick={() => toggleDropdown(item.name)}
+                            className={`flex items-center justify-between w-full px-6 py-2 transition-colors group ${isSubActive
+                              ? "text-[#86CD23] font-medium"
+                              : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#86CD23] dark:hover:text-[#86CD23]"
+                              }`}
+                            title={isCollapsed ? item.name : undefined}
+                          >
+                            <div className="flex items-center">
+                              <item.icon className={`w-5 h-5 shrink-0 transition-colors ${isSubActive ? "text-[#86CD23]" : "text-gray-500 dark:text-gray-400 group-hover:text-[#86CD23] dark:group-hover:text-[#86CD23]"}`} />
+                              {!isCollapsed && (
+                                <span className="ml-3 truncate">{item.name}</span>
+                              )}
+                            </div>
+                            {!isCollapsed && (
+                              <svg className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            )}
+                          </button>
+                          
+                          {/* Dropdown Items */}
+                          {isDropdownOpen && !isCollapsed && (
+                            <ul className="mt-1 space-y-1 bg-gray-50/50 dark:bg-[#1a1a1a]/50 py-2 border-y border-gray-100 dark:border-gray-800">
+                              {item.subItems?.map((sub, subIdx) => {
+                                const isSubItemActive = pathname === sub.href;
+                                return (
+                                  <li key={subIdx}>
+                                    <Link
+                                      href={sub.href}
+                                      className={`flex items-center px-6 pl-12 py-2 transition-colors text-sm group ${isSubItemActive
+                                        ? "text-[#86CD23] font-medium"
+                                        : "text-gray-500 dark:text-gray-400 hover:text-[#86CD23] dark:hover:text-[#86CD23]"
+                                        }`}
+                                    >
+                                      {sub.icon && <sub.icon className="w-4 h-4 mr-2" />}
+                                      <span className="truncate">{sub.name}</span>
+                                    </Link>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          )}
+                        </li>
+                      );
+                    }
+
                     return (
                       <li key={itemIdx}>
                         <Link
-                          href={item.href}
+                          href={item.href || "#"}
                           className={`flex items-center px-6 py-2 transition-colors group ${isActive
                             ? "text-[#86CD23] font-medium"
                             : "text-gray-600 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#86CD23] dark:hover:text-[#86CD23]"

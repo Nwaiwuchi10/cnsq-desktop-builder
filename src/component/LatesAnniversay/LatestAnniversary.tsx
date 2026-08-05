@@ -63,10 +63,8 @@ export default function LatestAnniversary() {
         "
       >
         {anniversaries?.map((person) => (
-          <>
-            <Link href={`/staff/${person?.uuid}`}>
+            <Link key={person?.id} href={`/staff/${person?.uuid}`}>
               <div
-                key={person?.id}
                 className="flex flex-col items-start text-left w-full"
               >
                 {/* Image */}
@@ -118,7 +116,6 @@ export default function LatestAnniversary() {
             </span> */}
               </div>
             </Link>
-          </>
         ))}
       </div>
     </div>
