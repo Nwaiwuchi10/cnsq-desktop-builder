@@ -20,6 +20,7 @@ import io from "socket.io-client";
 import CeoMessageReadStatsModal from "@/component/ActivityLog/CeoMessageReadStatsModal";
 import Api from "@/utils/api";
 
+// Dashboard Navigation & Timeframe Types
 type TabType = "feed" | "analytics";
 type PeriodType = "daily" | "weekly" | "monthly" | "yearly";
 
@@ -39,7 +40,7 @@ export default function CeoActivityLogsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Filter Metadata
-  const [staffList, setStaffList] = useState<{id: number, firstName: string, lastName: string}[]>([]);
+  const [staffList, setStaffList] = useState<{ id: number, firstName: string, lastName: string }[]>([]);
   const [departments, setDepartments] = useState<{ id: number, name: string }[]>([]);
 
   // Active Filters
@@ -189,7 +190,7 @@ export default function CeoActivityLogsPage() {
         });
 
         let filteredData = result.data;
-        
+
         if (selectedLocation !== "All") {
           filteredData = filteredData.filter(a => a.location === selectedLocation);
         }
@@ -235,7 +236,7 @@ export default function CeoActivityLogsPage() {
           <p className="text-gray-500 max-w-md">
             You do not have the required CEO privileges to view the platform's activity intelligence dashboard.
           </p>
-          <button 
+          <button
             onClick={() => router.push("/staff-dashboard")}
             className="mt-8 px-6 py-3 bg-[#95D700] text-white font-bold rounded-xl hover:bg-[#7AB800] transition-colors"
           >
