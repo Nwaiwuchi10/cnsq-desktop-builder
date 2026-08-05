@@ -16,7 +16,7 @@ import {
 import dayjs from "dayjs";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import { AlertCircle, BarChart3, Calendar, ChevronDown, History, Search } from "lucide-react";
-import { io } from "socket.io-client";
+import io from "socket.io-client";
 import CeoMessageReadStatsModal from "@/component/ActivityLog/CeoMessageReadStatsModal";
 import Api from "@/utils/api";
 
