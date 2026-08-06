@@ -1,4 +1,5 @@
 "use client";
+// Channel conversation view enhancement & thread unread badge layout
 import React, { useEffect, useState, useRef, ReactNode } from "react";
 import Api from "@/utils/api";
 
