@@ -137,17 +137,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               onMouseEnter={() => setHovered(true)}
               className={`absolute -top-9 ${me ? 'right-2' : 'left-2'} flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md p-1 z-20 text-gray-800`}
             >
-              {["👍", "❤️", "😂"].map((emoji) => (
+              {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
                 <button
                   key={emoji}
-                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onReact?.(emoji); }}
-                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded text-xs"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onReact?.(emoji); }}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded text-xs active:scale-125 transition-transform"
                 >
                   {emoji}
                 </button>
               ))}
               <button
-                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); setShowLocalPicker((prev) => !prev); }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowLocalPicker((prev) => !prev); }}
                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded text-xs font-bold text-gray-500 dark:text-gray-300"
                 title="React with any emoji"
               >
@@ -157,24 +157,35 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           )}
 
           {showLocalPicker && (
-            <>
-              <div className="fixed inset-0 z-40 bg-transparent" onClick={(e) => { e.stopPropagation(); setShowLocalPicker(false); }} />
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-fadeIn"
+              onClick={(e) => { e.stopPropagation(); setShowLocalPicker(false); }}
+            >
               <div
-                className="absolute z-50 bottom-10 left-0 shadow-2xl rounded-lg overflow-hidden border dark:border-gray-700 bg-white"
+                className="shadow-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-2 max-w-sm w-full flex flex-col items-center"
                 onClick={(e) => e.stopPropagation()}
               >
+                <div className="flex items-center justify-between w-full px-3 py-1.5 border-b border-gray-100 dark:border-gray-700 mb-2">
+                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">React with Emoji</span>
+                  <button
+                    onClick={() => setShowLocalPicker(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-white text-xs p-1"
+                  >
+                    ✕
+                  </button>
+                </div>
                 <EmojiPicker
                   onEmojiClick={(emojiData) => {
                     onReact?.(emojiData.emoji);
                     setShowLocalPicker(false);
                   }}
-                  width={280}
+                  width="100%"
                   height={320}
                   skinTonesDisabled
                   searchDisabled
                 />
               </div>
-            </>
+            </div>
           )}
         </div>
       ) : (
