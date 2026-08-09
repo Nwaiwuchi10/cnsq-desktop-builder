@@ -58,6 +58,7 @@ export const fetchStaffActivityDirectory = async (params: {
   staffId?: number;
   departmentId?: number;
   search?: string;
+  action?: string;
   page?: number;
   limit?: number;
 }): Promise<ActivityDirectoryResponse> => {
@@ -73,6 +74,23 @@ export const fetchStaffActivityDirectory = async (params: {
     return response.data;
   } catch (error) {
     console.error("Error fetching activity directory:", error);
+    throw error;
+  }
+};
+
+// Fetch all unique activity actions
+export const getUniqueActions = async (): Promise<string[]> => {
+  try {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
+    const response = await Api.get("/member-activity/logs/actions", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching unique actions:", error);
     throw error;
   }
 };
