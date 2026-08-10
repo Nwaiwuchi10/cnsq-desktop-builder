@@ -1852,7 +1852,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
         {/* Input */}
         {/* ================= MOBILE & TABLET VIEW ================= */}
-        <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors md:hidden">
+        <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden">
           <div className="flex flex-col gap-3">
             {/* File Previews */}
             {files.length > 0 && (
@@ -2778,7 +2778,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </div>
 
           {/* Mobile Thread Input */}
-          <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0">
+          <div className="p-3 pb-safe pb-5 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0">
             {/* Editing Indicator */}
             {editThreadMessage && (
               <div className="flex items-center justify-between px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg mb-2 shadow-sm">
