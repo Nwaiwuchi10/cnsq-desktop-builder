@@ -31,6 +31,7 @@ export type Msg = {
   reactions?: ReactionsState;
   parent?: Partial<Msg>;
   isChannel?: boolean;
+  activeThreadParentId?: string | null;
 };
 
 const ConversationItem: React.FC<{ item?: Msg; onClick: () => void }> = ({

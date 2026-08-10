@@ -20,7 +20,7 @@ const ChannelConversationItem: React.FC<{
       {/* <Avatar name={name} src={item.avatar} /> */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <div className="font-semibold text-gray-800 dark:text-gray-200">{name}</div>
+          <div className="font-semibold text-gray-800 dark:text-gray-200 truncate">{name}</div>
           <div className="text-xs text-gray-400">{time}</div>
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">{preview}</div>
