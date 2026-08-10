@@ -9,6 +9,7 @@ import {
   getLoginStats,
   getAllStaff,
   getAllDepartments,
+  getUniqueActions,
   ActivityLog,
   LoginStats
 } from "@/utils/activities";
@@ -42,6 +43,7 @@ export default function CeoActivityLogsPage() {
   // Filter Metadata
   const [staffList, setStaffList] = useState<{ id: number, firstName: string, lastName: string }[]>([]);
   const [departments, setDepartments] = useState<{ id: number, name: string }[]>([]);
+  const [actionsList, setActionsList] = useState<string[]>([]);
 
   // Active Filters
   const [showDropdown, setShowDropdown] = useState(false);
@@ -49,6 +51,7 @@ export default function CeoActivityLogsPage() {
   const [selectedStaff, setSelectedStaff] = useState<string>("All");
   const [selectedDept, setSelectedDept] = useState<string>("All");
   const [selectedLocation, setSelectedLocation] = useState<string>("All");
+  const [selectedAction, setSelectedAction] = useState<string>("All");
   const [period, setPeriod] = useState<PeriodType>("daily");
   const [referenceDate, setReferenceDate] = useState(dayjs().format("YYYY-MM-DD"));
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -74,7 +77,8 @@ export default function CeoActivityLogsPage() {
     role: "All",
     location: "All",
     staff: "All",
-    date: dayjs().format("YYYY-MM-DD")
+    date: dayjs().format("YYYY-MM-DD"),
+    action: "All"
   });
 
   const filterRef = useRef<HTMLDivElement>(null);
@@ -126,7 +130,7 @@ export default function CeoActivityLogsPage() {
     if (isCeo) {
       fetchData();
     }
-  }, [activeTab, period, referenceDate, selectedStaff, selectedDept, selectedLocation, page, debouncedSearch, refreshTrigger, isCeo]);
+  }, [activeTab, period, referenceDate, selectedStaff, selectedDept, selectedLocation, selectedAction, page, debouncedSearch, refreshTrigger, isCeo]);
 
   // Real-time socket connection for staff online/offline status
   useEffect(() => {
@@ -159,12 +163,14 @@ export default function CeoActivityLogsPage() {
 
   const fetchMetadata = async () => {
     try {
-      const [sData, dData] = await Promise.all([
+      const [sData, dData, aData] = await Promise.all([
         getAllStaff(),
-        getAllDepartments()
+        getAllDepartments(),
+        getUniqueActions()
       ]);
       setStaffList(sData);
       setDepartments(dData);
+      setActionsList(aData);
     } catch (err) {
       console.error("Failed to fetch filter metadata", err);
     }
@@ -185,6 +191,7 @@ export default function CeoActivityLogsPage() {
       if (activeTab === "feed") {
         const result = await fetchStaffActivityDirectory({
           ...commonParams,
+          action: selectedAction !== "All" ? selectedAction : undefined,
           page,
           limit,
         });
@@ -384,7 +391,7 @@ export default function CeoActivityLogsPage() {
                       </select>
                     </div>
 
-                    {/* Staff Selection */}
+                     {/* Staff Selection */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                         Selected Staff
@@ -401,6 +408,30 @@ export default function CeoActivityLogsPage() {
                       >
                         <option value="All">All Staff</option>
                         {staffList.map(s => <option key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Activity Selection */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        Activity / Action Type
+                      </label>
+                      <select
+                        value={tempFilters.action}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setTempFilters(prev => ({ ...prev, action: val }));
+                          setSelectedAction(val);
+                          setPage(1);
+                        }}
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#95D700] outline-none transition-all max-w-full"
+                      >
+                        <option value="All">All Activities</option>
+                        {actionsList.map((act, index) => (
+                          <option key={index} value={act}>
+                            {act}
+                          </option>
+                        ))}
                       </select>
                     </div>
 

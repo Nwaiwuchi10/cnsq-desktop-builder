@@ -107,15 +107,14 @@ export default function ActivityLogTable({
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
-                      <span className={`text-sm font-medium px-2 py-1 rounded-md w-fit ${
-                        activity.action === 'Session Timed Out' 
-                          ? "bg-amber-50 text-amber-700 border border-amber-100" 
-                          : "text-gray-700 bg-gray-100"
-                      }`}>
-                        {activity.action}
+                      <span className={`text-sm font-medium px-2 py-1 rounded-md w-fit ${activity.action === 'Session Timed Out'
+                        ? "bg-amber-50 text-amber-700 border border-amber-100"
+                        : "text-gray-700 bg-gray-100"
+                        }`}>
+                        {activity.action.replace(/Ready_To_Test/g, 'Ready To Test').replace(/Ready_to_test/g, 'Ready to test')}
                       </span>
                       {activity.referenceId && (activity.action.startsWith("Read CEO Message") || activity.action.startsWith("Read Announcement")) && (
-                        <button 
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
                             if (onViewAnalysis) {
@@ -149,11 +148,13 @@ export default function ActivityLogTable({
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-1.5 text-xs text-gray-700">
-                        <Globe size={14} className="text-[#95D700]" />
+                        {/* <Globe size={14} className="text-[#95D700]" /> */}
                         <span>{activity.location}</span>
                       </div>
                       <div className="text-[10px] text-gray-500 font-mono tracking-tighter">
-                        {activity.ipAddress}
+                        {activity.ipAddress.replace(/^::ffff:/, '')}
+
+                        {/* {activity.ipAddress} */}
                       </div>
                     </div>
                   </td>
@@ -193,7 +194,7 @@ export default function ActivityLogTable({
                       {activity.staff ? `${activity.staff.firstName} ${activity.staff.lastName}` : "Unknown Staff"}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {activity.action}
+                      {activity.action.replace(/Ready_To_Test/g, 'Ready To Test').replace(/Ready_to_test/g, 'Ready to test')}
                       {activity.sessionDuration && (
                         <span className="block mt-0.5 text-[10px] text-gray-400">
                           Duration: {activity.sessionDuration}
