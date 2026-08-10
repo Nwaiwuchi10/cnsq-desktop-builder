@@ -877,7 +877,7 @@ const MessagesLayout: React.FC = () => {
             )}
 
             {selected && (
-              <div className="bg-white dark:bg-[#141414] transition-colors h-screen w-screen fixed inset-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-white dark:bg-[#141414] transition-colors h-[100dvh] w-screen fixed inset-0 z-[100] md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm flex flex-col">
                 {(() => {
                   const conv: any =
                     activeTab === "channels"

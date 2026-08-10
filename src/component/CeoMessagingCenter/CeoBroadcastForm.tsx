@@ -251,7 +251,7 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
                         setShowDropdown(true);
                       }}
                       onFocus={() => setShowDropdown(true)}
-                      className="w-full bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#86CD23]/20 focus:border-[#86CD23] transition-all font-bold text-sm"
+                      className="w-full bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#86CD23]/20 focus:border-[#86CD23] transition-all font-bold text-sm text-gray-900 dark:text-white"
                     />
                   </div>
 
@@ -316,7 +316,7 @@ const CeoBroadcastForm: React.FC<CeoBroadcastFormProps> = ({ message, onClose, o
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter message title..."
-                  className="w-full bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#86CD23]/20 focus:border-[#86CD23] transition-all font-bold text-sm"
+                  className="w-full bg-gray-50 dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#86CD23]/20 focus:border-[#86CD23] transition-all font-bold text-sm text-gray-900 dark:text-white"
                 />
               </div>
             </div>
