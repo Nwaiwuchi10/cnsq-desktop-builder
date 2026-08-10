@@ -29,6 +29,7 @@ type ConversationViewProps = {
   conversation: Msg | null;
   onBack?: () => void;
   onRead?: (conversationId: string) => void;
+  initialThreadParentId?: string | null;
 };
 
 type Attachment = {
@@ -65,6 +66,7 @@ type Msg = {
     id?: number;
     firstName: string;
     photoUrl: string | null;
+    avatar?: string | null;
   };
 };
 
@@ -72,6 +74,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   conversation,
   onBack,
   onRead,
+  initialThreadParentId,
 }) => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
@@ -92,6 +95,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   };
   const [threadMessages, setThreadMessages] = useState<any[]>([]);
   const [isThreadLoading, setIsThreadLoading] = useState(false);
+  const [threadInitialUnreadCount, setThreadInitialUnreadCount] = useState(0);
   const [threadText, setThreadText] = useState("");
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(
@@ -146,6 +150,85 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [isThreadGroupInfoOpen, setIsThreadGroupInfoOpen] = useState(false);
   const [threadMessageInfoId, setThreadMessageInfoId] = useState<string | null>(null);
   const [threadReactorsModalMessageId, setThreadReactorsModalMessageId] = useState<string | null>(null);
+
+  const threadScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleAutoOpenThread = async () => {
+      if (!initialThreadParentId) return;
+      const token = localStorage.getItem("user-token");
+      if (!token) return;
+
+      const localParent = messages.find(m => m.id === initialThreadParentId);
+      if (localParent) {
+        openThread(localParent);
+        Api.post(`/chat/threads/${initialThreadParentId}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+        return;
+      }
+
+      try {
+        const res = await Api.get(`/chat/messages/${initialThreadParentId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const m = res.data;
+        const mappedParent: Msg = {
+          id: m.id,
+          name: m.author ? `${m.author.firstName} ${m.author.lastName || ""}`.trim() : "System Message",
+          avatar: m.author?.photoUrl || "",
+          text: m.text,
+          me: m.author?.id === currentUserId,
+          createdAt: m.createdAt,
+          edited: m.edited,
+          pinned: m.pinned,
+          time: m.createdAt
+            ? new Date(m.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "",
+          attachments: m.attachments,
+          author: m.author,
+          threadUnreadCount: (conversation as any)?.unread || 0,
+        };
+        openThread(mappedParent);
+        Api.post(`/chat/threads/${initialThreadParentId}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(() => {});
+      } catch (err) {
+        console.error("Auto opening thread failed:", err);
+      }
+    };
+
+    handleAutoOpenThread();
+  }, [initialThreadParentId, messages, currentUserId, conversation]);
+
+  useEffect(() => {
+    if (threadMessages.length > 0 && threadScrollRef.current) {
+      const unreadCount = threadInitialUnreadCount;
+      if (unreadCount > 0 && unreadCount <= threadMessages.length) {
+        const firstUnreadIndex = threadMessages.length - unreadCount;
+        const container = threadScrollRef.current;
+        const elements = container.getElementsByClassName("group/reply");
+        const targetElement = elements[firstUnreadIndex] as HTMLElement;
+        if (targetElement) {
+          setTimeout(() => {
+            targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          }, 100);
+          return;
+        }
+      }
+      setTimeout(() => {
+        if (threadScrollRef.current) {
+          threadScrollRef.current.scrollTo({
+            top: threadScrollRef.current.scrollHeight,
+            behavior: "smooth"
+          });
+        }
+      }, 100);
+    }
+  }, [threadMessages, threadInitialUnreadCount]);
 
   const pageSize = 30;
   const hasUserScrolled = useRef(false);
@@ -474,7 +557,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               id: msg.authorId || msg.author?.id,
               firstName: msg.author?.firstName || "",
               lastName: msg.author?.lastName || "",
-              photoUrl: msg.author?.photoUrl || null,
+              photoUrl: msg.author?.photoUrl || msg.author?.avatar || null,
             },
             name: `${msg.author?.firstName || ""} ${msg.author?.lastName || ""}`.trim() || "Staff Member",
             attachments: msg.attachments || [],
@@ -715,6 +798,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     setThreadVoiceBlob(null);
     setThreadVoiceUrl(null);
     setIsThreadLoading(true);
+    setThreadInitialUnreadCount(message.threadUnreadCount || 0);
     const token = localStorage.getItem("user-token");
     if (!token) return;
     try {
@@ -1368,7 +1452,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                   ? `${m.author.firstName || ""} ${(m.author as any).lastName || ""}`.trim()
                                   : m.name
                               }
-                              avatar={m.author?.photoUrl}
+                              avatar={m.author?.photoUrl || m.author?.avatar}
                               online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
                               pinned={m.pinned}
                               reactions={m.reactions}
@@ -2131,7 +2215,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               }}
             />
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
               {/* Parent Message in Thread */}
               <div className="pb-4 border-b border-gray-200 dark:border-gray-800">
                 <ChannelMessageBubble
@@ -2141,7 +2225,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
                       : threadParent.name
                   }
-                  avatar={threadParent.author?.photoUrl}
+                  avatar={threadParent.author?.photoUrl || threadParent.author?.avatar}
                   time={threadParent.time}
                   me={threadParent.me}
                   pinned={threadParent.pinned}
@@ -2195,7 +2279,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                 ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
                                 : tm.name
                             }
-                            avatar={tm.author?.photoUrl}
+                            avatar={tm.author?.photoUrl || tm.author?.avatar}
                             time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             me={tm.author.id === currentUserId}
                             selected={selectedThreadMessageId === tm.id}
@@ -2503,7 +2587,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           </div>
 
           {/* Messages Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Parent Message */}
             <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
               <ChannelMessageBubble
@@ -2513,7 +2597,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
                     : threadParent.name
                 }
-                avatar={threadParent.author?.photoUrl}
+                avatar={threadParent.author?.photoUrl || threadParent.author?.avatar}
                 time={threadParent.time}
                 me={threadParent.me}
                 pinned={threadParent.pinned}
@@ -2565,7 +2649,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
                             : tm.name
                         }
-                        avatar={tm.author?.photoUrl}
+                        avatar={tm.author?.photoUrl || tm.author?.avatar}
                         time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         me={tm.author?.id === currentUserId}
                         selected={selectedThreadMessageId === tm.id}

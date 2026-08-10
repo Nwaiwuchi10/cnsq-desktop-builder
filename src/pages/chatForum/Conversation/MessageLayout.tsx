@@ -56,6 +56,8 @@ interface DMResponse {
 const MessagesLayout: React.FC = () => {
   const [conversations, setConversations] = useState<Msg[]>([]);
   const [channels, setChannels] = useState<Msg[]>([]);
+  const [threadConversations, setThreadConversations] = useState<Msg[]>([]);
+  const [autoOpenThreadId, setAutoOpenThreadId] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState<string>("");
   const [staffMatches, setStaffMatches] = useState<Msg[]>([]);
@@ -65,6 +67,38 @@ const MessagesLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const onlineStaffs = useChatStore((s) => s.onlineStaffs);
+
+  // Fetch thread conversations
+  const fetchThreadConversations = async () => {
+    const token = localStorage.getItem("user-token");
+    if (!token) return;
+    try {
+      const res = await Api.get<any[]>("/chat/threads/conversations", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const mapped: Msg[] = res.data.map((c) => ({
+        id: c.id,
+        name: c.name || "Channel with Thread",
+        avatar: "",
+        preview: c.preview || "",
+        text: c.preview || "",
+        me: false,
+        createdAt: c.createdAt || new Date().toISOString(),
+        time: c.createdAt
+          ? new Date(c.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+          : "",
+        unread: c.unread ?? 0,
+        isChannel: c.isChannel,
+        activeThreadParentId: c.activeThreadParentId,
+      }));
+      setThreadConversations(mapped);
+    } catch (err) {
+      console.error("Failed fetching thread conversations:", err);
+    }
+  };
 
   // Fetch DMs
   const fetchConversations = async () => {
@@ -171,6 +205,11 @@ const MessagesLayout: React.FC = () => {
       const t = setTimeout(() => fetchConversations(), 300);
       return () => clearTimeout(t);
     }
+  }, [search, activeTab]);
+
+  // Fetch thread conversations
+  useEffect(() => {
+    fetchThreadConversations();
   }, [search, activeTab]);
 
   // Socket connection
@@ -431,6 +470,12 @@ const MessagesLayout: React.FC = () => {
       }
     } else {
       setSelected(id);
+      const threadConv = threadConversations.find((tc) => tc.id === id);
+      if (threadConv && threadConv.activeThreadParentId) {
+        setAutoOpenThreadId(threadConv.activeThreadParentId);
+      } else {
+        setAutoOpenThreadId(null);
+      }
     }
   };
 
@@ -460,7 +505,8 @@ const MessagesLayout: React.FC = () => {
 
   const dmsUnread = conversations.reduce((acc, c) => acc + (c.unread || 0), 0);
   const channelsUnread = channels.reduce((acc, c) => acc + (c.unread || 0), 0);
-  const totalUnread = dmsUnread + channelsUnread;
+  const threadsUnread = threadConversations.reduce((acc, c) => acc + (c.unread || 0), 0);
+  const totalUnread = dmsUnread + channelsUnread + threadsUnread;
 
   useEffect(() => {
     if (typeof navigator !== "undefined" && "setAppBadge" in navigator) {
@@ -482,6 +528,7 @@ const MessagesLayout: React.FC = () => {
     channels: channelsUnread,
     mentions: 0,
     unread: totalUnread,
+    threads: threadsUnread,
   };
 
   return (
@@ -630,6 +677,11 @@ const MessagesLayout: React.FC = () => {
                       }))}
                       onSelect={handleSelect}
                     />
+                  ) : activeTab === "threads" ? (
+                    <ChannelConversationList
+                      items={threadConversations}
+                      onSelect={handleSelect}
+                    />
                   ) : (
                     /* "all" Tab: DM & Channels combined */
                     <ConversationList
@@ -682,6 +734,8 @@ const MessagesLayout: React.FC = () => {
                 const conv: any =
                   activeTab === "channels"
                     ? channels.find((c: any) => c.id === selected) || null
+                    : activeTab === "threads"
+                    ? threadConversations.find((c: any) => c.id === selected) || null
                     : allConversationsList.find((c) => c.id === selected) ||
                     null;
 
@@ -698,6 +752,7 @@ const MessagesLayout: React.FC = () => {
                     conversation={conv}
                     onBack={() => setSelected(null)}
                     onRead={markConversationAsRead}
+                    initialThreadParentId={conv.activeThreadParentId || autoOpenThreadId}
                   />
                 ) : (
                   <ConversationView
@@ -787,6 +842,11 @@ const MessagesLayout: React.FC = () => {
                         }))}
                         onSelect={handleSelect}
                       />
+                    ) : activeTab === "threads" ? (
+                      <ChannelConversationList
+                        items={threadConversations}
+                        onSelect={handleSelect}
+                      />
                     ) : (
                       <ConversationList
                         items={allConversationsList.map((c: any) => ({
@@ -817,11 +877,13 @@ const MessagesLayout: React.FC = () => {
             )}
 
             {selected && (
-              <div className="bg-white dark:bg-[#141414] transition-colors h-[90vh] w-[100vw] fixed top-0 left-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
+              <div className="bg-white dark:bg-[#141414] transition-colors h-screen w-screen fixed inset-0 z-50 md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm">
                 {(() => {
                   const conv: any =
                     activeTab === "channels"
                       ? channels.find((c) => c.id === selected) || null
+                      : activeTab === "threads"
+                      ? threadConversations.find((c) => c.id === selected) || null
                       : allConversationsList.find((c) => c.id === selected) ||
                       null;
 
@@ -831,6 +893,7 @@ const MessagesLayout: React.FC = () => {
                     <ChannelConversationView
                       conversation={conv}
                       onBack={() => setSelected(null)}
+                      initialThreadParentId={conv.activeThreadParentId || autoOpenThreadId}
                     />
                   ) : (
                     <ConversationView

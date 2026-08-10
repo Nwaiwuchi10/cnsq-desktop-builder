@@ -10,6 +10,7 @@ interface MessagesTabsProps {
     channels?: number;
     mentions?: number;
     unread?: number;
+    threads?: number;
   };
 }
 
@@ -25,6 +26,7 @@ const MessagesTabs: React.FC<MessagesTabsProps> = ({
     { key: "create", label: "+ Channel" },
     { key: "mentions", label: "Mentions", count: unreadCounts?.mentions },
     { key: "unread", label: "Unread", count: unreadCounts?.unread },
+    { key: "threads", label: "Threads", count: unreadCounts?.threads },
   ];
 
   return (
