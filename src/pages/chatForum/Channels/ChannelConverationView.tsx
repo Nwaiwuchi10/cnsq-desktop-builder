@@ -164,7 +164,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         openThread(localParent);
         Api.post(`/chat/threads/${initialThreadParentId}/read`, {}, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => {});
+        }).catch(() => { });
         return;
       }
 
@@ -184,9 +184,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           pinned: m.pinned,
           time: m.createdAt
             ? new Date(m.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+              hour: "2-digit",
+              minute: "2-digit",
+            })
             : "",
           attachments: m.attachments,
           author: m.author,
@@ -195,7 +195,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         openThread(mappedParent);
         Api.post(`/chat/threads/${initialThreadParentId}/read`, {}, {
           headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => {});
+        }).catch(() => { });
       } catch (err) {
         console.error("Auto opening thread failed:", err);
       }
@@ -245,7 +245,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     if (prevConversationId.current !== conversation.id) {
       prevConversationId.current = conversation.id;
       hasUserScrolled.current = false;
-      
+
       const unreadCount = (conversation as any)?.unread || 0;
       if (unreadCount > 0) {
         shouldScrollToUnread.current = true;
