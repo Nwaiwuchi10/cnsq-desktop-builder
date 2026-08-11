@@ -92,156 +92,158 @@ const CeoMessagingCenter: React.FC = () => {
 
     return (
         <StaffLayout>
-            <div className="w-full max-w-7xl mx-auto py-8">
-                {/* Header Section **/}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                    <div className="flex items-start gap-4">
-                        <div className="p-3 bg-[#f7fff0] rounded-xl border border-[#86CD23]/20 shadow-sm">
-                            <MessageSquare className="w-8 h-8 text-[#86CD23]" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
-                                CEO Messaging Center
-                            </h1>
-                            <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">
-                                Send messages to all staff or specific team members
-                            </p>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={() => {
-                            setSelectedMessage(null);
-                            setShowForm(true);
-                        }}
-                        className="flex items-center justify-center gap-2 bg-[#86CD23] hover:bg-[#7ab520] text-black px-6 py-3.5 rounded-xl font-bold border border-[#86CD23] transition-all duration-200 shadow-lg shadow-[#86CD23]/10 transform active:scale-95"
-                    >
-                        <Send className="w-5 h-5" />
-                        <span>New Message</span>
-                    </button>
-                </div>
-
-                {/* Search */}
-                <section className="mb-8">
-                    <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-focus-within:text-[#86CD23]" />
-                        <input
-                            type="text"
-                            placeholder="Search messages..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl pl-12 pr-4 py-4 focus:outline-none focus:ring-2 focus:ring-[#86CD23]/20 focus:border-[#86CD23] transition-all shadow-sm font-medium"
-                        />
-                    </div>
-                </section>
-
-                {/* Message List */}
-                <div className="bg-white dark:bg-[#141414] rounded-[24px] border border-gray-100 dark:border-gray-800 p-8 shadow-xl shadow-gray-200/20">
-                    <div className="flex items-center justify-between mb-8 border-b border-gray-50 dark:border-gray-800 pb-6">
-                        <div>
-                            <h2 className="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
-                                Message History
-                                <span className="text-sm font-bold px-2.5 py-0.5 bg-[#86CD23]/10 text-[#86CD23] rounded-full">
-                                    {filteredMessages.length}
-                                </span>
-                            </h2>
-                            <p className="text-sm text-gray-500 font-medium mt-1">All messages sent to staff members</p>
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="py-20 flex flex-col items-center justify-center gap-4 text-gray-400">
-                            <div className="w-12 h-12 border-4 border-[#86CD23]/20 border-t-[#86CD23] rounded-full animate-spin"></div>
-                            <p className="font-bold">Loading message history...</p>
-                        </div>
-                    ) : filteredMessages.length === 0 ? (
-                        <div className="py-20 text-center">
-                            <div className="bg-gray-50 dark:bg-[#1a1a1a] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <AlertCircle className="w-10 h-10 text-gray-300" />
+            <div className="w-full min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] px-4 py-8 transition-colors">
+                <div className="max-w-7xl mx-auto">
+                    {/* Header Section **/}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-[#f7fff0] dark:bg-[#1a1a1a] rounded-xl border border-[#86CD23]/20 dark:border-gray-800 shadow-sm transition-colors">
+                                <MessageSquare className="w-8 h-8 text-[#86CD23]" />
                             </div>
-                            <p className="text-gray-500 font-bold text-lg">No messages found</p>
-                            <p className="text-gray-400 mt-1">Start by creating a new broadcast message</p>
+                            <div>
+                                <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+                                    CEO Messaging Center
+                                </h1>
+                                <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">
+                                    Send messages to all staff or specific team members
+                                </p>
+                            </div>
                         </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {filteredMessages.map((msg) => (
-                                <div
-                                    key={msg.id}
-                                    className="group relative bg-[#FAFAFA] dark:bg-[#1a1a1a]/50 p-6 rounded-[20px] border border-gray-100 dark:border-gray-800 hover:border-[#86CD23]/40 transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
-                                    onClick={() => {
-                                        setViewingDetails(msg);
-                                    }}
-                                >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-black text-gray-900 dark:text-white group-hover:text-[#86CD23] transition-colors leading-tight">
-                                                    {msg.title}
-                                                </h3>
-                                            </div>
-                                            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-2 pr-12 font-medium">
-                                                {stripHtml(msg.description)}
-                                            </p>
-                                        </div>
 
-                                        <div className="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedMessage(msg);
-                                                    setShowForm(true);
-                                                }}
-                                                className="p-2 hover:bg-white dark:hover:bg-[#222] rounded-lg text-gray-400 hover:text-blue-500 transition-colors shadow-sm"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteTarget(msg.id);
-                                                }}
-                                                className="p-2 hover:bg-white dark:hover:bg-[#222] rounded-lg text-gray-400 hover:text-red-500 transition-colors shadow-sm"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
+                        <button
+                            onClick={() => {
+                                setSelectedMessage(null);
+                                setShowForm(true);
+                            }}
+                            className="flex items-center justify-center gap-2 bg-[#86CD23] hover:bg-[#7ab520] text-black px-6 py-3.5 rounded-xl font-bold border border-[#86CD23] transition-all duration-200 shadow-lg shadow-[#86CD23]/10 transform active:scale-95 w-full md:w-auto"
+                        >
+                            <Send className="w-5 h-5" />
+                            <span>New Message</span>
+                        </button>
+                    </div>
 
-                                    <div className="flex flex-wrap items-center gap-6 pt-5 mt-4 border-t border-gray-50 dark:border-gray-800 text-xs font-bold">
-                                        <div className="flex items-center gap-2 text-gray-400">
-                                            <Users className="w-4 h-4 text-[#86CD23]/60" />
-                                            <span className="text-gray-600 dark:text-gray-400">To: </span>
-                                            <span className="text-gray-900 dark:text-gray-200">
-                                                {msg.isAllStaff ? "All Staff" : "Selected Members"}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-gray-400">
-                                            <Calendar className="w-4 h-4" />
-                                            <span className="text-gray-900 dark:text-gray-200">
-                                                {new Date(msg.createdAt).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                        {msg.attachments && msg.attachments.length > 0 && (
-                                            <div className="flex items-center gap-2 text-gray-400">
-                                                <ExternalLink className="w-4 h-4" />
-                                                <span className="text-[#86CD23] hover:underline">View Attachments</span>
-                                            </div>
-                                        )}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setViewingReaders(msg);
-                                            }}
-                                            className="flex items-center gap-2 text-blue-500 hover:underline ml-auto"
-                                        >
-                                            <Eye size={14} />
-                                            <span>Who read?</span>
-                                        </button>
-                                    </div>
+                    {/* Search */}
+                    <section className="mb-8">
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-focus-within:text-[#86CD23]" />
+                            <input
+                                type="text"
+                                placeholder="Search messages..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl pl-12 pr-4 py-4 focus:outline-none focus:ring-2 focus:ring-[#86CD23]/20 focus:border-[#86CD23] text-gray-900 dark:text-white transition-all shadow-sm font-medium"
+                            />
+                        </div>
+                    </section>
+
+                    {/* Message List */}
+                    <div className="bg-white dark:bg-[#141414] rounded-[24px] border border-gray-100 dark:border-gray-800 p-4 sm:p-8 shadow-xl shadow-gray-200/20 dark:shadow-none transition-all">
+                        <div className="flex items-center justify-between mb-8 border-b border-gray-50 dark:border-gray-800 pb-6">
+                            <div>
+                                <h2 className="text-xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                                    Message History
+                                    <span className="text-sm font-bold px-2.5 py-0.5 bg-[#86CD23]/10 text-[#86CD23] rounded-full">
+                                        {filteredMessages.length}
+                                    </span>
+                                </h2>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">All messages sent to staff members</p>
+                            </div>
+                        </div>
+
+                        {loading ? (
+                            <div className="py-20 flex flex-col items-center justify-center gap-4 text-gray-400">
+                                <div className="w-12 h-12 border-4 border-[#86CD23]/20 border-t-[#86CD23] rounded-full animate-spin"></div>
+                                <p className="font-bold text-gray-500 dark:text-gray-400">Loading message history...</p>
+                            </div>
+                        ) : filteredMessages.length === 0 ? (
+                            <div className="py-20 text-center">
+                                <div className="bg-gray-50 dark:bg-[#1a1a1a] w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <AlertCircle className="w-10 h-10 text-gray-300 dark:text-gray-600" />
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                <p className="text-gray-500 dark:text-gray-400 font-bold text-lg">No messages found</p>
+                                <p className="text-gray-400 dark:text-gray-500 mt-1">Start by creating a new broadcast message</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {filteredMessages.map((msg) => (
+                                    <div
+                                        key={msg.id}
+                                        className="group relative bg-[#FAFAFA] dark:bg-[#1a1a1a]/50 p-4 sm:p-6 rounded-[20px] border border-gray-100 dark:border-gray-800 hover:border-[#86CD23]/40 transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
+                                        onClick={() => {
+                                            setViewingDetails(msg);
+                                        }}
+                                    >
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <h3 className="text-lg font-black text-gray-900 dark:text-white group-hover:text-[#86CD23] transition-colors leading-tight truncate">
+                                                        {msg.title}
+                                                    </h3>
+                                                </div>
+                                                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed line-clamp-2 pr-12 font-medium">
+                                                    {stripHtml(msg.description)}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedMessage(msg);
+                                                        setShowForm(true);
+                                                    }}
+                                                    className="p-2 hover:bg-white dark:hover:bg-[#222] rounded-lg text-gray-400 hover:text-blue-500 transition-colors shadow-sm"
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteTarget(msg.id);
+                                                    }}
+                                                    className="p-2 hover:bg-white dark:hover:bg-[#222] rounded-lg text-gray-400 hover:text-red-500 transition-colors shadow-sm"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-5 mt-4 border-t border-gray-50 dark:border-gray-800 text-xs font-bold">
+                                            <div className="flex items-center gap-2 text-gray-400">
+                                                <Users className="w-4 h-4 text-[#86CD23]/60" />
+                                                <span className="text-gray-600 dark:text-gray-400">To: </span>
+                                                <span className="text-gray-900 dark:text-gray-200">
+                                                    {msg.isAllStaff ? "All Staff" : "Selected Members"}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-400">
+                                                <Calendar className="w-4 h-4" />
+                                                <span className="text-gray-900 dark:text-gray-200">
+                                                    {new Date(msg.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            {msg.attachments && msg.attachments.length > 0 && (
+                                                <div className="flex items-center gap-2 text-gray-400">
+                                                    <ExternalLink className="w-4 h-4" />
+                                                    <span className="text-[#86CD23] hover:underline">View Attachments</span>
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setViewingReaders(msg);
+                                                }}
+                                                className="flex items-center gap-2 text-blue-500 hover:underline ml-auto"
+                                            >
+                                                <Eye size={14} />
+                                                <span>Who read?</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -276,7 +278,7 @@ const CeoMessagingCenter: React.FC = () => {
 
             {viewingDetails && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-[#141414] transition-colors w-full max-w-2xl rounded-2xl p-6 relative shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                    <div className="bg-white dark:bg-[#141414] transition-colors w-full max-w-2xl rounded-2xl p-6 relative shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] border border-transparent dark:border-gray-800">
                         <button
                             onClick={() => setViewingDetails(null)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
@@ -297,7 +299,7 @@ const CeoMessagingCenter: React.FC = () => {
                                 <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">Attachments</h4>
                                 <div className="flex flex-col gap-2">
                                     {viewingDetails.attachments.map((url, i) => (
-                                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 transition-colors text-sm flex items-center gap-2 w-fit bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
+                                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors text-sm flex items-center gap-2 w-fit bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
                                             <ExternalLink size={14} /> View Attachment {i + 1}
                                         </a>
                                     ))}

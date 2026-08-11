@@ -257,7 +257,7 @@ export default function CeoActivityLogsPage() {
   return (
     <>
       <StaffLayout>
-        <div className="min-h-screen p-2 md:p-6 lg:p-8">
+        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0d0d0d] p-2 md:p-6 lg:p-8 transition-colors">
           <div className="max-w-7xl mx-auto space-y-8">
 
             {/* Header Section */}
@@ -269,24 +269,24 @@ export default function CeoActivityLogsPage() {
                   </div>
                   <span className="text-[#95D700] font-bold tracking-widest text-xs uppercase">Platform Governance</span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                   Activity Intelligence
                 </h1>
-                <p className="text-gray-500 max-w-lg text-sm md:text-base">
+                <p className="text-gray-500 dark:text-gray-400 max-w-lg text-sm md:text-base">
                   Comprehensive audit logs and usage analytics to track staff engagement and platform performance.
                 </p>
               </div>
             </div>
 
             {/* Controls Bar */}
-            <div className="bg-white/80 backdrop-blur-xl border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4 sticky top-4 z-40">
+            <div className="bg-white/80 dark:bg-[#141414]/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-4 sticky top-4 z-40 transition-colors">
               {/* Tabs */}
-              <div className="flex p-1 bg-gray-100 rounded-xl w-full lg:w-auto">
+              <div className="flex p-1 bg-gray-100 dark:bg-[#1a1a1a] rounded-xl w-full lg:w-auto transition-colors">
                 <button
                   onClick={() => setActiveTab("feed")}
                   className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === "feed"
-                    ? "bg-white text-[#95D700] shadow-sm"
-                    : "text-gray-500 hover:text-gray-900"
+                    ? "bg-white dark:bg-[#222] text-[#95D700] shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                     }`}
                 >
                   <History size={16} />
@@ -295,8 +295,8 @@ export default function CeoActivityLogsPage() {
                 <button
                   onClick={() => setActiveTab("analytics")}
                   className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === "analytics"
-                    ? "bg-white text-[#95D700] shadow-sm"
-                    : "text-gray-500 hover:text-gray-900"
+                    ? "bg-white dark:bg-[#222] text-[#95D700] shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                     }`}
                 >
                   <BarChart3 size={16} />
@@ -313,7 +313,7 @@ export default function CeoActivityLogsPage() {
                     placeholder="Search actions, staff, or status..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full min-w-0 bg-gray-50 border border-gray-100 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#95D700]/50 transition-all appearance-none leading-normal"
+                    className="w-full min-w-0 bg-gray-50 dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-[#95D700]/50 transition-all appearance-none leading-normal"
                   />
                 </div>
 
@@ -321,7 +321,7 @@ export default function CeoActivityLogsPage() {
                 <select
                   value={period}
                   onChange={(e) => setPeriod(e.target.value as PeriodType)}
-                  className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#95D700]/50"
+                  className="bg-gray-50 dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-gray-300 outline-none focus:ring-2 focus:ring-[#95D700]/50 transition-colors"
                 >
                   <option value="daily">Daily View</option>
                   <option value="weekly">Weekly View</option>
@@ -334,7 +334,7 @@ export default function CeoActivityLogsPage() {
                   onClick={() => setShowDropdown((prev) => !prev)}
                   className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-bold transition-all ${showDropdown
                     ? "bg-[#95D700] text-white border-[#95D700]"
-                    : "bg-white border-gray-200 text-gray-700 hover:border-[#95D700]"
+                    : "bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-[#95D700]"
                     }`}
                 >
                   <span>Filter</span>
@@ -344,15 +344,15 @@ export default function CeoActivityLogsPage() {
                 {showDropdown && (
                   <div
                     ref={filterRef}
-                    className="absolute top-14 right-0 bg-white border border-gray-200 rounded-xl shadow-2xl z-[100] p-6 space-y-4 animate-in fade-in zoom-in duration-200 min-w-[320px]"
+                    className="absolute top-14 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl z-[100] p-6 space-y-4 animate-in fade-in zoom-in duration-200 min-w-[320px] transition-colors"
                   >
-                    <h3 className="text-gray-900 font-bold text-lg mb-4 border-b border-gray-100 pb-2">
+                    <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
                       Filter by
                     </h3>
 
                     {/* Calendar / Reference Date */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                         Calendar / Reference Date
                       </label>
                       <div className="relative">
@@ -366,14 +366,14 @@ export default function CeoActivityLogsPage() {
                             setReferenceDate(val);
                             setPage(1);
                           }}
-                          className="w-full min-w-0 min-h-[40px] rounded-lg border border-gray-200 bg-gray-50 px-9 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#95D700] outline-none transition-all appearance-none leading-normal"
+                          className="w-full min-w-0 min-h-[40px] rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1a1a1a] px-9 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all appearance-none leading-normal"
                         />
                       </div>
                     </div>
 
                     {/* Department */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                         Department
                       </label>
                       <select
@@ -384,7 +384,7 @@ export default function CeoActivityLogsPage() {
                           setSelectedDept(val);
                           setPage(1);
                         }}
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1a1a1a] px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                       >
                         <option value="All">All</option>
                         {departments.map(d => <option key={d.id} value={d.id.toString()}>{d.name}</option>)}
@@ -393,7 +393,7 @@ export default function CeoActivityLogsPage() {
 
                      {/* Staff Selection */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                         Selected Staff
                       </label>
                       <select
@@ -404,7 +404,7 @@ export default function CeoActivityLogsPage() {
                           setSelectedStaff(val);
                           setPage(1);
                         }}
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1a1a1a] px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
                       >
                         <option value="All">All Staff</option>
                         {staffList.map(s => <option key={s.id} value={s.id.toString()}>{s.firstName} {s.lastName}</option>)}
@@ -413,7 +413,7 @@ export default function CeoActivityLogsPage() {
 
                     {/* Activity Selection */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                         Activity / Action Type
                       </label>
                       <select
@@ -424,7 +424,7 @@ export default function CeoActivityLogsPage() {
                           setSelectedAction(val);
                           setPage(1);
                         }}
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-[#95D700] outline-none transition-all max-w-full"
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#1a1a1a] px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all max-w-full"
                       >
                         <option value="All">All Activities</option>
                         {actionsList.map((act, index) => (
@@ -449,11 +449,11 @@ export default function CeoActivityLogsPage() {
             {/* Main Content Area */}
             <div className="space-y-6">
               {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-4">
-                  <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-2xl flex items-start gap-4">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h3 className="font-bold text-red-900 text-lg">System Alert</h3>
-                    <p className="text-red-700 mt-1">{error}</p>
+                    <h3 className="font-bold text-red-900 dark:text-red-200 text-lg">System Alert</h3>
+                    <p className="text-red-700 dark:text-red-300 mt-1">{error}</p>
                     <button
                       onClick={() => fetchData()}
                       className="mt-3 px-4 py-1.5 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition"
@@ -465,14 +465,14 @@ export default function CeoActivityLogsPage() {
               )}
 
               {activeTab === "feed" ? (
-                <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
-                  <div className="px-4 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm transition-colors">
+                  <div className="px-4 py-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">Activity Records</h2>
-                      <p className="text-gray-500 text-sm">Showing {activities.length} audit logs</p>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">Activity Records</h2>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">Showing {activities.length} audit logs</p>
                     </div>
 
-                    <div className="flex items-center gap-4 text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-xl">
+                    <div className="flex items-center gap-4 text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest bg-gray-50 dark:bg-[#1a1a1a] px-4 py-2 rounded-xl transition-colors">
                       <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500" /> Success</span>
                       <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-500" /> Failures</span>
                     </div>
@@ -505,20 +505,20 @@ export default function CeoActivityLogsPage() {
 
                   {/* Pagination Footer */}
                   {totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                      <p className="text-sm text-gray-500">Page {page} of {totalPages}</p>
+                    <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#1a1a1a]/50 flex items-center justify-between transition-colors">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Page {page} of {totalPages}</p>
                       <div className="flex gap-2">
                         <button
                           disabled={page === 1}
                           onClick={() => setPage(p => Math.max(1, p - 1))}
-                          className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold disabled:opacity-50"
+                          className="px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-300 disabled:opacity-50 transition-colors"
                         >
                           Prev
                         </button>
                         <button
                           disabled={page === totalPages}
                           onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                          className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold disabled:opacity-50"
+                          className="px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-300 disabled:opacity-50 transition-colors"
                         >
                           Next
                         </button>
