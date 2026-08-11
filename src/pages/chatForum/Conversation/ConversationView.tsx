@@ -1414,7 +1414,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
       {/* Input */}
       {/* ================ MOBILE + TABLET VIEW ================ */}
-      <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden">
+      <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden flex-shrink-0">
         <div className="flex flex-col gap-3">
           {/* File Previews */}
           {files.length > 0 && (

@@ -1852,7 +1852,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
         {/* Input */}
         {/* ================= MOBILE & TABLET VIEW ================= */}
-        <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden">
+        <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden flex-shrink-0">
           <div className="flex flex-col gap-3">
             {/* File Previews */}
             {files.length > 0 && (
@@ -2571,7 +2571,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
       {/* Mobile Thread Panel (Full-screen Overlay on sm/md) */}
       {threadParent && (
-        <div className="lg:hidden fixed inset-0 z-[60] bg-white dark:bg-[#141414] flex flex-col">
+        <div className="lg:hidden fixed inset-0 z-[100] h-[100dvh] w-screen bg-white dark:bg-[#141414] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0">
             <button
