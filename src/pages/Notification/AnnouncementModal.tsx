@@ -40,7 +40,6 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const [details, setDetails] = useState<DemoData | AnnouncementData | null>(
     null,
   );
-  console.log("notification", notification);
   const [isRead, setIsRead] = useState<boolean>(
     // For announcements: default to true immediately since the modal auto-marks as read on open.
     // For other types: reflect the notification's existing read status.
