@@ -3,7 +3,7 @@ import { CheckCheck } from "lucide-react";
 import { ReactionsState } from "../Channels/ChannelMessageBuble";
 import TruncatedText from "../components/TruncatedText";
 import EmojiPicker from "emoji-picker-react";
-import MediaGrid from "../components/MediaGrid";
+import MediaGrid from "@/component/MediaGrid";
 
 interface MessageBubbleProps {
   text: ReactNode;

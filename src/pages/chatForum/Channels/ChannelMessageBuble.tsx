@@ -2,7 +2,7 @@ import React, { ReactNode, useState } from "react";
 import parseMentions from "@/utils/ParseMention";
 import TruncatedText from "../components/TruncatedText";
 import EmojiPicker from "emoji-picker-react";
-import MediaGrid from "../components/MediaGrid";
+import MediaGrid from "@/component/MediaGrid";
 // import parseLinks from "@/utils/ParseLink";
 
 export type ReactionsState = {

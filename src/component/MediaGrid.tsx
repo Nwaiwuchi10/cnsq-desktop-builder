@@ -10,7 +10,7 @@ interface MediaItem {
 }
 
 interface MediaGridProps {
-  media: MediaItem[];
+  media?: MediaItem[];
   maxWidth?: number;
 }
 
@@ -50,10 +50,9 @@ const MediaCell: React.FC<{
   );
 };
 
-const MediaGrid: React.FC<MediaGridProps> = ({ media, maxWidth = 260 }) => {
+const MediaGrid: React.FC<MediaGridProps> = ({ media = [], maxWidth = 260 }) => {
+  if (!media || media.length === 0) return null;
   const count = media.length;
-  if (count === 0) return null;
-
   const gap = "gap-0.5";
 
   if (count === 1) {

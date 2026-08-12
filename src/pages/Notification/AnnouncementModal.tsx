@@ -44,7 +44,8 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   const [isRead, setIsRead] = useState<boolean>(
     // For announcements: default to true immediately since the modal auto-marks as read on open.
     // For other types: reflect the notification's existing read status.
-    notification.type === "announcement" ? true : !!notification.isRead
+    // Use optional chaining to safely handle SSR pre-rendering where notification may be undefined.
+    notification?.type === "announcement" ? true : !!notification?.isRead
   );
   const [isUpdatingRead, setIsUpdatingRead] = useState(false);
   const autoReadDone = useRef(false);
@@ -132,7 +133,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   useEffect(() => {
     if (
       autoReadDone.current ||
-      notification.type !== "announcement" ||
+      notification?.type !== "announcement" ||
       !notification?.relatedAnnouncement?.id
     )
       return;
@@ -164,7 +165,7 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
   useEffect(() => {
     if (
       autoReadDone.current ||
-      notification.type !== "ceo_message" ||
+      notification?.type !== "ceo_message" ||
       !notification?.relatedCeoMessageId
     )
       return;
@@ -243,6 +244,8 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
         </div>
       </div>
     );
+
+  if (!notification) return null;
 
   const isDemo =
     notification.type === "demo" || notification.type === "new_product";
