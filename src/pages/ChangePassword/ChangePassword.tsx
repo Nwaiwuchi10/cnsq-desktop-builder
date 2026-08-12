@@ -115,6 +115,8 @@ export default function ChangePassword() {
                 type={showPassword.old ? "text" : "password"}
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
+                autoComplete="current-password"
+                name="current-password"
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 pr-10 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 placeholder="Enter old password"
               />
@@ -140,6 +142,8 @@ export default function ChangePassword() {
                 type={showPassword.new ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                autoComplete="new-password"
+                name="new-password"
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 pr-10 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 placeholder="Enter new password"
               />
@@ -165,6 +169,8 @@ export default function ChangePassword() {
                 type={showPassword.confirm ? "text" : "password"}
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
+                autoComplete="new-password"
+                name="confirm-password"
                 className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 pr-10 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 placeholder="Confirm new password"
               />

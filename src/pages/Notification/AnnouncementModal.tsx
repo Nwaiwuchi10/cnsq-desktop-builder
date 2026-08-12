@@ -12,6 +12,7 @@ interface AnnouncementModalProps {
     type: string;
     title: string;
     message: string;
+    isRead?: boolean;
     relatedProductDemo?: { id: number };
     relatedAnnouncement?: { id: number };
     relatedCeoMessageId?: string;
@@ -40,7 +41,11 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
     null,
   );
   console.log("notification", notification);
-  const [isRead, setIsRead] = useState<boolean>(false);
+  const [isRead, setIsRead] = useState<boolean>(
+    // For announcements: default to true immediately since the modal auto-marks as read on open.
+    // For other types: reflect the notification's existing read status.
+    notification.type === "announcement" ? true : !!notification.isRead
+  );
   const [isUpdatingRead, setIsUpdatingRead] = useState(false);
   const autoReadDone = useRef(false);
 
@@ -343,15 +348,33 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
             )}
 
             {notification.type === "announcement" && (
-              <div className="flex items-center gap-2 mb-4 mt-4">
-                <input
-                  type="checkbox"
-                  checked={isRead}
-                  onChange={toggleReadStatus}
+              <div className="flex items-center gap-3 mb-4 mt-4 p-3 bg-gray-50 dark:bg-[#1a1a1a] rounded-xl border border-gray-100 dark:border-gray-800 transition-colors">
+                <button
+                  type="button"
+                  onClick={toggleReadStatus}
                   disabled={isUpdatingRead}
-                  className="w-4 h-4 accent-lime-500 cursor-pointer"
-                />
-                <span className="text-sm text-gray-600 dark:text-gray-400">Mark as read</span>
+                  aria-checked={isRead}
+                  role="checkbox"
+                  className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+                    isRead
+                      ? "bg-lime-500 border-lime-500"
+                      : "bg-white dark:bg-[#141414] border-gray-300 dark:border-gray-600 hover:border-lime-400"
+                  } ${isUpdatingRead ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                >
+                  {isRead && (
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+                <span className={`text-sm font-medium transition-colors ${
+                  isRead ? "text-lime-600 dark:text-lime-400" : "text-gray-600 dark:text-gray-400"
+                }`}>
+                  {isRead ? "Marked as read ✓" : "Mark as read"}
+                </span>
+                {isUpdatingRead && (
+                  <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">Saving...</span>
+                )}
               </div>
             )}
           </>

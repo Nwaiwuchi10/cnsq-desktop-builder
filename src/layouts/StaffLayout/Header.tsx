@@ -267,15 +267,21 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
       </div>
 
       <div className="flex items-center gap-6">
-        {/* Search Bar */}
-        <div className="hidden md:flex items-center bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 w-72 transition-colors">
-          <Search className="w-4 h-4 text-gray-400 mr-2" />
+        {/* Search Bar — navigates to /task on click */}
+        <Link
+          href="/task"
+          className="hidden md:flex items-center bg-white dark:bg-[#1a1a1a] border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 w-72 transition-colors hover:border-[#95D700]/60 cursor-pointer"
+        >
+          <Search className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
           <input
             type="text"
+            name="staff-search"
+            autoComplete="off"
+            readOnly
             placeholder="Search by role, location........"
-            className="bg-transparent border-none outline-none text-sm w-full dark:text-white"
+            className="bg-transparent border-none outline-none text-sm w-full dark:text-white cursor-pointer pointer-events-none"
           />
-        </div>
+        </Link>
 
         {/* Notifications & Messages cluster */}
         <div className="flex items-center gap-4">
