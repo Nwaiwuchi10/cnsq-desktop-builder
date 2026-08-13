@@ -2996,17 +2996,61 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               </div>
             )}
 
-            <div className="flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-inner">
-              <div className="flex items-end gap-2">
+            <div className={`flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-inner transition-all duration-200 ${isThreadInputExpanded ? 'min-h-[220px]' : ''}`}>
+              <div className="flex items-end gap-2 relative">
+                {showThreadSuggestions && threadSuggestions.length > 0 && (
+                  <div className="absolute bottom-full left-0 mb-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-[60] backdrop-blur-md bg-opacity-95">
+                    {threadSuggestions.map((s) => (
+                      <div
+                        key={s.id}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all cursor-pointer group"
+                        onClick={() => {
+                          if (s.isAll) {
+                            setThreadText((prev) => prev.replace(/@\w*$/, `@all `));
+                          } else {
+                            setThreadText((prev) =>
+                              prev.replace(/@\w*$/, `@${s.firstName}${s.lastName} `)
+                            );
+                          }
+                          setShowThreadSuggestions(false);
+                          setThreadSuggestions([]);
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 font-bold text-xs group-hover:scale-110 transition-transform">
+                          {s.firstName?.[0]}{s.lastName?.[0]}
+                        </div>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{s.firstName} {s.lastName}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <textarea
-                  className="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none py-1.5 px-2 min-h-[40px] max-h-[120px]"
+                  className={`flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none py-1.5 px-2 overflow-y-auto transition-all ${isThreadInputExpanded ? 'min-h-[160px]' : 'min-h-[40px] max-h-[120px]'}`}
                   placeholder="Reply in thread..."
                   rows={1}
                   value={threadText}
                   onChange={(e) => {
-                    setThreadText(e.target.value);
+                    const value = e.target.value;
+                    setThreadText(value);
                     e.target.style.height = 'auto';
                     e.target.style.height = e.target.scrollHeight + 'px';
+
+                    // Handle @ mentions for thread text
+                    const match = value.match(/@(\w*)$/);
+                    if (match) {
+                      const query = match[1].toLowerCase();
+                      const allItem = { id: 'all', firstName: 'all', lastName: '(Notify everyone in channel)', isAll: true };
+                      const filtered = staffList.filter((s) =>
+                        `${s.firstName}${s.lastName}`.toLowerCase().includes(query) ||
+                        s.firstName.toLowerCase().includes(query) ||
+                        s.lastName.toLowerCase().includes(query)
+                      );
+                      setThreadSuggestions("all".includes(query) ? [allItem, ...filtered] : filtered);
+                      setShowThreadSuggestions(true);
+                    } else {
+                      setShowThreadSuggestions(false);
+                      setThreadSuggestions([]);
+                    }
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -3062,6 +3106,41 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     </div>
                   )}
                 </div>
+
+                {/* Mention Button */}
+                <button
+                  onClick={() => {
+                    setThreadText((prev) => prev + "@");
+                    const allItem = { id: 'all', firstName: 'all', lastName: '(Notify everyone in channel)', isAll: true };
+                    setThreadSuggestions([allItem, ...staffList]);
+                    setShowThreadSuggestions(true);
+                  }}
+                  className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all text-lg font-semibold"
+                  title="Mention someone"
+                >
+                  @
+                </button>
+
+                {/* Expand / Maximize Icon Button */}
+                <button
+                  onClick={() => setIsThreadInputExpanded(!isThreadInputExpanded)}
+                  className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                  title={isThreadInputExpanded ? "Collapse input" : "Expand input"}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    {isThreadInputExpanded ? (
+                      <>
+                        <polyline points="4 14 10 14 10 20" />
+                        <polyline points="20 10 14 10 14 4" />
+                      </>
+                    ) : (
+                      <>
+                        <polyline points="15 3 21 3 21 9" />
+                        <polyline points="9 21 3 21 3 15" />
+                      </>
+                    )}
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
