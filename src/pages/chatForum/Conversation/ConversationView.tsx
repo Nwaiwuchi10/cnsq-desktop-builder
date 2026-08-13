@@ -13,8 +13,10 @@ import DMHeaderMenu from "../components/DMHeaderMenu";
 import ContactInfoDrawer from "../components/ContactInfoDrawer";
 import ImageZoomModal from "../components/ImageZoomModal";
 import TruncatedText from "../components/TruncatedText";
-import ReactionUserListModal from "../components/ReactionUserListModal";
+
 import MessageInfoModal from "../components/MessageInfoModal";
+import ScrollToBottomButton from "../components/ScrollToBottomButton";
+import ReactionUserListModal from "../components/ReactionUserListModal";
 
 // Slight update to trigger deployment/build verification (v3)
 type ConversationViewProps = {
@@ -119,6 +121,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
 
   const pageSize = 30;
   const hasUserScrolled = useRef(false);
@@ -136,7 +139,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     if (prevConversationId.current !== conversation.id) {
       prevConversationId.current = conversation.id;
       hasUserScrolled.current = false;
-      
+
       const unreadCount = (conversation as any)?.unread || 0;
       if (unreadCount > 0) {
         shouldScrollToUnread.current = true;
@@ -165,10 +168,13 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       }
 
       const bottomReached =
-        container.scrollHeight - container.scrollTop === container.clientHeight;
+        container.scrollHeight - container.scrollTop <= container.clientHeight + 10;
 
       if (!bottomReached) {
         hasUserScrolled.current = true;
+        setShowScrollBottom(true);
+      } else {
+        setShowScrollBottom(false);
       }
     };
 
@@ -722,7 +728,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
     );
   };
   let lastDate = "";
-  /////render file preview
+  /////render file preview//
   const renderFilePreview = (fileItem: File, idx: number) => {
     const ext = fileItem.name.split(".").pop()?.toLowerCase();
     const isImage = ext && ["png", "jpg", "jpeg", "gif"].includes(ext);
@@ -779,7 +785,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
     <div className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors sticky top-0 z-10 flex-shrink-0">
         <div className="flex items-center gap-3 flex-1">
           <button
             onClick={onBack}
@@ -846,7 +852,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           className="flex items-center justify-between px-5 py-2.5 bg-gray-50 dark:bg-[#1c1d1e] border-b border-gray-200 dark:border-gray-800 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/80 transition-all duration-200 z-10 shadow-sm"
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-lime-500 flex-shrink-0 rotate-45"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-lime-500 flex-shrink-0 rotate-45"><path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z" /></svg>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] font-bold text-lime-600 dark:text-lime-400 uppercase tracking-wider mb-0.5">
                 Pinned Message
@@ -875,7 +881,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       {/* Message Search Bar Header */}
       {isSearchOpen && (
         <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#141414] border-b border-gray-200 dark:border-gray-800 transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
           <input
             type="text"
             value={searchQuery}
@@ -913,503 +919,516 @@ const ConversationView: React.FC<ConversationViewProps> = ({
       />
 
       {/* Messages */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-4 space-y-3 bg-white dark:bg-[#141414] transition-colors"
-      >
-        {loadingMore && (
-          <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
-            Loading more...
-          </div>
-        )}
-        {(() => {
-          const seen = new Set();
-          return messages
-            .filter((m) => {
-              if (!m.id) return true;
-              if (seen.has(m.id)) return false;
-              seen.add(m.id);
-              return true;
-            })
-            .filter((m) => !searchQuery.trim() || (m.text || "").toLowerCase().includes(searchQuery.toLowerCase()))
-            .map((m) => {
-          const msgDate = formatDate(m.createdAt);
-          const showDateSeparator = msgDate !== lastDate;
-          lastDate = msgDate;
+      {/* Messages Wrapper */}
+      <div className="relative flex-1 min-h-0 flex flex-col">
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-6 py-4 space-y-3 bg-white dark:bg-[#141414] transition-colors"
+        >
+          {loadingMore && (
+            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
+              Loading more...
+            </div>
+          )}
+          {(() => {
+            const seen = new Set();
+            return messages
+              .filter((m) => {
+                if (!m.id) return true;
+                if (seen.has(m.id)) return false;
+                seen.add(m.id);
+                return true;
+              })
+              .filter((m) => !searchQuery.trim() || (m.text || "").toLowerCase().includes(searchQuery.toLowerCase()))
+              .map((m) => {
+                const msgDate = formatDate(m.createdAt);
+                const showDateSeparator = msgDate !== lastDate;
+                lastDate = msgDate;
 
-          const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
+                const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
-          return (
-            <div key={m.id} id={`msg-${m.id}`} className="mb-2">
-              {/* DATE SEPARATOR */}
-              {showDateSeparator && (
-                <div className="flex justify-center my-4">
-                  <div className="px-4 py-2 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full border border-gray-200 dark:border-gray-800">
-                    {msgDate}
-                  </div>
-                </div>
-              )}
+                return (
+                  <div key={m.id} id={`msg-${m.id}`} className="mb-2">
+                    {/* DATE SEPARATOR */}
+                    {showDateSeparator && (
+                      <div className="flex justify-center my-4">
+                        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-full border border-gray-200 dark:border-gray-800">
+                          {msgDate}
+                        </div>
+                      </div>
+                    )}
 
-              {/* ======================================================
+                    {/* ======================================================
          REPLYING-TO PREVIEW (appears only above the clicked message)
          ====================================================== */}
-              {isReplyPreviewSpot && (
-                <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded">
-                  <div className="font-semibold text-sm">Replying to:</div>
+                    {isReplyPreviewSpot && (
+                      <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded">
+                        <div className="font-semibold text-sm">Replying to:</div>
 
-                  {/* Text */}
-                  <div className="text-gray-700 dark:text-gray-300 text-sm">
-                    {replyingTo.text}
-                  </div>
-
-                  {/* Attachments */}
-                  {(replyingTo.attachments?.length ?? 0) > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {(replyingTo.attachments ?? []).map((a) => (
-                        <a
-                          key={a.id}
-                          href={a.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline text-blue-600 text-xs"
-                        >
-                          {a.filename || "Attachment"}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  <button
-                    className="ml-2 text-red-500 text-xs"
-                    onClick={() => setReplyingTo(null)}
-                  >
-                    ✖
-                  </button>
-                </div>
-              )}
-
-              {/* ======================================================
-   PARENT MESSAGE (Teams/Slack-style reply container)
-====================================================== */}
-              {m.parent ? (
-                <div className="max-w-[85%] mb-2 ml-2 mb-6">
-                  <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-3 text-xs shadow-sm">
-                    {/* ---------- PARENT (replied-to message) ---------- */}
-                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                      Replying to:
-                    </div>
-
-                    <div className="text-gray-700 dark:text-gray-300 mb-2">
-                      {m.parent.text}
-                    </div>
-
-                    {(m.parent.attachments?.length ?? 0) > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {(m.parent.attachments ?? []).map((a) => (
-                          <a
-                            key={a.id}
-                            href={a.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline text-blue-600 text-xs"
-                          >
-                            {a.filename || "Attachment"}
-                          </a>
-                        ))}
-                      </div>
-                    )}
-
-                    <hr className="border-gray-300 dark:border-gray-700 my-2" />
-
-                    {/* ---------- CHILD MESSAGE TEXT ---------- */}
-                    {m.text && (
-                      <MessageBubble
-                        text={
-                          <>
-                            {parseLinks(m.text, m.me)}
-                            {m.edited && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {" "}
-                                (edited)
-                              </span>
-                            )}
-                          </>
-                        }
-                        me={m.me}
-                        time={m.time}
-                        pinned={m.pinned}
-                        reactions={m.reactions}
-                        threadRepliesCount={m.repliesInThreadCount}
-                        threadUnreadCount={m.threadUnreadCount}
-                        lastThreadReplyTime={m.lastThreadReplyTime}
-                        threadParticipants={m.threadParticipants}
-                        selected={selectedMessageId === m.id}
-                        onClick={() =>
-                          setSelectedMessageId(
-                            selectedMessageId === m.id ? null : m.id,
-                          )
-                        }
-                        onTogglePin={() => togglePin(m.id)}
-                        onReact={(emoji) => toggleReaction(m.id, emoji)}
-                        onViewThread={() => {
-                          // Handle opening thread in DM
-                        }}
-                        onViewReactors={() => setReactorsModalMessageId(m.id)}
-                        currentUserId={currentUserId}
-                      />
-                    )}
-                    {selectedMessageId === m.id && (
-                      <div
-                        className={`flex flex-col gap-2 mt-2 px-3 py-2 rounded-xl bg-white dark:bg-gray-800 w-auto max-w-full shadow-md border border-gray-100 dark:border-gray-700
-                          ${m.me ? "ml-auto" : "mr-auto"}
-                        `}
-                      >
-                        {/* Quick Reaction Emojis Row for Mobile & Desktop */}
-                        <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100 dark:border-gray-700/80 overflow-x-auto no-scrollbar">
-                          <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-400 mr-1 flex-shrink-0">React:</span>
-                          {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
-                            <button
-                              key={emoji}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleReaction(m.id, emoji);
-                                setSelectedMessageId(null);
-                              }}
-                              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-base transition-transform active:scale-125 hover:scale-110 flex-shrink-0"
-                            >
-                              {emoji}
-                            </button>
-                          ))}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setReactingToMessageId(m.id);
-                            }}
-                            className="px-2 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-[11px] font-bold text-blue-500 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-700 flex-shrink-0 flex items-center gap-0.5"
-                            title="More Emojis"
-                          >
-                            <span>➕</span>
-                            <span>More</span>
-                          </button>
+                        {/* Text */}
+                        <div className="text-gray-700 dark:text-gray-300 text-sm">
+                          {replyingTo.text}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                          {m.me && (
-                            <>
-                              <button
-                                onClick={() => {
-                                  setEditMessage(m);
-                                  setText(m.text);
-                                  setReplyTo(null);
-                                }}
-                                className="flex items-center gap-1 text-blue-500 active:text-blue-700 transition-colors py-1"
-                                title="Edit"
+                        {/* Attachments */}
+                        {(replyingTo.attachments?.length ?? 0) > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {(replyingTo.attachments ?? []).map((a) => (
+                              <a
+                                key={a.id}
+                                href={a.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline text-blue-600 text-xs"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                <span className="text-xs font-medium">Edit</span>
-                              </button>
-
-                              <button
-                                onClick={() => deleteMessage(m.id)}
-                                disabled={deletingMessageIds.has(m.id)}
-                                className="flex items-center gap-1 text-red-500 active:text-red-700 transition-colors disabled:opacity-50 py-1"
-                                title="Delete"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                <span className="text-xs font-medium">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
-                              </button>
-                            </>
-                          )}
-
-                          <button
-                            onClick={() => {
-                              setReplyingTo(m);
-                              setSelectedMessageId(null);
-                            }}
-                            className="flex items-center gap-1 text-gray-600 dark:text-gray-400 active:text-green-500 transition-colors py-1"
-                            title="Reply"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-                            <span className="text-xs font-medium">Reply</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              togglePin(m.id);
-                              setSelectedMessageId(null);
-                            }}
-                            className={`flex items-center gap-1 transition-colors py-1 ${m.pinned ? 'text-blue-500' : 'text-gray-600 dark:text-gray-400 active:text-blue-500'}`}
-                            title={m.pinned ? "Unpin" : "Pin"}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8"/><path d="m16 4-4 4-4-4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 12H9"/></svg>
-                            <span className="text-xs font-medium">{m.pinned ? "Unpin" : "Pin"}</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setForwardingMessage(m);
-                              fetchForwardConversations();
-                            }}
-                            className="flex items-center gap-1 text-gray-600 dark:text-gray-400 active:text-blue-500 transition-colors py-1"
-                            title="Forward"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
-                            <span className="text-xs font-medium">Forward</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setMessageInfoId(m.id);
-                              setSelectedMessageId(null);
-                            }}
-                            className="flex items-center gap-1 text-gray-600 dark:text-gray-400 active:text-[#95D700] transition-colors py-1"
-                            title="Message Info (Read Receipts)"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                            <span className="text-xs font-medium">Info</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {/* ---------- CHILD ATTACHMENTS ---------- */}
-                    {(m.attachments?.length ?? 0) > 0 && (
-                      <div
-                        className={`flex flex-col mt-2 ${m.me ? "items-end" : "items-start"
-                          }`}
-                      >
-                        <div className="flex flex-wrap gap-2">
-                          {(m.attachments ?? []).map((a) => {
-                            const ext = a.filename
-                              ?.split(".")
-                              .pop()
-                              ?.toLowerCase();
-                            const time = (
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
-                                {m.time}
-                              </div>
-                            );
-
-                            if (a.mimeType?.startsWith("audio/")) {
-                              return (
-                                <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                  <audio controls className="w-64">
-                                    <source src={a.url} type={a.mimeType} />
-                                  </audio>
-                                  {time}
-                                </div>
-                              );
-                            }
-
-                            if (
-                              ext &&
-                              ["png", "jpg", "jpeg", "gif"].includes(ext)
-                            ) {
-                              return (
-                                <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                  <img
-                                    src={a.url}
-                                    className="w-32 h-32 object-cover rounded"
-                                  />
-                                  {time}
-                                </div>
-                              );
-                            }
-
-                            if (ext && ["mp4", "mov", "webm"].includes(ext)) {
-                              return (
-                                <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                  <video
-                                    src={a.url}
-                                    controls
-                                    className="w-40 rounded"
-                                  />
-                                  {time}
-                                </div>
-                              );
-                            }
-
-                            return (
-                              <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
-                                <a
-                                  href={a.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="underline text-blue-600"
-                                >
-                                  {a.filename || "Attachment"}
-                                </a>
-                                {time}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* MESSAGE BUBBLE */}
-                  {(m.text || (m.attachments?.length ?? 0) > 0) && (
-                    <MessageBubble
-                      text={
-                        m.text ? (
-                          <>
-                            {parseLinks(m.text, m.me)}
-                            {m.edited && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {" "}
-                                (edited)
-                              </span>
-                            )}
-                          </>
-                        ) : null
-                      }
-                      me={m.me}
-                      time={m.time}
-                      pinned={m.pinned}
-                      reactions={m.reactions}
-                      selected={selectedMessageId === m.id}
-                      onClick={() =>
-                        setSelectedMessageId(
-                          selectedMessageId === m.id ? null : m.id,
-                        )
-                      }
-                      onTogglePin={() => togglePin(m.id)}
-                      onReact={(emoji) => toggleReaction(m.id, emoji)}
-                      onViewReactors={() => setReactorsModalMessageId(m.id)}
-                      currentUserId={currentUserId}
-                      attachments={m.attachments}
-                    />
-                  )}
-
-                  {/* ======================================================
-         ACTION BUTTONS (Edit / Delete / Reply)
-         ====================================================== */}
-                    {selectedMessageId === m.id && (
-                      <div
-                        className={`flex flex-wrap items-center gap-x-3 gap-y-2 mt-2 px-3 py-2 rounded-xl bg-white dark:bg-gray-800 w-auto shadow-md border border-gray-100 dark:border-gray-700
-                          ${m.me ? "ml-auto" : "mr-auto"}
-                        `}
-                      >
-                        {m.me && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setEditMessage(m);
-                                setText(m.text);
-                                setReplyTo(null);
-                              }}
-                              className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors"
-                              title="Edit"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                              <span className="text-xs font-medium">Edit</span>
-                            </button>
-
-                            <button
-                              onClick={() => deleteMessage(m.id)}
-                              disabled={deletingMessageIds.has(m.id)}
-                              className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
-                              title="Delete"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                              <span className="text-xs font-medium">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
-                            </button>
-                          </>
+                                {a.filename || "Attachment"}
+                              </a>
+                            ))}
+                          </div>
                         )}
 
                         <button
-                          onClick={() => {
-                            setReplyingTo(m);
-                            setSelectedMessageId(null);
-                          }}
-                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
-                          title="Reply"
+                          className="ml-2 text-red-500 text-xs"
+                          onClick={() => setReplyingTo(null)}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-                          <span className="text-xs font-medium">Reply</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            togglePin(m.id);
-                            setSelectedMessageId(null);
-                          }}
-                          className={`flex items-center gap-1 transition-colors ${m.pinned ? 'text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500'}`}
-                          title={m.pinned ? "Unpin" : "Pin"}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8"/><path d="m16 4-4 4-4-4"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 12H9"/></svg>
-                          <span className="text-xs font-medium">{m.pinned ? "Unpin" : "Pin"}</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setForwardingMessage(m);
-                            fetchForwardConversations();
-                          }}
-                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
-                          title="Forward"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
-                          <span className="text-xs font-medium">Forward</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setMessageInfoId(m.id);
-                            setSelectedMessageId(null);
-                          }}
-                          className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-[#95D700] transition-colors"
-                          title="Message Info (Read Receipts)"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                          <span className="text-xs font-medium">Info</span>
+                          ✖
                         </button>
                       </div>
                     )}
 
-                  {reactingToMessageId === m.id && (
-                    <div
-                      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReactingToMessageId(null);
-                      }}
-                    >
-                      <div
-                        className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full flex flex-col items-center"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-center justify-between w-full px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
-                          <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">React with Emoji</span>
-                          <button
-                            onClick={() => setReactingToMessageId(null)}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-lg text-xs"
-                          >
-                            ✕
-                          </button>
+                    {/* ======================================================
+   PARENT MESSAGE (Teams/Slack-style reply container)
+====================================================== */}
+                    {m.parent ? (
+                      <div className="max-w-[85%] mb-2 ml-2 mb-6">
+                        <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-3 text-xs shadow-sm">
+                          {/* ---------- PARENT (replied-to message) ---------- */}
+                          <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                            Replying to:
+                          </div>
+
+                          <div className="text-gray-700 dark:text-gray-300 mb-2">
+                            {m.parent.text}
+                          </div>
+
+                          {(m.parent.attachments?.length ?? 0) > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {(m.parent.attachments ?? []).map((a) => (
+                                <a
+                                  key={a.id}
+                                  href={a.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline text-blue-600 text-xs"
+                                >
+                                  {a.filename || "Attachment"}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+
+                          <hr className="border-gray-300 dark:border-gray-700 my-2" />
+
+                          {/* ---------- CHILD MESSAGE TEXT ---------- */}
+                          {m.text && (
+                            <MessageBubble
+                              text={
+                                <>
+                                  {parseLinks(m.text, m.me)}
+                                  {m.edited && (
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {" "}
+                                      (edited)
+                                    </span>
+                                  )}
+                                </>
+                              }
+                              me={m.me}
+                              time={m.time}
+                              pinned={m.pinned}
+                              reactions={m.reactions}
+                              threadRepliesCount={m.repliesInThreadCount}
+                              threadUnreadCount={m.threadUnreadCount}
+                              lastThreadReplyTime={m.lastThreadReplyTime}
+                              threadParticipants={m.threadParticipants}
+                              selected={selectedMessageId === m.id}
+                              onClick={() =>
+                                setSelectedMessageId(
+                                  selectedMessageId === m.id ? null : m.id,
+                                )
+                              }
+                              onTogglePin={() => togglePin(m.id)}
+                              onReact={(emoji) => toggleReaction(m.id, emoji)}
+                              onViewThread={() => {
+                                // Handle opening thread in DM
+                              }}
+                              onViewReactors={() => setReactorsModalMessageId(m.id)}
+                              currentUserId={currentUserId}
+                            />
+                          )}
+                          {selectedMessageId === m.id && (
+                            <div
+                              className={`flex flex-col gap-2 mt-2 px-3 py-2 rounded-xl bg-white dark:bg-gray-800 w-auto max-w-full shadow-md border border-gray-100 dark:border-gray-700
+                          ${m.me ? "ml-auto" : "mr-auto"}
+                        `}
+                            >
+                              {/* Quick Reaction Emojis Row for Mobile & Desktop */}
+                              <div className="flex items-center gap-1.5 pb-2 border-b border-gray-100 dark:border-gray-700/80 overflow-x-auto no-scrollbar">
+                                <span className="text-[11px] font-semibold text-gray-400 dark:text-gray-400 mr-1 flex-shrink-0">React:</span>
+                                {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
+                                  <button
+                                    key={emoji}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleReaction(m.id, emoji);
+                                      setSelectedMessageId(null);
+                                    }}
+                                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-base transition-transform active:scale-125 hover:scale-110 flex-shrink-0"
+                                  >
+                                    {emoji}
+                                  </button>
+                                ))}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setReactingToMessageId(m.id);
+                                  }}
+                                  className="px-2 py-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-[11px] font-bold text-blue-500 dark:text-blue-400 border border-dashed border-blue-300 dark:border-blue-700 flex-shrink-0 flex items-center gap-0.5"
+                                  title="More Emojis"
+                                >
+                                  <span>➕</span>
+                                  <span>More</span>
+                                </button>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                                {m.me && (
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        setEditMessage(m);
+                                        setText(m.text);
+                                        setReplyTo(null);
+                                      }}
+                                      className="flex items-center gap-1 text-blue-500 active:text-blue-700 transition-colors py-1"
+                                      title="Edit"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                      <span className="text-xs font-medium">Edit</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => deleteMessage(m.id)}
+                                      disabled={deletingMessageIds.has(m.id)}
+                                      className="flex items-center gap-1 text-red-500 active:text-red-700 transition-colors disabled:opacity-50 py-1"
+                                      title="Delete"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                      <span className="text-xs font-medium">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
+                                    </button>
+                                  </>
+                                )}
+
+                                <button
+                                  onClick={() => {
+                                    setReplyingTo(m);
+                                    setSelectedMessageId(null);
+                                  }}
+                                  className="flex items-center gap-1 text-gray-600 dark:text-gray-400 active:text-green-500 transition-colors py-1"
+                                  title="Reply"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                                  <span className="text-xs font-medium">Reply</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    togglePin(m.id);
+                                    setSelectedMessageId(null);
+                                  }}
+                                  className={`flex items-center gap-1 transition-colors py-1 ${m.pinned ? 'text-blue-500' : 'text-gray-600 dark:text-gray-400 active:text-blue-500'}`}
+                                  title={m.pinned ? "Unpin" : "Pin"}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                                  <span className="text-xs font-medium">{m.pinned ? "Unpin" : "Pin"}</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setForwardingMessage(m);
+                                    fetchForwardConversations();
+                                  }}
+                                  className="flex items-center gap-1 text-gray-600 dark:text-gray-400 active:text-blue-500 transition-colors py-1"
+                                  title="Forward"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
+                                  <span className="text-xs font-medium">Forward</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setMessageInfoId(m.id);
+                                    setSelectedMessageId(null);
+                                  }}
+                                  className="flex items-center gap-1 text-gray-600 dark:text-gray-400 active:text-[#95D700] transition-colors py-1"
+                                  title="Message Info (Read Receipts)"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                  <span className="text-xs font-medium">Info</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {/* ---------- CHILD ATTACHMENTS ---------- */}
+                          {(m.attachments?.length ?? 0) > 0 && (
+                            <div
+                              className={`flex flex-col mt-2 ${m.me ? "items-end" : "items-start"
+                                }`}
+                            >
+                              <div className="flex flex-wrap gap-2">
+                                {(m.attachments ?? []).map((a) => {
+                                  const ext = a.filename
+                                    ?.split(".")
+                                    .pop()
+                                    ?.toLowerCase();
+                                  const time = (
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+                                      {m.time}
+                                    </div>
+                                  );
+
+                                  if (a.mimeType?.startsWith("audio/")) {
+                                    return (
+                                      <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
+                                        <audio controls className="w-64">
+                                          <source src={a.url} type={a.mimeType} />
+                                        </audio>
+                                        {time}
+                                      </div>
+                                    );
+                                  }
+
+                                  if (
+                                    ext &&
+                                    ["png", "jpg", "jpeg", "gif"].includes(ext)
+                                  ) {
+                                    return (
+                                      <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
+                                        <img
+                                          src={a.url}
+                                          className="w-32 h-32 object-cover rounded"
+                                        />
+                                        {time}
+                                      </div>
+                                    );
+                                  }
+
+                                  if (ext && ["mp4", "mov", "webm"].includes(ext)) {
+                                    return (
+                                      <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
+                                        <video
+                                          src={a.url}
+                                          controls
+                                          className="w-40 rounded"
+                                        />
+                                        {time}
+                                      </div>
+                                    );
+                                  }
+
+                                  return (
+                                    <div key={a.id} className="relative cursor-pointer" onClick={() => setSelectedMessageId(selectedMessageId === m.id ? null : m.id)}>
+                                      <a
+                                        href={a.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="underline text-blue-600"
+                                      >
+                                        {a.filename || "Attachment"}
+                                      </a>
+                                      {time}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <EmojiPicker
-                          onEmojiClick={(emojiData) => {
-                            toggleReaction(m.id, emojiData.emoji);
-                            setReactingToMessageId(null);
-                            setSelectedMessageId(null);
-                          }}
-                          width="100%"
-                          height={340}
-                          skinTonesDisabled
-                          searchDisabled
-                        />
                       </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          );
-        })
-      })()}
+                    ) : (
+                      <>
+                        {/* MESSAGE BUBBLE */}
+                        {(m.text || (m.attachments?.length ?? 0) > 0) && (
+                          <MessageBubble
+                            text={
+                              m.text ? (
+                                <>
+                                  {parseLinks(m.text, m.me)}
+                                  {m.edited && (
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {" "}
+                                      (edited)
+                                    </span>
+                                  )}
+                                </>
+                              ) : null
+                            }
+                            me={m.me}
+                            time={m.time}
+                            pinned={m.pinned}
+                            reactions={m.reactions}
+                            selected={selectedMessageId === m.id}
+                            onClick={() =>
+                              setSelectedMessageId(
+                                selectedMessageId === m.id ? null : m.id,
+                              )
+                            }
+                            onTogglePin={() => togglePin(m.id)}
+                            onReact={(emoji) => toggleReaction(m.id, emoji)}
+                            onViewReactors={() => setReactorsModalMessageId(m.id)}
+                            currentUserId={currentUserId}
+                            attachments={m.attachments}
+                          />
+                        )}
+
+                        {/* ======================================================
+         ACTION BUTTONS (Edit / Delete / Reply)
+         ====================================================== */}
+                        {selectedMessageId === m.id && (
+                          <div
+                            className={`flex flex-wrap items-center gap-x-3 gap-y-2 mt-2 px-3 py-2 rounded-xl bg-white dark:bg-gray-800 w-auto shadow-md border border-gray-100 dark:border-gray-700
+                          ${m.me ? "ml-auto" : "mr-auto"}
+                        `}
+                          >
+                            {m.me && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    setEditMessage(m);
+                                    setText(m.text);
+                                    setReplyTo(null);
+                                  }}
+                                  className="flex items-center gap-1.5 text-blue-500 hover:text-blue-600 transition-colors"
+                                  title="Edit"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                  <span className="text-xs font-medium">Edit</span>
+                                </button>
+
+                                <button
+                                  onClick={() => deleteMessage(m.id)}
+                                  disabled={deletingMessageIds.has(m.id)}
+                                  className="flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
+                                  title="Delete"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                  <span className="text-xs font-medium">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
+                                </button>
+                              </>
+                            )}
+
+                            <button
+                              onClick={() => {
+                                setReplyingTo(m);
+                                setSelectedMessageId(null);
+                              }}
+                              className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-green-500 transition-colors"
+                              title="Reply"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                              <span className="text-xs font-medium">Reply</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                togglePin(m.id);
+                                setSelectedMessageId(null);
+                              }}
+                              className={`flex items-center gap-1 transition-colors ${m.pinned ? 'text-blue-500' : 'text-gray-600 dark:text-gray-400 hover:text-blue-500'}`}
+                              title={m.pinned ? "Unpin" : "Pin"}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                              <span className="text-xs font-medium">{m.pinned ? "Unpin" : "Pin"}</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setForwardingMessage(m);
+                                fetchForwardConversations();
+                              }}
+                              className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-blue-500 transition-colors"
+                              title="Forward"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
+                              <span className="text-xs font-medium">Forward</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setMessageInfoId(m.id);
+                                setSelectedMessageId(null);
+                              }}
+                              className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-[#95D700] transition-colors"
+                              title="Message Info (Read Receipts)"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                              <span className="text-xs font-medium">Info</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {reactingToMessageId === m.id && (
+                          <div
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReactingToMessageId(null);
+                            }}
+                          >
+                            <div
+                              className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full flex flex-col items-center"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="flex items-center justify-between w-full px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
+                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">React with Emoji</span>
+                                <button
+                                  onClick={() => setReactingToMessageId(null)}
+                                  className="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-lg text-xs"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                              <EmojiPicker
+                                onEmojiClick={(emojiData) => {
+                                  toggleReaction(m.id, emojiData.emoji);
+                                  setReactingToMessageId(null);
+                                  setSelectedMessageId(null);
+                                }}
+                                width="100%"
+                                height={340}
+                                skinTonesDisabled
+                                searchDisabled
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })
+          })()}
+        </div>
+
+        <ScrollToBottomButton
+          show={showScrollBottom}
+          onClick={() => {
+            scrollRef.current?.scrollTo({
+              top: scrollRef.current.scrollHeight,
+              behavior: "smooth",
+            });
+          }}
+        />
       </div>
 
       {/* Input */}
@@ -1481,7 +1500,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             <div className="flex items-center gap-1 border-t border-gray-200 dark:border-gray-700 mt-2.5 pt-2">
               {/* File Button */}
               <label className="p-2 text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
                 <input
                   type="file"
                   multiple
@@ -1611,7 +1630,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
           <div className="flex items-center gap-2 border-t border-gray-200 dark:border-gray-700 mt-3 pt-2">
             {/* File Button */}
             <label className="p-2 text-gray-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-all cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48" /></svg>
               <input
                 type="file"
                 multiple
