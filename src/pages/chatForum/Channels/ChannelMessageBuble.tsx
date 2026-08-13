@@ -81,9 +81,8 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative flex items-start gap-3 w-full px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors group cursor-pointer ${
-        selected ? "bg-green-50 dark:bg-green-950/20" : ""
-      }`}
+      className={`relative flex items-start gap-3 w-full px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors group cursor-pointer ${selected ? "bg-green-50 dark:bg-green-950/20" : ""
+        }`}
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0 mt-0.5">
@@ -191,10 +190,9 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                 }}
                 title="Click to toggle reaction. Click the list icon next to it to see who reacted."
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs transition-all duration-200 border
-                  ${
-                    data.me
-                      ? "bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 scale-105 shadow-sm"
-                      : "bg-gray-50 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500"
+                  ${data.me
+                    ? "bg-green-100 dark:bg-green-900/40 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 scale-105 shadow-sm"
+                    : "bg-gray-50 dark:bg-gray-800/60 border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-500"
                   }`}
               >
                 <span>{emoji}</span>
@@ -221,7 +219,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         )}
 
-        {/* Thread Summary Bar (Pumble Style: inline link with reply count/last active text) */}
+        {/* Thread Summary Bar (Pumble Style: inline link with reply count/last active text) **/}
         {threadRepliesCount !== undefined && threadRepliesCount > 0 && (
           <button
             onClick={(e) => {
