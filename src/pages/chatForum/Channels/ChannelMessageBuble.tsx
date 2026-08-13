@@ -219,7 +219,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           </div>
         )}
 
-        {/* Thread Summary Bar (Pumble Style: inline link with reply count/last active text) **/}
+        {/* Thread Summary Bar (Pumble Style: inline link with reply count/last active text) */}
         {threadRepliesCount !== undefined && threadRepliesCount > 0 && (
           <button
             onClick={(e) => {
