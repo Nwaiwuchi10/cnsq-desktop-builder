@@ -3,6 +3,7 @@ import { CheckCheck } from "lucide-react";
 import { ReactionsState } from "../Channels/ChannelMessageBuble";
 import TruncatedText from "../components/TruncatedText";
 import EmojiPicker from "emoji-picker-react";
+import MediaGrid from "@/component/MediaGrid";
 
 interface MessageBubbleProps {
   text: ReactNode;
@@ -74,45 +75,31 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             }`}
         >
           {/* Attachments on top */}
-          {attachments && attachments.length > 0 && (
-            <div
-              className="flex flex-col mb-2"
-              onClick={(e) => {
-                const target = e.target as HTMLElement;
-                if (
-                  target.tagName === "A" ||
-                  target.tagName === "AUDIO" ||
-                  target.tagName === "VIDEO" ||
-                  target.closest("audio") ||
-                  target.closest("video")
-                ) {
-                  e.stopPropagation();
-                }
-              }}
-            >
-              <div className="flex flex-wrap gap-2">
-                {attachments.map((a: any) => {
-                  const ext = a.filename?.split(".").pop()?.toLowerCase();
+          {attachments && attachments.length > 0 && (() => {
+            const mediaItems = attachments.filter((a: any) => {
+              const ext = a.filename?.split(".").pop()?.toLowerCase();
+              return (
+                a.mimeType?.startsWith("video/") ||
+                (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext)) ||
+                (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) ||
+                a.mimeType?.startsWith("image/")
+              );
+            });
+            const otherItems = attachments.filter((a: any) => !mediaItems.includes(a));
+            return (
+              <div className="flex flex-col gap-1.5 mb-2" onClick={(e) => e.stopPropagation()}>
+                {/* WhatsApp-style grid for photos/videos */}
+                {mediaItems.length > 0 && (
+                  <MediaGrid media={mediaItems} maxWidth={280} />
+                )}
+                {/* Audio + file attachments */}
+                {otherItems.map((a: any) => {
                   if (a.mimeType?.startsWith("audio/")) {
                     return (
                       <div key={a.id} className="mt-1">
                         <audio controls className="w-64">
                           <source src={a.url} type={a.mimeType} />
                         </audio>
-                      </div>
-                    );
-                  }
-                  if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                    return (
-                      <div key={a.id} className="mt-1">
-                        <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
-                      </div>
-                    );
-                  }
-                  if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                    return (
-                      <div key={a.id} className="mt-1">
-                        <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
                       </div>
                     );
                   }
@@ -123,8 +110,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                   );
                 })}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Text underneath */}
           <div className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -194,45 +181,29 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           onClick={onClick}
           className={`relative max-w-[70%] group/content ${selected ? "ring-2 ring-green-500 p-1 rounded-lg" : ""}`}
         >
-          {attachments && attachments.length > 0 && (
-            <div
-              className="flex flex-col"
-              onClick={(e) => {
-                const target = e.target as HTMLElement;
-                if (
-                  target.tagName === "A" ||
-                  target.tagName === "AUDIO" ||
-                  target.tagName === "VIDEO" ||
-                  target.closest("audio") ||
-                  target.closest("video")
-                ) {
-                  e.stopPropagation();
-                }
-              }}
-            >
-              <div className="flex flex-wrap gap-2">
-                {attachments.map((a: any) => {
-                  const ext = a.filename?.split(".").pop()?.toLowerCase();
+          {attachments && attachments.length > 0 && (() => {
+            const mediaItems = attachments.filter((a: any) => {
+              const ext = a.filename?.split(".").pop()?.toLowerCase();
+              return (
+                a.mimeType?.startsWith("video/") ||
+                (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext)) ||
+                (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext)) ||
+                a.mimeType?.startsWith("image/")
+              );
+            });
+            const otherItems = attachments.filter((a: any) => !mediaItems.includes(a));
+            return (
+              <div className="flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+                {mediaItems.length > 0 && (
+                  <MediaGrid media={mediaItems} maxWidth={280} />
+                )}
+                {otherItems.map((a: any) => {
                   if (a.mimeType?.startsWith("audio/")) {
                     return (
                       <div key={a.id} className="mt-1">
                         <audio controls className="w-64">
                           <source src={a.url} type={a.mimeType} />
                         </audio>
-                      </div>
-                    );
-                  }
-                  if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                    return (
-                      <div key={a.id} className="mt-1">
-                        <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
-                      </div>
-                    );
-                  }
-                  if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                    return (
-                      <div key={a.id} className="mt-1">
-                        <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
                       </div>
                     );
                   }
@@ -243,8 +214,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
                   );
                 })}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Quick Actions Hover Menu */}
           <div className={`absolute -top-10 ${me ? 'right-2' : 'left-2'} hidden group-hover/content:flex items-center gap-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-md p-1 z-20 text-gray-800`}>

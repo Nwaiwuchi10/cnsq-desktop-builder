@@ -147,6 +147,10 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const [isInputExpanded, setIsInputExpanded] = useState(false);
+  const [isThreadInputExpanded, setIsThreadInputExpanded] = useState(false);
+  const [threadSuggestions, setThreadSuggestions] = useState<any[]>([]);
+  const [showThreadSuggestions, setShowThreadSuggestions] = useState(false);
   const [isThreadGroupInfoOpen, setIsThreadGroupInfoOpen] = useState(false);
   const [threadMessageInfoId, setThreadMessageInfoId] = useState<string | null>(null);
   const [threadReactorsModalMessageId, setThreadReactorsModalMessageId] = useState<string | null>(null);
@@ -971,6 +975,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       setReplyingTo(null);
       setSelectedMessageId(null);
 
+      // Reset textarea height to default
+      if (desktopTextareaRef.current) {
+        desktopTextareaRef.current.style.height = "auto";
+      }
+
       // frontend will get updated via socket 'message:edit'
     } catch (err) {
       console.error(err);
@@ -1097,7 +1106,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          className={`underline break-all ${isMe ? 'text-white/90 hover:text-white' : 'text-blue-500 dark:text-blue-400 hover:text-blue-600'}`}
+          className="underline break-all text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
         >
           {part}
         </a>
@@ -1360,31 +1369,28 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
          REPLYING-TO PREVIEW (appears only above the clicked message)
          ====================================================== */}
                     {isReplyPreviewSpot && (
-                      <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded">
-                        <div className="font-semibold text-sm">Replying to:</div>
+                      <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded flex items-center justify-between">
+                        <div className="flex flex-col">
+                          <div className="font-semibold text-sm">Replying to:</div>
 
-                        {/* Text */}
-                        <div className="text-gray-700 dark:text-gray-300 text-sm">{replyingTo.text}</div>
-
-                        {/* Attachments */}
-                        {(replyingTo.attachments?.length ?? 0) > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {(replyingTo.attachments ?? []).map((a) => (
-                              <a
-                                key={a.id}
-                                href={a.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline text-blue-600 text-xs"
-                              >
-                                {a.filename || "Attachment"}
-                              </a>
-                            ))}
+                          {/* Text */}
+                          <div className="text-gray-700 dark:text-gray-300 text-sm">
+                            {replyingTo.text || (() => {
+                              const firstAttachment = replyingTo.attachments?.[0];
+                              const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                              if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                return "📷 Photo";
+                              }
+                              if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                return "🎥 Video";
+                              }
+                              return "📁 Attachment";
+                            })()}
                           </div>
-                        )}
+                        </div>
 
                         <button
-                          className="ml-2 text-red-500 text-xs"
+                          className="ml-2 text-red-500 text-xs p-1"
                           onClick={() => setReplyingTo(null)}
                         >
                           ✖
@@ -1403,23 +1409,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                             Replying to:
                           </div>
 
-                          <div className="text-gray-700 dark:text-gray-300 mb-2">{m.parent.text}</div>
-
-                          {(m.parent.attachments?.length ?? 0) > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {(m.parent.attachments ?? []).map((a) => (
-                                <a
-                                  key={a.id}
-                                  href={a.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="underline text-blue-600 text-xs"
-                                >
-                                  {a.filename || "Attachment"}
-                                </a>
-                              ))}
-                            </div>
-                          )}
+                          <div className="text-gray-700 dark:text-gray-300 mb-2">
+                            {m.parent.text || (() => {
+                              const firstAttachment = m.parent.attachments?.[0];
+                              const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                              if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                return "📷 Photo";
+                              }
+                              if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                return "🎥 Video";
+                              }
+                              return "📁 Attachment";
+                            })()}
+                          </div>
 
                           <hr className="border-gray-300 dark:border-gray-700 my-2" />
 
@@ -2038,8 +2040,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
           )}
 
-          <div className="flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-inner mx-4 relative">
-            <div className="flex items-end gap-3">
+          <div className={`flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 shadow-inner mx-4 relative transition-all duration-200 ${isInputExpanded ? 'min-h-[220px]' : ''}`}>
+            <div className="flex items-end gap-3 mt-1">
               <div className="relative flex-1">
                 <div className="absolute inset-0 px-4 py-3 pointer-events-none whitespace-pre-wrap break-words opacity-0">
                   {renderHighlightedText(text)}
@@ -2047,7 +2049,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
                 <textarea
                   ref={desktopTextareaRef}
-                  className="w-full bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none px-2 py-1.5 min-h-[40px] max-h-[200px] overflow-y-auto"
+                  className={`w-full bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none px-2 py-1.5 overflow-y-auto transition-all ${isInputExpanded ? 'min-h-[160px]' : 'min-h-[40px] max-h-[200px]'}`}
                   placeholder="Type a message..."
                   value={text}
                   onChange={handleTextChange}
@@ -2132,6 +2134,42 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Mention Button */}
+              <button
+                onClick={() => {
+                  setText((prev) => prev + "@");
+                  setShowSuggestions(true);
+                  if (desktopTextareaRef.current) {
+                    desktopTextareaRef.current.focus();
+                  }
+                }}
+                className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all text-lg font-semibold"
+                title="Mention someone"
+              >
+                @
+              </button>
+
+              {/* Expand / Maximize Icon Button */}
+              <button
+                onClick={() => setIsInputExpanded(!isInputExpanded)}
+                className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                title={isInputExpanded ? "Collapse input" : "Expand input"}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  {isInputExpanded ? (
+                    <>
+                      <polyline points="4 14 10 14 10 20" />
+                      <polyline points="20 10 14 10 14 4" />
+                    </>
+                  ) : (
+                    <>
+                      <polyline points="15 3 21 3 21 9" />
+                      <polyline points="9 21 3 21 3 15" />
+                    </>
+                  )}
+                </svg>
+              </button>
 
               {voiceUrl && (
                 <div className="ml-2 flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-1.5 pr-1.5 border border-gray-200 dark:border-gray-700">
@@ -2234,22 +2272,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
                   onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
                 />
-                {(threadParent.attachments?.length ?? 0) > 0 && (
-                  <div className={`flex flex-col mt-2 ${threadParent.me ? "items-end" : "items-start"}`}>
-                    <div className="flex flex-wrap gap-2">
-                      {(threadParent.attachments ?? []).map((a: any) => (
-                        <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs">
-                          {a.filename || "Attachment"}
-                        </a>
-                      ))}
-                    </div>
-                    {!threadParent.text && (
-                      <div className="text-[10px] text-gray-400 mt-1 px-1">
-                        {threadParent.time}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Thread Replies */}
@@ -2297,18 +2319,21 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         <div className="max-w-[85%] mb-2 ml-2 mt-1">
                           <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-2 text-xs shadow-sm">
                             <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                              Replying to {tm.parent.author?.firstName}:
+                              Replying to {tm.parent.author?.firstName || "User"}:
                             </div>
-                            <div className="text-gray-700 dark:text-gray-300 mb-1">{tm.parent.text}</div>
-                            {(tm.parent.attachments?.length ?? 0) > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {(tm.parent.attachments ?? []).map((a: any) => (
-                                  <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-600 text-xs">
-                                    {a.filename || "Attachment"}
-                                  </a>
-                                ))}
-                              </div>
-                            )}
+                            <div className="text-gray-700 dark:text-gray-300 mb-1">
+                              {tm.parent.text || (() => {
+                                const firstAttachment = tm.parent.attachments?.[0];
+                                const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                                if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                  return "📷 Photo";
+                                }
+                                if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                  return "🎥 Video";
+                                }
+                                return "📁 Attachment";
+                              })()}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -2439,7 +2464,19 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 <div className="flex items-center justify-between px-3 py-1.5 bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 rounded-lg mb-2 shadow-sm">
                   <div className="flex flex-col">
                     <span className="text-[10px] font-bold uppercase text-green-600 dark:text-green-400">Replying to {threadReplyingTo.author?.firstName}</span>
-                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate max-w-[200px]">{threadReplyingTo.text}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 truncate max-w-[200px]">
+                      {threadReplyingTo.text || (() => {
+                        const firstAttachment = threadReplyingTo.attachments?.[0];
+                        const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                        if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                          return "📷 Photo";
+                        }
+                        if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                          return "🎥 Video";
+                        }
+                        return "📁 Attachment";
+                      })()}
+                    </span>
                   </div>
                   <button onClick={() => setThreadReplyingTo(null)} className="p-1 text-gray-500 hover:text-red-500">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -2496,17 +2533,61 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 </div>
               )}
 
-              <div className="flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-inner">
-                <div className="flex items-end gap-2">
+              <div className={`flex flex-col bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-200 dark:border-gray-700 shadow-inner transition-all duration-200 ${isThreadInputExpanded ? 'min-h-[220px]' : ''}`}>
+                <div className="flex items-end gap-2 relative">
+                  {showThreadSuggestions && threadSuggestions.length > 0 && (
+                    <div className="absolute bottom-full left-0 mb-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-[60] backdrop-blur-md bg-opacity-95">
+                      {threadSuggestions.map((s) => (
+                        <div
+                          key={s.id}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all cursor-pointer group"
+                          onClick={() => {
+                            if (s.isAll) {
+                              setThreadText((prev) => prev.replace(/@\w*$/, `@all `));
+                            } else {
+                              setThreadText((prev) =>
+                                prev.replace(/@\w*$/, `@${s.firstName}${s.lastName} `)
+                              );
+                            }
+                            setShowThreadSuggestions(false);
+                            setThreadSuggestions([]);
+                          }}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 font-bold text-xs group-hover:scale-110 transition-transform">
+                            {s.firstName?.[0]}{s.lastName?.[0]}
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{s.firstName} {s.lastName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <textarea
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none py-1.5 px-2 min-h-[40px] max-h-[120px]"
+                    className={`flex-1 bg-transparent border-none focus:ring-0 text-gray-800 dark:text-gray-200 text-sm resize-none py-1.5 px-2 overflow-y-auto transition-all ${isThreadInputExpanded ? 'min-h-[160px]' : 'min-h-[40px] max-h-[120px]'}`}
                     placeholder="Reply in thread..."
                     rows={1}
                     value={threadText}
                     onChange={(e) => {
-                      setThreadText(e.target.value);
+                      const value = e.target.value;
+                      setThreadText(value);
                       e.target.style.height = 'auto';
                       e.target.style.height = e.target.scrollHeight + 'px';
+
+                      // Handle @ mentions for thread text
+                      const match = value.match(/@(\w*)$/);
+                      if (match) {
+                        const query = match[1].toLowerCase();
+                        const allItem = { id: 'all', firstName: 'all', lastName: '(Notify everyone in channel)', isAll: true };
+                        const filtered = staffList.filter((s) =>
+                          `${s.firstName}${s.lastName}`.toLowerCase().includes(query) ||
+                          s.firstName.toLowerCase().includes(query) ||
+                          s.lastName.toLowerCase().includes(query)
+                        );
+                        setThreadSuggestions("all".includes(query) ? [allItem, ...filtered] : filtered);
+                        setShowThreadSuggestions(true);
+                      } else {
+                        setShowThreadSuggestions(false);
+                        setThreadSuggestions([]);
+                      }
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
@@ -2562,6 +2643,42 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       </div>
                     )}
                   </div>
+
+                  {/* Mention Button */}
+                  <button
+                    onClick={() => {
+                      setThreadText((prev) => prev + "@");
+                      // Prefill suggestions with full staff list
+                      const allItem = { id: 'all', firstName: 'all', lastName: '(Notify everyone in channel)', isAll: true };
+                      setThreadSuggestions([allItem, ...staffList]);
+                      setShowThreadSuggestions(true);
+                    }}
+                    className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all text-lg font-semibold"
+                    title="Mention someone"
+                  >
+                    @
+                  </button>
+
+                  {/* Expand / Maximize Icon Button */}
+                  <button
+                    onClick={() => setIsThreadInputExpanded(!isThreadInputExpanded)}
+                    className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                    title={isThreadInputExpanded ? "Collapse input" : "Expand input"}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      {isThreadInputExpanded ? (
+                        <>
+                          <polyline points="4 14 10 14 10 20" />
+                          <polyline points="20 10 14 10 14 4" />
+                        </>
+                      ) : (
+                        <>
+                          <polyline points="15 3 21 3 21 9" />
+                          <polyline points="9 21 3 21 3 15" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -2606,17 +2723,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
                 onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
               />
-              {(threadParent.attachments?.length ?? 0) > 0 && (
-                <div className={`flex flex-col mt-2 ${threadParent.me ? "items-end" : "items-start"}`}>
-                  <div className="flex flex-wrap gap-2">
-                    {(threadParent.attachments ?? []).map((a: any) => (
-                      <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs">
-                        {a.filename || "Attachment"}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Thread Replies */}
@@ -2671,18 +2777,21 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     <div className="max-w-[85%] mb-2 ml-2 mt-1">
                       <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-2 text-xs shadow-sm">
                         <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                          Replying to {tm.parent.author?.firstName}:
+                          Replying to {tm.parent.author?.firstName || "User"}:
                         </div>
-                        <div className="text-gray-700 dark:text-gray-300 mb-1">{tm.parent.text}</div>
-                        {(tm.parent.attachments?.length ?? 0) > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {(tm.parent.attachments ?? []).map((a: any) => (
-                              <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-600 text-xs">
-                                {a.filename || "Attachment"}
-                              </a>
-                            ))}
-                          </div>
-                        )}
+                        <div className="text-gray-700 dark:text-gray-300 mb-1">
+                          {tm.parent.text || (() => {
+                             const firstAttachment = tm.parent.attachments?.[0];
+                             const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                             if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                               return "📷 Photo";
+                             }
+                             if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                               return "🎥 Video";
+                             }
+                             return "📁 Attachment";
+                           })()}
+                        </div>
                       </div>
                     </div>
                   )}

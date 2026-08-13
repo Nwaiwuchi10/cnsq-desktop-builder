@@ -5,7 +5,7 @@ export default function parseMentions(content: ReactNode): ReactNode {
   if (typeof content === "string") {
     return content.split(/(@\w+)/g).map((part, idx) =>
       part.startsWith("@") ? (
-        <span key={idx} className="text-lime-900 font-bold">
+        <span key={idx} className="bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-semibold px-1.5 py-0.5 rounded text-[14px] transition-colors cursor-pointer inline-block mx-0.5">
           {part}
         </span>
       ) : (

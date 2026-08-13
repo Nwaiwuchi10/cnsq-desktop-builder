@@ -148,11 +148,21 @@ export default function ActivityLogTable({
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
-                        {activity.deviceType === "Mobile" ? <Smartphone size={14} /> : <Monitor size={14} />}
-                        <span>{activity.deviceType}</span>
+                        {activity.deviceType === "Mobile" ? (
+                          <Smartphone size={14} />
+                        ) : activity.deviceType === "Desktop" ? (
+                          <Monitor size={14} />
+                        ) : null}
+                        <span>
+                          {activity.deviceType && activity.deviceType !== "Unknown"
+                            ? activity.deviceType
+                            : <span className="text-gray-300 dark:text-gray-600 italic">—</span>}
+                        </span>
                       </div>
                       <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
-                        {activity.browser}
+                        {activity.browser && activity.browser !== "Unknown"
+                          ? activity.browser
+                          : <span className="text-gray-300 dark:text-gray-600 italic">—</span>}
                       </div>
                     </div>
                   </td>
