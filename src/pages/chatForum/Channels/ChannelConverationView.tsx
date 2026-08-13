@@ -1983,6 +1983,39 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   )}
                 </div>
 
+                {/* Mention Button */}
+                <button
+                  onClick={() => {
+                    setText((prev) => prev + "@");
+                    setShowSuggestions(true);
+                  }}
+                  className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all text-lg font-semibold"
+                  title="Mention someone"
+                >
+                  @
+                </button>
+
+                {/* Expand / Maximize Icon Button */}
+                <button
+                  onClick={() => setIsInputExpanded(!isInputExpanded)}
+                  className="p-2 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                  title={isInputExpanded ? "Collapse input" : "Expand input"}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    {isInputExpanded ? (
+                      <>
+                        <polyline points="4 14 10 14 10 20" />
+                        <polyline points="20 10 14 10 14 4" />
+                      </>
+                    ) : (
+                      <>
+                        <polyline points="15 3 21 3 21 9" />
+                        <polyline points="9 21 3 21 3 15" />
+                      </>
+                    )}
+                  </svg>
+                </button>
+
                 {voiceUrl && (
                   <div className="ml-2 flex items-center gap-2 bg-lime-50 dark:bg-lime-950/60 rounded-full px-3 py-1 border border-lime-200 dark:border-lime-900 shadow-sm">
                     <audio src={voiceUrl} controls className="h-6 w-32" />
