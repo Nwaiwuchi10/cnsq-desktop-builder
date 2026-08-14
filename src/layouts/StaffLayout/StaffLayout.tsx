@@ -5,6 +5,7 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 
 import Api from "@/utils/api";
+import CallProvider from "@/modules/calls/components/CallProvider";
 
 type User = {
   uuid: string;
@@ -57,6 +58,9 @@ const StaffLayout: React.FC<StaffLayoutProps> = ({ children }) => {
       <div className="flex-1 flex flex-col overflow-hidden relative">
 
         <Header user={user} setMobileOpen={setIsMobileOpen} />
+
+        {/* 📞 Global Call Overlays — persists across all pages */}
+        <CallProvider />
 
         <main className="flex-1 overflow-auto relative px-3 sm:px-4 md:px-6 py-4 md:py-6 pb-20 scrollbar-hide bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors">
           <div className="w-full max-w-[1600px] mx-auto h-full">{children}</div>
