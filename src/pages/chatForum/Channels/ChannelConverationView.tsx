@@ -7,14 +7,15 @@ import io from "socket.io-client";
 
 import EmojiPicker from "emoji-picker-react";
 
-import ChannelMessageBubble from "./ChannelMessageBuble";
+import ChannelMessageBubble, { ReactionsState } from "./ChannelMessageBuble";
+import ScrollToBottomButton from "../components/ScrollToBottomButton";
 import VerticalOptionsMenu from "./VerticalOptionMenu";
 import ConversationMembersManager from "./ConversationMmebersManager";
 import parseMentions from "@/utils/ParseMention";
 // import parseLinks from "@/utils/ParseLink";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import { useChatStore } from "@/store/ChatStore";
-import { ReactionsState } from "./ChannelMessageBuble";
+import { ReactionsState as _ReactionsState } from "./ChannelMessageBuble";
 import ChannelHeaderMenu from "../components/ChannelHeaderMenu";
 import ChannelInfoDrawer from "../components/ChannelInfoDrawer";
 import MessageReminderModal from "../components/MessageReminderModal";
@@ -55,7 +56,7 @@ type Msg = {
   pinned?: boolean;
   time: string;
   attachments?: Attachment[];
-  reactions?: ReactionsState;
+  reactions?: _ReactionsState;
   repliesInThreadCount?: number;
   threadUnreadCount?: number;
   lastThreadReplyTime?: string;
@@ -110,6 +111,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
   const [isGroupInfoOpen, setIsGroupInfoOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [showThreadScrollBottom, setShowThreadScrollBottom] = useState(false);
   const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
   const [zoomUrl, setZoomUrl] = useState("");
   const [zoomFilename, setZoomFilename] = useState("attachment");
@@ -160,6 +164,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   useEffect(() => {
     const handleAutoOpenThread = async () => {
       if (!initialThreadParentId) return;
+
+      // On mobile (< 1024px), don't auto-open the thread panel.
+      // Users should see the main channel conversation first and tap into threads themselves.
+      if (window.innerWidth < 1024) return;
+
       const token = localStorage.getItem("user-token");
       if (!token) return;
 
@@ -208,6 +217,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     handleAutoOpenThread();
   }, [initialThreadParentId, messages, currentUserId, conversation]);
 
+
   useEffect(() => {
     if (threadMessages.length > 0 && threadScrollRef.current) {
       const unreadCount = threadInitialUnreadCount;
@@ -250,6 +260,14 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       prevConversationId.current = conversation.id;
       hasUserScrolled.current = false;
 
+      // On mobile, always clear the thread panel when switching channels
+      // so users land on the main conversation view first
+      if (window.innerWidth < 1024) {
+        updateThreadParent(null);
+        setThreadMessages([]);
+        setShowThreadScrollBottom(false);
+      }
+
       const unreadCount = (conversation as any)?.unread || 0;
       if (unreadCount > 0) {
         shouldScrollToUnread.current = true;
@@ -278,17 +296,50 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       }
 
       const bottomReached =
-        container.scrollHeight - container.scrollTop === container.clientHeight;
+        container.scrollHeight - container.scrollTop <= container.clientHeight + 10;
 
       if (!bottomReached) {
         hasUserScrolled.current = true;
+        setShowScrollBottom(true);
+      } else {
+        setShowScrollBottom(false);
       }
     };
 
     container.addEventListener("scroll", onScroll);
-
     return () => container.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Thread scroll listener — use setTimeout to wait for DOM to mount after thread panel renders
+  useEffect(() => {
+    if (!threadParent) return;
+
+    let container: HTMLDivElement | null = null;
+    let cleanup: (() => void) | null = null;
+
+    const attach = () => {
+      container = threadScrollRef.current;
+      if (!container) return;
+
+      const onScroll = () => {
+        const bottomReached =
+          container!.scrollHeight - container!.scrollTop <= container!.clientHeight + 10;
+        setShowThreadScrollBottom(!bottomReached);
+      };
+
+      container.addEventListener("scroll", onScroll);
+      cleanup = () => container?.removeEventListener("scroll", onScroll);
+    };
+
+    // Delay so the thread panel has time to mount in the DOM
+    const timer = setTimeout(attach, 100);
+
+    return () => {
+      clearTimeout(timer);
+      cleanup?.();
+    };
+  }, [threadParent, threadMessages]);
+
 
   // Auto-expand textareas
   useEffect(() => {
@@ -367,9 +418,9 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   }, [page, limit, search]);
 
   // ======= Helper: Normalize raw reactions array → ReactionsState =======
-  const normalizeReactions = (rawReactions: any[]): ReactionsState | undefined => {
+  const normalizeReactions = (rawReactions: any[]): _ReactionsState | undefined => {
     if (!Array.isArray(rawReactions) || rawReactions.length === 0) return undefined;
-    const state: ReactionsState = {};
+    const state: _ReactionsState = {};
     for (const r of rawReactions) {
       const emoji = r.emoji;
       if (!emoji) continue;
@@ -802,6 +853,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
     setThreadVoiceBlob(null);
     setThreadVoiceUrl(null);
     setIsThreadLoading(true);
+    setShowThreadScrollBottom(true); // Show button immediately when thread opens
     setThreadInitialUnreadCount(message.threadUnreadCount || 0);
     const token = localStorage.getItem("user-token");
     if (!token) return;
@@ -816,6 +868,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       setIsThreadLoading(false);
     }
   };
+
 
   const handleThreadEmojiSelect = (emoji: any) => {
     setThreadText((prev) => prev + emoji.emoji);
@@ -1178,7 +1231,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       {/* Main Conversation List (Hidden on mobile when thread is open) */}
       <div className={`flex flex-col h-full transition-all duration-300 ${threadParent ? (isChatCollapsed ? "hidden lg:hidden" : "hidden lg:flex lg:w-2/3 border-r border-gray-200 dark:border-gray-800") : "w-full"}`}>
         {/* Header */}
-        <div className="flex items-center gap-4 px-4 py-3 border-b">
+        <div className="flex items-center gap-4 px-4 py-3 border-b sticky top-0 z-10 flex-shrink-0 bg-white dark:bg-[#141414]">
           <button onClick={onBack} className="md:hidden p-2">
             ◀
           </button>
@@ -1318,116 +1371,327 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
         />
 
         {/* Messages */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-[#141414] transition-colors/5"
-        >
-          {loadingMore && (
-            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
-              Loading more...
-            </div>
-          )}
-          {(() => {
-            const seen = new Set();
-            return messages
-              .filter((m) => {
-                if (!m.id) return true;
-                if (seen.has(m.id)) return false;
-                seen.add(m.id);
-                return true;
-              })
-              .filter((m) => !searchQuery.trim() || (m.text || "").toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((m) => {
-                const msgDate = formatDate(m.createdAt);
-                const showDateSeparator = msgDate !== lastDate;
-                lastDate = msgDate;
+        <div className="relative flex-1 min-h-0 flex flex-col">
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto p-6 space-y-4 bg-white dark:bg-[#141414] transition-colors/5"
+          >
+            {loadingMore && (
+              <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
+                Loading more...
+              </div>
+            )}
+            {(() => {
+              const seen = new Set();
+              return messages
+                .filter((m) => {
+                  if (!m.id) return true;
+                  if (seen.has(m.id)) return false;
+                  seen.add(m.id);
+                  return true;
+                })
+                .filter((m) => !searchQuery.trim() || (m.text || "").toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((m) => {
+                  const msgDate = formatDate(m.createdAt);
+                  const showDateSeparator = msgDate !== lastDate;
+                  lastDate = msgDate;
 
-                const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
+                  const isReplyPreviewSpot = replyingTo && replyingTo.id === m.id;
 
-                if (m.type === "join" || m.type === "leave") {
+                  if (m.type === "join" || m.type === "leave") {
+                    return (
+                      <div key={m.id} id={`msg-${m.id}`} className="flex flex-col items-center my-4">
+                        <div className="text-[11px] text-gray-500 bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full border border-gray-100 dark:border-gray-700 font-medium">
+                          {m.text}
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div key={m.id} id={`msg-${m.id}`} className="flex flex-col items-center my-4">
-                      <div className="text-[11px] text-gray-500 bg-gray-50 dark:bg-gray-800/50 px-3 py-1 rounded-full border border-gray-100 dark:border-gray-700 font-medium">
-                        {m.text}
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={m.id} id={`msg-${m.id}`} className="mb-6">
-                    {/* DATE SEPARATOR */}
-                    {showDateSeparator && (
-                      <div className="flex justify-center my-2">
-                        <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
-                          {msgDate}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* ======================================================
-         REPLYING-TO PREVIEW (appears only above the clicked message)
-         ====================================================== */}
-                    {isReplyPreviewSpot && (
-                      <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded flex items-center justify-between">
-                        <div className="flex flex-col">
-                          <div className="font-semibold text-sm">Replying to:</div>
-
-                          {/* Text */}
-                          <div className="text-gray-700 dark:text-gray-300 text-sm">
-                            {replyingTo.text || (() => {
-                              const firstAttachment = replyingTo.attachments?.[0];
-                              const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
-                              if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
-                                return "📷 Photo";
-                              }
-                              if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                                return "🎥 Video";
-                              }
-                              return "📁 Attachment";
-                            })()}
+                    <div key={m.id} id={`msg-${m.id}`} className="mb-6">
+                      {/* DATE SEPARATOR */}
+                      {showDateSeparator && (
+                        <div className="flex justify-center my-2">
+                          <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                            {msgDate}
                           </div>
                         </div>
+                      )}
 
-                        <button
-                          className="ml-2 text-red-500 text-xs p-1"
-                          onClick={() => setReplyingTo(null)}
-                        >
-                          ✖
-                        </button>
-                      </div>
-                    )}
+                      {/* ======================================================
+           REPLYING-TO PREVIEW (appears only above the clicked message)
+           ====================================================== */}
+                      {isReplyPreviewSpot && (
+                        <div className="p-2 border-l-4 border-green-400 bg-green-50/40 mb-1 rounded flex items-center justify-between">
+                          <div className="flex flex-col">
+                            <div className="font-semibold text-sm">Replying to:</div>
 
-                    {/* ======================================================
-   PARENT MESSAGE (Teams/Slack-style reply container)
-====================================================== */}
-                    {m.parent ? (
-                      <div className="max-w-[85%] mb-2 ml-2 mb-6">
-                        <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-3 text-xs shadow-sm">
-                          {/* ---------- PARENT (replied-to message) ---------- */}
-                          <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                            Replying to:
+                            {/* Text */}
+                            <div className="text-gray-700 dark:text-gray-300 text-sm">
+                              {replyingTo.text || (() => {
+                                const firstAttachment = replyingTo.attachments?.[0];
+                                const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                                if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                  return "📷 Photo";
+                                }
+                                if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                  return "🎥 Video";
+                                }
+                                return "📁 Attachment";
+                              })()}
+                            </div>
                           </div>
 
-                          <div className="text-gray-700 dark:text-gray-300 mb-2">
-                            {m.parent.text || (() => {
-                              const firstAttachment = m.parent.attachments?.[0];
-                              const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
-                              if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
-                                return "📷 Photo";
-                              }
-                              if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                                return "🎥 Video";
-                              }
-                              return "📁 Attachment";
-                            })()}
+                          <button
+                            className="ml-2 text-red-500 text-xs p-1"
+                            onClick={() => setReplyingTo(null)}
+                          >
+                            ✖
+                          </button>
+                        </div>
+                      )}
+
+                      {/* ======================================================
+     PARENT MESSAGE (Teams/Slack-style reply container)
+  ====================================================== */}
+                      {m.parent ? (
+                        <div className="max-w-[85%] mb-2 ml-2 mb-6">
+                          <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-3 text-xs shadow-sm">
+                            {/* ---------- PARENT (replied-to message) ---------- */}
+                            <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                              Replying to:
+                            </div>
+
+                            <div className="text-gray-700 dark:text-gray-300 mb-2">
+                              {m.parent.text || (() => {
+                                const firstAttachment = m.parent.attachments?.[0];
+                                const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                                if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                  return "📷 Photo";
+                                }
+                                if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                  return "🎥 Video";
+                                }
+                                return "📁 Attachment";
+                              })()}
+                            </div>
+
+                            <hr className="border-gray-300 dark:border-gray-700 my-2" />
+
+                            {/* ---------- CHILD MESSAGE TEXT / ATTACHMENTS ---------- */}
+                            {(m.text || (m.attachments?.length ?? 0) > 0) && (
+                              <ChannelMessageBubble
+                                text={
+                                  m.text ? (
+                                    <>
+                                      {parseMentions(parseLinks(m.text, m.me))}
+                                      {m.edited && (
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                          {" "}
+                                          (edited)
+                                        </span>
+                                      )}
+                                    </>
+                                  ) : null
+                                }
+                                me={m.me}
+                                time={m.time}
+                                selected={selectedMessageId === m.id}
+                                onClick={() =>
+                                  setSelectedMessageId(
+                                    selectedMessageId === m.id ? null : m.id,
+                                  )
+                                }
+                                authorName={
+                                  m.author
+                                    ? `${m.author.firstName || ""} ${(m.author as any).lastName || ""}`.trim()
+                                    : m.name
+                                }
+                                avatar={m.author?.photoUrl || m.author?.avatar}
+                                online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
+                                pinned={m.pinned}
+                                reactions={m.reactions}
+                                threadRepliesCount={m.repliesInThreadCount}
+                                currentUserId={currentUserId}
+                                onTogglePin={() => togglePin(m.id)}
+                                onReact={(emoji) => toggleReaction(m.id, emoji)}
+                                onViewThread={() => openThread(m)}
+                                onViewReactors={() => setReactorsModalMessageId(m.id)}
+                              />
+                            )}
+
+                            {/* ATTACHMENTS (Restored Manual Rendering) */}
+                            {(m.attachments?.length ?? 0) > 0 && (
+                              <div className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"}`}>
+                                <div className="flex flex-wrap gap-2">
+                                  {(m.attachments ?? []).map((a: any) => {
+                                    const ext = a.filename?.split(".").pop()?.toLowerCase();
+                                    if (a.mimeType?.startsWith("audio/")) {
+                                      return (
+                                        <div key={a.id} className="mt-1">
+                                          <audio controls className="w-64 h-8">
+                                            <source src={a.url} type={a.mimeType} />
+                                          </audio>
+                                        </div>
+                                      );
+                                    }
+                                    if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                      return (
+                                        <div key={a.id} className="mt-1">
+                                          <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
+                                        </div>
+                                      );
+                                    }
+                                    if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
+                                      return (
+                                        <div key={a.id} className="mt-1">
+                                          <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
+                                        </div>
+                                      );
+                                    }
+                                    return (
+                                      <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
+                                        {a.filename || "Attachment"}
+                                      </a>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            {selectedMessageId === m.id && (
+                              <div
+                                className={`flex flex-col gap-2 mt-2 px-4 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-auto shadow-2xl border border-[#2d3239] backdrop-blur-md
+                              ${m.me ? "ml-auto" : "mr-auto"}
+                            `}
+                              >
+                                {/* Quick Emoji Reactions */}
+                                <div className="flex items-center gap-1.5 pb-2 border-b border-[#2d3239] overflow-x-auto no-scrollbar">
+                                  <span className="text-[11px] font-semibold text-gray-400 mr-1 flex-shrink-0">React:</span>
+                                  {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
+                                    <button
+                                      key={emoji}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        toggleReaction(m.id, emoji);
+                                        setSelectedMessageId(null);
+                                      }}
+                                      className="p-1 hover:bg-gray-700/60 rounded-lg text-base transition-transform active:scale-125 hover:scale-110 flex-shrink-0"
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setReactingToMessageId(m.id);
+                                    }}
+                                    className="px-2 py-0.5 hover:bg-gray-700/60 rounded-lg text-[11px] font-bold text-blue-400 border border-dashed border-blue-500/50 flex-shrink-0 flex items-center gap-0.5"
+                                    title="More Emojis"
+                                  >
+                                    <span>➕</span>
+                                    <span>More</span>
+                                  </button>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                  <button
+                                    onClick={() => {
+                                      setReplyingTo(m);
+                                      setSelectedMessageId(null);
+                                    }}
+                                    className="flex items-center gap-2 text-[#abb2bf] hover:text-white active:text-white transition-all duration-200 group"
+                                    title="Reply"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                                    <span className="text-[13px] font-semibold">Reply</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      openThread(m);
+                                      setSelectedMessageId(null);
+                                    }}
+                                    className="flex items-center gap-2 text-[#abb2bf] hover:text-[#9147ff] active:text-[#9147ff] transition-all duration-200 group"
+                                    title="Reply in Thread"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                                    <span className="text-[13px] font-semibold">Thread</span>
+                                  </button>
+
+                                  {m.me && (
+                                    <>
+                                      <button
+                                        onClick={() => {
+                                          setEditMessage(m);
+                                          setText(m.text);
+                                          setReplyTo(null);
+                                        }}
+                                        className="flex items-center gap-2 text-[#3498db] hover:text-[#5dade2] transition-all duration-200 group"
+                                        title="Edit"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        <span className="text-[13px] font-semibold text-blue-500">Edit</span>
+                                      </button>
+
+                                      <button
+                                        onClick={() => deleteMessage(m.id)}
+                                        disabled={deletingMessageIds.has(m.id)}
+                                        className="flex items-center gap-2 text-[#e74c3c] hover:text-[#ec7063] transition-all duration-200 group disabled:opacity-50"
+                                        title="Delete"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                        <span className="text-[13px] font-semibold text-red-500">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
+                                      </button>
+                                    </>
+                                  )}
+
+                                  <button
+                                    onClick={() => {
+                                      togglePin(m.id);
+                                      setSelectedMessageId(null);
+                                    }}
+                                    className={`flex items-center gap-2 transition-all duration-200 ${m.pinned ? 'text-blue-400' : 'text-[#abb2bf] hover:text-blue-500'}`}
+                                    title={m.pinned ? "Unpin" : "Pin"}
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                                    <span className="text-[13px] font-semibold">{m.pinned ? "Unpin" : "Pin"}</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      setForwardingMessage(m);
+                                      fetchForwardConversations();
+                                    }}
+                                    className="flex items-center gap-2 text-[#abb2bf] hover:text-[#3498db] active:text-[#3498db] transition-all duration-200 group"
+                                    title="Forward"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
+                                    <span className="text-[13px] font-semibold">Forward</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      setMessageInfoId(m.id);
+                                      setSelectedMessageId(null);
+                                    }}
+                                    className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
+                                    title="Message Info (Read Receipts)"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                    <span className="text-[13px] font-semibold">Info</span>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
                           </div>
-
-                          <hr className="border-gray-300 dark:border-gray-700 my-2" />
-
-                          {/* ---------- CHILD MESSAGE TEXT / ATTACHMENTS ---------- */}
+                        </div>
+                      ) : (
+                        <>
+                          {/* MESSAGE BUBBLE */}
                           {(m.text || (m.attachments?.length ?? 0) > 0) && (
                             <ChannelMessageBubble
+                              // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
                               text={
                                 m.text ? (
                                   <>
@@ -1454,62 +1718,30 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                   ? `${m.author.firstName || ""} ${(m.author as any).lastName || ""}`.trim()
                                   : m.name
                               }
-                              avatar={m.author?.photoUrl || m.author?.avatar}
+                              avatar={m.author?.photoUrl}
                               online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
                               pinned={m.pinned}
                               reactions={m.reactions}
                               threadRepliesCount={m.repliesInThreadCount}
-                              currentUserId={currentUserId}
+                              threadUnreadCount={m.threadUnreadCount}
+                              lastThreadReplyTime={m.lastThreadReplyTime}
+                              threadParticipants={m.threadParticipants}
                               onTogglePin={() => togglePin(m.id)}
                               onReact={(emoji) => toggleReaction(m.id, emoji)}
                               onViewThread={() => openThread(m)}
                               onViewReactors={() => setReactorsModalMessageId(m.id)}
+                              attachments={m.attachments}
                             />
                           )}
 
-                          {/* ATTACHMENTS (Restored Manual Rendering) */}
-                          {(m.attachments?.length ?? 0) > 0 && (
-                            <div className={`flex flex-col mt-1 ${m.me ? "items-end" : "items-start"}`}>
-                              <div className="flex flex-wrap gap-2">
-                                {(m.attachments ?? []).map((a: any) => {
-                                  const ext = a.filename?.split(".").pop()?.toLowerCase();
-                                  if (a.mimeType?.startsWith("audio/")) {
-                                    return (
-                                      <div key={a.id} className="mt-1">
-                                        <audio controls className="w-64 h-8">
-                                          <source src={a.url} type={a.mimeType} />
-                                        </audio>
-                                      </div>
-                                    );
-                                  }
-                                  if (a.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                                    return (
-                                      <div key={a.id} className="mt-1">
-                                        <video src={a.url} controls className="max-w-xs max-h-64 rounded-lg shadow-sm border dark:border-gray-700" />
-                                      </div>
-                                    );
-                                  }
-                                  if (ext && ["png", "jpg", "jpeg", "gif"].includes(ext)) {
-                                    return (
-                                      <div key={a.id} className="mt-1">
-                                        <img src={a.url} className="w-48 h-48 object-cover rounded-lg shadow-sm border dark:border-gray-700" alt="attachment" />
-                                      </div>
-                                    );
-                                  }
-                                  return (
-                                    <a key={a.id} href={a.url} target="_blank" rel="noopener noreferrer" className="underline text-blue-500 text-xs mt-1 block">
-                                      {a.filename || "Attachment"}
-                                    </a>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
+                          {/* ======================================================
+           ACTION BUTTONS (Edit / Delete / Reply / React / Pin)
+           ====================================================== */}
                           {selectedMessageId === m.id && (
                             <div
-                              className={`flex flex-col gap-2 mt-2 px-4 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-auto shadow-2xl border border-[#2d3239] backdrop-blur-md
-                            ${m.me ? "ml-auto" : "mr-auto"}
-                          `}
+                              className={`flex flex-col gap-2 mt-2 px-4 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-auto shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                          ${m.me ? "ml-auto" : "mr-auto"}
+                        `}
                             >
                               {/* Quick Emoji Reactions */}
                               <div className="flex items-center gap-1.5 pb-2 border-b border-[#2d3239] overflow-x-auto no-scrollbar">
@@ -1624,232 +1856,64 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                                   className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
                                   title="Message Info (Read Receipts)"
                                 >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                                  <span className="text-[13px] font-semibold">Info</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                  <span className="text-[13px] font-semibold text-[#95D700]">Info</span>
                                 </button>
                               </div>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {/* MESSAGE BUBBLE */}
-                        {(m.text || (m.attachments?.length ?? 0) > 0) && (
-                          <ChannelMessageBubble
-                            // text={parseLinks(m.text) + (m.edited ? " (edited)" : "")}
-                            text={
-                              m.text ? (
-                                <>
-                                  {parseMentions(parseLinks(m.text, m.me))}
-                                  {m.edited && (
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                      {" "}
-                                      (edited)
-                                    </span>
-                                  )}
-                                </>
-                              ) : null
-                            }
-                            me={m.me}
-                            time={m.time}
-                            selected={selectedMessageId === m.id}
-                            onClick={() =>
-                              setSelectedMessageId(
-                                selectedMessageId === m.id ? null : m.id,
-                              )
-                            }
-                            authorName={
-                              m.author
-                                ? `${m.author.firstName || ""} ${(m.author as any).lastName || ""}`.trim()
-                                : m.name
-                            }
-                            avatar={m.author?.photoUrl}
-                            online={m.author?.id ? onlineStaffs[m.author.id] : undefined}
-                            pinned={m.pinned}
-                            reactions={m.reactions}
-                            threadRepliesCount={m.repliesInThreadCount}
-                            threadUnreadCount={m.threadUnreadCount}
-                            lastThreadReplyTime={m.lastThreadReplyTime}
-                            threadParticipants={m.threadParticipants}
-                            onTogglePin={() => togglePin(m.id)}
-                            onReact={(emoji) => toggleReaction(m.id, emoji)}
-                            onViewThread={() => openThread(m)}
-                            onViewReactors={() => setReactorsModalMessageId(m.id)}
-                            attachments={m.attachments}
-                          />
-                        )}
 
-                        {/* ======================================================
-         ACTION BUTTONS (Edit / Delete / Reply / React / Pin)
-         ====================================================== */}
-                        {selectedMessageId === m.id && (
-                          <div
-                            className={`flex flex-col gap-2 mt-2 px-4 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-auto shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
-                        ${m.me ? "ml-auto" : "mr-auto"}
-                      `}
-                          >
-                            {/* Quick Emoji Reactions */}
-                            <div className="flex items-center gap-1.5 pb-2 border-b border-[#2d3239] overflow-x-auto no-scrollbar">
-                              <span className="text-[11px] font-semibold text-gray-400 mr-1 flex-shrink-0">React:</span>
-                              {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
-                                <button
-                                  key={emoji}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleReaction(m.id, emoji);
+                          {reactingToMessageId === m.id && (
+                            <div
+                              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setReactingToMessageId(null);
+                              }}
+                            >
+                              <div
+                                className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full flex flex-col items-center"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex items-center justify-between w-full px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
+                                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">React with Emoji</span>
+                                  <button
+                                    onClick={() => setReactingToMessageId(null)}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-lg text-xs"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                                <EmojiPicker
+                                  onEmojiClick={(emojiData) => {
+                                    toggleReaction(m.id, emojiData.emoji);
+                                    setReactingToMessageId(null);
                                     setSelectedMessageId(null);
                                   }}
-                                  className="p-1 hover:bg-gray-700/60 rounded-lg text-base transition-transform active:scale-125 hover:scale-110 flex-shrink-0"
-                                >
-                                  {emoji}
-                                </button>
-                              ))}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setReactingToMessageId(m.id);
-                                }}
-                                className="px-2 py-0.5 hover:bg-gray-700/60 rounded-lg text-[11px] font-bold text-blue-400 border border-dashed border-blue-500/50 flex-shrink-0 flex items-center gap-0.5"
-                                title="More Emojis"
-                              >
-                                <span>➕</span>
-                                <span>More</span>
-                              </button>
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                              <button
-                                onClick={() => {
-                                  setReplyingTo(m);
-                                  setSelectedMessageId(null);
-                                }}
-                                className="flex items-center gap-2 text-[#abb2bf] hover:text-white active:text-white transition-all duration-200 group"
-                                title="Reply"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-                                <span className="text-[13px] font-semibold">Reply</span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  openThread(m);
-                                  setSelectedMessageId(null);
-                                }}
-                                className="flex items-center gap-2 text-[#abb2bf] hover:text-[#9147ff] active:text-[#9147ff] transition-all duration-200 group"
-                                title="Reply in Thread"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                                <span className="text-[13px] font-semibold">Thread</span>
-                              </button>
-
-                              {m.me && (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      setEditMessage(m);
-                                      setText(m.text);
-                                      setReplyTo(null);
-                                    }}
-                                    className="flex items-center gap-2 text-[#3498db] hover:text-[#5dade2] transition-all duration-200 group"
-                                    title="Edit"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                    <span className="text-[13px] font-semibold text-blue-500">Edit</span>
-                                  </button>
-
-                                  <button
-                                    onClick={() => deleteMessage(m.id)}
-                                    disabled={deletingMessageIds.has(m.id)}
-                                    className="flex items-center gap-2 text-[#e74c3c] hover:text-[#ec7063] transition-all duration-200 group disabled:opacity-50"
-                                    title="Delete"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                    <span className="text-[13px] font-semibold text-red-500">{deletingMessageIds.has(m.id) ? "..." : "Delete"}</span>
-                                  </button>
-                                </>
-                              )}
-
-                              <button
-                                onClick={() => {
-                                  togglePin(m.id);
-                                  setSelectedMessageId(null);
-                                }}
-                                className={`flex items-center gap-2 transition-all duration-200 ${m.pinned ? 'text-blue-400' : 'text-[#abb2bf] hover:text-blue-500'}`}
-                                title={m.pinned ? "Unpin" : "Pin"}
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
-                                <span className="text-[13px] font-semibold">{m.pinned ? "Unpin" : "Pin"}</span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setForwardingMessage(m);
-                                  fetchForwardConversations();
-                                }}
-                                className="flex items-center gap-2 text-[#abb2bf] hover:text-[#3498db] active:text-[#3498db] transition-all duration-200 group"
-                                title="Forward"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="m15 10 5 5-5 5" /><path d="M4 4v7a4 4 0 0 0 4 4h12" /></svg>
-                                <span className="text-[13px] font-semibold">Forward</span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setMessageInfoId(m.id);
-                                  setSelectedMessageId(null);
-                                }}
-                                className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
-                                title="Message Info (Read Receipts)"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                                <span className="text-[13px] font-semibold text-[#95D700]">Info</span>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {reactingToMessageId === m.id && (
-                          <div
-                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-fadeIn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setReactingToMessageId(null);
-                            }}
-                          >
-                            <div
-                              className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-2xl border border-gray-200 dark:border-gray-700 max-w-sm w-full flex flex-col items-center"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <div className="flex items-center justify-between w-full px-3 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
-                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">React with Emoji</span>
-                                <button
-                                  onClick={() => setReactingToMessageId(null)}
-                                  className="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-lg text-xs"
-                                >
-                                  ✕
-                                </button>
+                                  width="100%"
+                                  height={340}
+                                  skinTonesDisabled
+                                  searchDisabled
+                                />
                               </div>
-                              <EmojiPicker
-                                onEmojiClick={(emojiData) => {
-                                  toggleReaction(m.id, emojiData.emoji);
-                                  setReactingToMessageId(null);
-                                  setSelectedMessageId(null);
-                                }}
-                                width="100%"
-                                height={340}
-                                skinTonesDisabled
-                                searchDisabled
-                              />
                             </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                );
-              })
-          })()}
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })
+            })()}
+          </div>
+          <ScrollToBottomButton
+            show={showScrollBottom}
+            onClick={() => {
+              scrollRef.current?.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: "smooth",
+              });
+            }}
+          />
         </div>
 
         {/* Input */}
@@ -2286,9 +2350,16 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               }}
             />
 
-            <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
-              {/* Parent Message in Thread */}
-              <div className="pb-4 border-b border-gray-200 dark:border-gray-800">
+            {/* Messages Scroll Area Wrapper */}
+            <div className="relative flex-1 min-h-0 flex flex-col">
+              <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
+                {/* Thread Parent */}
+                <div>
+                  <div className="flex justify-center my-2">
+                    <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                      {formatDate(threadParent.createdAt || "")}
+                    </div>
+                  </div>
                 <ChannelMessageBubble
                   text={threadParent.text ? parseMentions(parseLinks(threadParent.text)) : null}
                   authorName={
@@ -2309,13 +2380,29 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
               {/* Thread Replies */}
               <div className="space-y-4">
+
                 {isThreadLoading ? (
                   <div className="flex justify-center p-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
                   </div>
                 ) : (
-                  threadMessages.map((tm: any) => (
-                    <div key={tm.id} className="relative group/reply">
+                  (() => {
+                    let lastThreadDate = formatDate(threadParent.createdAt || "");
+                    return threadMessages.map((tm: any) => {
+                      const msgDate = formatDate(tm.createdAt);
+                      const showDateSeparator = msgDate !== lastThreadDate;
+                      lastThreadDate = msgDate;
+
+                      return (
+                        <React.Fragment key={tm.id}>
+                          {showDateSeparator && (
+                            <div className="flex justify-center my-2">
+                              <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                                {msgDate}
+                              </div>
+                            </div>
+                          )}
+                          <div className="relative group/reply">
                       {(tm.text || (tm.attachments?.length ?? 0) > 0) && (
                         <>
                           <ChannelMessageBubble
@@ -2476,9 +2563,23 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         </div>
                       )}
                     </div>
-                  ))
+                        </React.Fragment>
+                      );
+                    })
+                  })()
                 )}
               </div>
+            </div>
+
+              <ScrollToBottomButton
+                show={showThreadScrollBottom}
+                onClick={() => {
+                  threadScrollRef.current?.scrollTo({
+                    top: threadScrollRef.current.scrollHeight,
+                    behavior: "smooth",
+                  });
+                }}
+              />
             </div>
 
             {/* Thread Input */}
@@ -2681,7 +2782,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   <button
                     onClick={() => {
                       setThreadText((prev) => prev + "@");
-                      // Prefill suggestions with full staff list
                       const allItem = { id: 'all', firstName: 'all', lastName: '(Notify everyone in channel)', isAll: true };
                       setThreadSuggestions([allItem, ...staffList]);
                       setShowThreadSuggestions(true);
@@ -2723,7 +2823,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       {threadParent && (
         <div className="lg:hidden fixed inset-0 z-[100] h-[100dvh] w-screen bg-white dark:bg-[#141414] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0 sticky top-0 z-10">
             <button
               onClick={() => updateThreadParent(null)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
@@ -2736,10 +2836,16 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
           </div>
 
-          {/* Messages Scroll Area */}
-          <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+          {/* Messages Scroll Area Wrapper */}
+          <div className="relative flex-1 min-h-0 flex flex-col">
+            <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
             {/* Parent Message */}
             <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-center my-2">
+                <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                  {formatDate(threadParent.createdAt || "")}
+                </div>
+              </div>
               <ChannelMessageBubble
                 text={parseMentions(parseLinks(threadParent.text || ""))}
                 authorName={
@@ -2768,8 +2874,23 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 No replies yet. Be the first to reply!
               </div>
             ) : (
-              threadMessages.map((tm: any) => (
-                <div key={tm.id} className="relative group/reply mb-4">
+              (() => {
+                let lastThreadDate = formatDate(threadParent.createdAt || "");
+                return threadMessages.map((tm: any) => {
+                  const msgDate = formatDate(tm.createdAt);
+                  const showDateSeparator = msgDate !== lastThreadDate;
+                  lastThreadDate = msgDate;
+
+                  return (
+                    <React.Fragment key={tm.id}>
+                      {showDateSeparator && (
+                        <div className="flex justify-center my-2">
+                          <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                            {msgDate}
+                          </div>
+                        </div>
+                      )}
+                      <div className="relative group/reply mb-4">
                   {(tm.text || (tm.attachments?.length ?? 0) > 0) && (
                     <>
                       <ChannelMessageBubble
@@ -2814,16 +2935,16 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         </div>
                         <div className="text-gray-700 dark:text-gray-300 mb-1">
                           {tm.parent.text || (() => {
-                             const firstAttachment = tm.parent.attachments?.[0];
-                             const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
-                             if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
-                               return "📷 Photo";
-                             }
-                             if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                               return "🎥 Video";
-                             }
-                             return "📁 Attachment";
-                           })()}
+                            const firstAttachment = tm.parent.attachments?.[0];
+                            const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                            if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                              return "📷 Photo";
+                            }
+                            if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                              return "🎥 Video";
+                            }
+                            return "📁 Attachment";
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -2915,8 +3036,22 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     </div>
                   )}
                 </div>
-              ))
-            )}
+                      </React.Fragment>
+                    );
+                  })
+                })()
+              )}
+            </div>
+
+            <ScrollToBottomButton
+              show={showThreadScrollBottom}
+              onClick={() => {
+                threadScrollRef.current?.scrollTo({
+                  top: threadScrollRef.current.scrollHeight,
+                  behavior: "smooth",
+                });
+              }}
+            />
           </div>
 
           {/* Mobile Thread Input */}
