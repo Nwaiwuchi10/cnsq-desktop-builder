@@ -20,7 +20,8 @@ import {
   Book,
   BookOpen,
   Send,
-  ClipboardCheck
+  ClipboardCheck,
+  Printer
 } from "lucide-react";
 
 type NavItem = {
@@ -76,6 +77,7 @@ const navSections: NavSection[] = [
     title: "COMMUNICATION",
     items: [
       { name: "Chat", href: "/chat", icon: MessageSquare },
+      { name: "Ticketing", href: "/ticketing", icon: ClipboardCheck },
       { name: "CEO's Corner", href: "/ceos-corner", icon: Mail },
       { name: "CEO's Messaging", href: "/ceo-messaging", icon: Send, isCeoOnly: true },
     ],
@@ -85,6 +87,7 @@ const navSections: NavSection[] = [
     items: [
       { name: "Calendar", href: "/calender", icon: Calendar },
       { name: "Leave Management", href: "/leave-management", icon: ClipboardList },
+      { name: "Pipeline", href: "/pipeline", icon: Printer },
     ],
   },
   {
