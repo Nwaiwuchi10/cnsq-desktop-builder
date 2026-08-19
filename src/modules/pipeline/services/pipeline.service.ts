@@ -5,10 +5,11 @@ export const fetchPipelineIdeas = async (
   search: string = '',
   departmentId: string = '',
   limit: number = 10,
-  offset: number = 0
+  offset: number = 0,
+  sort: string = 'latest'
 ): Promise<PaginatedIdeas> => {
   const response = await api.get('/pipeline', {
-    params: { search, departmentId, limit, offset },
+    params: { search, departmentId, limit, offset, sort },
   });
   return response.data;
 };

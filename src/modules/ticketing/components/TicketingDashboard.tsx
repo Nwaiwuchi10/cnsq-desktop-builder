@@ -15,7 +15,8 @@ export default function TicketingDashboard() {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'received' | 'my'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('All');
-  
+  const [priority, setPriority] = useState<string>('');
+
   const [pageNum, setPageNum] = useState(1);
   const [search, setSearch] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -26,19 +27,22 @@ export default function TicketingDashboard() {
       const statsData = await getTicketStats();
       setStats(statsData);
 
-      let params = {};
+      let params: Record<string, any> = {};
       if (activeTab === 'received') {
         params = { receivedPageNum: pageNum, receivedPageSize: 10, receivedSearch: search };
+        if (priority) params.receivedPriority = priority;
       } else if (activeTab === 'my') {
         params = { myPageNum: pageNum, myPageSize: 10, mySearch: search };
+        if (priority) params.myPriority = priority;
       } else {
         params = { allPageNum: pageNum, allPageSize: 10, allSearch: search };
+        if (priority) params.allPriority = priority;
       }
 
       const res = await getTickets(params);
       setIsHod(res.isHod);
       setCurrentUserId(res.currentUserId);
-      
+
       if (activeTab === 'received') setPaginatedTickets(res.receivedTickets);
       else if (activeTab === 'my') setPaginatedTickets(res.myTickets);
       else setPaginatedTickets(res.allTickets);
@@ -49,11 +53,16 @@ export default function TicketingDashboard() {
 
   useEffect(() => {
     fetchTickets();
-  }, [activeTab, pageNum, search]);
+  }, [activeTab, pageNum, search, priority]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setPageNum(1); // reset to first page on new search
+    setPageNum(1);
+  };
+
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPriority(e.target.value === 'All' ? '' : e.target.value);
+    setPageNum(1);
   };
 
   return (
@@ -167,13 +176,16 @@ export default function TicketingDashboard() {
             />
           </div>
           <div className="relative shrink-0 w-[110px] md:w-auto">
-            <select className="appearance-none bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 pl-3 md:pl-4 pr-8 md:pr-10 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:border-[#8ec32f] w-full">
-              <option>Filters</option>
-              <option>All</option>
-              <option>Urgent</option>
-              <option>High</option>
-              <option>Medium</option>
-              <option>Low</option>
+            <select
+              value={priority || 'All'}
+              onChange={handlePriorityChange}
+              className="appearance-none bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 pl-3 md:pl-4 pr-8 md:pr-10 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:border-[#8ec32f] w-full"
+            >
+              <option value="All">All Priority</option>
+              <option value="Urgent">Urgent</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 md:px-3 text-gray-500">
                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>

@@ -5,12 +5,15 @@ export const getTickets = async (params: {
   myPageNum?: number;
   myPageSize?: number;
   mySearch?: string;
+  myPriority?: string;
   receivedPageNum?: number;
   receivedPageSize?: number;
   receivedSearch?: string;
+  receivedPriority?: string;
   allPageNum?: number;
   allPageSize?: number;
   allSearch?: string;
+  allPriority?: string;
 } = {}): Promise<{ myTickets: PaginatedTickets, receivedTickets: PaginatedTickets, allTickets: PaginatedTickets, isHod: boolean, currentUserId: number }> => {
   const { data } = await Api.get("/ticketing", { params });
   return data;

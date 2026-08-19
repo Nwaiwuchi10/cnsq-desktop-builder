@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createTicket } from '../services/ticketing.service';
 import Api from '@/utils/api';
 import CustomModal from '@/component/Message/Message';
-import { X, UploadCloud } from 'lucide-react';
+import { X, UploadCloud, Loader2 } from 'lucide-react';
 
 interface CreateTicketModalProps {
   isOpen: boolean;
@@ -26,6 +26,8 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
   const [taskSearch, setTaskSearch] = useState('');
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showTaskDropdown, setShowTaskDropdown] = useState(false);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(false);
 
   const [files, setFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +42,8 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
       setTaskSearch('');
       setLinkedProject('');
       setLinkedTask('');
+      setProjects([]);
+      setTasks([]);
       setShowProjectDropdown(false);
       setShowTaskDropdown(false);
     }
@@ -47,30 +51,42 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
 
   useEffect(() => {
     if (departmentId) {
-      // Fetch projects for department
+      // Immediately clear previous selections
+      setLinkedProject('');
+      setLinkedTask('');
+      setProjectSearch('');
+      setTaskSearch('');
+
+      // Fetch projects for this department
+      setLoadingProjects(true);
       Api.get(`/projects?departmentId=${departmentId}`)
         .then(res => setProjects(Array.isArray(res.data) ? res.data : (res.data?.data || [])))
-        .catch(() => setProjects([]));
+        .catch(() => setProjects([]))
+        .finally(() => setLoadingProjects(false));
 
-      // Fetch tasks for department
-      fetchTasks(departmentId, linkedProject);
+      // Fetch tasks for this department (no project selected yet)
+      fetchTasks(departmentId, '');
     } else {
       setProjects([]);
       setTasks([]);
       setLinkedProject('');
       setLinkedTask('');
+      setProjectSearch('');
+      setTaskSearch('');
     }
   }, [departmentId]);
 
   useEffect(() => {
     if (departmentId) {
       fetchTasks(departmentId, linkedProject);
+      if (!linkedProject) return;
       setLinkedTask('');
       setTaskSearch('');
     }
   }, [linkedProject]);
 
   const fetchTasks = async (deptId: string, projId: string) => {
+    setLoadingTasks(true);
     let url = `/task?`;
     if (projId) {
       url += `projectId=${projId}`;
@@ -82,13 +98,15 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
       setTasks(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch {
       setTasks([]);
+    } finally {
+      setLoadingTasks(false);
     }
   };
 
   const fetchDepartments = async () => {
     try {
       const res = await Api.get('/departments');
-      setDepartments(res.data.data || res.data); // Adjust depending on your actual API wrapper response
+      setDepartments(res.data.data || res.data);
     } catch (error) {
       console.error('Failed to fetch departments');
     }
@@ -239,13 +257,25 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                       setShowProjectDropdown(true);
                       if (!e.target.value) setLinkedProject('');
                     }}
-                    placeholder="Search projects..."
-                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-[13px] focus:outline-none focus:border-[#8ec32f] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-colors"
+                    placeholder={loadingProjects ? '' : 'Search projects...'}
+                    disabled={loadingProjects}
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 pr-9 text-[13px] focus:outline-none focus:border-[#8ec32f] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-colors disabled:cursor-wait"
                   />
+                  {loadingProjects && (
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <Loader2 size={15} className="animate-spin text-[#8ec32f]" />
+                    </div>
+                  )}
                   {showProjectDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[100] max-h-[150px] overflow-y-auto">
-                      {projects.length === 0 ? (
-                        <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No projects available</div>
+                      {loadingProjects ? (
+                        <div className="flex items-center justify-center gap-2 py-4 text-[13px] text-gray-500 dark:text-gray-400">
+                          <Loader2 size={14} className="animate-spin" /> Loading...
+                        </div>
+                      ) : projects.length === 0 ? (
+                        <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">
+                          {departmentId ? 'No projects in this department' : 'Select a department first'}
+                        </div>
                       ) : (
                         projects
                           .filter(p => p.projectName?.toLowerCase().includes(projectSearch.toLowerCase()) || p.title?.toLowerCase().includes(projectSearch.toLowerCase()))
@@ -254,7 +284,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                               key={project.id}
                               className="px-4 py-2 text-[13px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                               onMouseDown={(e) => {
-                                e.preventDefault(); // Prevents input from losing focus immediately
+                                e.preventDefault();
                                 setLinkedProject(project.id.toString());
                                 setProjectSearch(project.projectName || project.title);
                                 setShowProjectDropdown(false);
@@ -264,7 +294,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                             </div>
                           ))
                       )}
-                      {projects.length > 0 && projects.filter(p => p.projectName?.toLowerCase().includes(projectSearch.toLowerCase()) || p.title?.toLowerCase().includes(projectSearch.toLowerCase())).length === 0 && (
+                      {!loadingProjects && projects.length > 0 && projects.filter(p => p.projectName?.toLowerCase().includes(projectSearch.toLowerCase()) || p.title?.toLowerCase().includes(projectSearch.toLowerCase())).length === 0 && (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No matches found</div>
                       )}
                     </div>
@@ -284,14 +314,23 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                       setShowTaskDropdown(true);
                       if (!e.target.value) setLinkedTask('');
                     }}
-                    placeholder={!departmentId ? "Select department first" : "Search tasks..."}
-                    disabled={!departmentId}
-                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 text-[13px] focus:outline-none focus:border-[#8ec32f] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    placeholder={!departmentId ? 'Select department first' : loadingTasks ? '' : 'Search tasks...'}
+                    disabled={!departmentId || loadingTasks}
+                    className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2.5 pr-9 text-[13px] focus:outline-none focus:border-[#8ec32f] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:cursor-wait"
                   />
+                  {loadingTasks && (
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <Loader2 size={15} className="animate-spin text-[#8ec32f]" />
+                    </div>
+                  )}
                   {showTaskDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[100] max-h-[150px] overflow-y-auto">
                       {!departmentId ? (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">Select department first</div>
+                      ) : loadingTasks ? (
+                        <div className="flex items-center justify-center gap-2 py-4 text-[13px] text-gray-500 dark:text-gray-400">
+                          <Loader2 size={14} className="animate-spin" /> Loading...
+                        </div>
                       ) : tasks.length === 0 ? (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No tasks available</div>
                       ) : (
@@ -302,7 +341,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                               key={task.id}
                               className="px-4 py-2 text-[13px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                               onMouseDown={(e) => {
-                                e.preventDefault(); // Prevents input from losing focus immediately
+                                e.preventDefault();
                                 setLinkedTask(task.id.toString());
                                 setTaskSearch(task.title);
                                 setShowTaskDropdown(false);
@@ -312,7 +351,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                             </div>
                           ))
                       )}
-                      {tasks.length > 0 && tasks.filter(t => t.title?.toLowerCase().includes(taskSearch.toLowerCase())).length === 0 && (
+                      {!loadingTasks && tasks.length > 0 && tasks.filter(t => t.title?.toLowerCase().includes(taskSearch.toLowerCase())).length === 0 && (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No matches found</div>
                       )}
                     </div>

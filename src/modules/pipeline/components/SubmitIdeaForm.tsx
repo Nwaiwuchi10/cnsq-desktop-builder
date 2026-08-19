@@ -294,7 +294,7 @@ export default function SubmitIdeaForm({ initialData, onSuccess, onCancel }: Sub
                 {/* Formatting Toolbar */}
                 <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-[#1a1a1a] border-t border-gray-100 dark:border-gray-700 rounded-b-xl">
                   <div className="flex gap-1 text-gray-500 dark:text-gray-400">
-                    <button
+                    {/* <button
                       type="button"
                       onClick={handleBold}
                       title="Bold (**text**)"
@@ -325,7 +325,7 @@ export default function SubmitIdeaForm({ initialData, onSuccess, onCancel }: Sub
                       className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
                       <List size={15} />
-                    </button>
+                    </button> */}
                     {/* @ mention button */}
                     <button
                       type="button"
