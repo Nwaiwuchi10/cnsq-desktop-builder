@@ -226,12 +226,12 @@ const MessagesLayout: React.FC = () => {
     socketRef.current.on("conversation:new", (conv: any) => {
       setConversations((prev) => {
         if (prev.some((c) => c.id === conv.id)) return prev;
-        const peer = conv.members.find(
-          (m: any) => m.user.id !== currentUserId
-        )?.user;
+        const peer =
+          conv.members?.find((m: any) => m.user != null && m.user.id !== currentUserId)?.user ||
+          conv.members?.find((m: any) => m.user != null)?.user;
         const msg: Msg = {
           id: conv.id,
-          name: peer ? `${peer.firstName} ${peer.lastName}` : "Unknown User",
+          name: peer ? `${peer.firstName} ${peer.lastName}` : conv.name,
           avatar: peer?.photoUrl || "https://via.placeholder.com/40",
           preview: conv.lastMessage?.text || "",
           text: conv.lastMessage?.text || "",
@@ -281,7 +281,7 @@ const MessagesLayout: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       }).then((res) => {
         if (res.data) setChannels(res.data);
-      }).catch(() => {});
+      }).catch(() => { });
     });
 
     const playNotificationChime = () => {
@@ -465,6 +465,11 @@ const MessagesLayout: React.FC = () => {
         setSelected(conv.id);
         setStaffMatches([]);
         socketRef.current?.emit("joinConversation", conv.id);
+        setTimeout(() => {
+          window.location.reload();
+          // router.push(`/chat`);
+        }, 1200);
+
       } catch (err) {
         console.error("Failed to start DM:", err);
       }
@@ -545,9 +550,8 @@ const MessagesLayout: React.FC = () => {
         <div className="hidden md:flex flex-1 h-full w-full overflow-hidden transition-all duration-300">
           {/* Left Sidebar */}
           <div
-            className={`transition-all duration-300 flex-shrink-0 flex flex-col h-full bg-white dark:bg-[#141414] border-r border-gray-200 dark:border-gray-800 ${
-              isSidebarCollapsed ? "w-16" : "w-80 lg:w-[340px]"
-            }`}
+            className={`transition-all duration-300 flex-shrink-0 flex flex-col h-full bg-white dark:bg-[#141414] border-r border-gray-200 dark:border-gray-800 ${isSidebarCollapsed ? "w-16" : "w-80 lg:w-[340px]"
+              }`}
           >
             {isSidebarCollapsed ? (
               /* Collapsed Mini Sidebar */
@@ -578,11 +582,10 @@ const MessagesLayout: React.FC = () => {
                     setIsSidebarCollapsed(false);
                   }}
                   title="All Messages"
-                  className={`p-2.5 rounded-lg transition ${
-                    activeTab === "all"
-                      ? "bg-[#95D700] text-white"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
+                  className={`p-2.5 rounded-lg transition ${activeTab === "all"
+                    ? "bg-[#95D700] text-white"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
                 >
                   <MessageSquare size={18} />
                 </button>
@@ -593,11 +596,10 @@ const MessagesLayout: React.FC = () => {
                     setIsSidebarCollapsed(false);
                   }}
                   title="Channels"
-                  className={`p-2.5 rounded-lg transition ${
-                    activeTab === "channels"
-                      ? "bg-[#95D700] text-white"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
+                  className={`p-2.5 rounded-lg transition ${activeTab === "channels"
+                    ? "bg-[#95D700] text-white"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
                 >
                   <Users size={18} />
                 </button>
@@ -735,9 +737,9 @@ const MessagesLayout: React.FC = () => {
                   activeTab === "channels"
                     ? channels.find((c: any) => c.id === selected) || null
                     : activeTab === "threads"
-                    ? threadConversations.find((c: any) => c.id === selected) || null
-                    : allConversationsList.find((c) => c.id === selected) ||
-                    null;
+                      ? threadConversations.find((c: any) => c.id === selected) || null
+                      : allConversationsList.find((c) => c.id === selected) ||
+                      null;
 
                 if (!conv) {
                   return (
@@ -770,143 +772,143 @@ const MessagesLayout: React.FC = () => {
           </div>
         </div>
 
-          {/* Mobile */}
-          <div className="block md:hidden h-full overflow-hidden">
-            {activeTab === "create" ? (
-              <CreateChannelForm onClose={() => setActiveTab("all")} />
-            ) : (
-              !selected && (
-                <div className="flex flex-col h-full overflow-hidden p-4 sm:p-6">
-                  <div className="flex-shrink-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                          Your Messages
-                        </h1>
-                        <button
-                          onClick={() => setIsStaffSelectorOpen(true)}
-                          title="New Chat / Chat Yourself (+)"
-                          className="p-1.5 rounded-xl bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105 cursor-pointer"
-                        >
-                          <Plus size={18} />
-                        </button>
-                      </div>
+        {/* Mobile */}
+        <div className="block md:hidden h-full overflow-hidden">
+          {activeTab === "create" ? (
+            <CreateChannelForm onClose={() => setActiveTab("all")} />
+          ) : (
+            !selected && (
+              <div className="flex flex-col h-full overflow-hidden p-4 sm:p-6">
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        Your Messages
+                      </h1>
+                      <button
+                        onClick={() => setIsStaffSelectorOpen(true)}
+                        title="New Chat / Chat Yourself (+)"
+                        className="p-1.5 rounded-xl bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105 cursor-pointer"
+                      >
+                        <Plus size={18} />
+                      </button>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
-                      Connect, message staff, or chat with yourself.
-                    </p>
-                    <MessagesTabs
-                      activeTab={activeTab}
-                      setActiveTab={setActiveTab}
-                      unreadCounts={unreadCounts}
-                    />
-
-                    <input
-                      className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
-                      placeholder="Search all staff and conversations..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
                   </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
+                    Connect, message staff, or chat with yourself.
+                  </p>
+                  <MessagesTabs
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    unreadCounts={unreadCounts}
+                  />
 
-                  {/* Scrollable Mobile List */}
-                  <div className="flex-1 overflow-y-auto pr-1 pb-10">
-                    {loading ? (
-                      <div>Loading...</div>
-                    ) : activeTab === "channels" ? (
-                      <ChannelConversationList
-                        items={sortedChannels}
-                        onSelect={handleSelect}
-                      />
-                    ) : activeTab === "dms" ? (
-                      <ConversationList
-                        items={sortedConversations.map((c: any) => ({
-                          ...c,
-                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                        }))}
-                        onSelect={handleSelect}
-                      />
-                    ) : activeTab === "mentions" ? (
-                      <ConversationList
-                        items={mentionsConversationsList.map((c: any) => ({
-                          ...c,
-                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                        }))}
-                        onSelect={handleSelect}
-                      />
-                    ) : activeTab === "unread" ? (
-                      <ConversationList
-                        items={unreadConversationsList.map((c: any) => ({
-                          ...c,
-                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                        }))}
-                        onSelect={handleSelect}
-                      />
-                    ) : activeTab === "threads" ? (
-                      <ChannelConversationList
-                        items={threadConversations}
-                        onSelect={handleSelect}
-                      />
-                    ) : (
-                      <ConversationList
-                        items={allConversationsList.map((c: any) => ({
-                          ...c,
-                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                        }))}
-                        onSelect={handleSelect}
-                      />
-                    )}
-
-                    {staffMatches.length > 0 && (
-                      <div className="mt-6">
-                        <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
-                          Search Results
-                        </h2>
-                        <ConversationList
-                          items={staffMatches.map((c: any) => ({
-                            ...c,
-                            online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
-                          }))}
-                          onSelect={handleSelect}
-                        />
-                      </div>
-                    )}
-                  </div>
+                  <input
+                    className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-3 shadow-inner mb-4 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
+                    placeholder="Search all staff and conversations..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                 </div>
-              )
-            )}
 
-            {selected && (
-              <div className="bg-white dark:bg-[#141414] transition-colors h-[100dvh] w-screen fixed inset-0 z-[100] md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm flex flex-col">
-                {(() => {
-                  const conv: any =
-                    activeTab === "channels"
-                      ? channels.find((c) => c.id === selected) || null
-                      : activeTab === "threads"
+                {/* Scrollable Mobile List */}
+                <div className="flex-1 overflow-y-auto pr-1 pb-10">
+                  {loading ? (
+                    <div>Loading...</div>
+                  ) : activeTab === "channels" ? (
+                    <ChannelConversationList
+                      items={sortedChannels}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "dms" ? (
+                    <ConversationList
+                      items={sortedConversations.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "mentions" ? (
+                    <ConversationList
+                      items={mentionsConversationsList.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "unread" ? (
+                    <ConversationList
+                      items={unreadConversationsList.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
+                      onSelect={handleSelect}
+                    />
+                  ) : activeTab === "threads" ? (
+                    <ChannelConversationList
+                      items={threadConversations}
+                      onSelect={handleSelect}
+                    />
+                  ) : (
+                    <ConversationList
+                      items={allConversationsList.map((c: any) => ({
+                        ...c,
+                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                      }))}
+                      onSelect={handleSelect}
+                    />
+                  )}
+
+                  {staffMatches.length > 0 && (
+                    <div className="mt-6">
+                      <h2 className="text-gray-500 dark:text-gray-400 text-sm mb-2">
+                        Search Results
+                      </h2>
+                      <ConversationList
+                        items={staffMatches.map((c: any) => ({
+                          ...c,
+                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        }))}
+                        onSelect={handleSelect}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          )}
+
+          {selected && (
+            <div className="bg-white dark:bg-[#141414] transition-colors h-[100dvh] w-screen fixed inset-0 z-[100] md:static md:h-[80vh] md:w-full md:rounded-lg overflow-hidden shadow-sm flex flex-col">
+              {(() => {
+                const conv: any =
+                  activeTab === "channels"
+                    ? channels.find((c) => c.id === selected) || null
+                    : activeTab === "threads"
                       ? threadConversations.find((c) => c.id === selected) || null
                       : allConversationsList.find((c) => c.id === selected) ||
                       null;
 
-                  if (!conv) return null;
+                if (!conv) return null;
 
-                  return conv.isChannel ? (
-                    <ChannelConversationView
-                      conversation={conv}
-                      onBack={() => setSelected(null)}
-                      initialThreadParentId={conv.activeThreadParentId || autoOpenThreadId}
-                    />
-                  ) : (
-                    <ConversationView
-                      conversation={conv}
-                      onBack={() => setSelected(null)}
-                    />
-                  );
-                })()}
-              </div>
-            )}
-          </div>
+                return conv.isChannel ? (
+                  <ChannelConversationView
+                    conversation={conv}
+                    onBack={() => setSelected(null)}
+                    initialThreadParentId={conv.activeThreadParentId || autoOpenThreadId}
+                  />
+                ) : (
+                  <ConversationView
+                    conversation={conv}
+                    onBack={() => setSelected(null)}
+                  />
+                );
+              })()}
+            </div>
+          )}
         </div>
-      </StaffLayout>
+      </div>
+    </StaffLayout>
   );
 };
 
