@@ -195,15 +195,14 @@ export default function CreateChannelForm({ onClose }: CreateChannelFormProps) {
   };
 
   const filteredStaff = staffs.filter((s) =>
-    `${s.firstName} ${s.lastName} ${s.email} ${
-      s.employment?.jobTitle?.join(" ") || ""
-    }`
+    `${s.firstName} ${s.lastName} ${s.email} ${s.employment?.jobTitle?.join(" ") || ""
+      }`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
   return (
-    <div className="h-full w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-4 mb-10">
+    <div className="h-full w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] transition-colors py-4 mb-10 overflow-y-auto">
       {/* HEADER */}
       <div className="max-w-xl mx-auto px-4 mb-8 mt-14 flex items-center justify-between">
         <button
@@ -221,8 +220,9 @@ export default function CreateChannelForm({ onClose }: CreateChannelFormProps) {
       </div>
 
       {/* CARD */}
-      <div className="max-w-xl mx-auto">
-        <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-sm border p-6 space-y-6 hover:border-lime-500 transition-shadow">
+      <div className="max-w-xl mx-auto flex flex-col max-h-[75vh]">
+        <div className="bg-white dark:bg-[#141414] transition-colors rounded-2xl shadow-sm border flex flex-col overflow-hidden hover:border-lime-500 transition-shadow">
+          <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* STEP 1 — CHANNEL DETAILS */}
           {step === 1 && (
             <>
@@ -326,9 +326,10 @@ export default function CreateChannelForm({ onClose }: CreateChannelFormProps) {
               onClose={() => setModal(null)}
             />
           )}
+          </div>
 
           {/* ACTION BUTTON */}
-          <div className="mt-4">
+          <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-[#141414]">
             {step === 1 ? (
               <button
                 onClick={handleCreateChannel}

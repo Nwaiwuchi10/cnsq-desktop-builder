@@ -18,7 +18,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
   const [description, setDescription] = useState('');
   const [linkedProject, setLinkedProject] = useState('');
   const [linkedTask, setLinkedTask] = useState('');
-  
+
   // Dynamic fields
   const [projects, setProjects] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
@@ -51,7 +51,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
       Api.get(`/projects?departmentId=${departmentId}`)
         .then(res => setProjects(Array.isArray(res.data) ? res.data : (res.data?.data || [])))
         .catch(() => setProjects([]));
-      
+
       // Fetch tasks for department
       fetchTasks(departmentId, linkedProject);
     } else {
@@ -122,7 +122,10 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
       const responseData = await createTicket(formData);
       setModal({ type: 'success', message: (responseData as any)?.message || 'Ticket created successfully' });
       onSuccess();
-      setTimeout(() => handleClose(), 1500);
+      setTimeout(() => {
+        handleClose();
+        window.location.reload();
+      }, 1500);
     } catch (error: any) {
       setModal({ type: 'error', message: error.response?.data?.message || error.message || 'Failed to create ticket' });
     } finally {
@@ -166,7 +169,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
 
           <form onSubmit={handleSubmit} className="p-5 md:p-6 space-y-4">
             <div>
-              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Subject</label>
+              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Subject <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 value={subject}
@@ -177,7 +180,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Description</label>
+              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Description <span className="text-red-500">*</span></label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -189,7 +192,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
 
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Department</label>
+                <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Department <span className="text-red-500">*</span></label>
                 <select
                   value={departmentId}
                   onChange={(e) => setDepartmentId(e.target.value)}
@@ -205,7 +208,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                 </div>
               </div>
               <div className="flex-1 relative">
-                <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Priority</label>
+                <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Priority <span className="text-red-500">*</span></label>
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
@@ -226,7 +229,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
               <div className="flex-1 relative">
                 <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Linked Project <span className="text-gray-400 font-normal">(Optional)</span></label>
                 <div className="relative">
-                  <input 
+                  <input
                     type="text"
                     value={projectSearch}
                     onFocus={() => setShowProjectDropdown(true)}
@@ -247,8 +250,8 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                         projects
                           .filter(p => p.projectName?.toLowerCase().includes(projectSearch.toLowerCase()) || p.title?.toLowerCase().includes(projectSearch.toLowerCase()))
                           .map(project => (
-                            <div 
-                              key={project.id} 
+                            <div
+                              key={project.id}
                               className="px-4 py-2 text-[13px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                               onMouseDown={(e) => {
                                 e.preventDefault(); // Prevents input from losing focus immediately
@@ -259,7 +262,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                             >
                               {project.projectName || project.title}
                             </div>
-                        ))
+                          ))
                       )}
                       {projects.length > 0 && projects.filter(p => p.projectName?.toLowerCase().includes(projectSearch.toLowerCase()) || p.title?.toLowerCase().includes(projectSearch.toLowerCase())).length === 0 && (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No matches found</div>
@@ -271,7 +274,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
               <div className="flex-1 relative">
                 <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Linked Task <span className="text-gray-400 font-normal">(Optional)</span></label>
                 <div className="relative">
-                  <input 
+                  <input
                     type="text"
                     value={taskSearch}
                     onFocus={() => setShowTaskDropdown(true)}
@@ -288,15 +291,15 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                   {showTaskDropdown && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-[100] max-h-[150px] overflow-y-auto">
                       {!departmentId ? (
-                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">Select department first</div>
+                        <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">Select department first</div>
                       ) : tasks.length === 0 ? (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No tasks available</div>
                       ) : (
                         tasks
                           .filter(t => t.title?.toLowerCase().includes(taskSearch.toLowerCase()))
                           .map(task => (
-                            <div 
-                              key={task.id} 
+                            <div
+                              key={task.id}
                               className="px-4 py-2 text-[13px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                               onMouseDown={(e) => {
                                 e.preventDefault(); // Prevents input from losing focus immediately
@@ -307,7 +310,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                             >
                               {task.title}
                             </div>
-                        ))
+                          ))
                       )}
                       {tasks.length > 0 && tasks.filter(t => t.title?.toLowerCase().includes(taskSearch.toLowerCase())).length === 0 && (
                         <div className="px-4 py-3 text-[13px] text-gray-500 dark:text-gray-400 text-center">No matches found</div>
@@ -356,7 +359,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 md:flex-none px-6 py-3 md:py-2.5 bg-[#8ec32f] rounded-lg text-[14px] md:text-[13px] font-bold text-gray-900 hover:bg-[#7cb028] disabled:opacity-50 transition-colors"
+                className="cursor-pointer flex-1 md:flex-none px-6 py-3 md:py-2.5 bg-[#8ec32f] rounded-lg text-[14px] md:text-[13px] font-bold text-gray-900 hover:bg-[#7cb028] disabled:opacity-50 transition-colors"
               >
                 {isSubmitting ? 'Creating...' : 'Submit Ticket'}
               </button>

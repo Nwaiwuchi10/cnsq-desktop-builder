@@ -166,9 +166,9 @@ export default function SubmitIdeaForm({ initialData, onSuccess, onCancel }: Sub
       } else {
         responseData = await createPipelineIdea(formData);
       }
-      
+
       setModal({ type: 'success', message: (responseData as any)?.message || `Idea ${initialData ? 'updated' : 'submitted'} successfully!` });
-      
+
       setTimeout(() => {
         if (onSuccess) {
           onSuccess();
@@ -396,10 +396,10 @@ export default function SubmitIdeaForm({ initialData, onSuccess, onCancel }: Sub
               <button
                 type="submit"
                 disabled={isSubmitting || !title || !description}
-                className="bg-[#8ec32f] hover:bg-[#7cb028] text-[#1a1b25] px-8 py-2.5 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 flex items-center justify-center min-w-[140px]"
+                className="cursor-pointer bg-[#8ec32f] hover:bg-[#7cb028] text-[#1a1b25] px-8 py-2.5 rounded-xl font-bold text-sm transition-colors disabled:opacity-50 flex items-center justify-center min-w-[140px]"
               >
                 {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-[#1a1b25] border-t-transparent rounded-full animate-spin"></div>
+                  <div className="cursor-pointer w-5 h-5 border-2 border-[#1a1b25] border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   initialData ? 'Save Changes' : 'Submit Idea'
                 )}
