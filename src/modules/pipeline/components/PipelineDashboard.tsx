@@ -21,7 +21,7 @@ export default function PipelineDashboard() {
   // Reset offset whenever filters change
   useEffect(() => {
     setOffset(0);
-  }, [search, departmentId]);
+  }, [search, departmentId, sort]);
 
   useEffect(() => {
     fetchDepartments();
@@ -29,7 +29,7 @@ export default function PipelineDashboard() {
 
   useEffect(() => {
     loadIdeas();
-  }, [search, departmentId, offset]);
+  }, [search, departmentId, offset, sort]);
 
   const fetchDepartments = async () => {
     try {
@@ -43,7 +43,8 @@ export default function PipelineDashboard() {
   const loadIdeas = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchPipelineIdeas(search, departmentId, PAGE_SIZE, offset);
+      const sortParam = sort === 'Most Reactions' ? 'reactions' : 'latest';
+      const data = await fetchPipelineIdeas(search, departmentId, PAGE_SIZE, offset, sortParam);
       setIdeas(data);
     } catch (error) {
       console.error('Failed to load ideas', error);
@@ -74,11 +75,8 @@ export default function PipelineDashboard() {
     return `${first?.charAt(0) || ''}${last?.charAt(0) || ''}`.toUpperCase();
   };
 
-  // Sort ideas client-side for Most Reactions (server always returns Latest)
+  // Use data directly from server (already sorted)
   const sortedIdeas = ideas?.data ? [...ideas.data] : [];
-  if (sort === 'Most Reactions') {
-    sortedIdeas.sort((a, b) => (b.reactions?.length || 0) - (a.reactions?.length || 0));
-  }
 
   // Pagination helpers
   const total = ideas?.total ?? 0;

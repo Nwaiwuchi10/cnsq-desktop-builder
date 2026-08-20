@@ -785,7 +785,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
     <div className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors sticky top-0 z-10 flex-shrink-0">
+      <div className="flex items-center justify-between gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-3 md:py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors sticky top-0 z-10 flex-shrink-0">
         <div className="flex items-center gap-3 flex-1">
           <button
             onClick={onBack}
@@ -1476,13 +1476,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    if (editMessage) saveEdit(editMessage.id);
-                    else postMessage();
-                  }
-                }}
               />
 
               <button

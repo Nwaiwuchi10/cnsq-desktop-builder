@@ -1231,7 +1231,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       {/* Main Conversation List (Hidden on mobile when thread is open) */}
       <div className={`flex flex-col h-full transition-all duration-300 ${threadParent ? (isChatCollapsed ? "hidden lg:hidden" : "hidden lg:flex lg:w-2/3 border-r border-gray-200 dark:border-gray-800") : "w-full"}`}>
         {/* Header */}
-        <div className="flex items-center gap-4 px-4 py-3 border-b sticky top-0 z-10 flex-shrink-0 bg-white dark:bg-[#141414]">
+        <div className="flex items-center gap-4 px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-3 md:py-3 border-b sticky top-0 z-10 flex-shrink-0 bg-white dark:bg-[#141414]">
           <button onClick={onBack} className="md:hidden p-2">
             ◀
           </button>
@@ -1966,13 +1966,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                     value={text}
                     onChange={handleTextChange}
                     rows={1}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        if (editMessage) saveEdit(editMessage.id);
-                        else postMessage();
-                      }
-                    }}
                   />
                   {showSuggestions && suggestions.length > 0 && (
                     <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-[60] backdrop-blur-md bg-opacity-95">
@@ -2723,12 +2716,6 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                         setThreadSuggestions([]);
                       }
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        postThreadReply();
-                      }
-                    }}
                   />
                   <button
                     onClick={postThreadReply}
@@ -2823,7 +2810,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       {threadParent && (
         <div className="lg:hidden fixed inset-0 z-[100] h-[100dvh] w-screen bg-white dark:bg-[#141414] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0 sticky top-0 z-10">
+          <div className="flex items-center gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-3 md:py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0 sticky top-0 z-10">
             <button
               onClick={() => updateThreadParent(null)}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
