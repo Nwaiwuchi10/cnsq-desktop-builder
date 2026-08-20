@@ -21,6 +21,7 @@ export default function PipelineIdeaDetails() {
   const [mentionSearch, setMentionSearch] = useState('');
   const [showMentions, setShowMentions] = useState(false);
   const [mentionIndex, setMentionIndex] = useState(-1);
+  const [mentionTarget, setMentionTarget] = useState<'main' | string>('main');
   const [commentFiles, setCommentFiles] = useState<File[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -158,10 +159,14 @@ export default function PipelineIdeaDetails() {
     setReplyFiles({ ...replyFiles, [parentId]: currentFiles.filter((_, i) => i !== index) });
   };
 
-  // Mention parsing (rudimentary)
-  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  // Mention parsing
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>, target: 'main' | string) => {
     const val = e.target.value;
-    setCommentText(val);
+    if (target === 'main') {
+      setCommentText(val);
+    } else {
+      setReplyText({...replyText, [target]: val});
+    }
 
     const cursorPosition = e.target.selectionStart;
     const textBeforeCursor = val.substring(0, cursorPosition);
@@ -173,11 +178,12 @@ export default function PipelineIdeaDetails() {
         setMentionSearch(searchStr.toLowerCase());
         setShowMentions(true);
         setMentionIndex(lastAtSymbolIndex);
+        setMentionTarget(target);
       } else {
-        // Space might be part of first/last name, but keep it simple for now
         if (searchStr.split(' ').length <= 2) {
           setMentionSearch(searchStr.toLowerCase());
           setShowMentions(true);
+          setMentionTarget(target);
         } else {
           setShowMentions(false);
         }
@@ -190,9 +196,28 @@ export default function PipelineIdeaDetails() {
   const insertMention = (staff: any) => {
     if (mentionIndex === -1) return;
     const name = `${staff.firstName} ${staff.lastName}`;
-    const before = commentText.substring(0, mentionIndex);
-    const after = commentText.substring(textareaRef.current?.selectionStart || commentText.length);
-    setCommentText(`${before}@${name} ${after}`);
+    
+    let currentText = '';
+    let selectionStart = 0;
+
+    if (mentionTarget === 'main') {
+      currentText = commentText;
+      selectionStart = textareaRef.current?.selectionStart || currentText.length;
+    } else {
+      currentText = replyText[mentionTarget] || '';
+      // Approximate the end of the mention since we don't track all refs
+      selectionStart = mentionIndex + mentionSearch.length + 1;
+    }
+
+    const before = currentText.substring(0, mentionIndex);
+    const after = currentText.substring(selectionStart);
+    const newText = `${before}@${name} ${after}`;
+
+    if (mentionTarget === 'main') {
+      setCommentText(newText);
+    } else {
+      setReplyText({...replyText, [mentionTarget]: newText});
+    }
     setShowMentions(false);
   };
 
@@ -330,19 +355,28 @@ export default function PipelineIdeaDetails() {
           AO
         </div>
         <div className="flex-1 relative">
-          <form onSubmit={handleAddComment} className="relative border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-[#141414] overflow-hidden focus-within:border-[#8ec32f] focus-within:ring-1 focus-within:ring-[#8ec32f]">
+          <form onSubmit={handleAddComment} className="relative border border-gray-200 dark:border-gray-800 rounded-xl bg-white dark:bg-[#141414] overflow-visible focus-within:border-[#8ec32f] focus-within:ring-1 focus-within:ring-[#8ec32f]">
             <textarea 
               ref={textareaRef}
               value={commentText}
-              onChange={handleCommentChange}
+              onChange={(e) => handleTextChange(e, 'main')}
               placeholder="Share your thoughts or tag someone with @..."
               className="w-full p-4 text-[13px] focus:outline-none min-h-[100px] resize-none bg-white dark:bg-[#141414] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
             />
-            {showMentions && filteredStaff.length > 0 && (
-              <div className="absolute left-0 bottom-full mb-1 w-64 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
-                {filteredStaff.map(s => (
-                  <div key={s.id} onClick={() => insertMention(s)} className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-[13px] font-medium text-gray-900 dark:text-white">
-                    {s.firstName} {s.lastName}
+            {showMentions && mentionTarget === 'main' && filteredStaff.length > 0 && (
+              <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50">
+                {filteredStaff.map((s) => (
+                  <div
+                    key={s.id}
+                    onClick={() => insertMention(s)}
+                    className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer group transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-[#8ec32f]/20 flex items-center justify-center text-[#8ec32f] font-bold text-xs group-hover:scale-110 transition-transform">
+                      {s.firstName?.[0]}{s.lastName?.[0]}
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                      {s.firstName} {s.lastName}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -361,10 +395,17 @@ export default function PipelineIdeaDetails() {
               </div>
             )}
             
-            <div className="px-4 pb-3 flex justify-end">
+            <div className="px-4 pb-3 flex justify-between items-center">
+              <div>
+                <label className="text-gray-400 hover:text-[#8ec32f] cursor-pointer p-2 flex items-center gap-1 transition-colors">
+                  <Paperclip size={16} />
+                  <span className="text-[12px] font-medium hidden sm:inline">Attach Files</span>
+                  <input type="file" multiple className="hidden" onChange={handleCommentFileChange} />
+                </label>
+              </div>
               <button 
                 type="submit" 
-                disabled={!commentText.trim()}
+                disabled={!commentText.trim() && commentFiles.length === 0}
                 className="bg-[#8ec32f] hover:bg-[#7cb028] text-[#1a1b25] dark:text-white px-4 md:px-6 py-1.5 md:py-2 rounded-md font-bold text-[13px] disabled:opacity-50 transition-colors"
               >
                 Comment
@@ -449,13 +490,31 @@ export default function PipelineIdeaDetails() {
             {/* Reply Input */}
             {replyingTo === comment.id && (
               <div className="mt-4 border-l-2 border-[#8ec32f] pl-6 ml-4">
-                <form onSubmit={(e) => handleReply(e, comment.id)}>
+                <form onSubmit={(e) => handleReply(e, comment.id)} className="relative overflow-visible">
                   <textarea 
                     value={replyText[comment.id] || ''}
-                    onChange={(e) => setReplyText({...replyText, [comment.id]: e.target.value})}
-                    placeholder="Write a reply..."
+                    onChange={(e) => handleTextChange(e, comment.id)}
+                    placeholder="Write a reply or tag someone with @..."
                     className="w-full border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-[#8ec32f] min-h-[80px] resize-none mb-2 bg-white dark:bg-[#141414] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   />
+                  {showMentions && mentionTarget === comment.id && filteredStaff.length > 0 && (
+                    <div className="absolute bottom-full left-0 mb-2 w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50">
+                      {filteredStaff.map((s) => (
+                        <div
+                          key={s.id}
+                          onClick={() => insertMention(s)}
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer group transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-[#8ec32f]/20 flex items-center justify-center text-[#8ec32f] font-bold text-xs group-hover:scale-110 transition-transform">
+                            {s.firstName?.[0]}{s.lastName?.[0]}
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                            {s.firstName} {s.lastName}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {replyFiles[comment.id] && replyFiles[comment.id].length > 0 && (
                     <div className="mb-2 flex flex-wrap gap-2">

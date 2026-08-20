@@ -286,7 +286,7 @@ export default function SubmitIdeaForm({ initialData, onSuccess, onCancel }: Sub
                   ref={descRef}
                   value={description}
                   onChange={handleDescriptionChange}
-                  placeholder="Describe your idea in detail. Use **bold**, _italic_, - lists, or @mention a colleague."
+                  placeholder="Describe your idea in detail. Use @mention a colleague."
                   className="w-full p-4 text-sm bg-white dark:bg-[#141414] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none resize-y min-h-[200px] rounded-t-xl"
                   required
                 />
