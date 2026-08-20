@@ -408,7 +408,7 @@ export default function SubmitIdeaForm({ initialData, onSuccess, onCancel }: Sub
           </div>
         </form>
 
-        {/* ── Tips sidebar ── */}
+        {/* ── Tips sidebar ── **/}
         <div className="lg:col-span-4">
           <div className="bg-white dark:bg-[#141414] border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-[0_2px_10px_rgba(0,0,0,0.02)] sticky top-6">
             <div className="flex items-center gap-2 mb-4">
