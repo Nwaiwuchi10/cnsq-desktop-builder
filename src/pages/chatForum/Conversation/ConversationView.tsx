@@ -1531,7 +1531,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
                 <input
                   type="file"
                   multiple
-                  accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+                  accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt,.ppt,.pptx,.md"
                   className="hidden"
                   onChange={(e: any) => {
                     if (e.target.files) {
@@ -1661,7 +1661,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
               <input
                 type="file"
                 multiple
-                accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+                accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt,.ppt,.pptx,.md"
                 className="hidden"
                 onChange={(e: any) => {
                   if (e.target.files) {

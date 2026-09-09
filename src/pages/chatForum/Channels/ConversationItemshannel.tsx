@@ -15,24 +15,29 @@ const ChannelConversationItem: React.FC<{
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-[#141414] transition-colors text-gray-600 dark:text-gray-400 rounded-xl mb-4 p-3 flex gap-4 items-start shadow-md cursor-pointer border border-transparent hover:border-lime-500 transition-shadow"
+      className="bg-white dark:bg-[#141414] rounded-2xl p-4 flex gap-3 items-center shadow-sm cursor-pointer border border-gray-100 dark:border-gray-800 hover:border-lime-500 transition-colors"
     >
-      {/* <Avatar name={name} src={item.avatar} /> */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-3">
-          <div className="font-semibold text-gray-800 dark:text-gray-200 truncate">{name}</div>
-          <div className="text-xs text-gray-400">{time}</div>
-        </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">{preview}</div>
+      {/* Green Hash Icon */}
+      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#eef8cc] dark:bg-[#2b3a10] flex items-center justify-center text-[#7cb314] dark:text-[#9df01d] font-bold text-lg">
+        #
       </div>
 
-      {item.unread ? (
-        <div className="flex items-center">
-          <div className="text-xs bg-orange-400 text-white rounded-full px-2 py-0.5">
-            {item.unread}
-          </div>
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        <div className="flex items-center justify-between">
+          <div className="font-bold text-gray-900 dark:text-gray-100 text-[15px] truncate">{name.replace(/^#\s*/, '')}</div>
+          <div className="text-[11px] text-gray-400 font-medium">{time}</div>
         </div>
-      ) : null}
+        <div className="flex items-center justify-between mt-0.5">
+          <div className="text-[13px] text-gray-500 dark:text-gray-400 truncate pr-2">{preview || " "}</div>
+          {item.unread ? (
+            <div className="flex-shrink-0 bg-[#F58220] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {item.unread}
+            </div>
+          ) : (
+            <div className="w-5 h-5 flex-shrink-0"></div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

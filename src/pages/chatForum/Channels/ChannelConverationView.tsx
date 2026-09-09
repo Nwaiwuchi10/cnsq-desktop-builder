@@ -1943,7 +1943,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           />
         </div>
 
-        {/* Input */}
+        {/* Input **/}
         {/* ================= MOBILE & TABLET VIEW ================= */}
         <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden flex-shrink-0">
           <div className="flex flex-col gap-3">
@@ -2031,7 +2031,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                   <input
                     type="file"
                     multiple
-                    accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+                    accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt,.ppt,.pptx,.md"
                     className="hidden"
                     onChange={(e: any) => {
                       if (e.target.files) {
@@ -2216,7 +2216,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 <input
                   type="file"
                   multiple
-                  accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt"
+                  accept="image/*,video/*,audio/*,.mp3,.wav,.m4a,.pdf,.doc,.docx,.txt,.ppt,.pptx,.md"
                   className="hidden"
                   onChange={(e: any) => {
                     if (e.target.files) {
@@ -2380,216 +2380,216 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                       {formatDate(threadParent.createdAt || "")}
                     </div>
                   </div>
-                <ChannelMessageBubble
-                  text={threadParent.text ? parseMentions(parseLinks(threadParent.text)) : null}
-                  authorName={
-                    threadParent.author
-                      ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
-                      : threadParent.name
-                  }
-                  avatar={threadParent.author?.photoUrl || threadParent.author?.avatar}
-                  time={threadParent.time}
-                  me={threadParent.me}
-                  pinned={threadParent.pinned}
-                  reactions={threadParent.reactions}
-                  onTogglePin={() => togglePin(threadParent.id)}
-                  onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
-                  onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
-                />
-              </div>
+                  <ChannelMessageBubble
+                    text={threadParent.text ? parseMentions(parseLinks(threadParent.text)) : null}
+                    authorName={
+                      threadParent.author
+                        ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
+                        : threadParent.name
+                    }
+                    avatar={threadParent.author?.photoUrl || threadParent.author?.avatar}
+                    time={threadParent.time}
+                    me={threadParent.me}
+                    pinned={threadParent.pinned}
+                    reactions={threadParent.reactions}
+                    onTogglePin={() => togglePin(threadParent.id)}
+                    onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
+                    onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
+                  />
+                </div>
 
-              {/* Thread Replies */}
-              <div className="space-y-4">
+                {/* Thread Replies */}
+                <div className="space-y-4">
 
-                {isThreadLoading ? (
-                  <div className="flex justify-center p-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
-                  </div>
-                ) : (
-                  (() => {
-                    let lastThreadDate = formatDate(threadParent.createdAt || "");
-                    return threadMessages.map((tm: any) => {
-                      const msgDate = formatDate(tm.createdAt);
-                      const showDateSeparator = msgDate !== lastThreadDate;
-                      lastThreadDate = msgDate;
+                  {isThreadLoading ? (
+                    <div className="flex justify-center p-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                    </div>
+                  ) : (
+                    (() => {
+                      let lastThreadDate = formatDate(threadParent.createdAt || "");
+                      return threadMessages.map((tm: any) => {
+                        const msgDate = formatDate(tm.createdAt);
+                        const showDateSeparator = msgDate !== lastThreadDate;
+                        lastThreadDate = msgDate;
 
-                      return (
-                        <React.Fragment key={tm.id}>
-                          {showDateSeparator && (
-                            <div className="flex justify-center my-2">
-                              <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
-                                {msgDate}
+                        return (
+                          <React.Fragment key={tm.id}>
+                            {showDateSeparator && (
+                              <div className="flex justify-center my-2">
+                                <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                                  {msgDate}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          <div className="relative group/reply">
-                      {(tm.text || (tm.attachments?.length ?? 0) > 0) && (
-                        <>
-                          <ChannelMessageBubble
-                            text={
-                              tm.text ? (
+                            )}
+                            <div className="relative group/reply">
+                              {(tm.text || (tm.attachments?.length ?? 0) > 0) && (
                                 <>
-                                  {parseMentions(parseLinks(tm.text, tm.me))}
-                                  {tm.edited && (
-                                    <span className="text-[10px] text-gray-500 italic ml-1">(edited)</span>
-                                  )}
+                                  <ChannelMessageBubble
+                                    text={
+                                      tm.text ? (
+                                        <>
+                                          {parseMentions(parseLinks(tm.text, tm.me))}
+                                          {tm.edited && (
+                                            <span className="text-[10px] text-gray-500 italic ml-1">(edited)</span>
+                                          )}
+                                        </>
+                                      ) : null
+                                    }
+                                    authorName={
+                                      tm.author
+                                        ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
+                                        : tm.name
+                                    }
+                                    avatar={tm.author?.photoUrl || tm.author?.avatar}
+                                    time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    me={tm.author.id === currentUserId}
+                                    selected={selectedThreadMessageId === tm.id}
+                                    reactions={tm.reactions}
+                                    onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
+                                    onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
+                                    onViewReactors={() => setThreadReactorsModalMessageId(tm.id)}
+                                    attachments={tm.attachments}
+                                  />
                                 </>
-                              ) : null
-                            }
-                            authorName={
-                              tm.author
-                                ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
-                                : tm.name
-                            }
-                            avatar={tm.author?.photoUrl || tm.author?.avatar}
-                            time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            me={tm.author.id === currentUserId}
-                            selected={selectedThreadMessageId === tm.id}
-                            reactions={tm.reactions}
-                            onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
-                            onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
-                            onViewReactors={() => setThreadReactorsModalMessageId(tm.id)}
-                            attachments={tm.attachments}
-                          />
-                        </>
-                      )}
+                              )}
 
-                      {/* Thread Parent Rendering */}
-                      {tm.parent && (
-                        <div className="max-w-[85%] mb-2 ml-2 mt-1">
-                          <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-2 text-xs shadow-sm">
-                            <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                              Replying to {tm.parent.author?.firstName || "User"}:
-                            </div>
-                            <div className="text-gray-700 dark:text-gray-300 mb-1">
-                              {tm.parent.text || (() => {
-                                const firstAttachment = tm.parent.attachments?.[0];
-                                const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
-                                if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
-                                  return "📷 Photo";
-                                }
-                                if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                                  return "🎥 Video";
-                                }
-                                return "📁 Attachment";
-                              })()}
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                              {/* Thread Parent Rendering */}
+                              {tm.parent && (
+                                <div className="max-w-[85%] mb-2 ml-2 mt-1">
+                                  <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-2 text-xs shadow-sm">
+                                    <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                      Replying to {tm.parent.author?.firstName || "User"}:
+                                    </div>
+                                    <div className="text-gray-700 dark:text-gray-300 mb-1">
+                                      {tm.parent.text || (() => {
+                                        const firstAttachment = tm.parent.attachments?.[0];
+                                        const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                                        if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                          return "📷 Photo";
+                                        }
+                                        if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                          return "🎥 Video";
+                                        }
+                                        return "📁 Attachment";
+                                      })()}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
 
-                      {selectedThreadMessageId === tm.id && (
-                        <div className={`flex flex-col gap-2 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit max-w-full shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                              {selectedThreadMessageId === tm.id && (
+                                <div className={`flex flex-col gap-2 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit max-w-full shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                         ${tm.author?.id === currentUserId ? 'ml-auto' : 'mr-auto'}
                       `}>
-                          {/* Quick Emoji Reactions */}
-                          <div className="flex items-center gap-1.5 pb-2 border-b border-[#2d3239] overflow-x-auto no-scrollbar">
-                            <span className="text-[11px] font-semibold text-gray-400 mr-1 flex-shrink-0">React:</span>
-                            {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
-                              <button
-                                key={emoji}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleReaction(tm.id, emoji, true);
-                                  setSelectedThreadMessageId(null);
-                                }}
-                                className="p-1 hover:bg-gray-700/60 rounded-lg text-base transition-transform active:scale-125 hover:scale-110 flex-shrink-0"
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setReactingToThreadMessageId(tm.id);
-                              }}
-                              className="px-2 py-0.5 hover:bg-gray-700/60 rounded-lg text-[11px] font-bold text-blue-400 border border-dashed border-blue-500/50 flex-shrink-0 flex items-center gap-0.5"
-                              title="More Emojis"
-                            >
-                              <span>➕</span>
-                              <span>More</span>
-                            </button>
-                          </div>
+                                  {/* Quick Emoji Reactions */}
+                                  <div className="flex items-center gap-1.5 pb-2 border-b border-[#2d3239] overflow-x-auto no-scrollbar">
+                                    <span className="text-[11px] font-semibold text-gray-400 mr-1 flex-shrink-0">React:</span>
+                                    {["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥"].map((emoji) => (
+                                      <button
+                                        key={emoji}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleReaction(tm.id, emoji, true);
+                                          setSelectedThreadMessageId(null);
+                                        }}
+                                        className="p-1 hover:bg-gray-700/60 rounded-lg text-base transition-transform active:scale-125 hover:scale-110 flex-shrink-0"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setReactingToThreadMessageId(tm.id);
+                                      }}
+                                      className="px-2 py-0.5 hover:bg-gray-700/60 rounded-lg text-[11px] font-bold text-blue-400 border border-dashed border-blue-500/50 flex-shrink-0 flex items-center gap-0.5"
+                                      title="More Emojis"
+                                    >
+                                      <span>➕</span>
+                                      <span>More</span>
+                                    </button>
+                                  </div>
 
-                          <div className="flex flex-wrap items-center gap-4">
-                            {tm.author?.id === currentUserId && (
-                              <>
-                                <button
-                                  onClick={() => {
-                                    setEditThreadMessage(tm);
-                                    setThreadText(tm.text);
-                                    setSelectedThreadMessageId(null);
-                                  }}
-                                  className="flex items-center gap-2 text-[#3498db] hover:text-[#5dade2] transition-all duration-200 group"
-                                  title="Edit"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                  <span className="text-[13px] font-semibold">Edit</span>
-                                </button>
-                                <button
-                                  onClick={() => deleteThreadReply(tm.id)}
-                                  disabled={deletingThreadReplyIds.has(tm.id)}
-                                  className="flex items-center gap-2 text-[#e74c3c] hover:text-[#ec7063] transition-all duration-200 group disabled:opacity-50"
-                                  title="Delete"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                  <span className="text-[13px] font-semibold">{deletingThreadReplyIds.has(tm.id) ? "..." : "Delete"}</span>
-                                </button>
-                              </>
-                            )}
-                            <button
-                              onClick={() => {
-                                setThreadReplyingTo(tm);
-                                setSelectedThreadMessageId(null);
-                              }}
-                              className="flex items-center gap-2 text-[#abb2bf] hover:text-white transition-all duration-200 group"
-                              title="Reply"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-                              <span className="text-[13px] font-semibold">Reply</span>
-                            </button>
+                                  <div className="flex flex-wrap items-center gap-4">
+                                    {tm.author?.id === currentUserId && (
+                                      <>
+                                        <button
+                                          onClick={() => {
+                                            setEditThreadMessage(tm);
+                                            setThreadText(tm.text);
+                                            setSelectedThreadMessageId(null);
+                                          }}
+                                          className="flex items-center gap-2 text-[#3498db] hover:text-[#5dade2] transition-all duration-200 group"
+                                          title="Edit"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                          <span className="text-[13px] font-semibold">Edit</span>
+                                        </button>
+                                        <button
+                                          onClick={() => deleteThreadReply(tm.id)}
+                                          disabled={deletingThreadReplyIds.has(tm.id)}
+                                          className="flex items-center gap-2 text-[#e74c3c] hover:text-[#ec7063] transition-all duration-200 group disabled:opacity-50"
+                                          title="Delete"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                          <span className="text-[13px] font-semibold">{deletingThreadReplyIds.has(tm.id) ? "..." : "Delete"}</span>
+                                        </button>
+                                      </>
+                                    )}
+                                    <button
+                                      onClick={() => {
+                                        setThreadReplyingTo(tm);
+                                        setSelectedThreadMessageId(null);
+                                      }}
+                                      className="flex items-center gap-2 text-[#abb2bf] hover:text-white transition-all duration-200 group"
+                                      title="Reply"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                                      <span className="text-[13px] font-semibold">Reply</span>
+                                    </button>
 
-                            <button
-                              onClick={() => {
-                                togglePin(tm.id);
-                                setSelectedThreadMessageId(null);
-                              }}
-                              className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
-                              title={tm.pinned ? "Unpin" : "Pin"}
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
-                              <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
-                            </button>
+                                    <button
+                                      onClick={() => {
+                                        togglePin(tm.id);
+                                        setSelectedThreadMessageId(null);
+                                      }}
+                                      className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                                      title={tm.pinned ? "Unpin" : "Pin"}
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                                      <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
+                                    </button>
 
-                            <button
-                              onClick={() => {
-                                setThreadMessageInfoId(tm.id);
-                                setSelectedThreadMessageId(null);
-                              }}
-                              className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
-                              title="Message Info (Read Receipts)"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
-                              <span className="text-[13px] font-semibold">Info</span>
-                            </button>
+                                    <button
+                                      onClick={() => {
+                                        setThreadMessageInfoId(tm.id);
+                                        setSelectedThreadMessageId(null);
+                                      }}
+                                      className="flex items-center gap-2 text-[#abb2bf] hover:text-[#95D700] transition-all duration-200 group"
+                                      title="Message Info (Read Receipts)"
+                                    >
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                      <span className="text-[13px] font-semibold">Info</span>
+                                    </button>
 
-                            <button
-                              onClick={() => setSelectedThreadMessageId(null)}
-                              className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                        </React.Fragment>
-                      );
-                    })
-                  })()
-                )}
+                                    <button
+                                      onClick={() => setSelectedThreadMessageId(null)}
+                                      className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </React.Fragment>
+                        );
+                      })
+                    })()
+                  )}
+                </div>
               </div>
-            </div>
 
               <ScrollToBottomButton
                 show={showThreadScrollBottom}
@@ -2853,203 +2853,203 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           {/* Messages Scroll Area Wrapper */}
           <div className="relative flex-1 min-h-0 flex flex-col">
             <div ref={threadScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Parent Message */}
-            <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex justify-center my-2">
-                <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
-                  {formatDate(threadParent.createdAt || "")}
+              {/* Parent Message */}
+              <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex justify-center my-2">
+                  <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                    {formatDate(threadParent.createdAt || "")}
+                  </div>
                 </div>
+                <ChannelMessageBubble
+                  text={parseMentions(parseLinks(threadParent.text || ""))}
+                  authorName={
+                    threadParent.author
+                      ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
+                      : threadParent.name
+                  }
+                  avatar={threadParent.author?.photoUrl || threadParent.author?.avatar}
+                  time={threadParent.time}
+                  me={threadParent.me}
+                  pinned={threadParent.pinned}
+                  reactions={threadParent.reactions}
+                  onTogglePin={() => togglePin(threadParent.id)}
+                  onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
+                  onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
+                />
               </div>
-              <ChannelMessageBubble
-                text={parseMentions(parseLinks(threadParent.text || ""))}
-                authorName={
-                  threadParent.author
-                    ? `${threadParent.author.firstName || ""} ${(threadParent.author as any).lastName || ""}`.trim()
-                    : threadParent.name
-                }
-                avatar={threadParent.author?.photoUrl || threadParent.author?.avatar}
-                time={threadParent.time}
-                me={threadParent.me}
-                pinned={threadParent.pinned}
-                reactions={threadParent.reactions}
-                onTogglePin={() => togglePin(threadParent.id)}
-                onReact={(emoji) => toggleReaction(threadParent.id, emoji)}
-                onViewReactors={() => setReactorsModalMessageId(threadParent.id)}
-              />
-            </div>
 
-            {/* Thread Replies */}
-            {isThreadLoading ? (
-              <div className="flex justify-center py-6">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
-              </div>
-            ) : threadMessages.length === 0 ? (
-              <div className="text-center text-gray-400 text-sm py-4">
-                No replies yet. Be the first to reply!
-              </div>
-            ) : (
-              (() => {
-                let lastThreadDate = formatDate(threadParent.createdAt || "");
-                return threadMessages.map((tm: any) => {
-                  const msgDate = formatDate(tm.createdAt);
-                  const showDateSeparator = msgDate !== lastThreadDate;
-                  lastThreadDate = msgDate;
+              {/* Thread Replies */}
+              {isThreadLoading ? (
+                <div className="flex justify-center py-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                </div>
+              ) : threadMessages.length === 0 ? (
+                <div className="text-center text-gray-400 text-sm py-4">
+                  No replies yet. Be the first to reply!
+                </div>
+              ) : (
+                (() => {
+                  let lastThreadDate = formatDate(threadParent.createdAt || "");
+                  return threadMessages.map((tm: any) => {
+                    const msgDate = formatDate(tm.createdAt);
+                    const showDateSeparator = msgDate !== lastThreadDate;
+                    lastThreadDate = msgDate;
 
-                  return (
-                    <React.Fragment key={tm.id}>
-                      {showDateSeparator && (
-                        <div className="flex justify-center my-2">
-                          <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
-                            {msgDate}
+                    return (
+                      <React.Fragment key={tm.id}>
+                        {showDateSeparator && (
+                          <div className="flex justify-center my-2">
+                            <div className="px-3 py-1 bg-gray-200 dark:bg-gray-800 transition-colors text-gray-700 dark:text-gray-300 text-xs rounded-full mb-4">
+                              {msgDate}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      <div className="relative group/reply mb-4">
-                  {(tm.text || (tm.attachments?.length ?? 0) > 0) && (
-                    <>
-                      <ChannelMessageBubble
-                        text={
-                          tm.text ? (
+                        )}
+                        <div className="relative group/reply mb-4">
+                          {(tm.text || (tm.attachments?.length ?? 0) > 0) && (
                             <>
-                              {parseMentions(parseLinks(tm.text || ""))}
-                              {tm.edited && (
-                                <span className="text-[10px] text-gray-500 italic ml-1">(edited)</span>
-                              )}
+                              <ChannelMessageBubble
+                                text={
+                                  tm.text ? (
+                                    <>
+                                      {parseMentions(parseLinks(tm.text || ""))}
+                                      {tm.edited && (
+                                        <span className="text-[10px] text-gray-500 italic ml-1">(edited)</span>
+                                      )}
+                                    </>
+                                  ) : null
+                                }
+                                authorName={
+                                  tm.author
+                                    ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
+                                    : tm.name
+                                }
+                                avatar={tm.author?.photoUrl || tm.author?.avatar}
+                                time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                me={tm.author?.id === currentUserId}
+                                selected={selectedThreadMessageId === tm.id}
+                                reactions={
+                                  tm.reactions && typeof tm.reactions === 'object' && !Array.isArray(tm.reactions)
+                                    ? tm.reactions
+                                    : normalizeReactions(tm.reactions || [])
+                                }
+                                onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
+                                onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
+                                onViewReactors={() => setReactorsModalMessageId(tm.id)}
+                                attachments={tm.attachments}
+                              />
                             </>
-                          ) : null
-                        }
-                        authorName={
-                          tm.author
-                            ? `${tm.author.firstName || ""} ${(tm.author as any).lastName || ""}`.trim()
-                            : tm.name
-                        }
-                        avatar={tm.author?.photoUrl || tm.author?.avatar}
-                        time={new Date(tm.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        me={tm.author?.id === currentUserId}
-                        selected={selectedThreadMessageId === tm.id}
-                        reactions={
-                          tm.reactions && typeof tm.reactions === 'object' && !Array.isArray(tm.reactions)
-                            ? tm.reactions
-                            : normalizeReactions(tm.reactions || [])
-                        }
-                        onReact={(emoji) => toggleReaction(tm.id, emoji, true)}
-                        onClick={() => setSelectedThreadMessageId(selectedThreadMessageId === tm.id ? null : tm.id)}
-                        onViewReactors={() => setReactorsModalMessageId(tm.id)}
-                        attachments={tm.attachments}
-                      />
-                    </>
-                  )}
+                          )}
 
-                  {/* Thread Parent Rendering (Mobile) */}
-                  {tm.parent && (
-                    <div className="max-w-[85%] mb-2 ml-2 mt-1">
-                      <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-2 text-xs shadow-sm">
-                        <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                          Replying to {tm.parent.author?.firstName || "User"}:
-                        </div>
-                        <div className="text-gray-700 dark:text-gray-300 mb-1">
-                          {tm.parent.text || (() => {
-                            const firstAttachment = tm.parent.attachments?.[0];
-                            const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
-                            if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
-                              return "📷 Photo";
-                            }
-                            if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
-                              return "🎥 Video";
-                            }
-                            return "📁 Attachment";
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                          {/* Thread Parent Rendering (Mobile) */}
+                          {tm.parent && (
+                            <div className="max-w-[85%] mb-2 ml-2 mt-1">
+                              <div className="border border-lime-500 bg-gray-100 dark:bg-gray-800 transition-colors rounded-xl p-2 text-xs shadow-sm">
+                                <div className="font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                                  Replying to {tm.parent.author?.firstName || "User"}:
+                                </div>
+                                <div className="text-gray-700 dark:text-gray-300 mb-1">
+                                  {tm.parent.text || (() => {
+                                    const firstAttachment = tm.parent.attachments?.[0];
+                                    const ext = firstAttachment?.filename?.split(".").pop()?.toLowerCase();
+                                    if (firstAttachment?.mimeType?.startsWith("image/") || (ext && ["png", "jpg", "jpeg", "gif", "webp"].includes(ext))) {
+                                      return "📷 Photo";
+                                    }
+                                    if (firstAttachment?.mimeType?.startsWith("video/") || (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext))) {
+                                      return "🎥 Video";
+                                    }
+                                    return "📁 Attachment";
+                                  })()}
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
-                  {selectedThreadMessageId === tm.id && (
-                    <div className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
+                          {selectedThreadMessageId === tm.id && (
+                            <div className={`flex flex-wrap items-center gap-5 mt-2 px-5 py-2.5 rounded-2xl bg-[#1a1d21] dark:bg-[#1a1d21] w-fit shadow-2xl border border-[#2d3239] backdrop-blur-md z-20
                       ${tm.author?.id === currentUserId ? 'ml-auto flex-row-reverse' : 'mr-auto'}
                     `}>
-                      {tm.author?.id === currentUserId && (
-                        <>
-                          <button
-                            onClick={() => {
-                              setEditThreadMessage(tm);
-                              setThreadText(tm.text);
-                              setSelectedThreadMessageId(null);
-                            }}
-                            className="flex items-center gap-2 text-[#3498db] hover:text-[#5dade2] transition-all duration-200 group"
-                            title="Edit"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            <span className="text-[13px] font-semibold">Edit</span>
-                          </button>
-                          <button
-                            onClick={() => deleteThreadReply(tm.id)}
-                            disabled={deletingThreadReplyIds.has(tm.id)}
-                            className="flex items-center gap-2 text-[#e74c3c] hover:text-[#ec7063] transition-all duration-200 group disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                            <span className="text-[13px] font-semibold">{deletingThreadReplyIds.has(tm.id) ? "..." : "Delete"}</span>
-                          </button>
-                        </>
-                      )}
-                      <button
-                        onClick={() => {
-                          setThreadReplyingTo(tm);
-                          setSelectedThreadMessageId(null);
-                        }}
-                        className="flex items-center gap-2 text-[#abb2bf] hover:text-white transition-all duration-200 group"
-                        title="Reply"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
-                        <span className="text-[13px] font-semibold">Reply</span>
-                      </button>
+                              {tm.author?.id === currentUserId && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setEditThreadMessage(tm);
+                                      setThreadText(tm.text);
+                                      setSelectedThreadMessageId(null);
+                                    }}
+                                    className="flex items-center gap-2 text-[#3498db] hover:text-[#5dade2] transition-all duration-200 group"
+                                    title="Edit"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    <span className="text-[13px] font-semibold">Edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => deleteThreadReply(tm.id)}
+                                    disabled={deletingThreadReplyIds.has(tm.id)}
+                                    className="flex items-center gap-2 text-[#e74c3c] hover:text-[#ec7063] transition-all duration-200 group disabled:opacity-50"
+                                    title="Delete"
+                                  >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    <span className="text-[13px] font-semibold">{deletingThreadReplyIds.has(tm.id) ? "..." : "Delete"}</span>
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setThreadReplyingTo(tm);
+                                  setSelectedThreadMessageId(null);
+                                }}
+                                className="flex items-center gap-2 text-[#abb2bf] hover:text-white transition-all duration-200 group"
+                                title="Reply"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>
+                                <span className="text-[13px] font-semibold">Reply</span>
+                              </button>
 
-                      <button
-                        onClick={() => {
-                          toggleReaction(tm.id, "👍", true);
-                          setSelectedThreadMessageId(null);
-                        }}
-                        className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
-                        title="Like 👍"
-                      >
-                        <span className="text-base">👍</span>
-                        <span className="text-[13px] font-semibold">Like</span>
-                      </button>
+                              <button
+                                onClick={() => {
+                                  toggleReaction(tm.id, "👍", true);
+                                  setSelectedThreadMessageId(null);
+                                }}
+                                className="flex items-center gap-1.5 text-[#abb2bf] hover:text-yellow-500 transition-all duration-200"
+                                title="Like 👍"
+                              >
+                                <span className="text-base">👍</span>
+                                <span className="text-[13px] font-semibold">Like</span>
+                              </button>
 
-                      <button
-                        onClick={() => {
-                          toggleReaction(tm.id, "❤️", true);
-                          setSelectedThreadMessageId(null);
-                        }}
-                        className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
-                        title="Love ❤️"
-                      >
-                        <span className="text-base">❤️</span>
-                        <span className="text-[13px] font-semibold">Love</span>
-                      </button>
+                              <button
+                                onClick={() => {
+                                  toggleReaction(tm.id, "❤️", true);
+                                  setSelectedThreadMessageId(null);
+                                }}
+                                className="flex items-center gap-1.5 text-[#abb2bf] hover:text-red-500 transition-all duration-200"
+                                title="Love ❤️"
+                              >
+                                <span className="text-base">❤️</span>
+                                <span className="text-[13px] font-semibold">Love</span>
+                              </button>
 
-                      <button
-                        onClick={() => {
-                          togglePin(tm.id);
-                          setSelectedThreadMessageId(null);
-                        }}
-                        className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
-                        title={tm.pinned ? "Unpin" : "Pin"}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
-                        <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
-                      </button>
+                              <button
+                                onClick={() => {
+                                  togglePin(tm.id);
+                                  setSelectedThreadMessageId(null);
+                                }}
+                                className="flex items-center gap-2 text-[#abb2bf] hover:text-blue-500 transition-all duration-200"
+                                title={tm.pinned ? "Unpin" : "Pin"}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v8" /><path d="m16 4-4 4-4-4" /><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><path d="M15 12H9" /></svg>
+                                <span className="text-[13px] font-semibold">{tm.pinned ? "Unpin" : "Pin"}</span>
+                              </button>
 
-                      <button
-                        onClick={() => setSelectedThreadMessageId(null)}
-                        className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
+                              <button
+                                onClick={() => setSelectedThreadMessageId(null)}
+                                className="text-[#abb2bf] hover:text-white transition-colors text-xs font-bold"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </React.Fragment>
                     );
                   })
