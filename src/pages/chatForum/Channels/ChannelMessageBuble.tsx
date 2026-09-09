@@ -77,7 +77,6 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
   })();
 
   return (
-  return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
@@ -175,9 +174,6 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           <span className="text-[11px] font-bold text-gray-400 hover:text-gray-600 cursor-pointer">
             Reply
           </span>
-        </div>
-
-
         </div>
 
         {/* Reactions Section */}
