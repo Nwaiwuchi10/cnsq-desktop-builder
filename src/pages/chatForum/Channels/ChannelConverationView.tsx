@@ -78,6 +78,26 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   initialThreadParentId,
 }) => {
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [localIsLocked, setLocalIsLocked] = useState((conversation as any)?.isLocked || false);
+  const [localMembers, setLocalMembers] = useState((conversation as any)?.members || []);
+
+  useEffect(() => {
+    setLocalIsLocked((conversation as any)?.isLocked || false);
+    setLocalMembers((conversation as any)?.members || []);
+
+    if (conversation?.id) {
+      const token = localStorage.getItem("user-token");
+      Api.get(`/chat/channels/${conversation.id}/members`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+         if (Array.isArray(res.data)) {
+           setLocalMembers(res.data);
+         }
+      })
+      .catch(err => console.error("Failed to fetch channel members", err));
+    }
+  }, [conversation]);
   const [text, setText] = useState("");
 
   const [files, setFiles] = useState<File[]>([]);
@@ -721,6 +741,22 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       );
     });
 
+    socketRef.current.on("channel:lockedStatusChanged", (data: any) => {
+      if (conversation?.id === data.conversationId) {
+        setLocalIsLocked(data.isLocked);
+      }
+    });
+
+    socketRef.current.on("channel:memberRoleUpdated", (data: any) => {
+      if (conversation?.id === data.conversationId) {
+        setLocalMembers((prev: any) =>
+          prev.map((m: any) =>
+            (m.id === data.memberId || m.user?.id == data.userId || m.userId == data.userId) ? { ...m, role: data.newRole } : m
+          )
+        );
+      }
+    });
+
     return () => {
       socketRef.current?.emit("leaveConversation", conversation?.id);
       socketRef.current?.disconnect();
@@ -1224,6 +1260,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const pinnedMessages = messages.filter((m) => m.pinned);
   const latestPinnedMessage = pinnedMessages[pinnedMessages.length - 1];
 
+  const currentUserMember = localMembers.find(
+    (m: any) => m.user?.id == currentUserId || m.userId == currentUserId || m.id == currentUserId
+  );
+  const isUserAdmin = currentUserMember?.role === "admin" || currentUserMember?.role === "owner" || currentUserMember?.role === "ADMIN" || currentUserMember?.role === "OWNER";
+  const isChannelLocked = localIsLocked;
+  const canSendMessage = !isChannelLocked || isUserAdmin;
+
   return (
 
     <div className="flex w-full h-full text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141414]">
@@ -1351,7 +1394,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             id: conversation?.id || "",
             name: conversation?.name || "Channel",
             description: (conversation as any)?.description || "Channel discussion group",
-            members: (conversation as any)?.members || [],
+            members: localMembers,
+            isLocked: localIsLocked,
           }}
         />
 
@@ -1906,7 +1950,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             })()}
           </div>
           <ScrollToBottomButton
-            show={showScrollBottom}
+            show={showScrollBottom && !isGroupInfoOpen && !isThreadGroupInfoOpen}
             onClick={() => {
               scrollRef.current?.scrollTo({
                 top: scrollRef.current.scrollHeight,
@@ -1918,6 +1962,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
         {/* Input **/}
         {/* ================= MOBILE & TABLET VIEW ================= */}
+        {canSendMessage ? (
         <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden flex-shrink-0">
           <div className="flex flex-col gap-3">
             {/* File Previews */}
@@ -2095,8 +2140,14 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
           </div>
         </div>
+        ) : (
+          <div className="p-4 pb-safe pb-6 border-t bg-white dark:bg-[#141414] transition-colors md:hidden flex-shrink-0 flex items-center justify-center">
+            <span className="text-sm font-medium text-gray-500">Only admins can send messages</span>
+          </div>
+        )}
 
         {/* ================= DESKTOP VIEW (unchanged) ================= */}
+        {canSendMessage ? (
         <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors hidden md:flex flex-col gap-2">
           {/* File Previews */}
           {files.length > 0 && (
@@ -2275,6 +2326,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
           </div>
         </div>
+        ) : (
+          <div className="p-4 border-t bg-white dark:bg-[#141414] transition-colors hidden md:flex items-center justify-center">
+            <span className="text-sm font-medium text-gray-500">Only admins can send messages</span>
+          </div>
+        )}
       </div>
 
       {/* Thread Side Panel */}
@@ -2339,7 +2395,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 id: conversation?.id || "",
                 name: conversation?.name || "Channel",
                 description: (conversation as any)?.description || "Channel discussion group",
-                members: (conversation as any)?.members || [],
+                members: localMembers,
+                isLocked: localIsLocked,
               }}
             />
 
@@ -2565,7 +2622,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               </div>
 
               <ScrollToBottomButton
-                show={showThreadScrollBottom}
+                show={showThreadScrollBottom && !isGroupInfoOpen && !isThreadGroupInfoOpen}
                 onClick={() => {
                   threadScrollRef.current?.scrollTo({
                     top: threadScrollRef.current.scrollHeight,
@@ -2575,7 +2632,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               />
             </div>
 
-            {/* Thread Input */}
+            {canSendMessage ? (
             <div className="p-4 border-t bg-white dark:bg-[#141414]">
               {/* Editing Indicator */}
               {editThreadMessage && (
@@ -2802,6 +2859,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
                 </div>
               </div>
             </div>
+            ) : (
+              <div className="p-4 border-t bg-white dark:bg-[#141414] text-center text-sm text-gray-500">
+                Only admins can send messages
+              </div>
+            )}
           </div>
         </>
       )}
@@ -3031,7 +3093,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             </div>
 
             <ScrollToBottomButton
-              show={showThreadScrollBottom}
+              show={showThreadScrollBottom && !isGroupInfoOpen && !isThreadGroupInfoOpen}
               onClick={() => {
                 threadScrollRef.current?.scrollTo({
                   top: threadScrollRef.current.scrollHeight,
@@ -3041,7 +3103,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
             />
           </div>
 
-          {/* Mobile Thread Input */}
+          {canSendMessage ? (
           <div className="p-3 pb-safe pb-5 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0">
             {/* Editing Indicator */}
             {editThreadMessage && (
@@ -3266,6 +3328,11 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               </div>
             </div>
           </div>
+          ) : (
+            <div className="p-3 pb-safe pb-5 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] flex-shrink-0 flex items-center justify-center">
+              <span className="text-sm font-medium text-gray-500">Only admins can send messages</span>
+            </div>
+          )}
         </div>
       )}
 

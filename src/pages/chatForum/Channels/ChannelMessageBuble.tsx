@@ -81,19 +81,20 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`relative flex items-start gap-3 w-full px-4 py-2 group cursor-pointer ${selected ? "bg-green-50 dark:bg-green-950/20" : ""}`}
+      className={`relative flex items-start gap-3 w-full px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors group cursor-pointer ${selected ? "bg-green-50 dark:bg-green-950/20" : ""
+        }`}
     >
       {/* Avatar */}
-      <div className="relative flex-shrink-0 mt-1">
+      <div className="relative flex-shrink-0 mt-0.5">
         {avatar ? (
           <img
             src={avatar}
             alt={authorName || "User"}
-            className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-100 dark:border-gray-800"
+            className="w-10 h-10 rounded-lg object-cover shadow-sm border border-gray-100 dark:border-gray-800"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
-            {authorName?.substring(0, 2).toUpperCase() || "U"}
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-base font-bold shadow-sm">
+            {authorName?.charAt(0) || "U"}
           </div>
         )}
         {online && (
@@ -102,20 +103,33 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
 
       {/* Message Content Container */}
-      <div className="flex flex-col min-w-0">
-        {/* Name above the bubble */}
-        {authorName && (
-          <div className="mb-1">
-            <span className="text-[12px] font-semibold text-gray-500 dark:text-gray-400">
+      <div className="flex flex-col flex-grow min-w-0">
+        {/* Name and Timestamp (Pumble style: inline, name bold, timestamp muted next to it) */}
+        <div className="flex items-baseline gap-2 mb-1">
+          {authorName && (
+            <span className="font-bold text-[15px] text-gray-900 dark:text-gray-100 hover:underline">
               {authorName}
             </span>
-          </div>
-        )}
+          )}
+          {formattedTime && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {formattedTime}
+            </span>
+          )}
+          {pinned && (
+            <span className="text-[10px] text-blue-500 flex items-center gap-0.5 font-medium ml-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 12V4H17V2H7V4H8V12L6 14V16H11V22H13V16H18V14L16 12Z" />
+              </svg>
+              Pinned
+            </span>
+          )}
+        </div>
 
-        {/* The White Bubble */}
-        <div className="bg-white dark:bg-[#1f1f1f] border border-gray-100 dark:border-gray-800 rounded-2xl rounded-tl-sm p-4 shadow-sm inline-block max-w-[85%] text-[15px] text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap">
+        {/* Message Text / Attachments */}
+        <div className="text-[15px] leading-relaxed text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap">
           {text && (
-            <div>
+            <div className="mt-0.5">
               <TruncatedText text={text} maxLength={300} isMe={me} />
             </div>
           )}
@@ -133,7 +147,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
             });
             const otherItems = attachments.filter((a: any) => !mediaItems.includes(a));
             return (
-              <div className="flex flex-col gap-1.5 mt-2" onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-col gap-1.5 mb-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
                 {mediaItems.length > 0 && (
                   <MediaGrid media={mediaItems} maxWidth={320} />
                 )}
@@ -162,18 +176,6 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
               </div>
             );
           })()}
-        </div>
-
-        {/* Time and Reply Below the Bubble */}
-        <div className="flex items-center gap-3 mt-1.5 ml-1">
-          {formattedTime && (
-            <span className="text-[11px] font-medium text-gray-400">
-              {formattedTime}
-            </span>
-          )}
-          <span className="text-[11px] font-bold text-gray-400 hover:text-gray-600 cursor-pointer">
-            Reply
-          </span>
         </div>
 
         {/* Reactions Section */}

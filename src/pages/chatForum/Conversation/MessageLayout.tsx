@@ -38,6 +38,7 @@ interface ConversationResponse {
   members: Member[];
   lastMessage?: LastMessage;
   unreadCount: number;
+  isLocked?: boolean;
 }
 
 interface StaffResponse {
@@ -92,6 +93,7 @@ const MessagesLayout: React.FC = () => {
           : "",
         unread: c.unread ?? 0,
         isChannel: c.isChannel,
+        isLocked: c.isLocked,
         activeThreadParentId: c.activeThreadParentId,
       }));
       setThreadConversations(mapped);
@@ -133,6 +135,7 @@ const MessagesLayout: React.FC = () => {
             : "",
           unread: c.unreadCount,
           isChannel: false,
+          isLocked: c.isLocked,
           online: peer ? (onlineStaffs[peer.id] ?? false) : false,
         };
       });
@@ -193,6 +196,7 @@ const MessagesLayout: React.FC = () => {
             : "",
           unread: c.unreadCount ?? 0,
           isChannel: true,
+          isLocked: c.isLocked,
         }));
         setChannels(mapped);
       })
@@ -608,29 +612,30 @@ const MessagesLayout: React.FC = () => {
               /* Expanded Sidebar */
               <div className="flex flex-col h-full overflow-hidden">
                 <div className="p-4 pb-2 border-b border-gray-100 dark:border-gray-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                      Messages
-                    </h1>
-                    <div className="flex gap-2 items-center">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        Your Messages
+                      </h1>
                       <button
                         onClick={() => setIsStaffSelectorOpen(true)}
-                        title="New Chat"
-                        className="p-1.5 rounded-full bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105"
+                        title="New Chat / Chat Yourself (+)"
+                        className="p-1.5 rounded-xl bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105"
                       >
-                        <Plus size={16} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (typeof window !== "undefined") window.history.back();
-                        }}
-                        title="Close Messages"
-                        className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        <Plus size={18} />
                       </button>
                     </div>
+                    <button
+                      onClick={() => setIsSidebarCollapsed(true)}
+                      title="Collapse sidebar"
+                      className="p-2 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition"
+                    >
+                      <PanelLeftClose size={20} />
+                    </button>
                   </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Connect, message staff, or chat with yourself.
+                  </p>
 
                   <input
                     className="placeholder-gray-400 dark:placeholder-gray-500 block w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#141414] transition-colors text-gray-900 dark:text-gray-100 p-2.5 text-sm shadow-inner mt-4 mb-3 hover:border-lime-500 focus:outline-none focus:ring-1 focus:ring-lime-500"
@@ -779,29 +784,23 @@ const MessagesLayout: React.FC = () => {
             !selected && (
               <div className="flex flex-col h-full overflow-hidden p-4 sm:p-6">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                      Messages
-                    </h1>
-                    <div className="flex gap-2 items-center">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                        Your Messages
+                      </h1>
                       <button
                         onClick={() => setIsStaffSelectorOpen(true)}
-                        title="New Chat"
-                        className="p-1.5 rounded-full bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105"
+                        title="New Chat / Chat Yourself (+)"
+                        className="p-1.5 rounded-xl bg-lime-500 hover:bg-lime-600 text-black shadow-md transition transform hover:scale-105 cursor-pointer"
                       >
-                        <Plus size={16} />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (typeof window !== "undefined") window.history.back();
-                        }}
-                        title="Close Messages"
-                        className="p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        <Plus size={18} />
                       </button>
                     </div>
                   </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
+                    Connect, message staff, or chat with yourself.
+                  </p>
                   <MessagesTabs
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}

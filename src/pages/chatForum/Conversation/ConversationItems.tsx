@@ -31,6 +31,7 @@ export type Msg = {
   reactions?: ReactionsState;
   parent?: Partial<Msg>;
   isChannel?: boolean;
+  isLocked?: boolean;
   activeThreadParentId?: string | null;
 };
 

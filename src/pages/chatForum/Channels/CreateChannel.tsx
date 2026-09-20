@@ -253,6 +253,24 @@ export default function CreateChannelForm({ onClose }: CreateChannelFormProps) {
           {/* STEP 2 — ADD MEMBERS */}
           {step === 2 && (
             <>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Search & Select Staff
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedMembers.length === staffs.length) {
+                      setSelectedMembers([]);
+                    } else {
+                      setSelectedMembers([...staffs]);
+                    }
+                  }}
+                  className="text-xs bg-lime-100 text-lime-700 dark:bg-lime-900/40 dark:text-lime-400 px-2 py-1 rounded hover:bg-lime-200 dark:hover:bg-lime-900/60 transition shadow-sm"
+                >
+                  {selectedMembers.length === staffs.length ? "Deselect All" : "Select All"}
+                </button>
+              </div>
               <input
                 type="text"
                 placeholder="Search staff..."

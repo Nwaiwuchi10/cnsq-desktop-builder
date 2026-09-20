@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Users, Shield, Trash2, UserMinus } from "lucide-react";
+import { X, Users, Shield, Trash2, UserMinus, Lock, Unlock, ShieldAlert, ShieldCheck } from "lucide-react";
 import Api from "@/utils/api";
 
 interface ChannelMember {
-  id: number;
+  id: any;
   firstName: string;
   lastName: string;
   photoUrl?: string | null;
@@ -18,6 +18,7 @@ interface ChannelMember {
     email: string;
     photoUrl?: string | null;
   };
+  userId?: number;
 }
 
 interface ChannelInfoDrawerProps {
@@ -28,6 +29,7 @@ interface ChannelInfoDrawerProps {
     name: string;
     description?: string;
     members?: ChannelMember[];
+    isLocked?: boolean;
   } | null;
   onRemoveMember?: (memberId: number) => void;
 }
@@ -40,11 +42,23 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
 }) => {
   const [membersList, setMembersList] = useState<ChannelMember[]>([]);
   const [loading, setLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
 
   const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<number | null>(null);
 
   useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      setCurrentUserId(payload.staffId || payload.id || payload.sub);
+    }
+  }, []);
+
+  // Fetch members when drawer opens
+  useEffect(() => {
     if (isOpen && channel?.id) {
+      setIsLocked(channel.isLocked || false);
       const token = localStorage.getItem("user-token");
       setLoading(true);
       Api.get(`/chat/channels/${channel.id}/members`, {
@@ -58,9 +72,69 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
         })
         .finally(() => setLoading(false));
     }
-  }, [isOpen, channel]);
+  }, [isOpen, channel?.id]);
+
+  // Sync real-time role updates from the parent (socket)
+  useEffect(() => {
+    if (channel?.members && channel.members.length > 0) {
+      setMembersList((prev) => {
+        if (prev.length === 0) return prev;
+        
+        const realTimeRoles = new Map();
+        channel.members!.forEach((m: any) => {
+          realTimeRoles.set(m.id, m.role); // map by ConversationMember ID
+        });
+
+        let changed = false;
+        const next = prev.map((m) => {
+          if (realTimeRoles.has(m.id) && realTimeRoles.get(m.id) !== m.role) {
+            changed = true;
+            return { ...m, role: realTimeRoles.get(m.id) };
+          }
+          return m;
+        });
+        
+        return changed ? next : prev;
+      });
+    }
+    
+    if (channel?.isLocked !== undefined) {
+      setIsLocked(channel.isLocked);
+    }
+  }, [channel?.members, channel?.isLocked]);
 
   if (!isOpen || !channel) return null;
+
+  const currentUserMember = membersList.find((m) => m.user?.id == currentUserId || m.id == currentUserId || m.userId == currentUserId);
+  const isUserAdmin = currentUserMember?.role === "admin" || currentUserMember?.role === "owner" || currentUserMember?.role === "ADMIN" || currentUserMember?.role === "OWNER";
+  const isUserOwner = currentUserMember?.role === "owner" || currentUserMember?.role === "OWNER";
+
+  const handleToggleLock = async () => {
+    const token = localStorage.getItem("user-token");
+    const newLockState = !isLocked;
+    try {
+      await Api.patch(`/chat/conversations/${channel.id}/lock`, { isLocked: newLockState }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // The socket will update localIsLocked in the parent, which will update this component via props
+    } catch (err) {
+      console.error("Failed to toggle channel lock", err);
+      alert("Failed to toggle channel lock. Only admins and owners can do this.");
+    }
+  };
+
+  const handleUpdateRole = async (memberId: any, newRole: string) => {
+    const token = localStorage.getItem("user-token");
+    try {
+      await Api.patch(`/chat/conversations/${channel.id}/members/${memberId}/role`, { role: newRole }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Real-time update is handled by the socket
+    } catch (err) {
+      console.error("Failed to update role", err);
+      alert("Failed to update role. " + (err as any)?.response?.data?.message || "An error occurred.");
+    }
+  };
 
   const handleRemove = (userId: number) => {
     setConfirmRemoveUserId(userId);
@@ -79,7 +153,9 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
         await Api.delete(`/chat/channels/${channel.id}/members/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setMembersList((prev) => prev.filter((m) => (m.user?.id || m.id) !== userId));
+        // Frontend socket event for member removal would ideally handle this, 
+        // but for immediate UI feedback we can also update local state here if needed
+        setMembersList((prev) => prev.filter((m) => (m.user?.id || m.id || m.userId) !== userId));
       } catch (err) {
         console.error("Failed to remove member:", err);
       }
@@ -104,8 +180,13 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
       {/* Profile Body */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex flex-col items-center text-center">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-lime-400 to-lime-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg relative">
             #
+            {isLocked && (
+              <div className="absolute -bottom-2 -right-2 bg-red-500 rounded-full p-1.5 shadow-md border-2 border-white dark:border-[#141414]">
+                <Lock size={14} className="text-white" />
+              </div>
+            )}
           </div>
           <h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">
             #{channel.name}
@@ -121,6 +202,25 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
             <p className="text-sm font-normal text-gray-700 dark:text-gray-300 mt-1">
               {channel.description}
             </p>
+          </div>
+        )}
+
+        {isUserAdmin && (
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-900 dark:text-white">Lock Group</span>
+              <span className="text-xs text-gray-500">Only admins can send messages</span>
+            </div>
+            <button
+              onClick={handleToggleLock}
+              className={`p-2 rounded-xl transition cursor-pointer ${
+                isLocked 
+                  ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400" 
+                  : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
+            >
+              {isLocked ? <Lock size={18} /> : <Unlock size={18} />}
+            </button>
           </div>
         )}
 
@@ -144,7 +244,8 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
                 const lastName = m.user?.lastName || m.lastName || "";
                 const email = m.user?.email || m.email || "";
                 const avatar = m.user?.photoUrl || m.photoUrl;
-                const userId = m.user?.id || m.id;
+                const userId = m.user?.id || m.id || m.userId;
+                const memberRecordId = m.id; // This is the ConversationMember ID
 
                 return (
                   <div
@@ -153,7 +254,7 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {avatar ? (
-                        <img
+                         <img
                           src={avatar}
                           alt={firstName}
                           className="w-9 h-9 rounded-xl object-cover border border-gray-100 dark:border-gray-800"
@@ -174,20 +275,42 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {m.role === "admin" || m.role === "owner" ? (
+                      {m.role === "admin" || m.role === "owner" || m.role === "ADMIN" || m.role === "OWNER" ? (
                         <span className="text-[10px] bg-lime-100 dark:bg-lime-900/40 text-lime-700 dark:text-lime-400 font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
                           <Shield size={10} />
-                          <span>Admin</span>
+                          <span>{m.role.toLowerCase() === "owner" ? "Owner" : "Admin"}</span>
                         </span>
                       ) : null}
 
-                      <button
-                        onClick={() => handleRemove(userId)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
-                        title="Remove member"
-                      >
-                        <UserMinus size={16} />
-                      </button>
+                      {isUserAdmin && userId !== currentUserId && (
+                        <>
+                          {m.role === "member" || m.role === "MEMBER" ? (
+                            <button
+                              onClick={() => handleUpdateRole(memberRecordId, 'admin')}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-lime-600 hover:bg-lime-50 dark:hover:bg-lime-900/40 transition cursor-pointer"
+                              title="Make Admin"
+                            >
+                              <ShieldCheck size={16} />
+                            </button>
+                          ) : (m.role === "admin" || m.role === "ADMIN") && isUserOwner ? (
+                            <button
+                              onClick={() => handleUpdateRole(memberRecordId, 'member')}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/40 transition cursor-pointer"
+                              title="Remove Admin"
+                            >
+                              <ShieldAlert size={16} />
+                            </button>
+                          ) : null}
+
+                          <button
+                            onClick={() => handleRemove(userId)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
+                            title="Remove member"
+                          >
+                            <UserMinus size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 );

@@ -30,29 +30,31 @@ const MessagesTabs: React.FC<MessagesTabsProps> = ({
   ];
 
   return (
-    <div className="flex overflow-x-auto no-scrollbar w-full mb-4">
-      <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1 min-w-max w-full">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 min-w-[70px] px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all flex items-center justify-center gap-1.5
-              ${activeTab === tab.key
-                ? "bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white shadow-sm"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+    <div className="flex flex-wrap gap-2 mt-6 mb-4">
+      {tabs.map((tab) => (
+        <button
+          key={tab.key}
+          onClick={() => setActiveTab(tab.key)}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all flex items-center gap-1.5
+            ${activeTab === tab.key
+              ? "bg-lime-500 text-black shadow-sm scale-105"
+              : "bg-gray-100 dark:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+            }`}
+        >
+          <span>{tab.label}</span>
+          {tab.count !== undefined && tab.count > 0 && (
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                activeTab === tab.key
+                  ? "bg-black text-lime-400"
+                  : "bg-red-500 text-white"
               }`}
-          >
-            <span>{tab.label}</span>
-            {tab.count !== undefined && tab.count > 0 && (
-              <span
-                className="flex items-center justify-center bg-[#F58220] text-white text-[10px] font-bold rounded-full w-5 h-5"
-              >
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+            >
+              {tab.count}
+            </span>
+          )}
+        </button>
+      ))}
     </div>
   );
 };
