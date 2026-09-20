@@ -24,7 +24,8 @@ import TruncatedText from "../components/TruncatedText";
 import NativeVoiceRecorder from "@/component/VoiceRecorder/NativeVoiceRecorder";
 import ReactionUserListModal from "../components/ReactionUserListModal";
 import MessageInfoModal from "../components/MessageInfoModal";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Phone, Video } from "lucide-react";
+import { useCallSignaling } from "@/modules/calls/hooks/useCallSignaling";
 
 type ConversationViewProps = {
   conversation: Msg | null;
@@ -80,6 +81,7 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [messages, setMessages] = useState<Msg[]>([]);
   const [localIsLocked, setLocalIsLocked] = useState((conversation as any)?.isLocked || false);
   const [localMembers, setLocalMembers] = useState((conversation as any)?.members || []);
+  const { initiateCall } = useCallSignaling();
 
   useEffect(() => {
     setLocalIsLocked((conversation as any)?.isLocked || false);
@@ -1295,6 +1297,31 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           <div className="flex-1 min-w-0">
             <div className="font-semibold truncate">{conversation?.name}</div>
           </div>
+          <div className="flex items-center gap-1 mr-1">
+              {/* 📞 Group Call buttons */}
+              <button
+                id="channel-voice-call-btn"
+                onClick={() =>
+                  conversation?.id &&
+                  initiateCall(conversation.id, "audio", "group", conversation.name, conversation.avatar)
+                }
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400 transition-all duration-200"
+                title="Group voice call"
+              >
+                <Phone size={20} />
+              </button>
+              <button
+                id="channel-video-call-btn"
+                onClick={() =>
+                  conversation?.id &&
+                  initiateCall(conversation.id, "video", "group", conversation.name, conversation.avatar)
+                }
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
+                title="Group video call"
+              >
+                <Video size={20} />
+              </button>
+            </div>
           <div className="flex items-center gap-2">
             <ChannelHeaderMenu
               onAddMember={() => setMode("add")}

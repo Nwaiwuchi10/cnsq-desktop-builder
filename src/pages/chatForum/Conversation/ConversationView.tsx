@@ -17,6 +17,8 @@ import TruncatedText from "../components/TruncatedText";
 import MessageInfoModal from "../components/MessageInfoModal";
 import ScrollToBottomButton from "../components/ScrollToBottomButton";
 import ReactionUserListModal from "../components/ReactionUserListModal";
+import { useCallSignaling } from "@/modules/calls/hooks/useCallSignaling";
+import { Phone, Video } from "lucide-react";
 
 // Slight update to trigger deployment/build verification (v3)
 type ConversationViewProps = {
@@ -63,6 +65,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   onRead,
 }) => {
   const onlineStaffs = useChatStore((s) => s.onlineStaffs);
+  const { initiateCall } = useCallSignaling();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -819,6 +822,37 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             )}
           </div>
         </div>
+
+        {/* 📞 Call buttons */}
+        <div className="flex items-center gap-1 mr-1">
+          {/* 📞 Audio call button */}
+          <button
+            id="voice-call-btn"
+            onClick={() =>
+              conversation?.id &&
+              initiateCall(conversation.id, "audio", "dm", conversation.name, conversation.avatar)
+            }
+            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-green-600 dark:hover:text-green-400 transition-all duration-200"
+            title="Voice call"
+          >
+            <Phone size={20} />
+          </button>
+          
+          {/* 📹 Video call button */}
+          <button
+            id="video-call-btn"
+            onClick={() =>
+              conversation?.id &&
+              initiateCall(conversation.id, "video", "dm", conversation.name, conversation.avatar)
+            }
+            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200"
+            title="Video call"
+          >
+            <Video size={20} />
+          </button>
+        </div>
+
+
         <DMHeaderMenu
           onContactInfo={() => setIsContactInfoOpen(true)}
           onSearch={() => setIsSearchOpen((prev) => !prev)}
