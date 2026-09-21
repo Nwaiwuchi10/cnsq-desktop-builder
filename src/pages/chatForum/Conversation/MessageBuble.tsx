@@ -114,7 +114,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           })()}
 
           {/* Text underneath */}
-          <div className="text-sm leading-relaxed whitespace-pre-wrap">
+          <div className="text-[16px] leading-relaxed whitespace-pre-wrap">
             <TruncatedText text={text} maxLength={300} isMe={me} />
           </div>
 

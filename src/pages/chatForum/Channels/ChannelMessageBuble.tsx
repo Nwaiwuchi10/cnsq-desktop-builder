@@ -127,7 +127,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
 
         {/* Message Text / Attachments */}
-        <div className="text-[15px] leading-relaxed text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap">
+        <div className="text-[16px] leading-relaxed text-gray-800 dark:text-gray-200 break-words whitespace-pre-wrap">
           {text && (
             <div className="mt-0.5">
               <TruncatedText text={text} maxLength={300} isMe={me} />
