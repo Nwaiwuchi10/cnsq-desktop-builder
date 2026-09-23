@@ -72,6 +72,7 @@ const Header: React.FC<HeaderProps> = ({ user, setMobileOpen }) => {
       "/leave-management": "Leave Management",
       "/leave-approvals": "Leave Approvals",
       "/ticketing": "Ticketing",
+      "/notes": "Notes",
     };
 
     if (!pathname) return "Dashboard";

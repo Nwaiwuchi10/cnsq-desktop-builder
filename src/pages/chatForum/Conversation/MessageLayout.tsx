@@ -116,7 +116,7 @@ const MessagesLayout: React.FC = () => {
 
       const convs: Msg[] = res.data.conversations.map((c) => {
         const peer =
-          c.members.find((m) => m.user.id !== res.data.currentUserId)?.user ||
+          c.members.find((m) => String(m.user?.id) !== String(res.data.currentUserId))?.user ||
           c.members[0]?.user ||
           null;
         return {

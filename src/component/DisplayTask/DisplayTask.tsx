@@ -67,6 +67,9 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [taskType, setTaskType] = useState<"assigned" | "created" | "department">("assigned");
+  const [hasCreatedTasks, setHasCreatedTasks] = useState(false);
+  const [isHod, setIsHod] = useState(false);
 
   // Filters
   const [sprintFilter, setSprintFilter] = useState<number | "all">("all");
@@ -119,6 +122,23 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
       fetchUserProfile();
     }
   }, [project?.id]);
+
+  // Check if staff has any created tasks to conditionally show the tab
+  useEffect(() => {
+    const checkCreatedTasks = async () => {
+      try {
+        const res = await Api.get("/task/login/staff?type=created&limit=1");
+        const fetchedTasks =
+          res?.data?.data ||
+          res?.data?.openTasks ||
+          (Array.isArray(res?.data) ? res.data : []);
+        setHasCreatedTasks(fetchedTasks.length > 0);
+      } catch (err) {
+        console.error("Failed to check created tasks", err);
+      }
+    };
+    checkCreatedTasks();
+  }, []);
 
   // Fetch departments//
   useEffect(() => {
@@ -181,6 +201,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     dayFilter,
     sprintFilter,
     searchQuery,
+    taskType,
   ]);
 
   // Fetch tasks
@@ -192,6 +213,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         const staffId = localStorage.getItem("userId");
 
         const params = new URLSearchParams();
+        params.append("type", taskType);
         if (yearFilter) params.append("year", String(yearFilter));
         if (monthFilter) params.append("month", String(monthFilter));
         if (dayFilter) params.append("day", String(dayFilter));
@@ -220,6 +242,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
         } else {
           // Default for "All" departments or specific department without Project ID
           const params = new URLSearchParams();
+          params.append("type", taskType);
           if (sprintFilter !== "all") params.append("sprint", String(sprintFilter));
           if (staffFilter !== "all") params.append("staffId", String(staffFilter));
           if (selectedDeptId !== "all") params.append("departmentId", String(selectedDeptId));
@@ -249,6 +272,10 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
 
         const fetchedTasks = res?.data?.data || res?.data?.openTasks || (Array.isArray(res?.data) ? res.data : []);
         setTasks(fetchedTasks);
+
+        if (res?.data?.isHod !== undefined) {
+          setIsHod(res.data.isHod);
+        }
 
         if (res?.data?.pagination) {
           setTotalPages(res.data.pagination.totalPages || 1);
@@ -326,16 +353,6 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   // Apply filters
   let displayedTasks = [...tasks];
 
-  if (sprintFilter !== "all") {
-    displayedTasks = displayedTasks.filter((t) => t.sprint === sprintFilter);
-  }
-
-  if (staffFilter !== "all") {
-    displayedTasks = displayedTasks.filter((t) =>
-      t.assignedTo?.some((a) => a.staff?.id === staffFilter),
-    );
-  }
-
   const uniqueSprints = Array.from(new Set(tasks.map((t) => t.sprint)))
     .filter(Boolean)
     .sort((a, b) => (a || 0) - (b || 0)) as number[];
@@ -383,6 +400,44 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
 
   return (
     <div className="w-full relative">
+      {/* Switch Tab: Assigned vs Created */}
+      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 w-fit">
+        <button
+          onClick={() => setTaskType("assigned")}
+          className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
+            taskType === "assigned"
+              ? "border-[#95D700] text-[#95D700]"
+              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+          }`}
+        >
+          Assigned Task
+        </button>
+        {hasCreatedTasks && (
+          <button
+            onClick={() => setTaskType("created")}
+            className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
+              taskType === "created"
+                ? "border-[#95D700] text-[#95D700]"
+                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            }`}
+          >
+            Created Task
+          </button>
+        )}
+        {isHod && (
+          <button
+            onClick={() => setTaskType("department")}
+            className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
+              taskType === "department"
+                ? "border-[#95D700] text-[#95D700]"
+                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            }`}
+          >
+            Department Task
+          </button>
+        )}
+      </div>
+
       {/* Top Bar */}
       <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         {/* Search & Action Bar */}
