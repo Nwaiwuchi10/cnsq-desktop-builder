@@ -1,7 +1,7 @@
 import React from "react";
 import { format, isToday } from "date-fns";
 import { Paperclip, Menu, ArrowLeft, MoreVertical, Pin, Edit2, Trash, CheckSquare, Type, List as ListIcon, Share, Link, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { Note } from "../page";
+import { Note } from "@/pages/notes/page";
 
 interface NoteViewerProps {
   activeNote: Note | null;

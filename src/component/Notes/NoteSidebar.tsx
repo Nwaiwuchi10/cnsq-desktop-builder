@@ -1,7 +1,7 @@
 import React from "react";
 import { format, isToday, isYesterday, isAfter, subDays } from "date-fns";
 import { LayoutGrid, List as ListIcon, Pin, Plus, Search } from "lucide-react";
-import { Note } from "../page";
+import { Note } from "@/pages/notes/page";
 
 interface NoteSidebarProps {
   notes: Note[];

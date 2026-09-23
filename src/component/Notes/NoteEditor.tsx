@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import {
   Menu, ArrowLeft, Paperclip, Trash, Link as LinkIcon, MoreVertical, Pin, Loader2, ListIcon, Eye, PanelLeftClose, PanelLeftOpen
 } from "lucide-react";
-import { Note } from "../page";
+import { Note } from "@/pages/notes/page";
 
 const COLORS = [
   { name: "blue", hex: "#3b82f6" },

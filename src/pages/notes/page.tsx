@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import StaffLayout from "@/layouts/StaffLayout/StaffLayout";
 import Api from "@/utils/api";
-import NoteSidebar from "./components/NoteSidebar";
-import NoteViewer from "./components/NoteViewer";
-import NoteEditor from "./components/NoteEditor";
+import NoteSidebar from "@/component/Notes/NoteSidebar";
+import NoteViewer from "@/component/Notes/NoteViewer";
+import NoteEditor from "@/component/Notes/NoteEditor";
 import CustomModal from "@/component/Message/Message";
 import { Loader2 } from "lucide-react";
 
