@@ -117,6 +117,7 @@ const MessagesLayout: React.FC = () => {
       const convs: Msg[] = res.data.conversations.map((c) => {
         const peer =
           c.members.find((m) => m.user.id !== res.data.currentUserId)?.user ||
+          c.members[0]?.user ||
           null;
         return {
           id: c.id,
@@ -136,7 +137,7 @@ const MessagesLayout: React.FC = () => {
           unread: c.unreadCount,
           isChannel: false,
           isLocked: c.isLocked,
-          online: peer ? (onlineStaffs[peer.id] ?? false) : false,
+          online: peer?.id === currentUserId ? true : (peer ? (onlineStaffs[peer.id] ?? false) : false),
         };
       });
 
@@ -249,7 +250,7 @@ const MessagesLayout: React.FC = () => {
             })
             : "",
           unread: conv.unreadCount ?? 0,
-          online: peer ? (onlineStaffs[peer.id] ?? false) : false,
+          online: peer?.id === currentUserId ? true : (peer ? (onlineStaffs[peer.id] ?? false) : false),
         };
         return [msg, ...prev];
       });
@@ -663,7 +664,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={sortedConversations.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -671,7 +672,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={mentionsConversationsList.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -679,7 +680,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={unreadConversationsList.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -693,7 +694,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={allConversationsList.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -707,7 +708,7 @@ const MessagesLayout: React.FC = () => {
                       <ConversationList
                         items={staffMatches.map((c: any) => ({
                           ...c,
-                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                          online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                         }))}
                         onSelect={handleSelect}
                       />
@@ -828,7 +829,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={sortedConversations.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -836,7 +837,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={mentionsConversationsList.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -844,7 +845,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={unreadConversationsList.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -857,7 +858,7 @@ const MessagesLayout: React.FC = () => {
                     <ConversationList
                       items={allConversationsList.map((c: any) => ({
                         ...c,
-                        online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                        online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                       }))}
                       onSelect={handleSelect}
                     />
@@ -871,7 +872,7 @@ const MessagesLayout: React.FC = () => {
                       <ConversationList
                         items={staffMatches.map((c: any) => ({
                           ...c,
-                          online: c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online
+                          online: c.peerId === currentUserId ? true : (c.peerId ? (onlineStaffs[c.peerId] ?? false) : c.online)
                         }))}
                         onSelect={handleSelect}
                       />

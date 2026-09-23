@@ -816,8 +816,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
             </div>
             {conversation?.peerId && (
               <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                <span className={`w-2 h-2 rounded-full ${onlineStaffs[conversation.peerId] ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                {onlineStaffs[conversation.peerId] ? 'Online' : 'Offline'}
+                <span className={`w-2 h-2 rounded-full ${conversation.peerId === currentUserId ? 'bg-green-500' : (onlineStaffs[conversation.peerId] ? 'bg-green-500' : 'bg-gray-400')}`}></span>
+                {conversation.peerId === currentUserId ? 'Online' : (onlineStaffs[conversation.peerId] ? 'Online' : 'Offline')}
               </div>
             )}
           </div>
@@ -941,7 +941,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({
         contact={{
           name: conversation?.name || "User",
           avatar: conversation?.avatar,
-          online: conversation?.peerId ? onlineStaffs[conversation.peerId] : false,
+          online: conversation?.peerId === currentUserId ? true : (conversation?.peerId ? onlineStaffs[conversation.peerId] : false),
         }}
       />
 
