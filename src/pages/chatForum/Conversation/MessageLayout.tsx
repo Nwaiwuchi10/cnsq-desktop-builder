@@ -39,6 +39,7 @@ interface ConversationResponse {
   lastMessage?: LastMessage;
   unreadCount: number;
   isLocked?: boolean;
+  updatedAt?: string;
 }
 
 interface StaffResponse {
