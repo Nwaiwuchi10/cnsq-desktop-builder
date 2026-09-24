@@ -123,7 +123,7 @@ export default function NoteSidebar({
 
   return (
     <div
-      className={`md:w-[360px] lg:w-[400px] w-full border-r border-gray-200 dark:border-gray-800 flex-col bg-[#fafafa] dark:bg-[#111111] z-10 ${
+      className={`shrink-0 md:w-[360px] lg:w-[400px] w-full border-r border-gray-200 dark:border-gray-800 flex-col bg-[#fafafa] dark:bg-[#111111] z-10 ${
         isMobileDetail ? "hidden md:flex" : "flex"
       } ${!isDrawerOpen ? "md:hidden" : ""}`}
     >
