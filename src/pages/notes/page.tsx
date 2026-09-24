@@ -171,9 +171,13 @@ export default function NotesPage() {
   const handlePinNote = async (note: Note) => {
     try {
       const token = localStorage.getItem("user-token");
+      
+      const formData = new FormData();
+      formData.append('dto', JSON.stringify({ isPinned: !note.isPinned }));
+
       const res = await Api.patch(
         `/notes/${note.id}`,
-        { isPinned: !note.isPinned },
+        formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotes((prev) => prev.map((n) => (n.id === note.id ? res.data.data : n)).sort((a, b) => Number(b.isPinned) - Number(a.isPinned)));
