@@ -126,7 +126,7 @@ const MessagesLayout: React.FC = () => {
           preview: c.lastMessage?.text || "",
           text: c.lastMessage?.text || "",
           me: false,
-          createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
+          createdAt: c.lastMessage?.createdAt || c.updatedAt || new Date().toISOString(),
           peerId: peer?.id,
           time: c.lastMessage?.createdAt
             ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
@@ -188,7 +188,7 @@ const MessagesLayout: React.FC = () => {
           preview: c.lastMessage?.text || "",
           text: c.lastMessage?.text || "",
           me: false,
-          createdAt: c.lastMessage?.createdAt || new Date().toISOString(),
+          createdAt: c.lastMessage?.createdAt || c.updatedAt || new Date().toISOString(),
           time: c.lastMessage?.createdAt
             ? new Date(c.lastMessage.createdAt).toLocaleTimeString([], {
               hour: "2-digit",
