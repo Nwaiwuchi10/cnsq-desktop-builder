@@ -98,7 +98,7 @@ export default function NoteEditor({
       reader.onload = (event) => {
         const base64 = event.target?.result as string;
 
-        // Restore focus to editor before inserting
+        // Restore focus to editor before inserting//
         if (editorRef.current) editorRef.current.focus();
 
         // As per request, ALWAYS insert as a file link, NEVER as a direct image display
@@ -142,33 +142,33 @@ export default function NoteEditor({
     if (e.key === ' ' || e.key === 'Enter') {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
-      
+
       const node = selection.focusNode;
       if (node && node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent || '';
         const offset = selection.focusOffset;
-        
+
         const textBeforeCursor = text.slice(0, offset);
         const match = textBeforeCursor.match(/(https?:\/\/[^\s]+)\s?$/);
-        
+
         if (match) {
           const url = match[1];
           if (node.parentNode && node.parentNode.nodeName.toLowerCase() === 'a') {
             return;
           }
-          
+
           const urlStart = textBeforeCursor.lastIndexOf(url);
           const urlEnd = urlStart + url.length;
-          
+
           const range = document.createRange();
           range.setStart(node, urlStart);
           range.setEnd(node, urlEnd);
-          
+
           selection.removeAllRanges();
           selection.addRange(range);
-          
+
           document.execCommand('createLink', false, url);
-          
+
           selection.collapseToEnd();
           handleInput();
         }
