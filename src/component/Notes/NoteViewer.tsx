@@ -113,7 +113,7 @@ export default function NoteViewer({
               <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center tracking-wide uppercase">
                 <Link size={16} className="mr-2 text-gray-400" /> Reference Link
               </h4>
-              <a href={activeNote.link.startsWith('http') ? activeNote.link : `https://${activeNote.link}`} target="_blank" rel="noreferrer" className="inline-flex items-center text-blue-500 hover:underline break-all bg-blue-50 dark:bg-blue-900/20 px-4 py-2.5 rounded-xl border border-blue-100 dark:border-blue-800/50">
+              <a href={activeNote.link.startsWith('http') ? activeNote.link : `https://${activeNote.link}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-500 hover:underline break-all bg-blue-50 dark:bg-blue-900/20 px-4 py-2.5 rounded-xl border border-blue-100 dark:border-blue-800/50">
                 {activeNote.link}
               </a>
             </div>
@@ -131,7 +131,7 @@ export default function NoteViewer({
                     key={idx}
                     href={link}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="flex items-center p-3 bg-gray-50 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-[#1f1f1f] rounded-xl border border-gray-200 dark:border-gray-800 transition-colors group"
                   >
                     <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center mr-3 shrink-0 shadow-sm border border-gray-100 dark:border-gray-700 group-hover:scale-105 transition-transform">
