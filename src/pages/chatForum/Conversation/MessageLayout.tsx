@@ -207,7 +207,7 @@ const MessagesLayout: React.FC = () => {
 
   // Fetch DMs on mount & search change
   useEffect(() => {
-    if (activeTab === "all") {
+    if (activeTab === "all" || activeTab === "dms") {
       const t = setTimeout(() => fetchConversations(), 300);
       return () => clearTimeout(t);
     }

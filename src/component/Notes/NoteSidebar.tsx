@@ -10,6 +10,9 @@ interface NoteSidebarProps {
   isDrawerOpen: boolean;
   listStyle: "list" | "grid";
   search: string;
+  activeTab: "my-notes" | "assigned-notes";
+  unreadCount?: number;
+  onSetTab: (val: "my-notes" | "assigned-notes") => void;
   onSetSearch: (val: string) => void;
   onSetListStyle: (style: "list" | "grid") => void;
   onNewNote: () => void;
@@ -23,6 +26,9 @@ export default function NoteSidebar({
   isDrawerOpen,
   listStyle,
   search,
+  activeTab,
+  unreadCount = 0,
+  onSetTab,
   onSetSearch,
   onSetListStyle,
   onNewNote,
@@ -164,7 +170,34 @@ export default function NoteSidebar({
         </div>
       </div>
       
-      <div className="px-6 py-2 border-b border-gray-200/60 dark:border-gray-800/60">
+      <div className="px-6 pt-3 pb-2 border-b border-gray-200/60 dark:border-gray-800/60">
+        <div className="flex space-x-2 bg-gray-100 dark:bg-[#222] p-1 rounded-lg mb-3">
+          <button
+            onClick={() => onSetTab("my-notes")}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              activeTab === "my-notes"
+                ? "bg-white dark:bg-[#333] shadow-sm text-gray-900 dark:text-white"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
+          >
+            My Notes
+          </button>
+          <button
+            onClick={() => onSetTab("assigned-notes")}
+            className={`flex-1 flex items-center justify-center py-1.5 text-sm font-medium rounded-md transition-colors ${
+              activeTab === "assigned-notes"
+                ? "bg-white dark:bg-[#333] shadow-sm text-gray-900 dark:text-white"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            }`}
+          >
+            Assigned Notes
+            {unreadCount > 0 && (
+              <span className="ml-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
         <input
           type="text"
           placeholder="Search notes..."

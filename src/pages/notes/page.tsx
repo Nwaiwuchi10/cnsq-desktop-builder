@@ -6,6 +6,7 @@ import Api from "@/utils/api";
 import NoteSidebar from "@/component/Notes/NoteSidebar";
 import NoteViewer from "@/component/Notes/NoteViewer";
 import NoteEditor from "@/component/Notes/NoteEditor";
+import ShareNoteModal from "@/component/Notes/ShareNoteModal";
 import CustomModal from "@/component/Message/Message";
 import { Loader2 } from "lucide-react";
 
@@ -19,6 +20,9 @@ export interface Note {
   updatedAt: string;
   attachments?: string[];
   link?: string;
+  shareToken?: string;
+  shares?: any[];
+  createdBy: { id: number; firstName: string; lastName: string; };
 }
 
 export default function NotesPage() {
@@ -40,6 +44,7 @@ export default function NotesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState<number | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
   
   // Custom Modal State
   const [modalData, setModalData] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -47,8 +52,21 @@ export default function NotesPage() {
   // UI States
   const [viewMode, setViewMode] = useState<'read' | 'edit'>('read');
   const [isMobileDetail, setIsMobileDetail] = useState(false);
-  const [listStyle, setListStyle] = useState<'list' | 'grid'>('list');
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const [listStyle, setListStyle] = useState<'list' | 'grid'>('list');
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'my-notes' | 'assigned-notes'>('my-notes');
+
+  useEffect(() => {
+    const token = localStorage.getItem("user-token");
+    if (token) {
+      try {
+        const payloadStr = atob(token.split('.')[1]);
+        const payload = JSON.parse(payloadStr);
+        setCurrentUserId(payload.staffId || payload.id || payload.sub);
+      } catch (e) { }
+    }
+  }, []);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -64,12 +82,16 @@ export default function NotesPage() {
       const token = localStorage.getItem("user-token");
       const res = await Api.get("/notes", {
         headers: { Authorization: `Bearer ${token}` },
-        params: { page, limit: 20, search: debouncedSearch || undefined },
+        params: { page, limit: 100, search: debouncedSearch || undefined }, // limit increased to get more notes for tabs
       });
+      let fetchedNotes = res.data.data;
       if (append) {
-        setNotes((prev) => [...prev, ...res.data.data]);
+        setNotes((prev) => {
+          const newNotes = [...prev, ...fetchedNotes];
+          return Array.from(new Map(newNotes.map(item => [item.id, item])).values());
+        });
       } else {
-        setNotes(res.data.data);
+        setNotes(fetchedNotes);
       }
     } catch (error) {
       console.error("Failed to fetch notes", error);
@@ -81,6 +103,39 @@ export default function NotesPage() {
   useEffect(() => {
     fetchNotes(page > 1);
   }, [fetchNotes]);
+
+  useEffect(() => {
+    if (notes.length > 0) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const shareToken = urlParams.get('shareToken');
+      if (shareToken) {
+        const found = notes.find(n => n.shareToken === shareToken);
+        if (found) {
+          setActiveTab('assigned-notes');
+          handleSelectNote(found);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+          const token = localStorage.getItem("user-token");
+          Api.get(`/notes/shared/${shareToken}`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(res => {
+              const fetchedNote = res.data;
+              setNotes(prev => {
+                const map = new Map(prev.map(n => [n.id, n]));
+                map.set(fetchedNote.id, fetchedNote);
+                return Array.from(map.values());
+              });
+              setActiveTab('assigned-notes');
+              handleSelectNote(fetchedNote);
+              window.history.replaceState({}, document.title, window.location.pathname);
+            })
+            .catch(err => {
+              console.error("Failed to fetch shared note", err);
+              window.history.replaceState({}, document.title, window.location.pathname);
+            });
+        }
+      }
+    }
+  }, [notes.length]);
 
   const handleNewNote = () => {
     setActiveNote(null);
@@ -104,6 +159,28 @@ export default function NotesPage() {
     setUploadFiles([]);
     setViewMode('read');
     setIsMobileDetail(true);
+
+    if (currentUserId && note.createdBy.id !== currentUserId) {
+      const share = note.shares?.find((s: any) => s.staff?.id === currentUserId || s.staffId === currentUserId);
+      if (share && !share.isRead) {
+        const token = localStorage.getItem("user-token");
+        Api.patch(`/notes/${note.id}/read`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(() => {
+          setNotes(prev => prev.map(n => {
+            if (n.id === note.id) {
+              const newShares = n.shares?.map((sh: any) => 
+                (sh.staff?.id === currentUserId || sh.staffId === currentUserId) 
+                  ? { ...sh, isRead: true } 
+                  : sh
+              );
+              return { ...n, shares: newShares };
+            }
+            return n;
+          }));
+        }).catch(console.error);
+      }
+    }
   };
 
   const handleSaveNote = async () => {
@@ -188,16 +265,36 @@ export default function NotesPage() {
     }
   };
 
+  const filteredNotesByTab = notes.filter(n => {
+    if (!currentUserId) return true;
+    if (activeTab === 'my-notes') {
+      return n.createdBy.id === currentUserId;
+    } else {
+      return n.createdBy.id !== currentUserId;
+    }
+  });
+
+  const unreadCount = notes.filter(n => {
+    if (!currentUserId) return false;
+    if (n.createdBy.id === currentUserId) return false;
+    const share = n.shares?.find((s: any) => s.staff?.id === currentUserId || s.staffId === currentUserId);
+    if (share && !share.isRead) return true;
+    return false;
+  }).length;
+
   return (
     <StaffLayout>
       <div className="flex h-full bg-white dark:bg-[#141414] overflow-hidden relative">
         <NoteSidebar
-          notes={notes}
+          notes={filteredNotesByTab}
           activeNote={activeNote}
           isMobileDetail={isMobileDetail}
           isDrawerOpen={isDrawerOpen}
           listStyle={listStyle}
           search={search}
+          activeTab={activeTab}
+          unreadCount={unreadCount}
+          onSetTab={setActiveTab}
           onSetSearch={setSearch}
           onSetListStyle={setListStyle}
           onNewNote={handleNewNote}
@@ -216,6 +313,7 @@ export default function NotesPage() {
             onSetViewMode={setViewMode}
             onPinNote={handlePinNote}
             onDeleteNote={setNoteToDelete}
+            onOpenShare={() => setShowShareModal(true)}
           />
         ) : (
           <NoteEditor
@@ -231,6 +329,7 @@ export default function NotesPage() {
             activeNote={activeNote}
             showMenu={showMenu}
             isSaving={isSaving}
+            currentUserId={currentUserId}
             onSetTitle={setTitle}
             onSetContent={setContent}
             onSetLabelColor={setLabelColor}
@@ -245,6 +344,7 @@ export default function NotesPage() {
             onSaveNote={handleSaveNote}
             onDeleteNote={setNoteToDelete}
             onPinNote={handlePinNote}
+            onOpenShare={() => setShowShareModal(true)}
           />
         )}
 
@@ -283,6 +383,15 @@ export default function NotesPage() {
             type={modalData.type}
             message={modalData.message}
             onClose={() => setModalData(null)}
+          />
+        )}
+
+        {showShareModal && (
+          <ShareNoteModal
+            activeNote={activeNote}
+            currentUserId={currentUserId}
+            onClose={() => setShowShareModal(false)}
+            setModalData={setModalData}
           />
         )}
       </div>

@@ -314,6 +314,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
     page,
     limit,
     searchQuery,
+    taskType,
     refreshTrigger,
   ]);
 

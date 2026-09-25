@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import {
   Menu, ArrowLeft, Paperclip, Trash, Link as LinkIcon, MoreVertical, Pin, Loader2, ListIcon, Eye, PanelLeftClose, PanelLeftOpen,
-  CheckSquare, Type, List, Share, Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3
+  CheckSquare, Type, List, Share, Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3, Check
 } from "lucide-react";
 import { Note } from "@/pages/notes/page";
 
@@ -40,6 +40,8 @@ interface NoteEditorProps {
   onSaveNote: () => void;
   onDeleteNote: (id: number) => void;
   onPinNote: (note: Note) => void;
+  currentUserId: number | null;
+  onOpenShare: () => void;
 }
 
 export default function NoteEditor({
@@ -68,15 +70,15 @@ export default function NoteEditor({
   onSetViewMode,
   onSaveNote,
   onDeleteNote,
-  onPinNote
+  onPinNote,
+  currentUserId,
+  onOpenShare
 }: NoteEditorProps) {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
   const [showFormatting, setShowFormatting] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== content) {
@@ -248,7 +250,7 @@ export default function NoteEditor({
               <Paperclip size={16} />
             </button>
 
-            <button onClick={() => setShowShareModal(true)} className="p-2 rounded hover:bg-gray-200 dark:hover:bg-[#2a2a2a] text-gray-600 dark:text-gray-400" title="Share Note">
+            <button onClick={onOpenShare} className="p-2 rounded hover:bg-gray-200 dark:hover:bg-[#2a2a2a] text-gray-600 dark:text-gray-400" title="Share Note">
               <Share size={16} />
             </button>
           </div>
@@ -360,65 +362,6 @@ export default function NoteEditor({
         .prose li { display: list-item !important; margin-bottom: 0.25rem; }
         .prose h1, .prose h2, .prose h3 { margin-top: 1rem; margin-bottom: 0.5rem; }
       `}</style>
-
-
-
-      {/* Share Modal */}
-      {
-        showShareModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white dark:bg-[#1f1f1f] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-              <div className="flex justify-between items-center p-4 border-b border-gray-100 dark:border-gray-800">
-                <h3 className="font-bold text-lg">Share Note</h3>
-                <button onClick={() => setShowShareModal(false)} className="text-gray-500 hover:bg-gray-100 dark:hover:bg-[#2a2a2a] p-1 rounded-full">
-                  &times;
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
-                <input type="text" placeholder="Search people..." className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-[#141414] focus:ring-2 focus:ring-[#95D700] outline-none" />
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-xs font-bold">AO</div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Adaobi Okafor</p>
-                        <p className="text-xs text-gray-500">Designer</p>
-                      </div>
-                    </div>
-                    <select className="text-sm border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300">
-                      <option>Can Edit</option>
-                      <option>Can View</option>
-                    </select>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">CN</div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Chinedu Nelson</p>
-                        <p className="text-xs text-gray-500">DevOps</p>
-                      </div>
-                    </div>
-                    <select className="text-sm border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300">
-                      <option>Can View</option>
-                      <option>Can Edit</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
-                  <button className="w-full bg-[#95D700] text-white font-bold py-2 rounded-lg hover:bg-[#86c000] flex items-center justify-center transition-colors mb-2">
-                    <LinkIcon size={16} className="mr-2" /> Copy Link
-                  </button>
-                  <button onClick={() => setShowShareModal(false)} className="w-full bg-gray-100 dark:bg-[#2a2a2a] text-gray-800 dark:text-gray-200 font-bold py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-[#333] transition-colors">
-                    Done
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-      }
     </div >
   );
 }
