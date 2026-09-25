@@ -71,7 +71,7 @@ const navSections: NavSection[] = [
     items: [
       { name: "Projects", href: "/project", icon: Briefcase },
       { name: "Tasks", href: "/task", icon: ClipboardList },
-      // { name: "Notes", href: "/notes", icon: Book },
+      { name: "Notes", href: "/notes", icon: Book },
     ],
   },
   {
@@ -109,9 +109,9 @@ const navSections: NavSection[] = [
   {
     title: "CEO TOOLS",
     items: [
-      { 
-        name: "Governance", 
-        icon: Settings, 
+      {
+        name: "Governance",
+        icon: Settings,
         isCeoOnly: true,
         subItems: [
           { name: "Activity Logs", href: "/ceo-activity-logs", icon: ClipboardCheck }
@@ -229,7 +229,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
                               </svg>
                             )}
                           </button>
-                          
+
                           {/* Dropdown Items */}
                           {isDropdownOpen && !isCollapsed && (
                             <ul className="mt-1 space-y-1 bg-gray-50/50 dark:bg-[#1a1a1a]/50 py-2 border-y border-gray-100 dark:border-gray-800">
