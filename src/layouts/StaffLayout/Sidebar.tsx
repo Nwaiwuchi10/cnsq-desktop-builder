@@ -71,7 +71,7 @@ const navSections: NavSection[] = [
     items: [
       { name: "Projects", href: "/project", icon: Briefcase },
       { name: "Tasks", href: "/task", icon: ClipboardList },
-      { name: "Notes", href: "/notes", icon: Book },
+      // { name: "Notes", href: "/notes", icon: Book },
     ],
   },
   {
