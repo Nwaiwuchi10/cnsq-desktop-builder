@@ -402,42 +402,44 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
   return (
     <div className="w-full relative">
       {/* Switch Tab: Assigned vs Created */}
-      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 w-fit">
-        <button
-          onClick={() => setTaskType("assigned")}
-          className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
-            taskType === "assigned"
-              ? "border-[#95D700] text-[#95D700]"
-              : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          }`}
-        >
-          Assigned Task
-        </button>
-        {hasCreatedTasks && (
+      {!project && (
+        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 w-fit">
           <button
-            onClick={() => setTaskType("created")}
+            onClick={() => setTaskType("assigned")}
             className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
-              taskType === "created"
+              taskType === "assigned"
                 ? "border-[#95D700] text-[#95D700]"
                 : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             }`}
           >
-            Created Task
+            Assigned Task
           </button>
-        )}
-        {isHod && (
-          <button
-            onClick={() => setTaskType("department")}
-            className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
-              taskType === "department"
-                ? "border-[#95D700] text-[#95D700]"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            }`}
-          >
-            Department Task
-          </button>
-        )}
-      </div>
+          {hasCreatedTasks && (
+            <button
+              onClick={() => setTaskType("created")}
+              className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
+                taskType === "created"
+                  ? "border-[#95D700] text-[#95D700]"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+            >
+              Created Task
+            </button>
+          )}
+          {isHod && (
+            <button
+              onClick={() => setTaskType("department")}
+              className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
+                taskType === "department"
+                  ? "border-[#95D700] text-[#95D700]"
+                  : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              }`}
+            >
+              Department Task
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Top Bar */}
       <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
