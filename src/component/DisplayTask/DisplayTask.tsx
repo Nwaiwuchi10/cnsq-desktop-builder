@@ -401,27 +401,25 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
 
   return (
     <div className="w-full relative">
-      {/* Switch Tab: Assigned vs Created */}
+      {/* Switch Tab: Assigned vs Created **/}
       {!project && (
         <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 w-fit">
           <button
             onClick={() => setTaskType("assigned")}
-            className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
-              taskType === "assigned"
+            className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${taskType === "assigned"
                 ? "border-[#95D700] text-[#95D700]"
                 : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            }`}
+              }`}
           >
             Assigned Task
           </button>
           {hasCreatedTasks && (
             <button
               onClick={() => setTaskType("created")}
-              className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
-                taskType === "created"
+              className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${taskType === "created"
                   ? "border-[#95D700] text-[#95D700]"
                   : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              }`}
+                }`}
             >
               Created Task
             </button>
@@ -429,11 +427,10 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           {isHod && (
             <button
               onClick={() => setTaskType("department")}
-              className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${
-                taskType === "department"
+              className={`px-6 py-2.5 text-sm font-semibold transition-all border-b-2 ${taskType === "department"
                   ? "border-[#95D700] text-[#95D700]"
                   : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              }`}
+                }`}
             >
               Department Task
             </button>
@@ -786,11 +783,10 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 1}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  page === 1
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${page === 1
                     ? "bg-gray-250 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
                     : "bg-[#95D700] hover:bg-[#80b800] text-black font-semibold"
-                }`}
+                  }`}
               >
                 Prev
               </button>
@@ -819,11 +815,10 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`px-3 py-1 rounded-lg text-sm font-semibold transition-colors ${
-                      page === p
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold transition-colors ${page === p
                         ? "bg-[#95D700] text-black"
                         : "bg-gray-100 dark:bg-gray-850 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                    }`}
+                      }`}
                   >
                     {p}
                   </button>
@@ -834,11 +829,10 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  page === totalPages
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${page === totalPages
                     ? "bg-gray-250 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
                     : "bg-[#95D700] hover:bg-[#80b800] text-black font-semibold"
-                }`}
+                  }`}
               >
                 Next
               </button>
