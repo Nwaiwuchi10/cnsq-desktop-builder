@@ -12,6 +12,7 @@ interface BoardViewProps {
   projectId?: number;
   loading?: boolean;
   onTasksUpdate?: () => void;
+  allProjects?: any[];
 }
 
 interface StatusColumn {
@@ -32,6 +33,7 @@ const BoardView: React.FC<BoardViewProps> = ({
   projectId,
   loading = false,
   onTasksUpdate,
+  allProjects = [],
 }) => {
   const [tasks, setTasks] = useState<TaskDTO[]>(initialTasks);
   const [selectedTask, setSelectedTask] = useState<TaskDTO | null>(null);
@@ -178,7 +180,9 @@ const BoardView: React.FC<BoardViewProps> = ({
 
                         {!projectId && (task.project?.projectName || (task as any).linkedProjectId) && (
                           <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-2 truncate">
-                            {task.project?.projectName || `Project #${(task as any).linkedProjectId}`}
+                            {task.project?.projectName || 
+                             (allProjects.find(p => p.id === (task as any).linkedProjectId)?.projectName) || 
+                             `Project #${(task as any).linkedProjectId}`}
                           </p>
                         )}
 

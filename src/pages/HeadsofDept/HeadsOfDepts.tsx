@@ -72,8 +72,8 @@ export default function HeadsStaffDirectory() {
   }, []);
 
   // Filter staff by search input
-  const filteredStaff = staffList.filter((hod) =>
-    `${hod.staff.firstName} ${hod.staff.lastName} ${hod.staff.employment?.jobTitle} ${hod.department?.name}`
+  const filteredStaff = (staffList || []).filter((hod) =>
+    `${hod?.staff?.firstName || ""} ${hod?.staff?.lastName || ""} ${hod?.staff?.employment?.jobTitle || ""} ${hod?.department?.name || ""}`
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
@@ -160,14 +160,14 @@ export default function HeadsStaffDirectory() {
                 <div className="flex items-center gap-4">
                   <Image
                     src={hod?.staff?.photoUrl || "/default-avatar.png"}
-                    alt={`${hod.staff.firstName} ${hod.staff.lastName}`}
+                    alt={`${hod?.staff?.firstName || "Unknown"} ${hod?.staff?.lastName || "Staff"}`}
                     width={50}
                     height={50}
                     className="w-14 h-14 rounded-full object-cover"
                   />
                   <div className="flex flex-col">
                     <span className="text-gray-900 font-semibold">
-                      {hod.staff.firstName} {hod.staff.lastName}
+                      {hod?.staff?.firstName || "Unknown"} {hod?.staff?.lastName || "Staff"}
                     </span>
                     <span className="text-gray-500 text-sm">
                       {hod.name || "Not Assigned"}
@@ -185,28 +185,29 @@ export default function HeadsStaffDirectory() {
                 {/* Email */}
                 <div className="flex items-center gap-2 mt-4 text-gray-600 text-sm">
                   <Mail size={16} />
-                  <span>{hod.staff.email}</span>
+                  <span>{hod?.staff?.email || "N/A"}</span>
                 </div>
 
                 {/* Phone */}
                 <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
                   <Phone size={16} />
-                  <span>{hod.staff.phone}</span>
+                  <span>{hod?.staff?.phone || "N/A"}</span>
                 </div>
 
                 {/* Location */}
                 <div className="flex items-center gap-2 mt-2 text-gray-600 text-sm">
                   <MapPin size={16} />
                   <span>
-                    {hod.staff.address?.city}, {hod.staff.address?.state}
+                    {hod?.staff?.address?.city || "N/A"}, {hod?.staff?.address?.state || ""}
                   </span>
                 </div>
 
                 {/* View Profile */}
-                <Link href={`/staff/${hod.staff.id}`} className="w-full">
+                <Link href={hod?.staff?.id ? `/staff/${hod.staff.id}` : "#"} className="w-full">
                   <button
-                    style={{ cursor: "pointer" }}
-                    className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition"
+                    style={{ cursor: hod?.staff?.id ? "pointer" : "not-allowed" }}
+                    disabled={!hod?.staff?.id}
+                    className="mt-6 w-full h-11 bg-[#95D700] text-white font-semibold rounded-lg hover:bg-[#78B500] transition disabled:opacity-50"
                   >
                     View Profile
                   </button>

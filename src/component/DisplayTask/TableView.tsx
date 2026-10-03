@@ -12,6 +12,7 @@ interface TableViewProps {
   onTaskSelect?: (task: TaskDTO) => void;
   onTaskClose?: () => void;
   onTasksUpdate?: () => void;
+  allProjects?: any[];
 }
 
 const TableView: React.FC<TableViewProps> = ({
@@ -22,6 +23,7 @@ const TableView: React.FC<TableViewProps> = ({
   onTaskSelect = () => {},
   onTaskClose = () => {},
   onTasksUpdate = () => {},
+  allProjects = [],
 }) => {
   const formatLabel = (val?: string) => {
     if (!val) return "—";
@@ -136,7 +138,7 @@ const TableView: React.FC<TableViewProps> = ({
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${statusColors[task.status || ""] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"}`}
                   >
-                    {formatLabel(task.status)}
+                    {task.customStatus ? task.customStatus : formatLabel(task.status)}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -168,7 +170,9 @@ const TableView: React.FC<TableViewProps> = ({
                 </td>
                 {!projectId && (
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">
-                    {task.project?.projectName || ((task as any).linkedProjectId ? `Project #${(task as any).linkedProjectId}` : "—")}
+                    {task.project?.projectName || 
+                      (allProjects.find(p => p.id === (task as any).linkedProjectId)?.projectName) ||
+                      ((task as any).linkedProjectId ? `Project #${(task as any).linkedProjectId}` : "—")}
                   </td>
                 )}
                 <td className="px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">

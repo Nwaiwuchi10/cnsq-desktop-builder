@@ -105,6 +105,7 @@ export default function CreateTaskForm() {
   const [dueDate, setDueDate] = useState("");
   const [timeline, setTimeline] = useState("");
   const [status, setStatus] = useState("Not_started");
+  const [customStatus, setCustomStatus] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
   const [loadingProject, setLoadingProject] = useState(true);
@@ -322,7 +323,8 @@ export default function CreateTaskForm() {
       description,
       taskModule,
       sprint: sprint ? Number(sprint) : undefined,
-      status: status || "Not_started",
+      status: status === "Other" ? "Not_started" : (status || "Not_started"),
+      customStatus: status === "Other" ? customStatus : undefined,
       priority: priority || "Medium",
       urgency: urgency || "Short_Term",
       startDate,
@@ -485,7 +487,12 @@ export default function CreateTaskForm() {
           </label>
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              if (e.target.value !== "Other") {
+                setCustomStatus("");
+              }
+            }}
             className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
           >
             {TASK_STATUSES.map((s) => (
@@ -493,7 +500,24 @@ export default function CreateTaskForm() {
                 {s.replace(/_/g, " ")}
               </option>
             ))}
+            <option value="Other">Other (Custom)</option>
           </select>
+
+          {/* Custom Status - Only show if 'Other' is selected */}
+          {status === "Other" && (
+            <div className="mt-3">
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                Custom Status
+              </label>
+              <input
+                value={customStatus}
+                onChange={(e) => setCustomStatus(e.target.value)}
+                placeholder="Type your own status..."
+                className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white"
+              />
+            </div>
+          )}
+
 
           {/* Priority */}
           <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">

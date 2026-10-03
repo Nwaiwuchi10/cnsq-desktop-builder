@@ -83,6 +83,7 @@ export default function TaskUpdateModal({
   const [description, setDescription] = useState("");
   const [sprint, setSprint] = useState<number | "">("");
   const [status, setStatus] = useState("Not_started");
+  const [customStatus, setCustomStatus] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [urgency, setUrgency] = useState("Short_Term");
   const [dueDate, setDueDate] = useState("");
@@ -127,7 +128,8 @@ export default function TaskUpdateModal({
         setTitle(t.title);
         setDescription(t.description || "");
         setTaskModule(t.taskModule || "");
-        setStatus(t.status);
+        setStatus((t as any).customStatus ? "Other" : t.status);
+        setCustomStatus((t as any).customStatus || "");
         setPriority(t.priority);
         setUrgency(t.urgency);
         setTimeline(t.timeline || "");
@@ -135,7 +137,7 @@ export default function TaskUpdateModal({
         setProjectId(t.project?.id || "");
         setStartDate(t.startDate ? t.startDate.split("T")[0] : "");
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
-        
+
         const initialDept = (t as any).departmentName || "";
         const initialDeptId = (t as any).departmentId || "";
         setSelectedDeptName(initialDept);
@@ -303,7 +305,8 @@ export default function TaskUpdateModal({
           title,
           description,
           taskModule,
-          status,
+          status: status === "Other" ? "Not_started" : status,
+          customStatus: status === "Other" ? customStatus : null, // send null to clear it if they switched back to enum
           priority,
           urgency,
           timeline,
@@ -455,7 +458,12 @@ export default function TaskUpdateModal({
             </label>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                if (e.target.value !== "Other") {
+                  setCustomStatus("");
+                }
+              }}
               className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             >
               {TASK_STATUSES.map((s) => (
@@ -463,7 +471,23 @@ export default function TaskUpdateModal({
                   {s.replace(/_/g, " ")}
                 </option>
               ))}
+              <option value="Other">Other (Custom)</option>
             </select>
+            
+            {/* Custom Status - Only show if 'Other' is selected */}
+            {status === "Other" && (
+              <div className="mt-3">
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                  Custom Status
+                </label>
+                <input
+                  value={customStatus}
+                  onChange={(e) => setCustomStatus(e.target.value)}
+                  placeholder="Type your own status..."
+                  className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+                />
+              </div>
+            )}
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Priority</label>
             <select
               value={priority}

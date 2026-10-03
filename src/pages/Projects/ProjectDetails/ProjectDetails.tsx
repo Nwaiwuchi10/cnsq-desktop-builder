@@ -30,6 +30,7 @@ interface Project {
   priority: string;
   timeLine: string;
   prodUrl: string;
+  productDesignLink?: string;
   stagingUrl: string;
   apk?: string;
   assignedTo: {
@@ -229,6 +230,17 @@ export default function ProjectDetails() {
           <div>
             <span>End Date:</span>{" "}
             {new Date(project?.endDate).toLocaleDateString()}
+          </div>
+          <div className="text-gray-600 dark:text-gray-400 mt-2">
+            <span>Product Design Link:</span>
+            <a
+              href={project?.productDesignLink}
+              target="_blank"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              {" "}
+              {project?.productDesignLink}
+            </a>
           </div>
           <div className="text-gray-600 dark:text-gray-400 mt-2">
             <span>Stagging Link:</span>

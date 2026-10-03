@@ -738,6 +738,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           projectId={project?.id}
           loading={loading}
           onTasksUpdate={() => setRefreshTrigger((prev) => prev + 1)}
+          allProjects={allProjects}
         />
       ) : (
         <TableView
@@ -748,6 +749,7 @@ const DisplayTask: React.FC<DisplayTaskProps> = ({ project }) => {
           onTaskSelect={setSelectedTask}
           onTaskClose={() => setSelectedTask(null)}
           onTasksUpdate={() => setRefreshTrigger((prev) => prev + 1)}
+          allProjects={allProjects}
         />
       )}
 

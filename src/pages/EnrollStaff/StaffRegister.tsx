@@ -296,7 +296,7 @@ export default function StaffOnboardingForm() {
       firstName,
       lastName,
 
-      // dateOfBirth,
+      dateOfBirth: dateOfBirth || undefined,
       gender,
       maritalStatus: maritalStatus || undefined,
       email,
@@ -453,17 +453,17 @@ export default function StaffOnboardingForm() {
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                       />
                     </div>
-                    {/* <div>
-                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
-                    Date of Birth <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={dateOfBirth}
-                    onChange={(e) => setDob(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
-                  />
-                </div> */}
+                    <div>
+                      <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+                        Date of Birth
+                      </label>
+                      <input
+                        type="date"
+                        value={dateOfBirth}
+                        onChange={(e) => setDob(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+                      />
+                    </div>
                     <div>
                       <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
                         Gender <span className="text-red-500">*</span>

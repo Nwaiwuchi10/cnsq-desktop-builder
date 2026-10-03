@@ -59,6 +59,7 @@ export interface TaskDTO {
   title: string;
   description?: string;
   status?: string;
+  customStatus?: string;
   priority?: string;
   taskModule?: string;
   fileUrl?: string;

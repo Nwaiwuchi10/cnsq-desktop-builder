@@ -264,12 +264,12 @@ export default function TaskModal({ task, onClose, onTasksUpdate = () => { } }: 
           {/* Status + Priority */}
           <div className="flex items-center justify-between mb-4">
             <span className="text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-              {task?.status ? (
+              {task?.customStatus || task?.status ? (
                 <span
-                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task?.status] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task?.status || ""] || "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                     }`}
                 >
-                  {task?.status?.replace("_", " ")}
+                  {task?.customStatus ? task.customStatus : task?.status?.replace("_", " ")}
                 </span>
               ) : (
                 "—"

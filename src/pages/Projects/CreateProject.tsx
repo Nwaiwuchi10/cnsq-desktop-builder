@@ -55,6 +55,7 @@ export default function ProjectWizardForm() {
   const [status, setStatus] = useState("not_started");
   const [priority, setPriority] = useState("medium");
   const [prodUrl, setProdUrl] = useState("");
+  const [productDesignLink, setProductDesignLink] = useState("");
   const [stagingUrl, setStagingUrl] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -145,6 +146,7 @@ export default function ProjectWizardForm() {
       timeLine,
       apk,
       prodUrl: prodUrl || undefined,
+      productDesignLink: productDesignLink || undefined,
       stagingUrl: stagingUrl || undefined,
       startDate,
       endDate,
@@ -333,6 +335,16 @@ export default function ProjectWizardForm() {
                   placeholder="https://example.com"
                   value={prodUrl}
                   onChange={(e) => setProdUrl(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+                />
+
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Product Design Link
+                </label>
+                <input
+                  placeholder="https://figma.com/..."
+                  value={productDesignLink}
+                  onChange={(e) => setProductDesignLink(e.target.value)}
                   className="w-full rounded-lg border px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
                 />
 

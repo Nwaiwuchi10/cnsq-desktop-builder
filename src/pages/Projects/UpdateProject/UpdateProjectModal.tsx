@@ -33,6 +33,7 @@ interface Project {
   priority: string;
   timeLine: string;
   prodUrl?: string;
+  productDesignLink?: string;
   stagingUrl?: string;
   assignedTo: ProjectAssignment[];
   deparment: Department;
@@ -70,6 +71,7 @@ export default function UpdateProjectModal({
   const [status, setStatus] = useState("not_started");
   const [priority, setPriority] = useState("medium");
   const [prodUrl, setProdUrl] = useState("");
+  const [productDesignLink, setProductDesignLink] = useState("");
   const [stagingUrl, setStagingUrl] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -111,6 +113,7 @@ export default function UpdateProjectModal({
         setStatus(p.status);
         setPriority(p.priority);
         setProdUrl(p.prodUrl || "");
+        setProductDesignLink(p.productDesignLink || "");
         // setDepartment(p.deparment?.name)
         setStagingUrl(p.stagingUrl || "");
         setStartDate(p.startDate?.split("T")[0]);
@@ -172,6 +175,7 @@ export default function UpdateProjectModal({
       status,
       priority,
       prodUrl,
+      productDesignLink,
       stagingUrl,
       startDate,
       endDate,
@@ -292,6 +296,15 @@ export default function UpdateProjectModal({
               placeholder="Production URL"
               value={prodUrl}
               onChange={(e) => setProdUrl(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+            />
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+              Product Design Link
+            </label>
+            <input
+              placeholder="https://figma.com/..."
+              value={productDesignLink}
+              onChange={(e) => setProductDesignLink(e.target.value)}
               className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
             />
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
