@@ -139,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
 
   React.useEffect(() => {
     if (user) {
-      // Use lightweight check endpoint to determine supervisor status
+      /// Use lightweight check endpoint to determine supervisor status
       leaveApi.isSupervisorCheck()
         .then(res => setIsSupervisor(res.isSupervisor))
         .catch(() => setIsSupervisor(false));
