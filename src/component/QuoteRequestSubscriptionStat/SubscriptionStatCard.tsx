@@ -7,11 +7,13 @@ interface SubscriptionStats {
   target_subscriptions: number;
   total_subscriptions: number;
   total_subscriptions_left: number;
+  vendor_registered_today: number;
 }
 
 import targetIcon from "../../assests/images/TargetSub.png";
 import totalIcon from "../../assests/images/totalsub.png";
 import leftIcon from "../../assests/images/subscriptionLeft.png";
+import vendorIcon from "../../assests/images/default-avatar.png";
 
 export default function SubscriptionStatsCards() {
   const [stats, setStats] = useState<SubscriptionStats | null>(null);
@@ -58,6 +60,13 @@ export default function SubscriptionStatsCards() {
       value: stats?.total_subscriptions_left ?? 0,
       icon: leftIcon,
       borderColor: "border-[#3b82f6]",
+    },
+    {
+      id: 4,
+      label: "Vendors registered today",
+      value: stats?.vendor_registered_today ?? 0,
+      icon: vendorIcon,
+      borderColor: "border-[#F59E0B]", // Amber color for a new stat
     },
   ];
 

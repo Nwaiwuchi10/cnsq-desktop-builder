@@ -265,27 +265,24 @@ export default function Navbar() {
             {/* Mobile Menu Button + Grid Icon */}
             <div className="md:hidden flex items-center gap-4">
               <button
-                onClick={() => setIsOpen(!isOpen)}
-
+                onClick={() => {
+                  console.log("Navigating to /staff-dashboard");
+                  router.push("/staff-dashboard");
+                }}
                 className="flex items-center justify-center focus:outline-none"
               >
-                {isOpen ? <X size={26} style={{ color: "#FC8102" }} /> :
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="17" y="2" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="2" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="17" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="2" y="17" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
-                    <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
-                  </svg>
-                }
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="2" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="2" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="2" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="9.5" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="2" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="9.5" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                  <rect x="17" y="17" width="5" height="5" rx="1" fill="#FC8102" />
+                </svg>
               </button>
-              {/* <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 dark:text-gray-300 hover:text-[#95D700] focus:outline-none">
-                {isOpen ? <X size={26} /> : <Menu size={26} />}
-              </button> */}
             </div>
           </div>
         </div>

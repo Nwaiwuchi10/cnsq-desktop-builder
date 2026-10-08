@@ -63,7 +63,10 @@ interface SidebarProps {
 const navSections: NavSection[] = [
   {
     title: "OVERVIEW",
-    items: [{ name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard }],
+    items: [
+      { name: "Dashboard", href: "/staff-dashboard", icon: LayoutDashboard },
+      { name: "Staff Directory", href: "/staff", icon: UserPlus, isMobileOnly: true }
+    ],
   },
 
   {
@@ -257,7 +260,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, toggleCollapse, isMobile
                     }
 
                     return (
-                      <li key={itemIdx}>
+                      <li key={itemIdx} className={item.isMobileOnly ? "lg:hidden" : ""}>
                         <Link
                           href={item.href || "#"}
                           className={`flex items-center px-6 py-2 transition-colors group ${isActive

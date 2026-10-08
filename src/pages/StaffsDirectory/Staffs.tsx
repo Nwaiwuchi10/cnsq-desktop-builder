@@ -230,7 +230,7 @@ END:VCARD`;
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAFAFA] dark:bg-[#0d0d0d] py-24 transition-colors">
+    <div className="w-full transition-colors">
       <div className="max-w-[95%] mx-auto px-4 sm:px-8">
         {/* 🔙 Back Button */}
         <div
@@ -257,177 +257,143 @@ END:VCARD`;
         </p>
 
         {/* 🔍 Toolbar */}
-        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          {/* Search Bar */}
-          <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors relative">
-            <Search className="text-gray-500 dark:text-gray-400" size={18} />
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+
+          {/* 📱 Mobile-only action row — shown ABOVE search on mobile */}
+          <div className="flex sm:hidden items-center gap-1.5 w-full relative">
+            {/* View Toggle */}
+            <div className="flex items-center bg-gray-100 dark:bg-[#1a1a1a] rounded-lg p-0.5 gap-0.5">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`flex items-center justify-center w-7 h-7 rounded-md transition-all duration-200 ${
+                  viewMode === "grid"
+                    ? "bg-white dark:bg-[#141414] text-[#86CD23] shadow"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+                title="Grid View"
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`flex items-center justify-center w-7 h-7 rounded-md transition-all duration-200 ${
+                  viewMode === "list"
+                    ? "bg-white dark:bg-[#141414] text-[#86CD23] shadow"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+                title="List View"
+              >
+                <List size={14} />
+              </button>
+            </div>
+
+            {/* Filter Button */}
+            <button
+              onClick={() => setShowDropdown((prev) => !prev)}
+              className={`flex flex-1 justify-center items-center gap-1 h-8 px-2.5 rounded-lg text-xs font-medium border transition-all duration-200 ${
+                showDropdown
+                  ? "bg-[#86CD23] text-white border-[#86CD23] shadow"
+                  : "bg-white dark:bg-[#141414] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 shadow-sm"
+              }`}
+            >
+              <ChevronDown
+                size={12}
+                className={`${showDropdown ? "rotate-180" : ""} transition-transform duration-200`}
+              />
+              <span>Filter</span>
+            </button>
+
+            {/* Add Staff */}
+            <Link href="/add-staff" className="flex-1">
+              <button className="flex w-full justify-center items-center gap-1 h-8 px-2.5 bg-[#86CD23] text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-[#78b81f] active:scale-95 transition-all duration-200">
+                <Plus size={13} />
+                <span>Add Staff</span>
+              </button>
+            </Link>
+
+            {/* Filter Dropdown */}
+            {showDropdown && (
+              <div className="absolute top-12 left-0 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl z-[100] p-5 space-y-4">
+                <h3 className="text-gray-900 dark:text-white font-bold text-base border-b border-gray-100 dark:border-gray-800 pb-2">
+                  Filter by
+                </h3>
+
+                {/* Department */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                    Department
+                  </label>
+                  <select
+                    value={filters.department}
+                    onChange={(e) => { setFilters((prev) => ({ ...prev, department: e.target.value })); setPage(1); }}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#86CD23] outline-none transition-all"
+                  >
+                    <option value="All">All</option>
+                    {departments.map((d) => (<option key={d.id} value={d.name}>{d.name}</option>))}
+                  </select>
+                </div>
+
+                {/* Role */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                    Role
+                  </label>
+                  <select
+                    value={filters.role}
+                    onChange={(e) => { setFilters((prev) => ({ ...prev, role: e.target.value })); setPage(1); }}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#86CD23] outline-none transition-all"
+                  >
+                    <option value="All">All</option>
+                    {roles.map((r) => (<option key={r.id} value={r.title}>{r.title}</option>))}
+                  </select>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                    Location
+                  </label>
+                  <select
+                    value={filters.location}
+                    onChange={(e) => { setFilters((prev) => ({ ...prev, location: e.target.value })); setPage(1); }}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#86CD23] outline-none transition-all"
+                  >
+                    <option value="All">All</option>
+                    {locations.map((loc, i) => (<option key={i} value={loc}>{loc}</option>))}
+                  </select>
+                </div>
+
+                {/* Task Completion */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                    Task Completion
+                  </label>
+                  <select
+                    value={filters.completion}
+                    onChange={(e) => { setFilters((prev) => ({ ...prev, completion: e.target.value })); setPage(1); }}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#86CD23] outline-none transition-all"
+                  >
+                    <option value="All">All</option>
+                    <option value="0-25%">0–25%</option>
+                    <option value="26-50%">26–50%</option>
+                    <option value="51-75%">51–75%</option>
+                    <option value="76-100%">76–100%</option>
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Search Bar — full width on mobile, 1/3 on desktop */}
+          <div className="flex items-center w-full sm:w-1/3 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 shadow-sm transition-colors">
+            <Search className="text-gray-400 dark:text-gray-500 shrink-0" size={17} />
             <input
               type="text"
-              placeholder="Search by staff name, position, role..."
+              placeholder="Search staff name, role..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="ml-2 w-full outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 bg-transparent"
             />
-
-            {/* 📱 Mobile-only buttons */}
-            <div className="flex sm:hidden gap-2 ml-2">
-              {/* view toggle */}
-              <div className="flex items-center bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl p-1 gap-1 w-fit">
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === "grid"
-                    ? "bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm"
-                    : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                    }`}
-                  title="Grid View"
-                >
-                  <LayoutGrid size={22} />
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-lg transition-colors ${viewMode === "list"
-                    ? "bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-sm"
-                    : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
-                    }`}
-                  title="List View"
-                >
-                  <List size={22} />
-                </button>
-              </div>
-              {/* Filter Dropdown */}
-              <button
-                onClick={() => setShowDropdown((prev) => !prev)}
-                className="flex items-center gap-1 px-2 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#141414] rounded-lg text-gray-600 dark:text-gray-300 text-xs hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                <span>Filter</span>
-                <ChevronDown size={14} />
-              </button>
-
-              {showDropdown && (
-                <div className="absolute top-16 left-0 right-0 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-xl shadow-2xl z-[100] p-5 space-y-4 animate-in fade-in zoom-in duration-200 min-w-[280px]">
-                  <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-4 border-b border-gray-100 dark:border-gray-800 pb-2">
-                    Filter by
-                  </h3>
-
-                  {/* Department */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                      Department
-                    </label>
-                    <select
-                      value={filters.department}
-                      onChange={(e) => {
-                        setFilters((prev) => ({
-                          ...prev,
-                          department: e.target.value,
-                        }));
-                        setPage(1);
-                      }}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
-                    >
-                      <option value="All">All</option>
-                      {departments.map((d) => (
-                        <option key={d.id} value={d.name}>
-                          {d.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Role */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                      Role
-                    </label>
-                    <select
-                      value={filters.role}
-                      onChange={(e) => {
-                        setFilters((prev) => ({
-                          ...prev,
-                          role: e.target.value,
-                        }));
-                        setPage(1);
-                      }}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
-                    >
-                      <option value="All">All</option>
-                      {roles.map((r) => (
-                        <option key={r.id} value={r.title}>
-                          {r.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                      Location
-                    </label>
-                    <select
-                      value={filters.location}
-                      onChange={(e) => {
-                        setFilters((prev) => ({
-                          ...prev,
-                          location: e.target.value,
-                        }));
-                        setPage(1);
-                      }}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
-                    >
-                      <option value="All">All</option>
-                      {locations.map((loc, i) => (
-                        <option key={i} value={loc}>
-                          {loc}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Task Completion */}
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                      Task Completion
-                    </label>
-                    <select
-                      value={filters.completion}
-                      onChange={(e) => {
-                        setFilters((prev) => ({
-                          ...prev,
-                          completion: e.target.value,
-                        }));
-                        setPage(1);
-                      }}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-[#95D700] outline-none transition-all"
-                    >
-                      <option value="All">All</option>
-                      <option value="0-25%">0-25%</option>
-                      <option value="26-50%">26-50%</option>
-                      <option value="51-75%">51-75%</option>
-                      <option value="76-100%">76-100%</option>
-                    </select>
-                  </div>
-
-                </div>
-              )}
-              {/* download card button */}
-              {/* <button
-                onClick={downloadAllContacts}
-                className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition"
-              >
-                Download Contacts
-              </button> */}
-
-              {/* Add Staff (MOBILE) */}
-              <Link href="/add-staff" style={{ cursor: "pointer" }}>
-                <button className="flex cursor-pointer items-center gap-1 px-2 py-1 bg-[#95D700] text-white rounded-lg text-xs font-medium hover:bg-green-600 transition">
-                  <Plus size={14} /> Add New Staff
-                </button>
-              </Link>
-            </div>
           </div>
 
           {/* 💻 Desktop-only Filter + Add Staff */}
