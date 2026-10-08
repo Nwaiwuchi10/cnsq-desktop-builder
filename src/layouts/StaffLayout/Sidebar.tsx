@@ -29,6 +29,7 @@ type NavItem = {
   href?: string;
   icon: React.ElementType;
   isCeoOnly?: boolean;
+  isMobileOnly?: boolean;
   subItems?: { name: string; href: string; icon?: React.ElementType }[];
 };
 
