@@ -134,13 +134,20 @@ export default function TicketDetailsPage() {
     }
   }, [myAssignment?.id, myAssignment?.status, myAssignment?.staffNotes]);
 
+  // Status update in-flight state
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
   const handleStatusChange = async (status: string) => {
+    if (isUpdatingStatus || ticket?.status === status) return;
+    setIsUpdatingStatus(true);
     try {
       const responseData = await updateTicketStatus(ticket!.id, status);
       setModal({ type: 'success', message: (responseData as any)?.message || `Ticket marked as ${status}` });
       fetchTicket();
     } catch (error: any) {
       setModal({ type: 'error', message: error.response?.data?.message || error.message || 'Failed to update status' });
+    } finally {
+      setIsUpdatingStatus(false);
     }
   };
 
@@ -351,7 +358,8 @@ export default function TicketDetailsPage() {
             {ticket.status !== 'In Progress' && ticket.status !== 'Completed' && (
               <button
                 onClick={() => handleStatusChange('In Progress')}
-                className="px-4 py-2 border border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-white dark:bg-transparent rounded-md font-bold text-[13px] transition-colors"
+                disabled={isUpdatingStatus}
+                className="px-4 py-2 border border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 bg-white dark:bg-transparent rounded-md font-bold text-[13px] transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Mark as in Progress
               </button>
@@ -360,8 +368,10 @@ export default function TicketDetailsPage() {
             {ticket.status !== 'Completed' && (
               <button
                 onClick={() => handleStatusChange('Completed')}
-                className="px-6 py-2 bg-[#8ec32f] hover:bg-[#7cb028] text-gray-900 rounded-md font-bold text-[13px] transition-colors"
+                disabled={isUpdatingStatus}
+                className="px-6 py-2 bg-[#8ec32f] hover:bg-[#7cb028] text-gray-900 rounded-md font-bold text-[13px] transition-colors disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
               >
+                {isUpdatingStatus ? <Loader2 size={14} className="animate-spin text-gray-900" /> : null}
                 Complete Ticket
               </button>
             )}
@@ -398,8 +408,10 @@ export default function TicketDetailsPage() {
           </div>
           <button
             onClick={() => handleStatusChange('Completed')}
-            className="px-4 py-1.5 bg-[#8ec32f] hover:bg-[#7cb028] text-gray-900 font-bold text-xs rounded-lg whitespace-nowrap"
+            disabled={isUpdatingStatus}
+            className="px-4 py-1.5 bg-[#8ec32f] hover:bg-[#7cb028] text-gray-900 font-bold text-xs rounded-lg whitespace-nowrap disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
           >
+            {isUpdatingStatus ? <Loader2 size={12} className="animate-spin text-gray-900" /> : null}
             Mark Ticket Completed
           </button>
         </div>
