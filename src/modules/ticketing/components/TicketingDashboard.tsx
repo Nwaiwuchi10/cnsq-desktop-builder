@@ -101,11 +101,11 @@ export default function TicketingDashboard() {
             </p>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => setIsCreateModalOpen(true)}
           className="bg-[#8ec32f] hover:bg-[#7cb028] text-gray-900 px-3 md:px-4 py-2 md:py-2.5 rounded-lg font-bold text-[13px] flex items-center gap-1.5 md:gap-2 transition-colors"
         >
-          <span className="text-lg leading-none">+</span> 
+          <span className="text-lg leading-none">+</span>
           <span className="hidden md:inline">Create Ticket</span>
           <span className="md:hidden">New Ticket</span>
         </button>
@@ -122,7 +122,7 @@ export default function TicketingDashboard() {
             <Calendar size={18} className="text-blue-500 dark:text-blue-400" />
           </div>
         </div>
-        
+
         {/* Open Tickets */}
         <div className="border border-gray-100 dark:border-gray-800 p-5 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex items-start justify-between bg-white dark:bg-[#141414]">
           <div>
@@ -133,7 +133,7 @@ export default function TicketingDashboard() {
             <Clock size={18} className="text-orange-500 dark:text-orange-400" />
           </div>
         </div>
-        
+
         {/* In Progress */}
         <div className="border border-gray-100 dark:border-gray-800 p-5 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex items-start justify-between bg-white dark:bg-[#141414]">
           <div>
@@ -144,7 +144,7 @@ export default function TicketingDashboard() {
             <RefreshCw size={18} className="text-gray-600 dark:text-gray-400" />
           </div>
         </div>
-        
+
         {/* Completed */}
         <div className="border border-gray-100 dark:border-gray-800 p-5 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex items-start justify-between bg-white dark:bg-[#141414]">
           <div>
@@ -160,22 +160,22 @@ export default function TicketingDashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 w-full">
         {/* Tabs */}
         <div className="flex space-x-2 text-[13px] font-medium overflow-x-auto pb-1 scrollbar-hide w-full max-w-full md:w-auto">
-          <button 
+          <button
             className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${statusFilter === 'All' && activeTab === 'all' ? 'bg-[#8ec32f] text-gray-900 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent'}`}
             onClick={() => { setStatusFilter('All'); setActiveTab('all'); setPageNum(1); }}
           >
             All Tickets ({stats?.total || 0})
           </button>
-          <button 
+          <button
             className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${activeTab === 'my' ? 'bg-[#8ec32f] text-gray-900 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent'}`}
             onClick={() => { setActiveTab('my'); setStatusFilter('All'); setPageNum(1); }}
           >
             My Tickets
           </button>
-          
+
           {/* Conditional Tabs based on Role or Received Tickets */}
           {(isHod || activeTab === 'received') && (
-            <button 
+            <button
               className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${activeTab === 'received' ? 'bg-[#8ec32f] text-gray-900 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent'}`}
               onClick={() => { setActiveTab('received'); setStatusFilter('All'); setPageNum(1); }}
             >
@@ -189,8 +189,8 @@ export default function TicketingDashboard() {
           {/* General Search */}
           <div className="relative flex-1 min-w-[200px] md:w-[240px]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search subject, ref..."
               value={search}
               onChange={handleSearch}
@@ -199,18 +199,18 @@ export default function TicketingDashboard() {
           </div>
 
           {/* Filter by Logged Staff Name */}
-          <div className="relative min-w-[170px] md:w-[190px]">
-            <input 
-              type="text" 
+          {/* <div className="relative min-w-[170px] md:w-[190px]">
+            <input
+              type="text"
               placeholder="Filter by staff name..."
               value={staffName}
               onChange={(e) => { setStaffName(e.target.value); setPageNum(1); }}
               className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:border-[#8ec32f] w-full bg-white dark:bg-[#141414] text-gray-900 dark:text-white"
             />
-          </div>
+          </div> */}
 
           {/* Date Range: Start */}
-          <div className="flex items-center gap-1.5 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300">
+          {/* <div className="flex items-center gap-1.5 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300">
             <span className="font-semibold text-gray-400">From:</span>
             <input 
               type="date"
@@ -218,10 +218,10 @@ export default function TicketingDashboard() {
               onChange={(e) => { setStartDate(e.target.value); setPageNum(1); }}
               className="bg-transparent text-gray-900 dark:text-white focus:outline-none text-xs"
             />
-          </div>
+          </div> */}
 
           {/* Date Range: End */}
-          <div className="flex items-center gap-1.5 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300">
+          {/* <div className="flex items-center gap-1.5 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300">
             <span className="font-semibold text-gray-400">To:</span>
             <input 
               type="date"
@@ -229,7 +229,7 @@ export default function TicketingDashboard() {
               onChange={(e) => { setEndDate(e.target.value); setPageNum(1); }}
               className="bg-transparent text-gray-900 dark:text-white focus:outline-none text-xs"
             />
-          </div>
+          </div> */}
 
           {/* Priority Select */}
           <div className="relative shrink-0 w-[110px] md:w-auto">
@@ -245,12 +245,12 @@ export default function TicketingDashboard() {
               <option value="Low">Low</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 md:px-3 text-gray-500">
-               <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
             </div>
           </div>
 
           {/* Clear Filters Button */}
-          {(search || staffName || startDate || endDate || priority) && (
+          {/* {(search || staffName || startDate || endDate || priority) && (
             <button
               onClick={handleClearFilters}
               title="Reset all filters"
@@ -258,13 +258,13 @@ export default function TicketingDashboard() {
             >
               <RefreshCw size={12} /> Clear
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
       <div className="flex-1 overflow-x-auto">
-        <TicketTable 
-          tickets={paginatedTickets?.data || []} 
+        <TicketTable
+          tickets={paginatedTickets?.data || []}
           statusFilter={statusFilter}
           fetchTickets={fetchTickets}
           onOpenCreateModal={() => setIsCreateModalOpen(true)}
@@ -279,14 +279,14 @@ export default function TicketingDashboard() {
             Showing {(pageNum - 1) * paginatedTickets.pageSize + 1} to {Math.min(pageNum * paginatedTickets.pageSize, paginatedTickets.total)} of {paginatedTickets.total} entries
           </p>
           <div className="flex space-x-2">
-            <button 
+            <button
               disabled={pageNum === 1}
               onClick={() => setPageNum(prev => Math.max(1, prev - 1))}
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 text-gray-700 dark:text-gray-300 transition-colors"
             >
               Previous
             </button>
-            <button 
+            <button
               disabled={pageNum === paginatedTickets.totalPages}
               onClick={() => setPageNum(prev => Math.min(paginatedTickets.totalPages, prev + 1))}
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 text-gray-700 dark:text-gray-300 transition-colors"
@@ -297,9 +297,9 @@ export default function TicketingDashboard() {
         </div>
       )}
 
-      <CreateTicketModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+      <CreateTicketModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onSuccess={fetchTickets}
       />
 
