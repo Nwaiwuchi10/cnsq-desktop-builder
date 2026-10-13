@@ -26,7 +26,9 @@ const Index = () => {
   return (
     <div>
       <Navbar />
-      <StaffDirectory />
+      <div className="mt-24 lg:mt-28 mb-12">
+        <StaffDirectory />
+      </div>
       <Footer />
     </div>
   );

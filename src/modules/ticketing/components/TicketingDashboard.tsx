@@ -19,6 +19,9 @@ export default function TicketingDashboard() {
 
   const [pageNum, setPageNum] = useState(1);
   const [search, setSearch] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [staffName, setStaffName] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [ticketToEdit, setTicketToEdit] = useState<Ticket | null>(null);
 
@@ -27,15 +30,26 @@ export default function TicketingDashboard() {
       const statsData = await getTicketStats();
       setStats(statsData);
 
-      let params: Record<string, any> = {};
+      let params: Record<string, any> = {
+        startDate: startDate || undefined,
+        endDate: endDate || undefined,
+        staffName: staffName || undefined,
+      };
+
       if (activeTab === 'received') {
-        params = { receivedPageNum: pageNum, receivedPageSize: 10, receivedSearch: search };
+        params.receivedPageNum = pageNum;
+        params.receivedPageSize = 10;
+        params.receivedSearch = search;
         if (priority) params.receivedPriority = priority;
       } else if (activeTab === 'my') {
-        params = { myPageNum: pageNum, myPageSize: 10, mySearch: search };
+        params.myPageNum = pageNum;
+        params.myPageSize = 10;
+        params.mySearch = search;
         if (priority) params.myPriority = priority;
       } else {
-        params = { allPageNum: pageNum, allPageSize: 10, allSearch: search };
+        params.allPageNum = pageNum;
+        params.allPageSize = 10;
+        params.allSearch = search;
         if (priority) params.allPriority = priority;
       }
 
@@ -53,7 +67,7 @@ export default function TicketingDashboard() {
 
   useEffect(() => {
     fetchTickets();
-  }, [activeTab, pageNum, search, priority]);
+  }, [activeTab, pageNum, search, priority, startDate, endDate, staffName]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -62,6 +76,15 @@ export default function TicketingDashboard() {
 
   const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPriority(e.target.value === 'All' ? '' : e.target.value);
+    setPageNum(1);
+  };
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setPriority('');
+    setStartDate('');
+    setEndDate('');
+    setStaffName('');
     setPageNum(1);
   };
 
@@ -150,31 +173,65 @@ export default function TicketingDashboard() {
             My Tickets
           </button>
           
-          {/* Conditional Tabs based on Role */}
-          {isHod && (
-            <>
-              <button 
-                className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${activeTab === 'received' ? 'bg-[#8ec32f] text-gray-900 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent'}`}
-                onClick={() => { setActiveTab('received'); setStatusFilter('All'); setPageNum(1); }}
-              >
-                Received Tickets
-              </button>
-            </>
+          {/* Conditional Tabs based on Role or Received Tickets */}
+          {(isHod || activeTab === 'received') && (
+            <button 
+              className={`px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${activeTab === 'received' ? 'bg-[#8ec32f] text-gray-900 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent'}`}
+              onClick={() => { setActiveTab('received'); setStatusFilter('All'); setPageNum(1); }}
+            >
+              Received / Assigned Tickets
+            </button>
           )}
         </div>
 
         {/* Search & Filter */}
-        <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-[320px]">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto">
+          {/* General Search */}
+          <div className="relative flex-1 min-w-[200px] md:w-[240px]">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <input 
               type="text" 
-              placeholder="Search..."
+              placeholder="Search subject, ref..."
               value={search}
               onChange={handleSearch}
               className="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:border-[#8ec32f] w-full bg-white dark:bg-[#141414] text-gray-900 dark:text-white"
             />
           </div>
+
+          {/* Filter by Logged Staff Name */}
+          <div className="relative min-w-[170px] md:w-[190px]">
+            <input 
+              type="text" 
+              placeholder="Filter by staff name..."
+              value={staffName}
+              onChange={(e) => { setStaffName(e.target.value); setPageNum(1); }}
+              className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:border-[#8ec32f] w-full bg-white dark:bg-[#141414] text-gray-900 dark:text-white"
+            />
+          </div>
+
+          {/* Date Range: Start */}
+          <div className="flex items-center gap-1.5 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300">
+            <span className="font-semibold text-gray-400">From:</span>
+            <input 
+              type="date"
+              value={startDate}
+              onChange={(e) => { setStartDate(e.target.value); setPageNum(1); }}
+              className="bg-transparent text-gray-900 dark:text-white focus:outline-none text-xs"
+            />
+          </div>
+
+          {/* Date Range: End */}
+          <div className="flex items-center gap-1.5 bg-white dark:bg-[#141414] border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-300">
+            <span className="font-semibold text-gray-400">To:</span>
+            <input 
+              type="date"
+              value={endDate}
+              onChange={(e) => { setEndDate(e.target.value); setPageNum(1); }}
+              className="bg-transparent text-gray-900 dark:text-white focus:outline-none text-xs"
+            />
+          </div>
+
+          {/* Priority Select */}
           <div className="relative shrink-0 w-[110px] md:w-auto">
             <select
               value={priority || 'All'}
@@ -191,6 +248,17 @@ export default function TicketingDashboard() {
                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
             </div>
           </div>
+
+          {/* Clear Filters Button */}
+          {(search || staffName || startDate || endDate || priority) && (
+            <button
+              onClick={handleClearFilters}
+              title="Reset all filters"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+            >
+              <RefreshCw size={12} /> Clear
+            </button>
+          )}
         </div>
       </div>
 

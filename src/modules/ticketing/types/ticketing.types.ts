@@ -11,6 +11,44 @@ export enum TicketStatus {
   COMPLETED = 'Completed',
 }
 
+export enum AssignmentStatus {
+  PENDING = 'Pending',
+  IN_PROGRESS = 'In Progress',
+  COMPLETED = 'Completed',
+}
+
+export interface TicketAssignment {
+  id: string;
+  ticketId: string;
+  staffId: number;
+  staff?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    profilePicture?: string;
+    employment?: {
+      jobTitle?: string[];
+      department?: {
+        name: string;
+      };
+    };
+  };
+  assignedById?: number;
+  assignedBy?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email?: string;
+  };
+  status: AssignmentStatus;
+  notes?: string;
+  staffNotes?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TicketActivity {
   id: string;
   content: string;
@@ -33,6 +71,9 @@ export interface Ticket {
   priority: TicketPriority;
   status: TicketStatus;
   attachments?: string[];
+  resolutionDate?: string;
+  link?: string;
+  assignments?: TicketAssignment[];
   department: {
     id: number;
     name: string;

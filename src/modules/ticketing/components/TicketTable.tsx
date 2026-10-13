@@ -58,31 +58,84 @@ export default function TicketTable({ tickets, statusFilter, fetchTickets, onOpe
     <div className="w-full">
       {/* Desktop Table View */}
       <div className="hidden md:block w-full overflow-x-auto min-h-[400px]">
-        <table className="w-full text-left border-collapse min-w-[800px]">
+        <table className="w-full text-left border-collapse min-w-[950px]">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-800 text-sm font-semibold text-gray-600 dark:text-gray-400">
               <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Ticket ID</th>
               <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Subject</th>
               <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Department</th>
+              <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Logged By</th>
+              <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Assigned Staff</th>
               <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Priority</th>
-              <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Created</th>
+              <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Due Date</th>
               <th className="py-4 font-bold text-black dark:text-white whitespace-nowrap px-4">Status</th>
-              <th className="py-4 px-4">Actions</th>
+              <th className="py-4 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTickets.map((ticket) => (
+            {filteredTickets.map((ticket) => {
+              const isOverdue = ticket.status !== 'Completed' && ticket.resolutionDate && new Date(ticket.resolutionDate) < new Date();
+              return (
               <tr key={ticket.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors">
                 <td className="py-4 px-4 text-sm font-bold text-gray-900 dark:text-white">{ticket.ticketRef}</td>
-                <td className="py-4 px-4 text-sm text-gray-700 dark:text-gray-300 min-w-[200px]">{ticket.subject}</td>
+                <td className="py-4 px-4 text-sm text-gray-700 dark:text-gray-300 min-w-[180px]">
+                  <div className="flex flex-col">
+                    <span className="font-medium">{ticket.subject}</span>
+                    {ticket.link && (
+                      <a 
+                        href={ticket.link} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-[11px] text-blue-500 hover:underline flex items-center gap-1 mt-0.5"
+                      >
+                        🔗 Reference link
+                      </a>
+                    )}
+                  </div>
+                </td>
                 <td className="py-4 px-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">{ticket.department?.name}</td>
+                <td className="py-4 px-4 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                  {ticket.creator ? `${ticket.creator.firstName} ${ticket.creator.lastName}` : 'Unknown'}
+                </td>
+                <td className="py-4 px-4 whitespace-nowrap">
+                  {ticket.assignments && ticket.assignments.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 max-w-[160px]">
+                      {ticket.assignments.map((a, i) => (
+                        <span 
+                          key={i} 
+                          title={`Status: ${a.status}`}
+                          className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                            a.status === 'Completed'
+                              ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                              : a.status === 'In Progress'
+                              ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                          }`}
+                        >
+                          {a.staff ? `${a.staff.firstName} ${a.staff.lastName?.[0] || ''}.` : 'Staff'}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">Unassigned</span>
+                  )}
+                </td>
                 <td className="py-4 px-4 whitespace-nowrap">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPriorityColor(ticket.priority)}`}>
                     {ticket.priority}
                   </span>
                 </td>
                 <td className="py-4 px-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                  {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
+                  {ticket.resolutionDate ? (
+                    <div className="flex flex-col">
+                      <span>{format(new Date(ticket.resolutionDate), 'MMM d, yyyy')}</span>
+                      {isOverdue && (
+                        <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Overdue</span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
                 </td>
                 <td className="py-4 px-4 whitespace-nowrap">
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(ticket.status)}`}>
@@ -138,10 +191,11 @@ export default function TicketTable({ tickets, statusFilter, fetchTickets, onOpe
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {filteredTickets.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-20 text-center bg-white dark:bg-[#141414] rounded-xl border border-gray-100 dark:border-gray-800">
+                <td colSpan={9} className="py-20 text-center bg-white dark:bg-[#141414] rounded-xl border border-gray-100 dark:border-gray-800">
                   <div className="flex flex-col items-center justify-center py-6">
                     <div className="w-14 h-14 bg-[#f2fae1] dark:bg-[#1a2310] rounded-full flex items-center justify-center mb-4">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8ec32f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

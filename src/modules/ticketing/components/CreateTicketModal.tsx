@@ -18,6 +18,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
   const [description, setDescription] = useState('');
   const [linkedProject, setLinkedProject] = useState('');
   const [linkedTask, setLinkedTask] = useState('');
+  const [link, setLink] = useState('');
 
   // Dynamic fields
   const [projects, setProjects] = useState<any[]>([]);
@@ -130,6 +131,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
       };
       if (linkedProject) dtoParams.linkedProjectId = Number(linkedProject);
       if (linkedTask) dtoParams.linkedTaskId = Number(linkedTask);
+      if (link.trim()) dtoParams.link = link.trim();
 
       formData.append('dto', JSON.stringify(dtoParams));
 
@@ -156,6 +158,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
     setDepartmentId('');
     setPriority('Medium');
     setDescription('');
+    setLink('');
     setFiles([]);
     onClose();
   };
@@ -361,11 +364,25 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Attachments</label>
+              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">
+                Reference / Product Link (Optional)
+              </label>
+              <input
+                type="url"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="https://... (e.g. Figma, Loom video, reproduction or product issue link)"
+                className="w-full px-3.5 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-[13px] bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white focus:outline-none focus:border-[#8ec32f]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-gray-900 dark:text-white mb-1.5">Attachments & Video Evidence</label>
               <div className="border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] rounded-xl py-6 px-4 text-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer" onClick={() => document.getElementById('file-upload')?.click()}>
                 <input
                   type="file"
                   multiple
+                  accept="image/*,video/*,.pdf,.doc,.docx"
                   id="file-upload"
                   className="hidden"
                   onChange={(e) => {
@@ -377,7 +394,7 @@ export default function CreateTicketModal({ isOpen, onClose, onSuccess }: Create
                 <div className="flex flex-col items-center justify-center">
                   <UploadCloud size={24} className="mb-3 text-gray-400 dark:text-gray-500" />
                   <p className="text-[13px] text-gray-600 dark:text-gray-300 font-medium"><span className="text-[#8ec32f] font-bold">Click to upload</span> or drag and drop</p>
-                  <p className="text-xs text-gray-400 mt-1">SVG, PNG, JPG or PDF (max. 10MB)</p>
+                  <p className="text-xs text-gray-400 mt-1">Images, PDF, or Video Evidence (MP4, WEBM, MOV up to 50MB)</p>
                 </div>
               </div>
               {files.length > 0 && (

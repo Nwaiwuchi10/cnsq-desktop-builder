@@ -1,5 +1,5 @@
 import Api from "@/utils/api";
-import { Ticket, TicketStats, TicketActivity, PaginatedTickets } from "../types/ticketing.types";
+import { Ticket, TicketStats, TicketActivity, PaginatedTickets, TicketAssignment } from "../types/ticketing.types";
 
 export const getTickets = async (params: {
   myPageNum?: number;
@@ -14,6 +14,9 @@ export const getTickets = async (params: {
   allPageSize?: number;
   allSearch?: string;
   allPriority?: string;
+  startDate?: string;
+  endDate?: string;
+  staffName?: string;
 } = {}): Promise<{ myTickets: PaginatedTickets, receivedTickets: PaginatedTickets, allTickets: PaginatedTickets, isHod: boolean, currentUserId: number }> => {
   const { data } = await Api.get("/ticketing", { params });
   return data;
@@ -62,4 +65,28 @@ export const addTicketComment = async (
     headers: { "Content-Type": "multipart/form-data" },
   });
   return data;
+};
+
+export const assignTicket = async (
+  id: string,
+  data: { staffIds: number[]; resolutionDate?: string; notes?: string }
+): Promise<Ticket> => {
+  const { data: res } = await Api.post(`/ticketing/${id}/assign`, data);
+  return res;
+};
+
+export const updateAssignmentStatus = async (
+  assignmentId: string,
+  data: { status: string; notes?: string; staffNotes?: string }
+): Promise<TicketAssignment> => {
+  const { data: res } = await Api.patch(`/ticketing/assignment/${assignmentId}/status`, data);
+  return res;
+};
+
+export const setResolutionDate = async (
+  id: string,
+  resolutionDate: string
+): Promise<Ticket> => {
+  const { data: res } = await Api.patch(`/ticketing/${id}/resolution-date`, { resolutionDate });
+  return res;
 };
