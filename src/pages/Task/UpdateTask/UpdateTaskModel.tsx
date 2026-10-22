@@ -134,7 +134,7 @@ export default function TaskUpdateModal({
         setUrgency(t.urgency);
         setTimeline(t.timeline || "");
         setSprint(t.sprint || "");
-        setProjectId(t.project?.id || "");
+        setProjectId(t.project?.id || (t as any).linkedProjectId || "");
         setStartDate(t.startDate ? t.startDate.split("T")[0] : "");
         setDueDate(t.dueDate ? t.dueDate.split("T")[0] : "");
 
@@ -161,8 +161,9 @@ export default function TaskUpdateModal({
         setAllProjects(projRes.data || []);
 
         // Step 3: Handle staff fetching
-        if (t.project && t.project.id) {
-          const projectRes = await Api.get(`/projects/${t.project.id}/staffs`);
+        const effectiveProjectId = t.project?.id || (t as any).linkedProjectId;
+        if (effectiveProjectId) {
+          const projectRes = await Api.get(`/projects/${effectiveProjectId}/staffs`);
           setStaffs(projectRes.data || []);
         } else if (initialDept) {
           const staffRes = await Api.get(

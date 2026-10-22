@@ -24,8 +24,13 @@ interface StatusColumn {
 const statusColumns: StatusColumn[] = [
   { key: "Not_started", label: "Not Started", dotColor: "bg-red-500" },
   { key: "In_progress", label: "In Progress", dotColor: "bg-orange-500" },
-  { key: "Testing_In_Progress", label: "Review", dotColor: "bg-purple-500" },
+  { key: "Ready_To_Test", label: "Ready to Test", dotColor: "bg-yellow-500" },
+  { key: "Testing_In_Progress", label: "Testing", dotColor: "bg-purple-500" },
+  { key: "Failed_Test", label: "Failed Test", dotColor: "bg-rose-500" },
+  { key: "Passed_Test", label: "Passed Test", dotColor: "bg-teal-500" },
+  { key: "Dev_Completed", label: "Dev Completed", dotColor: "bg-blue-500" },
   { key: "Completed", label: "Completed", dotColor: "bg-emerald-500" },
+  { key: "On_Hold", label: "On Hold", dotColor: "bg-gray-500" },
 ];
 
 const BoardView: React.FC<BoardViewProps> = ({
@@ -130,7 +135,7 @@ const BoardView: React.FC<BoardViewProps> = ({
       <div className="w-full overflow-x-auto pb-8">
         <div className="flex gap-6 min-w-full">
           {statusColumns.map((col) => {
-            const columnTasks = tasks.filter((t) => t.status === col.key);
+            const columnTasks = tasks.filter((t) => (t.status || "Not_started") === col.key);
             const isDragOver = draggedTask && draggedFromStatus !== col.key;
 
             return (
