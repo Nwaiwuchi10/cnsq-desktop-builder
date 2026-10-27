@@ -278,6 +278,17 @@ const MessagesLayout: React.FC = () => {
       });
     });
 
+    // Real-time channel updated: dynamically rename channel in sidebar list
+    socketRef.current.on("channel:updated", (data: any) => {
+      setChannels((prev: any[]) =>
+        prev.map((c: any) =>
+          c.id === data.conversationId
+            ? { ...c, name: data.name ?? c.name, description: data.description ?? c.description }
+            : c
+        )
+      );
+    });
+
     // Real-time: staff added to a channel → refresh channel list
     socketRef.current.on("conversation:addedToConversation", () => {
       // Re-fetch channels to get the newly joined channel

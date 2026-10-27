@@ -110,13 +110,18 @@ export default function CompleteRegistration() {
 
       setTimeout(() => router.push("/login"), 1800);
     } catch (error: any) {
-      const errCode = error.response?.data?.message;
-      if (errCode === "REGISTRATION_OTP_EXPIRED") {
+      const errMsg = error.response?.data?.message || "";
+      if (
+        errMsg === "REGISTRATION_OTP_EXPIRED" ||
+        errMsg.toLowerCase().includes("expired")
+      ) {
         setExpired(true);
       } else {
         setModal({
           type: "error",
-          message: error.response?.data?.message || "Failed to complete registration.",
+          message:
+            error.response?.data?.message ||
+            "Unable to complete registration. Please check your credentials and try again.",
         });
       }
     } finally {
@@ -153,7 +158,7 @@ export default function CompleteRegistration() {
               </div>
               <h2 className="text-lg font-bold text-gray-900">Registration Link Expired</h2>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Your 15-minute registration OTP link has expired. Please reset your password to complete your account setup.
+                Your registration link has expired. Please reset your password to complete your account setup.
               </p>
               <button
                 onClick={goToForgotPassword}

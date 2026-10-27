@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Users, Shield, Trash2, UserMinus, Lock, Unlock, ShieldAlert, ShieldCheck } from "lucide-react";
+import { X, Users, Shield, Trash2, UserMinus, Lock, Unlock, ShieldAlert, ShieldCheck, Edit2, Check } from "lucide-react";
 import Api from "@/utils/api";
 
 interface ChannelMember {
@@ -32,6 +32,7 @@ interface ChannelInfoDrawerProps {
     isLocked?: boolean;
   } | null;
   onRemoveMember?: (memberId: number) => void;
+  onChannelUpdated?: (updated: { name: string; description?: string }) => void;
 }
 
 export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
@@ -39,13 +40,30 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
   onClose,
   channel,
   onRemoveMember,
+  onChannelUpdated,
 }) => {
   const [membersList, setMembersList] = useState<ChannelMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [isLocked, setIsLocked] = useState(false);
 
+  // Channel edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [savingChannel, setSavingChannel] = useState(false);
+  const [editError, setEditError] = useState("");
+
   const [confirmRemoveUserId, setConfirmRemoveUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (channel) {
+      setEditName(channel.name || "");
+      setEditDescription(channel.description || "");
+      setIsEditing(false);
+      setEditError("");
+    }
+  }, [channel?.id, channel?.name, channel?.description]);
 
   useEffect(() => {
     const token = localStorage.getItem("user-token");
@@ -108,6 +126,39 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
   const currentUserMember = membersList.find((m) => m.user?.id == currentUserId || m.id == currentUserId || m.userId == currentUserId);
   const isUserAdmin = currentUserMember?.role === "admin" || currentUserMember?.role === "owner" || currentUserMember?.role === "ADMIN" || currentUserMember?.role === "OWNER";
   const isUserOwner = currentUserMember?.role === "owner" || currentUserMember?.role === "OWNER";
+
+  const handleSaveChannel = async () => {
+    if (!editName.trim()) {
+      setEditError("Channel name cannot be empty");
+      return;
+    }
+    const token = localStorage.getItem("user-token");
+    setSavingChannel(true);
+    setEditError("");
+    try {
+      await Api.patch(
+        `/chat/channels/${channel.id}`,
+        {
+          name: editName.trim(),
+          description: editDescription.trim(),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setIsEditing(false);
+      if (onChannelUpdated) {
+        onChannelUpdated({
+          name: editName.trim(),
+          description: editDescription.trim(),
+        });
+      }
+    } catch (err: any) {
+      setEditError(err.response?.data?.message || "Failed to update channel");
+    } finally {
+      setSavingChannel(false);
+    }
+  };
 
   const handleToggleLock = async () => {
     const token = localStorage.getItem("user-token");
@@ -188,15 +239,88 @@ export const ChannelInfoDrawer: React.FC<ChannelInfoDrawerProps> = ({
               </div>
             )}
           </div>
-          <h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">
-            #{channel.name}
-          </h2>
-          <p className="text-xs text-gray-400 mt-1">
-            {membersList.length || channel.members?.length || 0} Members
-          </p>
+          {isEditing ? (
+            <div className="w-full mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-left text-gray-500 mb-1">
+                  Channel Name
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Channel name"
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-lime-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-left text-gray-500 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={2}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Channel description..."
+                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-lime-500 resize-none"
+                />
+              </div>
+
+              {editError && (
+                <p className="text-xs text-red-500 text-left">{editError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditName(channel.name || "");
+                    setEditDescription(channel.description || "");
+                    setEditError("");
+                  }}
+                  className="px-3 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={savingChannel}
+                  onClick={handleSaveChannel}
+                  className="px-4 py-1.5 text-xs font-bold text-black bg-[#95D700] hover:bg-[#85c200] disabled:opacity-50 rounded-md transition flex items-center gap-1 shadow-sm"
+                >
+                  {savingChannel ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  #{channel.name}
+                </h2>
+                {isUserAdmin && (
+                  <button
+                    onClick={() => {
+                      setEditName(channel.name || "");
+                      setEditDescription(channel.description || "");
+                      setIsEditing(true);
+                    }}
+                    title="Edit Channel Details"
+                    className="p-1 text-gray-400 hover:text-lime-600 dark:hover:text-lime-400 rounded-md transition cursor-pointer"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">
+                {membersList.length || channel.members?.length || 0} Members
+              </p>
+            </>
+          )}
         </div>
 
-        {channel.description && (
+        {!isEditing && channel.description && (
           <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800">
             <p className="text-xs text-gray-400 font-medium">Description</p>
             <p className="text-sm font-normal text-gray-700 dark:text-gray-300 mt-1">

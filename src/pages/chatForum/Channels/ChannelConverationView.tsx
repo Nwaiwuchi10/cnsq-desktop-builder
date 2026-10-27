@@ -79,11 +79,15 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   initialThreadParentId,
 }) => {
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [localName, setLocalName] = useState(conversation?.name || "");
+  const [localDescription, setLocalDescription] = useState((conversation as any)?.description || "");
   const [localIsLocked, setLocalIsLocked] = useState((conversation as any)?.isLocked || false);
   const [localMembers, setLocalMembers] = useState((conversation as any)?.members || []);
   const { initiateCall } = useCallSignaling();
 
   useEffect(() => {
+    setLocalName(conversation?.name || "");
+    setLocalDescription((conversation as any)?.description || "");
     setLocalIsLocked((conversation as any)?.isLocked || false);
     setLocalMembers((conversation as any)?.members || []);
 
@@ -749,6 +753,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
       }
     });
 
+    socketRef.current.on("channel:updated", (data: any) => {
+      if (conversation?.id === data.conversationId) {
+        if (data.name) setLocalName(data.name);
+        if (data.description !== undefined) setLocalDescription(data.description);
+      }
+    });
+
     socketRef.current.on("channel:memberRoleUpdated", (data: any) => {
       if (conversation?.id === data.conversationId) {
         setLocalMembers((prev: any) =>
@@ -1289,13 +1300,13 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
               />
             ) : (
               <div className="w-full h-full bg-[#95D700] text-white flex items-center justify-center font-bold">
-                {conversation?.name?.charAt(0) || "C"}
+                {(localName || conversation?.name)?.charAt(0) || "C"}
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="font-semibold truncate">{conversation?.name}</div>
+            <div className="font-semibold truncate">{localName || conversation?.name}</div>
           </div>
           <div className="flex items-center gap-1 mr-1">
               {/* 📞 Group Call buttons */}
@@ -1419,10 +1430,18 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
           onClose={() => setIsGroupInfoOpen(false)}
           channel={{
             id: conversation?.id || "",
-            name: conversation?.name || "Channel",
-            description: (conversation as any)?.description || "Channel discussion group",
+            name: localName || conversation?.name || "Channel",
+            description: localDescription || (conversation as any)?.description || "Channel discussion group",
             members: localMembers,
             isLocked: localIsLocked,
+          }}
+          onChannelUpdated={({ name, description }) => {
+            setLocalName(name);
+            if (description !== undefined) setLocalDescription(description);
+            if (conversation) {
+              conversation.name = name;
+              (conversation as any).description = description;
+            }
           }}
         />
 
