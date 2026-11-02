@@ -28,6 +28,7 @@ interface Project {
   projectName: string;
   desc?: string;
   status: string;
+  derivedStatus?: string;
   startDate: string;
   endDate: string;
   priority: string;
@@ -36,7 +37,9 @@ interface Project {
   productDesignLink?: string;
   stagingUrl?: string;
   assignedTo: ProjectAssignment[];
-  deparment: Department;
+  deparment?: Department;
+  department?: Department;
+  tasks?: { id: number; status?: string }[];
 }
 interface Department {
   id: number;
@@ -87,6 +90,17 @@ export default function UpdateProjectModal({
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [apk, setApk] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [hasTasks, setHasTasks] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const uid = localStorage.getItem("userId");
+      if (uid && !isNaN(Number(uid))) {
+        setCurrentUserId(Number(uid));
+      }
+    }
+  }, []);
   useEffect(() => {
     Api.get("/departments")
       .then((res) => setDepartments(res.data || []))
@@ -107,14 +121,17 @@ export default function UpdateProjectModal({
         ]);
 
         const p: Project = projectRes.data;
+        const projectHasTasks = Array.isArray(p.tasks) && p.tasks.length > 0;
+        setHasTasks(projectHasTasks);
         setProjectName(p.projectName);
         setDesc(p.desc || "");
         setTimeLine(p.timeLine || "");
-        setStatus(p.status);
+        setStatus(p.derivedStatus || p.status);
         setPriority(p.priority);
         setProdUrl(p.prodUrl || "");
         setProductDesignLink(p.productDesignLink || "");
-        // setDepartment(p.deparment?.name)
+        const existingDeptId = p.department?.id ?? p.deparment?.id;
+        setDepartmentId(existingDeptId ? Number(existingDeptId) : "");
         setStagingUrl(p.stagingUrl || "");
         setStartDate(p.startDate?.split("T")[0]);
         setEndDate(p.endDate?.split("T")[0]);
@@ -168,11 +185,11 @@ export default function UpdateProjectModal({
     const validAssignments = assignments.filter(
       (a) => a.staffId != null && Number.isFinite(a.staffId) && a.staffId > 0
     );
-    const dto = {
+    const dto: Record<string, unknown> = {
       projectName,
       desc,
       timeLine,
-      status,
+      ...(hasTasks ? {} : { status }),
       priority,
       prodUrl,
       productDesignLink,
@@ -180,7 +197,7 @@ export default function UpdateProjectModal({
       startDate,
       endDate,
       assignments: validAssignments,
-      departmentId: Number(departmentId),
+      ...(departmentId ? { departmentId: Number(departmentId) } : {}),
     };
     const formData = new FormData();
     formData.append("dto", JSON.stringify(dto));
@@ -269,16 +286,24 @@ export default function UpdateProjectModal({
                 ))}
               </select>
             </div>
-            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+              Status
+            </label>
             <select
               value={status}
+              disabled={hasTasks}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400"
+              className="w-full border rounded-lg px-3 py-2 bg-white dark:bg-[#1a1a1a] transition-colors text-gray-900 dark:text-white placeholder-gray-400 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {PROJECT_STATUSES.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
+            {hasTasks && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                Project status is automatically managed by its tasks.
+              </p>
+            )}
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Priority</label>
             <select
               value={priority}
@@ -396,7 +421,23 @@ export default function UpdateProjectModal({
 
             {/* Assign Staff */}
             <div className="border p-3 rounded-lg bg-gray-50 dark:bg-[#1f1f1f] text-gray-600 dark:text-gray-400">
-              <h3 className="font-medium mb-2">Assign Staff</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">Assign Staff</h3>
+                {currentUserId != null &&
+                  assignments.some((a) => Number(a.staffId) === currentUserId) && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAssignments((prev) =>
+                          prev.filter((a) => Number(a.staffId) !== currentUserId),
+                        )
+                      }
+                      className="text-xs text-red-500 hover:underline font-medium"
+                    >
+                      Unassign Myself
+                    </button>
+                  )}
+              </div>
               <div className="flex flex-col gap-3">
                 <input
                   type="text"

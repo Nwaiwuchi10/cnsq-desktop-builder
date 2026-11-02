@@ -71,6 +71,8 @@ export default function ProjectDetails() {
   const [commentText, setCommentText] = useState("");
   const [loadingComment, setLoadingComment] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [unassigningSelf, setUnassigningSelf] = useState(false);
   const [loadingProject, setLoadingProject] = useState(true);
   const [modal, setModal] = useState<{
     type: "success" | "error";
@@ -79,6 +81,10 @@ export default function ProjectDetails() {
   useEffect(() => {
     const t = localStorage.getItem("user-token");
     setToken(t);
+    const uid = localStorage.getItem("userId");
+    if (uid && !isNaN(Number(uid))) {
+      setCurrentUserId(Number(uid));
+    }
   }, []);
   useEffect(() => {
     const fetchProject = async () => {
@@ -133,6 +139,33 @@ export default function ProjectDetails() {
   const progress = project.projectProgress;
   // const progress = 25; // replace with actual if available
   ///// to comment on a project
+
+  const handleUnassignSelf = async () => {
+    if (!id) return;
+    try {
+      setUnassigningSelf(true);
+      await Api.delete(`/projects/${id}/assign/self`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setModal({
+        type: "success",
+        message: "You have been unassigned from this project.",
+      });
+      const res = await Api.get(`/projects/${id}`);
+      setProject(res?.data);
+    } catch (e: unknown) {
+      const err = e as AxiosError<{ message: string }>;
+      setModal({
+        type: "error",
+        message:
+          err.response?.data?.message || "Failed to unassign from project.",
+      });
+    } finally {
+      setUnassigningSelf(false);
+    }
+  };
 
   const handleAddComment = async () => {
     if (!commentText.trim()) return; // avoid empty comment
@@ -305,7 +338,25 @@ export default function ProjectDetails() {
 
         {/* Assigned Staff */}
         <div className="mt-6">
-          <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Assigned Staff</h3>
+          <div className="flex items-center gap-4 mb-2">
+            <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+              Assigned Staff
+            </h3>
+            {project?.assignedTo?.some(
+              (assign) =>
+                currentUserId != null &&
+                Number(assign?.staff?.id) === currentUserId,
+            ) && (
+              <button
+                type="button"
+                onClick={handleUnassignSelf}
+                disabled={unassigningSelf}
+                className="text-xs px-3 py-1 rounded-full border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors disabled:opacity-50"
+              >
+                {unassigningSelf ? "Unassigning..." : "Unassign Myself"}
+              </button>
+            )}
+          </div>
           <div className="flex items-center mt-2">
             {project?.assignedTo
               ?.filter((assign): assign is AssignedTo =>

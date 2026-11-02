@@ -5,6 +5,7 @@ import AppEvents from "./AppEvents";
 import { usePWA } from "@/hooks/usePWA";
 import { Toaster } from "react-hot-toast";
 import dynamic from "next/dynamic";
+import BirthdayWishPopup from "@/component/BirthdayWishPopup/BirthdayWishPopup";
 
 // Dynamically import InstallPrompt so it's only loaded client-side (no SSR)
 const InstallPrompt = dynamic(
@@ -23,6 +24,7 @@ export default function ClientRoot({
   return (
     <>
       <Toaster position="top-right" />
+      <BirthdayWishPopup />
       <AppEvents />
       {children}
       {/* PWA install banner — handles both Android and iOS prompts */}

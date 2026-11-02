@@ -77,6 +77,16 @@ export default function ProjectWizardForm() {
   >([]);
   const [search, setSearch] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const uid = localStorage.getItem("userId");
+      if (uid && !isNaN(Number(uid))) {
+        setCurrentUserId(Number(uid));
+      }
+    }
+  }, []);
   useEffect(() => {
     if (startDate && endDate) {
       const start = new Date(startDate);
@@ -162,6 +172,20 @@ export default function ProjectWizardForm() {
         },
       });
       setCreatedProjectId(res.data.id);
+      if (Array.isArray(res.data?.assignedTo) && res.data.assignedTo.length > 0) {
+        setAssignments(
+          res.data.assignedTo
+            .filter((a: any) => a?.staff?.id != null)
+            .map((a: any) => ({
+              staffId: Number(a.staff.id),
+              role: a.role || "Project Creator",
+            })),
+        );
+      } else if (currentUserId != null) {
+        setAssignments([
+          { staffId: Number(currentUserId), role: "Project Creator" },
+        ]);
+      }
       setModal({ type: "success", message: "Project created successfully!" });
       next();
     } catch (e: unknown) {
@@ -176,21 +200,13 @@ export default function ProjectWizardForm() {
   };
 
   const handleAssignStaff = async () => {
-    if (assignments.length === 0) {
-      setModal({
-        type: "error",
-        message: "Please add at least one staff or click Skip.",
-      });
-      return;
-    }
-    // if (!token) return;
     setSubmitting(true);
     try {
       await Api.post(
         `/projects/${createdProjectId}/assign`,
         {
           projectId: createdProjectId,
-          assignments, // send the array
+          assignments, // send the array (even if empty when creator removes themselves)
         },
         {
           headers: {

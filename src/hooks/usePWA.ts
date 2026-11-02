@@ -53,12 +53,16 @@ async function sendSubscriptionToServer(
   const token = typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
 
   try {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    if (!token) return;
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+    const apiBaseUrl = (
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4100"
+    ).replace(/\/$/, "");
 
-    await fetch("/api/push-notification/subscribe", {
+    await fetch(`${apiBaseUrl}/push-notification/subscribe`, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -123,6 +127,7 @@ export function usePWA() {
         });
 
         console.log("[usePWA] Service worker registered:", registration.scope);
+        registration.update().catch(() => {});
         setSwRegistration(registration);
 
         // Check for SW updates and notify
@@ -154,6 +159,23 @@ export function usePWA() {
   useEffect(() => {
     if (!swRegistration) return;
 
+    const syncAuthConfigWithSW = () => {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("user-token") : null;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+      const activeWorker =
+        swRegistration.active || navigator.serviceWorker?.controller;
+      if (activeWorker) {
+        activeWorker.postMessage({
+          type: "SET_AUTH_CONFIG",
+          token,
+          apiBaseUrl,
+        });
+      }
+    };
+
+    syncAuthConfigWithSW();
+
     const setupPush = async () => {
       // Check current notification permission
       const permission = Notification.permission;
@@ -164,12 +186,13 @@ export function usePWA() {
         return;
       }
 
-      // Check if already subscribed
+      // Check if already subscribed — always sync with server for current user
       const existingSubscription =
         await swRegistration.pushManager.getSubscription();
       if (existingSubscription) {
-        console.log("[usePWA] Already subscribed to push.");
+        console.log("[usePWA] Already subscribed to push — syncing with server.");
         setIsSubscribed(true);
+        await sendSubscriptionToServer(existingSubscription);
         return;
       }
 

@@ -64,6 +64,16 @@ export default function AssignedToStaffModal({
   const [search, setSearch] = useState("");
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [role, setRole] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const uid = localStorage.getItem("userId");
+      if (uid && !isNaN(Number(uid))) {
+        setCurrentUserId(Number(uid));
+      }
+    }
+  }, []);
 
   // === Fetch project + staff ===
   useEffect(() => {
@@ -107,11 +117,6 @@ export default function AssignedToStaffModal({
       const validAssignments = assignments.filter(
         (a) => a.staffId != null && Number.isFinite(a.staffId) && a.staffId > 0
       );
-      if (validAssignments.length === 0) {
-        setModal({ type: "error", message: "Please add at least one valid staff member." });
-        setSubmitting(false);
-        return;
-      }
       await Api.post(
         `/projects/${projectId}/assign`,
         { assignments: validAssignments },
@@ -161,7 +166,25 @@ export default function AssignedToStaffModal({
           <div className="space-y-4">
             {/* Assign Staff */}
             <div className="border p-3 rounded-lg bg-gray-50 dark:bg-[#1f1f1f]">
-              <h3 className="font-medium mb-2 text-gray-600 dark:text-gray-400">Assign Staff</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium text-gray-600 dark:text-gray-400">
+                  Assign Staff
+                </h3>
+                {currentUserId != null &&
+                  assignments.some((a) => Number(a.staffId) === currentUserId) && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAssignments((prev) =>
+                          prev.filter((a) => Number(a.staffId) !== currentUserId),
+                        )
+                      }
+                      className="text-xs text-red-500 hover:underline font-medium"
+                    >
+                      Unassign Myself
+                    </button>
+                  )}
+              </div>
               <div className="flex flex-col gap-3 relative">
                 {/* Search input */}
                 <input

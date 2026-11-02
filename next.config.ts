@@ -32,10 +32,13 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
+    const apiBaseUrl = (
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4100"
+    ).replace(/\/$/, "");
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:6000/:path*",
+        destination: `${apiBaseUrl}/:path*`,
       },
     ];
   },

@@ -4,6 +4,51 @@
 // ============================================================
 
 const CACHE_NAME = "cnsquad-cache-v2";
+const AUTH_CONFIG_CACHE = "cnsquad-sw-auth-v1";
+const AUTH_CONFIG_KEY = "/__sw_auth_config__";
+
+let swAuthConfig = {
+  token: null,
+  apiBaseUrl: null,
+};
+
+async function saveSwAuthConfig(config) {
+  swAuthConfig = {
+    token: config?.token || swAuthConfig.token || null,
+    apiBaseUrl: config?.apiBaseUrl || swAuthConfig.apiBaseUrl || null,
+  };
+  try {
+    const cache = await caches.open(AUTH_CONFIG_CACHE);
+    await cache.put(
+      AUTH_CONFIG_KEY,
+      new Response(JSON.stringify(swAuthConfig), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+  } catch (err) {
+    console.warn("[SW] Failed to persist auth config in cache:", err);
+  }
+}
+
+async function loadSwAuthConfig() {
+  if (swAuthConfig.token && swAuthConfig.apiBaseUrl) {
+    return swAuthConfig;
+  }
+  try {
+    const cache = await caches.open(AUTH_CONFIG_CACHE);
+    const cached = await cache.match(AUTH_CONFIG_KEY);
+    if (cached) {
+      const parsed = await cached.json();
+      swAuthConfig = {
+        token: parsed?.token || swAuthConfig.token || null,
+        apiBaseUrl: parsed?.apiBaseUrl || swAuthConfig.apiBaseUrl || null,
+      };
+    }
+  } catch (err) {
+    console.warn("[SW] Failed to load auth config from cache:", err);
+  }
+  return swAuthConfig;
+}
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",
@@ -40,7 +85,7 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter((name) => name !== CACHE_NAME) // Delete any old cache versions
+            .filter((name) => name !== CACHE_NAME && name !== AUTH_CONFIG_CACHE) // Delete any old cache versions
             .map((name) => {
               console.log("[SW] Deleting stale cache:", name);
               return caches.delete(name);
@@ -162,31 +207,94 @@ self.addEventListener("push", (event) => {
   const icon = data.icon || "/icons/icon-192x192.png";
   const badge = data.badge || "/icons/icon-32x32.png";
 
-  // Notification click routing data
-  const notificationData = {
-    url: data.url || "/",
-    type: data.type || null, // "chat" | "announcement" | "task" etc.
-    id: data.id || null,
-  };
+  const isBirthdayNotification =
+    data.type === "BIRTHDAY_WISH" || data.data?.type === "BIRTHDAY_WISH";
+
+  // Notification click routing & interactive payload data
+  // Note: For birthday notifications, only celebrantUuid is stored (no numeric DB ID exposed)
+  const notificationData = isBirthdayNotification
+    ? {
+        url: data.url || "/chat",
+        type: "BIRTHDAY_WISH",
+        celebrantUuid: data.data?.celebrantUuid || null,
+        celebrantName: data.data?.celebrantName || "Celebrant",
+        replyEndpoint: data.data?.replyEndpoint || "/birthday/wish",
+        quickWishMessage:
+          data.data?.quickWishMessage ||
+          "🎉 Happy Birthday! Wishing you a wonderful year ahead filled with joy and success! 🎂🥳",
+        emojiSuggestions: data.data?.emojiSuggestions || [
+          "🎂",
+          "🎉",
+          "🥳",
+          "🥂",
+          "🎈",
+          "🎁",
+          "❤️",
+          "✨",
+        ],
+      }
+    : {
+        url: data.url || "/",
+        type: data.type || null, // "chat" | "announcement" | "task" etc.
+        id: data.id || null,
+      };
+
+  const defaultBirthdayActions = [
+    {
+      action: "REPLY_BIRTHDAY_WISH",
+      title: "✍️🎂 Send Birthday Wish",
+      type: "text",
+      placeholder: "Write a wish with emojis 🎂🎉🥳...",
+    },
+    {
+      action: "QUICK_BIRTHDAY_WISH",
+      title: "🎉🎂 Happy Birthday! 🥳",
+    },
+  ];
+
+  const notificationActions =
+    Array.isArray(data.actions) && data.actions.length > 0
+      ? data.actions
+      : isBirthdayNotification
+        ? defaultBirthdayActions
+        : [
+            { action: "open", title: "Open App" },
+            { action: "dismiss", title: "Dismiss" },
+          ];
 
   const notificationOptions = {
     body,
     icon,
     badge,
     data: notificationData,
+    tag: isBirthdayNotification
+      ? `birthday-${notificationData.celebrantUuid || Date.now()}`
+      : undefined,
+    renotify: true,
     requireInteraction: true, // Keep notification on screen until user taps
     // iOS Safari supports vibrate in Standalone mode
     vibrate: [200, 100, 200],
     sound: "default",
-    // Actions appear as buttons below the notification (Android/macOS Safari)
-    actions: [
-      { action: "open", title: "Open App" },
-      { action: "dismiss", title: "Dismiss" },
-    ],
+    // Actions appear as buttons / inline text reply on the notification pop-up
+    actions: notificationActions,
   };
 
   event.waitUntil(
-    self.registration.showNotification(title, notificationOptions),
+    Promise.all([
+      self.registration.showNotification(title, notificationOptions),
+      isBirthdayNotification
+        ? self.clients
+            .matchAll({ type: "window", includeUncontrolled: true })
+            .then((clientList) => {
+              clientList.forEach((client) => {
+                client.postMessage({
+                  type: "BIRTHDAY_PUSH_RECEIVED",
+                  data: notificationData,
+                });
+              });
+            })
+        : Promise.resolve(),
+    ]),
   );
 });
 
@@ -199,7 +307,120 @@ self.addEventListener("notificationclick", (event) => {
   const action = event.action;
   if (action === "dismiss") return; // User dismissed — do nothing
 
-  const rawUrl = event.notification.data?.url || "/";
+  const notificationData = event.notification.data || {};
+  const inlineReply =
+    typeof event.reply === "string" ? event.reply.trim() : "";
+
+  // 1) If user clicked "Quick Wish" or submitted an inline text reply (Android/iOS/supported OS),
+  // send the wish directly in the background WITHOUT opening any window or tab!
+  if (
+    notificationData.type === "BIRTHDAY_WISH" &&
+    (action === "QUICK_BIRTHDAY_WISH" || inlineReply.length > 0)
+  ) {
+    event.waitUntil(
+      (async () => {
+        try {
+          const config = await loadSwAuthConfig();
+          const sub = await self.registration.pushManager.getSubscription();
+          const messageToSend =
+            inlineReply ||
+            notificationData.quickWishMessage ||
+            "🎉 Happy Birthday! Wishing you a wonderful year ahead! 🎂🥳";
+
+          const replyEndpoint =
+            notificationData.replyEndpoint || "/birthday/wish";
+          const fallbackBaseUrl =
+            self.location.hostname === "localhost"
+              ? "http://localhost:4100"
+              : "https://api-cnsquad.c9ja.com";
+          const baseUrl = (config.apiBaseUrl || fallbackBaseUrl).replace(
+            /\/$/,
+            "",
+          );
+          const targetUrl = `${baseUrl}${replyEndpoint}`;
+
+          const headers = {
+            "Content-Type": "application/json",
+          };
+          if (config.token) {
+            headers["Authorization"] = `Bearer ${config.token}`;
+          }
+
+          const response = await fetch(targetUrl, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              celebrantUuid: notificationData.celebrantUuid,
+              message: messageToSend,
+              subscriptionEndpoint: sub ? sub.endpoint : undefined,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          await self.registration.showNotification(
+            "🎂 Birthday wish sent to DM!",
+            {
+              body: `Your birthday wish was delivered straight to ${notificationData.celebrantName || "the celebrant"}'s DM! 🎉`,
+              icon: "/icons/icon-192x192.png",
+              badge: "/icons/icon-32x32.png",
+              requireInteraction: false,
+            },
+          );
+        } catch (err) {
+          console.error("[SW] Failed to send background birthday wish:", err);
+          await self.registration.showNotification(
+            "⚠️ Could not send birthday wish",
+            {
+              body: "Tap to open CN-Squad and send your wish in DM.",
+              icon: "/icons/icon-192x192.png",
+              badge: "/icons/icon-32x32.png",
+              data: { url: "/chat" },
+            },
+          );
+        }
+      })(),
+    );
+    return;
+  }
+
+  // 2) On Desktop OS (e.g. macOS Chrome) where the OS notification banner does not render
+  // an inline <input> inside the OS banner, clicking the notification or "✍️🎂 Send Birthday Wish"
+  // opens the floating Birthday Wish Pop-Up input box (with emojis) so the user can type their wish!
+  if (notificationData.type === "BIRTHDAY_WISH") {
+    const popupParams = new URLSearchParams({
+      celebrantUuid: notificationData.celebrantUuid || "",
+      celebrantName: notificationData.celebrantName || "Celebrant",
+      quickWishMessage: notificationData.quickWishMessage || "",
+    });
+    const popupUrl = new URL(
+      `/birthday-wish-popup?${popupParams.toString()}`,
+      self.location.origin,
+    ).href;
+
+    event.waitUntil(
+      clients
+        .matchAll({ type: "window", includeUncontrolled: true })
+        .then((clientList) => {
+          for (const client of clientList) {
+            if ("focus" in client) {
+              client.focus();
+              client.postMessage({
+                type: "OPEN_BIRTHDAY_WISH_POPUP",
+                data: notificationData,
+              });
+              return;
+            }
+          }
+          return clients.openWindow(popupUrl);
+        }),
+    );
+    return;
+  }
+
+  const rawUrl = notificationData?.url || "/";
   const url = new URL(rawUrl, self.location.origin).href;
 
   event.waitUntil(
@@ -264,5 +485,12 @@ self.addEventListener("pushsubscriptionchange", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting(); // Force the new SW to activate immediately
+  } else if (event.data?.type === "SET_AUTH_CONFIG") {
+    event.waitUntil(
+      saveSwAuthConfig({
+        token: event.data.token,
+        apiBaseUrl: event.data.apiBaseUrl,
+      }),
+    );
   }
 });
