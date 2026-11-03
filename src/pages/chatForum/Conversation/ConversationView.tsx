@@ -74,6 +74,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [editMessage, setEditMessage] = useState<Msg | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = React.useRef(0);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [deletingMessageIds, setDeletingMessageIds] = useState<Set<string>>(new Set());
   const [reactorsModalMessageId, setReactorsModalMessageId] = useState<string | null>(null);
@@ -786,7 +788,52 @@ const ConversationView: React.FC<ConversationViewProps> = ({
 
   return (
 
-    <div className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400">
+    <div
+      className="flex flex-col w-full h-full text-gray-600 dark:text-gray-400 relative"
+      onDragEnter={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current += 1;
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+          setIsDragging(true);
+        }
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current -= 1;
+        if (dragCounterRef.current <= 0) {
+          dragCounterRef.current = 0;
+          setIsDragging(false);
+        }
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const droppedFiles = Array.from(e.dataTransfer.files);
+          setFiles((prev) => [...prev, ...droppedFiles]);
+        }
+      }}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 z-50 bg-green-500/10 dark:bg-green-500/20 backdrop-blur-[2px] border-2 border-dashed border-green-500 rounded-2xl flex flex-col items-center justify-center pointer-events-none transition-all">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col items-center gap-2 border border-green-200 dark:border-green-800 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Drop files here to attach</p>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-4 pt-[calc(env(safe-area-inset-top,0px)+12px)] pb-3 md:py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] transition-colors sticky top-0 z-10 flex-shrink-0">
         <div className="flex items-center gap-3 flex-1">

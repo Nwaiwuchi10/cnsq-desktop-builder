@@ -107,6 +107,8 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
   const [text, setText] = useState("");
 
   const [files, setFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = React.useRef(0);
   const [replyTo, setReplyTo] = useState<Msg | null>(null);
   const [replyingTo, setReplyingTo] = useState<Msg | null>(null);
   const [editMessage, setEditMessage] = useState<Msg | null>(null);
@@ -1282,7 +1284,52 @@ const ChannelConversationView: React.FC<ConversationViewProps> = ({
 
   return (
 
-    <div className="flex w-full h-full text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141414]">
+    <div
+      className="flex w-full h-full text-gray-600 dark:text-gray-400 bg-white dark:bg-[#141414] relative"
+      onDragEnter={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current += 1;
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+          setIsDragging(true);
+        }
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current -= 1;
+        if (dragCounterRef.current <= 0) {
+          dragCounterRef.current = 0;
+          setIsDragging(false);
+        }
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          const droppedFiles = Array.from(e.dataTransfer.files);
+          setFiles((prev) => [...prev, ...droppedFiles]);
+        }
+      }}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 z-50 bg-green-500/10 dark:bg-green-500/20 backdrop-blur-[2px] border-2 border-dashed border-green-500 rounded-2xl flex flex-col items-center justify-center pointer-events-none transition-all">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col items-center gap-2 border border-green-200 dark:border-green-800 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Drop files here to attach</p>
+          </div>
+        </div>
+      )}
       {/* Main Chat Area */}
       {/* Main Conversation List (Hidden on mobile when thread is open) */}
       <div className={`flex flex-col h-full transition-all duration-300 ${threadParent ? (isChatCollapsed ? "hidden lg:hidden" : "hidden lg:flex lg:w-2/3 border-r border-gray-200 dark:border-gray-800") : "w-full"}`}>
