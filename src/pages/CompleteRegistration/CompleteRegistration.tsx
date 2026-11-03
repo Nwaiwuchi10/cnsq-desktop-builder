@@ -184,7 +184,8 @@ export default function CompleteRegistration() {
                       type={showOldPassword ? "text" : "password"}
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
-                      className="w-full rounded-[4px] border border-gray-200 px-3 py-3 pr-10 bg-white text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                      className="w-full rounded-[4px] border border-gray-200 px-3 py-3 pr-10 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                      style={{ color: "#111827", WebkitTextFillColor: "#111827" }}
                       placeholder="Enter password from registration email"
                     />
                     <button
@@ -206,7 +207,8 @@ export default function CompleteRegistration() {
                       type={showNewPassword ? "text" : "password"}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full rounded-[4px] border border-gray-200 px-3 py-3 pr-10 bg-white text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                      className="w-full rounded-[4px] border border-gray-200 px-3 py-3 pr-10 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                      style={{ color: "#111827", WebkitTextFillColor: "#111827" }}
                       placeholder="Enter new password"
                     />
                     <button
@@ -228,7 +230,8 @@ export default function CompleteRegistration() {
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full rounded-[4px] border border-gray-200 px-3 py-3 pr-10 bg-white text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                      className="w-full rounded-[4px] border border-gray-200 px-3 py-3 pr-10 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#95D700] focus:border-[#95D700]"
+                      style={{ color: "#111827", WebkitTextFillColor: "#111827" }}
                       placeholder="Confirm new password"
                     />
                     <button
