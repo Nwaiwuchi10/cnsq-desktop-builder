@@ -213,9 +213,12 @@ export default function ProjectMetricsSection() {
                   </div>
 
                   {/* Staff In Charge */}
-                  <div className="text-xs sm:text-[13px] text-gray-500 dark:text-gray-400 mb-4 font-normal">
-                    Staff in charge:{" "}
-                    <span className="font-bold text-gray-800 dark:text-gray-200">
+                  <div className="text-xs sm:text-[13px] text-gray-500 dark:text-gray-400 mb-4 font-normal flex items-baseline gap-1 min-w-0">
+                    <span className="flex-shrink-0">Staff in charge:</span>
+                    <span
+                      title={project.developerName || "Unassigned"}
+                      className="font-bold text-gray-800 dark:text-gray-200 truncate cursor-default"
+                    >
                       {project.developerName || "Unassigned"}
                     </span>
                   </div>
