@@ -1,0 +1,107 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 6007 >>
+stream
+0.04 0.15 0.28 rg 0 712 612 80 re f
+0.0 0.66 0.59 rg 0 708 612 4 re f
+BT /F2 18 Tf 1 1 1 rg 45 755 Td (CNSQ DESKTOP APPLICATION SPRINT) Tj ET
+BT /F1 10 Tf 0.85 0.92 0.98 rg 45 736 Td (1-Week Technical Feasibility & Implementation Roadmap \(Tauri v2\)) Tj ET
+BT /F2 10 Tf 0.0 0.75 0.65 rg 460 755 Td (CONNECT NIGERIA) Tj ET
+BT /F1 8.5 Tf 0.8 0.85 0.9 rg 460 740 Td (Sprint Window: 5 Days) Tj ET
+0.96 0.97 0.99 rg 0.85 0.88 0.93 RG 1 w 45 608 522 85 re B
+BT /F2 10.5 Tf 0.04 0.15 0.28 rg 58 672 Td (EXECUTIVE SUMMARY) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.3 rg 58 654 Td (- Objective: Package existing CNSQ Web App into a native desktop application \(Windows & macOS\).) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.3 rg 58 640 Td (- Zero Backend Rewrite: Preserves 100% of the existing Next.js frontend and NestJS backend APIs.) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.3 rg 58 626 Td (- Technology: Tauri v2 - delivers ultra-lightweight installers \(~15 MB\) and minimal RAM usage \(~40 MB\),) Tj ET
+BT /F1 8.5 Tf 0.2 0.25 0.3 rg 58 612 Td (  avoiding the heavy memory and resource overhead of traditional frameworks like Electron.) Tj ET
+BT /F2 11 Tf 0.04 0.15 0.28 rg 45 584 Td (5-DAY SPRINT SCHEDULE & MILESTONES) Tj ET
+0.08 0.22 0.38 rg 45 555 522 22 re f
+BT /F2 9 Tf 1 1 1 rg 55 562 Td (DAY) Tj ET
+BT /F2 9 Tf 1 1 1 rg 125 562 Td (FOCUS AREA) Tj ET
+BT /F2 9 Tf 1 1 1 rg 260 562 Td (KEY DELIVERABLES & OBJECTIVES) Tj ET
+0.98 0.99 1.0 rg 0.88 0.9 0.94 RG 0.75 w 45 513 522 42 re B
+BT /F2 8.5 Tf 0.04 0.15 0.28 rg 55 537 Td (Day 1 \(Mon\)) Tj ET
+BT /F2 8.5 Tf 0.0 0.55 0.5 rg 125 537 Td (Environment & POC) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 541 Td (- Initialize Tauri v2 framework inside the codebase.) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 530 Td (- Compile and launch local native desktop window running CNSQ.) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 519 Td (- Milestone: Verified local desktop window rendering CNSQ.) Tj ET
+0.94 0.96 0.98 rg 0.88 0.9 0.94 RG 0.75 w 45 471 522 42 re B
+BT /F2 8.5 Tf 0.04 0.15 0.28 rg 55 495 Td (Day 2 \(Tue\)) Tj ET
+BT /F2 8.5 Tf 0.0 0.55 0.5 rg 125 495 Td (Auth & API Integration) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 499 Td (- Validate authentication flows \(JWT tokens, sessions, secure storage\).) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 488 Td (- Verify all API endpoints, ticketing, and chat routes communicate smoothly.) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 477 Td (- Configure external links to open cleanly in default system browser.) Tj ET
+0.98 0.99 1.0 rg 0.88 0.9 0.94 RG 0.75 w 45 429 522 42 re B
+BT /F2 8.5 Tf 0.04 0.15 0.28 rg 55 453 Td (Day 3 \(Wed\)) Tj ET
+BT /F2 8.5 Tf 0.0 0.55 0.5 rg 125 453 Td (Desktop Branding & UI) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 457 Td (- Embed official CNSQ icons \(Windows .ico and macOS .icns\).) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 446 Td (- Implement native window handling & minimize-to-system-tray behavior.) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 435 Td (- Configure auto-launch on system startup capability.) Tj ET
+0.94 0.96 0.98 rg 0.88 0.9 0.94 RG 0.75 w 45 387 522 42 re B
+BT /F2 8.5 Tf 0.04 0.15 0.28 rg 55 411 Td (Day 4 \(Thu\)) Tj ET
+BT /F2 8.5 Tf 0.0 0.55 0.5 rg 125 411 Td (Native OS Features) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 415 Td (- Implement native OS desktop push notifications \(tickets & chat\).) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 404 Td (- Conduct memory/performance profiling \(target: under 80 MB RAM\).) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 393 Td (- Execute cross-platform build test \(Windows & macOS\).) Tj ET
+0.98 0.99 1.0 rg 0.88 0.9 0.94 RG 0.75 w 45 345 522 42 re B
+BT /F2 8.5 Tf 0.04 0.15 0.28 rg 55 369 Td (Day 5 \(Fri\)) Tj ET
+BT /F2 8.5 Tf 0.0 0.55 0.5 rg 125 369 Td (Packaging & Demo) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 373 Td (- Generate production installer packages \(.exe/.msi & .dmg\).) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 362 Td (- Perform internal QA validation on fresh test machines.) Tj ET
+BT /F1 7.8 Tf 0.2 0.25 0.3 rg 260 351 Td (- Milestone: Deliver installers & present live demo to management.) Tj ET
+0.96 0.98 0.97 rg 0.8 0.9 0.85 RG 1 w 45 175 252 140 re B
+BT /F2 9.5 Tf 0.05 0.45 0.35 rg 55 298 Td (CORE BUSINESS VALUE) Tj ET
+BT /F2 8 Tf 0.15 0.3 0.25 rg 55 282 Td (Independent Native Software:) Tj ET
+BT /F1 7.5 Tf 0.15 0.3 0.25 rg 55 269 Td (  Real installable app \(.exe / .dmg\), not a PWA.) Tj ET
+BT /F2 8 Tf 0.15 0.3 0.25 rg 55 256 Td (Zero Interruption to Web Users:) Tj ET
+BT /F1 7.5 Tf 0.15 0.3 0.25 rg 55 243 Td (  Web and Desktop share the same codebase.) Tj ET
+BT /F2 8 Tf 0.15 0.3 0.25 rg 55 230 Td (System Presence:) Tj ET
+BT /F1 7.5 Tf 0.15 0.3 0.25 rg 55 217 Td (  Icon on desktop, dock, system tray, & startup.) Tj ET
+BT /F2 8 Tf 0.15 0.3 0.25 rg 55 204 Td (Speed & Efficiency:) Tj ET
+BT /F1 7.5 Tf 0.15 0.3 0.25 rg 55 191 Td (  Under 15 MB installer size, under 80 MB RAM.) Tj ET
+0.97 0.97 0.99 rg 0.85 0.86 0.92 RG 1 w 315 175 252 140 re B
+BT /F2 9.5 Tf 0.15 0.2 0.45 rg 325 298 Td (POST-SPRINT ROADMAP \(PHASE 2\)) Tj ET
+BT /F2 8 Tf 0.2 0.25 0.35 rg 325 282 Td (Code Signing & Trust:) Tj ET
+BT /F1 7.5 Tf 0.2 0.25 0.35 rg 325 269 Td (  Apple Developer & Windows Authenticode certs) Tj ET
+BT /F1 7.5 Tf 0.2 0.25 0.35 rg 325 256 Td (  to eliminate 'Unknown Publisher' security warnings.) Tj ET
+BT /F2 8 Tf 0.2 0.25 0.35 rg 325 243 Td (Background Auto-Updater:) Tj ET
+BT /F1 7.5 Tf 0.2 0.25 0.35 rg 325 230 Td (  Seamlessly pushes future releases to employees.) Tj ET
+BT /F2 8 Tf 0.2 0.25 0.35 rg 325 217 Td (CI/CD Build Automation:) Tj ET
+BT /F1 7.5 Tf 0.2 0.25 0.35 rg 325 204 Td (  GitHub Actions workflow to compile binaries.) Tj ET
+BT /F2 8 Tf 0.2 0.25 0.35 rg 325 191 Td (Granular Offline Caching:) Tj ET
+BT /F1 7.5 Tf 0.2 0.25 0.35 rg 325 178 Td (  Local caching for offline ticket drafting.) Tj ET
+0.85 0.88 0.92 RG 1 w 45 155 m 567 155 l S
+BT /F1 8 Tf 0.5 0.55 0.6 rg 45 140 Td (Prepared for Management Review | CNSQ Engineering Team) Tj ET
+BT /F1 8 Tf 0.5 0.55 0.6 rg 440 140 Td (Connect Nigeria Internal Document) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000257 00000 n 
+0000000327 00000 n 
+0000000402 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+6461
+%%EOF
