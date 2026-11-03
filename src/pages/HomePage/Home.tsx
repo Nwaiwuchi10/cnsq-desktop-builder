@@ -13,6 +13,7 @@ import QuickActions from "@/component/QuickActions/QuickActions";
 import QuickNavigation from "@/component/QuickNavigation/QuickNavigation";
 import AnnouncementModal from "../Notification/AnnouncementModal";
 import HeroSection from "@/component/HeroSection/Hero";
+import ProjectMetricsSection from "@/component/ProjectMetrics/ProjectMetricsSection";
 
 import SubscriptionStatsCards from "@/component/QuoteRequestSubscriptionStat/SubscriptionStatCard";
 import { pushNotificationService } from "@/utils/pushNotificationService";
@@ -235,6 +236,7 @@ const HomePage = () => {
 
       {/* <QuickActions /> */}
       <QuickNavigation />
+      <ProjectMetricsSection />
       <LatestBirthday />
       <TeamProfiles />
       <LatestAnniversary />
