@@ -137,7 +137,8 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
           {/* Attachments Section */}
           {attachments && attachments.length > 0 && (() => {
             const mediaItems = attachments.filter((a: any) => {
-              const ext = a.filename?.split(".").pop()?.toLowerCase();
+              const raw = a.filename || a.url?.split("?")[0] || "";
+              const ext = raw.split(".").pop()?.toLowerCase();
               return (
                 a.mimeType?.startsWith("video/") ||
                 (ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext)) ||
@@ -152,11 +153,14 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                   <MediaGrid media={mediaItems} maxWidth={320} />
                 )}
                 {otherItems.map((a: any) => {
-                  if (a.mimeType?.startsWith("audio/")) {
+                  const raw = a.filename || a.url?.split("?")[0] || "";
+                  const ext = raw.split(".").pop()?.toLowerCase();
+                  const isAudio = a.mimeType?.startsWith("audio/") || (ext && ["mp3", "wav", "m4a", "webm", "ogg"].includes(ext));
+                  if (isAudio) {
                     return (
                       <div key={a.id} className="mt-1">
                         <audio controls className="w-64 h-8">
-                          <source src={a.url} type={a.mimeType} />
+                          <source src={a.url} type={a.mimeType || "audio/webm"} />
                         </audio>
                       </div>
                     );
@@ -169,7 +173,7 @@ const ChannelMessageBubble: React.FC<MessageBubbleProps> = ({
                       rel="noopener noreferrer"
                       className="underline text-xs mt-1 block text-blue-500 hover:text-blue-600 font-medium"
                     >
-                      {a.filename || "Attachment"}
+                      {a.filename || raw.split("/").pop() || "Attachment"}
                     </a>
                   );
                 })}

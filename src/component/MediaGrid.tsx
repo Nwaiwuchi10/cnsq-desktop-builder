@@ -16,7 +16,8 @@ interface MediaGridProps {
 
 function isVideo(item: MediaItem): boolean {
   if (item.mimeType?.startsWith("video/")) return true;
-  const ext = item.filename?.split(".").pop()?.toLowerCase();
+  const raw = item.filename || item.url?.split("?")[0] || "";
+  const ext = raw.split(".").pop()?.toLowerCase();
   return !!(ext && ["mp4", "mov", "webm", "mkv", "avi"].includes(ext));
 }
 
