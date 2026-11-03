@@ -242,9 +242,9 @@ export default function ProjectMetricsPage() {
                     )}
                   </div>
 
-                  {/* Developer In Charge */}
+                  {/* Staff In Charge */}
                   <div className="text-xs sm:text-[13px] text-gray-500 dark:text-gray-400 mb-4 font-normal">
-                    Developer in charge:{" "}
+                    Staff in charge:{" "}
                     <span className="font-bold text-gray-800 dark:text-gray-200">
                       {project.developerName || "Unassigned"}
                     </span>
