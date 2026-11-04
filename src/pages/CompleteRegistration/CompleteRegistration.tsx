@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Api from "@/utils/api";
 import CustomModal from "@/component/Message/Message";
-import { Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 export default function CompleteRegistration() {
   const searchParams: any = useSearchParams();
@@ -14,6 +14,7 @@ export default function CompleteRegistration() {
   const [loading, setLoading] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
   const [expired, setExpired] = useState(false);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
   const [oldPassword, setOldPassword] = useState("");
@@ -40,6 +41,18 @@ export default function CompleteRegistration() {
       return;
     }
 
+    // Check if user just completed registration with this token in current browser session
+    try {
+      const completedToken = sessionStorage.getItem("cnsq_completed_reg_token");
+      if (completedToken === token) {
+        setAlreadyCompleted(true);
+        setLoading(false);
+        return;
+      }
+    } catch (e) {
+      // Ignore storage errors
+    }
+
     const verifyToken = async () => {
       try {
         const res = await Api.get(`/staff-register/verify-registration-token?token=${token}`);
@@ -49,6 +62,8 @@ export default function CompleteRegistration() {
         } else if (res.data.expired) {
           setExpired(true);
           setUserEmail(res.data.email || "");
+        } else if (res.data.alreadyUsed) {
+          setAlreadyCompleted(true);
         } else {
           setModal({
             type: "error",
@@ -103,6 +118,14 @@ export default function CompleteRegistration() {
         confirmPassword,
       });
 
+      try {
+        if (token) {
+          sessionStorage.setItem("cnsq_completed_reg_token", token);
+        }
+      } catch (e) {
+        // Ignore storage errors
+      }
+
       setModal({
         type: "success",
         message: res.data.message || "Registration completed successfully!",
@@ -131,9 +154,9 @@ export default function CompleteRegistration() {
 
   const goToForgotPassword = () => {
     if (userEmail) {
-      router.push(`/ForgotPassword?email=${encodeURIComponent(userEmail)}`);
+      router.push(`/forgot-password?email=${encodeURIComponent(userEmail)}`);
     } else {
-      router.push("/ForgotPassword");
+      router.push("/forgot-password");
     }
   };
 
@@ -150,6 +173,22 @@ export default function CompleteRegistration() {
           {loading ? (
             <div className="py-12 text-center text-gray-500">
               <p className="text-sm animate-pulse">Verifying registration link...</p>
+            </div>
+          ) : alreadyCompleted ? (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-4">
+              <div className="flex justify-center text-emerald-600">
+                <CheckCircle2 size={44} />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Registration Already Completed</h2>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Your account is already set up and active. Please sign in with your email and password.
+              </p>
+              <button
+                onClick={() => router.push("/login")}
+                className="w-full py-3 bg-[#95D700] hover:bg-[#86c100] text-black font-bold text-xs tracking-wider uppercase rounded-xl transition"
+              >
+                Go to Sign In
+              </button>
             </div>
           ) : expired ? (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center space-y-4">

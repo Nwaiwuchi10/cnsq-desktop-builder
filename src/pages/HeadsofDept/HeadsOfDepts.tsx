@@ -71,12 +71,39 @@ export default function HeadsStaffDirectory() {
     fetchStaff();
   }, []);
 
-  // Filter staff by search input
-  const filteredStaff = (staffList || []).filter((hod) =>
-    `${hod?.staff?.firstName || ""} ${hod?.staff?.lastName || ""} ${hod?.staff?.employment?.jobTitle || ""} ${hod?.department?.name || ""}`
+  // Filter staff by search input, excluding any unlinked, deleted, or non-active/departed staff
+  const filteredStaff = (staffList || []).filter((hod) => {
+    const staff = hod?.staff;
+    // Must have a valid staff with a valid id and a name (not an unlinked / deleted staff)
+    if (!staff || !staff.id || (!staff.firstName && !staff.lastName)) {
+      return false;
+    }
+
+    const fullName = `${staff.firstName || ""} ${staff.lastName || ""}`.trim();
+    if (!fullName || fullName.toLowerCase() === "unknown staff" || fullName.toLowerCase() === "unknown") {
+      return false;
+    }
+
+    // Check employment status if present
+    const status = (staff as any)?.employment?.status;
+    if (
+      status &&
+      ["suspended", "inactive", "terminated", "resigned", "exited"].includes(
+        String(status).toLowerCase(),
+      )
+    ) {
+      return false;
+    }
+
+    // Check soft delete if present
+    if ((staff as any)?.deletedAt) {
+      return false;
+    }
+
+    return `${fullName} ${staff?.employment?.jobTitle || ""} ${hod?.department?.name || ""} ${hod?.name || ""}`
       .toLowerCase()
-      .includes(search.toLowerCase()),
-  );
+      .includes(search.toLowerCase());
+  });
 
   return (
     <div className="min-h-screen w-full bg-[#FAFAFA] py-24">
