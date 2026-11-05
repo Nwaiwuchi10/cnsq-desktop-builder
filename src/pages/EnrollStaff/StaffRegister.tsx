@@ -331,9 +331,13 @@ export default function StaffOnboardingForm() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
-      setModal({ type: "success", message: "Staff created successfully." });
+      setModal({
+        type: "success",
+        message:
+          "Staff created successfully, account invite has been sent to the staff mail",
+      });
       localStorage.removeItem(STORAGE_KEY);
-      setTimeout(() => router.push("/staff"), 1000);
+      setTimeout(() => router.push("/staff"), 1800);
     } catch (e: unknown) {
       const err = e as AxiosError<{ message: string }>;
       setModal({

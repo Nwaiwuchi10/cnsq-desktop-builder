@@ -100,6 +100,15 @@ export default function BirthdayWishPopup() {
     inputRef.current?.focus();
   };
 
+  const handleApplyQuickWish = () => {
+    const defaultWish =
+      activeBirthday.quickWishMessage ||
+      `🎉 Happy Birthday, ${activeBirthday.celebrantName}! Wishing you a wonderful year ahead filled with joy and success! 🎂`;
+    setWishMessage(defaultWish);
+    setErrorMsg(null);
+    inputRef.current?.focus();
+  };
+
   const handleSendWish = async (customText?: string) => {
     const finalMessage = (customText ?? wishMessage).trim();
     if (!finalMessage) {
@@ -225,11 +234,9 @@ export default function BirthdayWishPopup() {
                 <button
                   type="button"
                   disabled={sending}
-                  onClick={() =>
-                    handleSendWish(activeBirthday.quickWishMessage)
-                  }
+                  onClick={handleApplyQuickWish}
                   className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-[#95D700] text-[#5a8200] dark:text-[#95D700] hover:bg-[#95D700]/10 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
-                  title="Send instant birthday wish"
+                  title="Populate pre-composed birthday wish into text box to customize or send"
                 >
                   <Sparkles size={14} />
                   Quick Wish 🎉
