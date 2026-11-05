@@ -1,0 +1,52 @@
+stages:
+  - build-desktop
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+# Build Windows Installer (.exe & .msi)
+build-windows:
+  stage: build-desktop
+  tags:
+    - saas-windows-medium-amd64
+  before_script:
+    - choco install rust-ms nodejs-lts -y
+    - refreshenv
+  script:
+    - npm install
+    - npm run tauri build
+  artifacts:
+    name: "CNSQ-Windows-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - src-tauri/target/release/bundle/msi/*.msi
+      - src-tauri/target/release/bundle/nsis/*.exe
+    expire_in: 30 days
+  only:
+    - feat/tauri-desktop-app
+    - main
+    - tags
+
+# Build Linux Installer (.deb & .AppImage)
+build-linux:
+  stage: build-desktop
+  image: ubuntu:22.04
+  before_script:
+    - apt-get update && apt-get install -y curl build-essential libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    - source "$HOME/.cargo/env"
+    - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    - apt-get install -y nodejs
+  script:
+    - npm install
+    - source "$HOME/.cargo/env" && npm run tauri build
+  artifacts:
+    name: "CNSQ-Linux-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - src-tauri/target/release/bundle/deb/*.deb
+      - src-tauri/target/release/bundle/appimage/*.AppImage
+    expire_in: 30 days
+  only:
+    - feat/tauri-desktop-app
+    - main
+    - tags
+
