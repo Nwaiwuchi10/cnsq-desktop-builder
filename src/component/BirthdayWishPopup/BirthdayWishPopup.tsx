@@ -139,7 +139,7 @@ export default function BirthdayWishPopup() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-[9999] w-full max-w-sm animate-in fade-in slide-in-from-top-4 duration-200">
+    <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[9999] mx-auto w-auto sm:w-full max-w-sm animate-in fade-in slide-in-from-top-4 duration-200">
       <div className="rounded-2xl border border-[#95D700]/40 bg-white dark:bg-[#18181b] shadow-2xl overflow-hidden">
         {/* Top Banner */}
         <div className="bg-gradient-to-r from-[#78B500] to-[#95D700] px-4 py-3 flex items-center justify-between text-white">
